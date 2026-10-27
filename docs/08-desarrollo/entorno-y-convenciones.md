@@ -105,6 +105,8 @@ Comprobaciones antes de cada commit:
 .venv/bin/pytest --cov=berigna
 ```
 
+El script `scripts/verificar.sh` ejecuta exactamente esas comprobaciones (nunca las pruebas HIL). Se puede instalar como *hook* de `pre-push` con `ln -s ../../scripts/verificar.sh .git/hooks/pre-push`.
+
 ## 3. Estilo de código
 
 | Aspecto | Norma |
@@ -129,8 +131,8 @@ Comprobaciones antes de cada commit:
 ## 5. Integración continua
 
 Pasos mínimos del *pipeline*:
-1. `ruff`, `mypy`, `bandit`.
-2. Pruebas unitarias y de integración con SoftHSM, con la cobertura medida.
+1. `ruff` (incluidas las reglas `S` de flake8-bandit, que sustituyen a ejecutar bandit por separado) y `mypy --strict`.
+2. Pruebas unitarias y de integración con SoftHSM. La cobertura mínima es del 80 % (`fail_under` en `pyproject.toml`); las rutas críticas de firma, validación y *token* deben quedar cubiertas por completo (RNF-MAN-02).
 3. Validación de la matriz de formatos con DSS 6.2: JAR oficiales de Maven Central y un arnés Java mínimo, sin Docker ni imágenes de terceros (SPK-03 §2). Se exige TOTAL_PASSED y PASSED en cada sello.
 4. *Fuzzing* corto (5 min por objetivo) en cada PR; largo cada noche.
 5. Compilación del `.deb`, `lintian` y `piuparts`.
