@@ -1,0 +1,82 @@
+{
+  "format": 1,
+  "retrieved": "2026-10-27",
+  "note": "Anclas de confianza de la IOFE. Fuente definitiva prevista: TSL de INDECOPI (ADR-0014).",
+  "certificates": [
+    {
+      "file": "ecernep-peru-ca-root-3.pem",
+      "role": "root",
+      "hierarchy": "ROOT 3",
+      "subject": "CN=ECERNEP PERU CA ROOT 3,O=Entidad de Certificaci\\C3\\B3n Nacional para el Estado Peruano,C=PE",
+      "sha256": "96508217c36f3bbc556e2e07d7ab50c40da8027c388235813322e41b87a568be",
+      "not_after": "Aug 10 17:31:52 2042 GMT",
+      "sources": [
+        "http://crl.reniec.gob.pe/crt/sha2/ecernep.crt"
+      ],
+      "verification": "HTTP; huella contrastada indirectamente: el validador oficial Firma Perú (PCM) reconoce esta raíz en la TSL (SPK-03 §7)"
+    },
+    {
+      "file": "ecep-reniec.pem",
+      "role": "intermediate",
+      "hierarchy": "ROOT 3",
+      "subject": "CN=ECEP-RENIEC,O=Registro Nacional de Identificaci\\C3\\B3n y Estado Civil,C=PE",
+      "sha256": "91520e1f381a46402b9490c06749b2d81ddad4b53e7f252a1dd79b55dfcb340b",
+      "not_after": "Aug 10 20:31:59 2033 GMT",
+      "sources": [
+        "http://www.reniec.gob.pe/crt/sha2/ecep.crt"
+      ],
+      "verification": "HTTP; firma verificada contra ECERNEP PERU CA ROOT 3"
+    },
+    {
+      "file": "ecep-reniec-ca-class-2-ii.pem",
+      "role": "intermediate",
+      "hierarchy": "ROOT 3",
+      "subject": "CN=ECEP-RENIEC CA Class 2 II,O=Registro Nacional de Identificaci\\C3\\B3n y Estado Civil,C=PE",
+      "sha256": "ec94327a45c45a928104d389b352576918b8c072327204e15e1f88547d860a42",
+      "not_after": "Feb  8 21:48:25 2030 GMT",
+      "sources": [
+        "http://crl.reniec.gob.pe/crt/sha2/caclass2ii.crt",
+        "http://crl2.reniec.gob.pe/crt/sha2/caclass2ii.crt"
+      ],
+      "verification": "HTTP; firma verificada contra ECEP-RENIEC; emisora de los certificados del DNIe v2"
+    },
+    {
+      "file": "ecernep-peru-ca-root-5.pem",
+      "role": "root",
+      "hierarchy": "ROOT 5",
+      "subject": "CN=ECERNEP PERU CA ROOT 5,O=Entidad de Certificaci\\C3\\B3n Nacional para el Estado Peruano,C=PE",
+      "sha256": "e33d6a09352f98ba5cc9e358d44f3ed737e8c73f29e56656f96aa05a9d34da60",
+      "not_after": "Jul  1 19:47:46 2047 GMT",
+      "sources": [
+        "https://cdn.www.gob.pe/ecernep/root5/crt/ecernep5.crt"
+      ],
+      "verification": "HTTPS (cdn.www.gob.pe)"
+    },
+    {
+      "file": "ecep-reniec-ca-root-5.pem",
+      "role": "intermediate",
+      "hierarchy": "ROOT 5",
+      "subject": "CN=ECEP-RENIEC CA ROOT 5,O=Registro Nacional de Identificaci\\C3\\B3n y Estado Civil,C=PE",
+      "sha256": "e827b4cf0de324c8e92ab20db973a0704883ae982db1a108c83448ea463dc3ac",
+      "not_after": "Nov 25 21:28:02 2039 GMT",
+      "sources": [
+        "http://crt.reniec.gob.pe/crt/root5/ecep.crt",
+        "http://crt2.reniec.gob.pe/crt/root5/ecep.crt"
+      ],
+      "verification": "HTTP; espejos idénticos; firma verificada contra ECERNEP PERU CA ROOT 5"
+    },
+    {
+      "file": "ecep-reniec-ca-class-3.pem",
+      "role": "intermediate",
+      "hierarchy": "ROOT 5",
+      "subject": "CN=ECEP-RENIEC CA Class 3,O=Registro Nacional de Identificaci\\C3\\B3n y Estado Civil,C=PE",
+      "sha256": "483a02fba5a82d23d8c3ac324157df392229c0df750b77f250968807875ddec1",
+      "not_after": "Nov 28 19:55:31 2031 GMT",
+      "sources": [
+        "http://crt.reniec.gob.pe/crt/root5/caclass3.crt",
+        "http://crt2.reniec.gob.pe/crt/root5/caclass3.crt"
+      ],
+      "verification": "HTTP; espejos idénticos; firma verificada contra ECEP-RENIEC CA ROOT 5; emisora de certificados de personas jurídicas"
+    }
+  ]
+}

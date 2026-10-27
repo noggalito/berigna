@@ -101,3 +101,51 @@ class InstructionNotAllowedError(TokenError):
     """The driver refused to send an instruction outside its allow-list (ADR-0012)."""
 
     code = "ERR-120"
+
+
+class TrustError(BerignaError):
+    """Problem with the trust store (ADR-0009)."""
+
+    code = "ERR-200"
+
+
+class TrustStoreIntegrityError(TrustError):
+    """The bundled trust anchors do not match their manifest; the store must not be used."""
+
+    code = "ERR-201"
+
+
+class InvalidAnchorError(TrustError):
+    """A certificate offered as trust anchor is not a CA certificate."""
+
+    code = "ERR-202"
+
+
+class SignerCertificateError(BerignaError):
+    """The signer certificate cannot be used to sign now (RF-006). Checked before the PIN."""
+
+    code = "ERR-210"
+
+
+class CertificateExpiredError(SignerCertificateError):
+    """The certificate (or one in its chain) is expired or not yet valid."""
+
+    code = "ERR-211"
+
+
+class CertificateRevokedError(SignerCertificateError):
+    """The certificate (or one in its chain) is revoked."""
+
+    code = "ERR-212"
+
+
+class UntrustedCertificateError(SignerCertificateError):
+    """No chain to a trust anchor of the IOFE could be built (ADR-0009)."""
+
+    code = "ERR-213"
+
+
+class CertificateValidationError(SignerCertificateError):
+    """Any other validation failure (bad signature, disallowed algorithm, wrong usage)."""
+
+    code = "ERR-214"
