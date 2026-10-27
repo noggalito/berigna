@@ -1,0 +1,16 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>berigna.spk03</groupId><artifactId>dssval</artifactId><version>1</version>
+  <properties><dss.version>6.2</dss.version><maven.compiler.release>21</maven.compiler.release>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding></properties>
+  <dependencies>
+    <dependency><groupId>eu.europa.ec.joinup.sd-dss</groupId><artifactId>dss-cades</artifactId><version>${dss.version}</version></dependency>
+    <dependency><groupId>eu.europa.ec.joinup.sd-dss</groupId><artifactId>dss-xades</artifactId><version>${dss.version}</version></dependency>
+    <dependency><groupId>eu.europa.ec.joinup.sd-dss</groupId><artifactId>dss-pades-pdfbox</artifactId><version>${dss.version}</version></dependency>
+    <dependency><groupId>eu.europa.ec.joinup.sd-dss</groupId><artifactId>dss-service</artifactId><version>${dss.version}</version></dependency>
+    <dependency><groupId>eu.europa.ec.joinup.sd-dss</groupId><artifactId>dss-utils-apache-commons</artifactId><version>${dss.version}</version></dependency>
+    <dependency><groupId>eu.europa.ec.joinup.sd-dss</groupId><artifactId>dss-crl-parser-x509crl</artifactId><version>${dss.version}</version></dependency>
+    <dependency><groupId>eu.europa.ec.joinup.sd-dss</groupId><artifactId>dss-validation</artifactId><version>${dss.version}</version></dependency>
+    <dependency><groupId>org.slf4j</groupId><artifactId>slf4j-nop</artifactId><version>2.0.16</version></dependency>
+  </dependencies>
+</project>

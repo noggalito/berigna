@@ -1,0 +1,20 @@
+cades-B-B.p7m                | formato=CAdES-BASELINE-B | indicacion=TOTAL_PASSED | sub=null | -
+cades-B-B.p7s                | formato=CAdES-BASELINE-B | indicacion=TOTAL_PASSED | sub=null | -
+cades-B-LT.p7m               | formato=CAdES-BASELINE-LT | indicacion=TOTAL_PASSED | sub=null | SIGNATURE_TIMESTAMP=PASSED
+cades-B-LT.p7s               | formato=CAdES-BASELINE-LT | indicacion=TOTAL_PASSED | sub=null | SIGNATURE_TIMESTAMP=PASSED
+cades-B-LTA.p7m              | formato=CAdES-BASELINE-LTA | indicacion=TOTAL_PASSED | sub=null | SIGNATURE_TIMESTAMP=PASSED ARCHIVE_TIMESTAMP=PASSED
+cades-B-LTA.p7s              | formato=CAdES-BASELINE-LTA | indicacion=TOTAL_PASSED | sub=null | SIGNATURE_TIMESTAMP=PASSED ARCHIVE_TIMESTAMP=PASSED
+cades-B-T.p7m                | formato=CAdES-BASELINE-T | indicacion=TOTAL_PASSED | sub=null | SIGNATURE_TIMESTAMP=PASSED
+cades-B-T.p7s                | formato=CAdES-BASELINE-T | indicacion=TOTAL_PASSED | sub=null | SIGNATURE_TIMESTAMP=PASSED
+xades-B-B.xml                | formato=XAdES-BASELINE-B | indicacion=TOTAL_PASSED | sub=null | -
+xades-B-LT.xml               | formato=XAdES-BASELINE-LT | indicacion=TOTAL_PASSED | sub=null | SIGNATURE_TIMESTAMP=PASSED
+xades-B-LTA.xml              | formato=XAdES-BASELINE-LTA | indicacion=TOTAL_PASSED | sub=null | SIGNATURE_TIMESTAMP=PASSED ARCHIVE_TIMESTAMP=PASSED
+xades-B-T.xml                | formato=XAdES-BASELINE-T | indicacion=TOTAL_PASSED | sub=null | SIGNATURE_TIMESTAMP=PASSED
+xades-enveloping-B-B.xml     | formato=XAdES-BASELINE-B | indicacion=TOTAL_PASSED | sub=null | -
+xades-enveloping-B-LT.xml    | formato=XAdES-BASELINE-LT | indicacion=TOTAL_PASSED | sub=null | SIGNATURE_TIMESTAMP=PASSED
+xades-enveloping-B-LTA.xml   | formato=XAdES-BASELINE-LTA | indicacion=TOTAL_PASSED | sub=null | SIGNATURE_TIMESTAMP=PASSED ARCHIVE_TIMESTAMP=PASSED
+xades-enveloping-B-T.xml     | formato=XAdES-BASELINE-T | indicacion=TOTAL_PASSED | sub=null | SIGNATURE_TIMESTAMP=PASSED
+pades-B-B.pdf                | formato=PAdES-BASELINE-B | indicacion=TOTAL_PASSED | sub=null | -
+pades-B-LT.pdf               | formato=PAdES-BASELINE-LT | indicacion=TOTAL_PASSED | sub=null | SIGNATURE_TIMESTAMP=PASSED
+pades-B-LTA.pdf              | formato=PAdES-BASELINE-LTA | indicacion=TOTAL_PASSED | sub=null | SIGNATURE_TIMESTAMP=PASSED DOCUMENT_TIMESTAMP=PASSED
+pades-B-T.pdf                | formato=PAdES-BASELINE-T | indicacion=TOTAL_PASSED | sub=null | SIGNATURE_TIMESTAMP=PASSED
