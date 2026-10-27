@@ -5,6 +5,7 @@ __pycache__/
 .mypy_cache/
 .ruff_cache/
 .pytest_cache/
+.hypothesis/
 .coverage
 htmlcov/
 
@@ -33,3 +34,7 @@ evidencias-personales/
 
 # Public IOFE CA certificates (override of a global *.pem ignore rule)
 !spikes/ca-iofe/*.pem
+!src/berigna/core/trust/anchors/*.pem
+
+# Brand PNG exports are regenerated from the SVG sources
+data/brand/*.png

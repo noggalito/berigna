@@ -16,3 +16,5 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/); v
 - Reintento acotado de SELECT y READ BINARY ante fallos transitorios tras el apagado de la tarjeta; VERIFY y PSO:CDS no se reintentan nunca.
 - `DnieV2Token.authenticated` y `DnieV2Token.probe_alive()` para el diagnóstico (RF-007).
 - Umbral de cobertura del 80 % con cobertura de ramas.
+- Almacén de confianza propio (`berigna.core.trust`, ADR-0009) con las jerarquías ROOT 3 (DNIe) y ROOT 5 (personas jurídicas), verificado contra un manifiesto de huellas al cargarse; anclas del usuario marcadas como tales (RF-060, RF-061). Errores ERR-200 a ERR-202.
+- Validación previa del certificado del firmante antes de pedir el PIN (`berigna.core.validation.check_signer`, RF-006): vigencia, cadena hasta una raíz de la IOFE, uso de no repudio y revocación (OCSP para el certificado, nunca su CRL de 109 MB; CRL para las CA intermedias). Sin datos de revocación, la firma queda limitada a B-B. Errores ERR-210 a ERR-214. Verificada con un certificado real del DNIe contra el OCSP y las ARL de RENIEC (0,96 s).
