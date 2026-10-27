@@ -19,6 +19,15 @@
 7. Dos idiomas con el mismo cuidado: cada texto se redacta en es_PE y en en_US con el mismo tono llano. No se traduce palabra por palabra. Los bocetos de §3 están en es_PE; los textos en_US salen del catálogo (ADR-0011).
 8. Diseño para longitudes variables: ninguna etiqueta depende de una anchura fija, porque los textos pueden crecer hasta un 40 % entre idiomas (RNF-USA-08).
 
+## 1.1 Identidad visual
+
+La identidad de berigna está en [`data/brand/`](../../data/brand/README.md) (© noggalito, todos los derechos reservados; fuera de la GPL).
+
+- Paleta: burdeos `#6B2232`, dorado `#C2A878`, crema `#F5ECE3`, carbón `#231C1E`. Contraste del burdeos sobre crema: 9,5:1.
+- El nombre se escribe siempre en minúsculas: berigna.
+- La interfaz usa la tipografía y los colores del sistema (HIG de GNOME, libadwaita), con el burdeos como color de acento. Las tipografías de la marca (Arvo y Source Sans 3) se reservan para el logotipo y las piezas de comunicación, no para la interfaz.
+- El icono de la aplicación (`pe.berigna.Berigna`, versiones a color y simbólica) se derivará del símbolo en la Fase 3, siguiendo la guía de iconos de GNOME.
+
 ## 2. Mapa de navegación
 
 ```mermaid
