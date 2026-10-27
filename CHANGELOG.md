@@ -1,0 +1,13 @@
+# Registro de cambios
+
+Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/); versionado semántico.
+
+## [Sin publicar]
+
+### Añadido
+
+- Esqueleto del núcleo `berigna.core` (paquete `src/`, configuración de ruff, mypy estricto y pytest).
+- Driver APDU del DNIe v2 (`berigna.core.token.dnie_v2`, ADR-0012): lista blanca de instrucciones, lectura del certificado parando en la longitud DER, VERIFY de un solo intento, firma PKCS#1 v1.5 sobre SHA-256/384/512.
+- Transporte PC/SC (`berigna.core.token.transport`) con conexión exclusiva y apagado de la tarjeta al cerrar.
+- Tipo `Pin` que no se muestra, no se serializa y se borra tras usarlo.
+- Simulador del *applet* PKI del DNIe v2 para las pruebas automatizadas, y pruebas HIL de solo lectura.

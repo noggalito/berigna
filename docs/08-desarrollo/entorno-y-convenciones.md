@@ -85,6 +85,26 @@ sudo apt install \
 
 La única dependencia que no está en Debian 13 es pyHanko (SPK-05). En desarrollo se instala `pyHanko==0.25.1` sin dependencias (`pip install --no-deps`) en un *virtualenv* con `--system-site-packages`, para usar exactamente las versiones de Debian. En producción se usa el `.deb` del proyecto (ADR-0013).
 
+### 2.1 Entorno de desarrollo sin privilegios
+
+Si no se pueden instalar paquetes del sistema, se usa un entorno virtual que reutiliza los de Debian (`cryptography`, etc.):
+
+```bash
+python3 -m venv --system-site-packages .venv
+.venv/bin/pip install 'pytest==8.3.5' 'hypothesis==6.130.5' 'mypy==1.15.0' 'pytest-cov==5.0.0' ruff
+.venv/bin/pip install --no-deps -e .   # berigna en modo editable (scripts HIL incluidos)
+```
+
+pyscard no tiene un *wheel* para Python 3.13 en PyPI y compilarlo requiere `libpcsclite-dev` y `swig`. Se usa `python3-pyscard` de Debian (`sudo apt install python3-pyscard`), que el entorno virtual ve gracias a `--system-site-packages`.
+
+Comprobaciones antes de cada commit:
+
+```bash
+.venv/bin/ruff format --check src tests && .venv/bin/ruff check src tests
+.venv/bin/mypy
+.venv/bin/pytest --cov=berigna
+```
+
 ## 3. Estilo de código
 
 | Aspecto | Norma |
