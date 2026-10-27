@@ -1,5 +1,6 @@
 #!/bin/sh
 # SPDX-License-Identifier: GPL-3.0-or-later
+# SPDX-FileCopyrightText: 2026 Calú
 # Prepara, sin instalar nada en el sistema, el entorno de los spikes en spikes/.entorno/:
 #   - paquetes Python de Debian 13 extraídos (versiones exactas de la distribución),
 #   - pyHanko 0.25.1 (ADR-0013) desde PyPI, sin dependencias,

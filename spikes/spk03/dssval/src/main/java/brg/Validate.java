@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
+// SPDX-FileCopyrightText: 2026 Calú
 package brg;
 
 import eu.europa.esig.dss.model.DSSDocument;

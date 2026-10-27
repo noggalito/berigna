@@ -1,4 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
+# SPDX-FileCopyrightText: 2026 Calú
 # Prototipo de investigación (spike). No es código de producción.
 """Extract signer / TSA info from signatures embedded in a (public) PDF. Read-only parsing."""
 import re

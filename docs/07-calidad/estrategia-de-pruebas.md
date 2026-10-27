@@ -57,7 +57,8 @@ Los perfiles de los certificados (extensiones, políticas, uso de clave, algorit
 ### 3.3 *Token*
 
 - *Backend* PKCS#11: SoftHSM2 inicializado por las *fixtures*, con las claves y los certificados de la PKI de pruebas. Se prueba también una variante con `CKA_ALWAYS_AUTHENTICATE` activado.
-- Driver del DNIe v2 (ADR-0012): un simulador del *applet* PKI que implementa SELECT, READ BINARY, VERIFY (con contador de intentos), MSE:SET y PSO:CDS sobre una clave de la PKI de pruebas, y una conexión PC/SC simulada. Casos: PIN incorrecto o bloqueado, tarjeta retirada a mitad de la lectura, respuestas mal formadas, e instrucciones fuera de la lista blanca (deben rechazarse antes de enviarse).
+- Driver del DNIe v2 (ADR-0012): un simulador del *applet* PKI que implementa SELECT, READ BINARY, VERIFY (con contador de intentos), MSE:SET y PSO:CDS sobre una clave de la PKI de pruebas, y una conexión PC/SC simulada. Casos: PIN incorrecto o bloqueado, tarjeta retirada a mitad de la lectura, respuestas mal formadas, e instrucciones fuera de la lista blanca (deben rechazarse antes de enviarse). Está en `tests/sim/dnie_v2.py`.
+- Pruebas HIL (`tests/hil/`): las de solo lectura se ejecutan con `BERIGNA_HIL=1 pytest -m hil`; la de firma con PIN (`tests/hil/firmar_hash_con_pin.py`) la ejecuta a mano el titular, siguiendo el protocolo de PIN.
 
 ## 4. Matriz de cobertura de formatos
 
