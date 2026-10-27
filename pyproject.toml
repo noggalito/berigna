@@ -1,0 +1,70 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# SPDX-FileCopyrightText: 2026 Calú
+
+# Core package metadata and developer tooling. The desktop application (GTK, translations,
+# desktop integration) will be built with Meson from Phase 3 on (ADR-0010).
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "berigna"
+version = "0.1.0.dev0"
+description = "Firma y verificación digital con el DNIe peruano para GNU/Linux"
+readme = "README.md"
+license = "GPL-3.0-or-later"
+license-files = ["LICENSE"]
+requires-python = ">=3.12"
+authors = [{ name = "Calú" }]
+dependencies = [
+    "cryptography>=42",
+    "pyscard>=2.2",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "S", "SIM", "RUF", "PT"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S101"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+mypy_path = "src"
+packages = ["berigna"]
+
+[[tool.mypy.overrides]]
+module = ["smartcard.*"]
+ignore_missing_imports = true
+
+[tool.coverage.run]
+source = ["berigna"]
+branch = true
+
+[tool.coverage.report]
+# RNF-MAN-02: at least 80 % for the package; critical signing/validation paths are reviewed
+# separately and must stay fully covered (today: 100 % of berigna.core.token).
+fail_under = 80
+show_missing = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src", "tests"]
+addopts = "-ra --strict-markers"
+filterwarnings = [
+    # pyscard's SWIG binding on Python 3.13; not raised by berigna code.
+    "ignore:builtin type Swig.* has no __module__ attribute:DeprecationWarning",
+    "ignore:builtin type swigvarlink has no __module__ attribute:DeprecationWarning",
+]
+markers = [
+    "hil: requiere un lector y un DNIe reales; nunca se ejecuta en CI (BERIGNA_HIL=1 para activarlas)",
+]

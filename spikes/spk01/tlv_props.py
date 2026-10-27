@@ -1,4 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
+# SPDX-FileCopyrightText: 2026 Calú
 # Prototipo de investigación (spike). No es código de producción.
 from smartcard.System import readers
 from smartcard.scard import SCARD_CTL_CODE

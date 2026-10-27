@@ -1,4 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
+# SPDX-FileCopyrightText: 2026 Calú
 # Prototipo de investigación (spike). No es código de producción.
 """SPK-03: XAdES enveloped B-B / B-T / B-LT with signxml 4.0.5 (Debian 13) + own code for unsigned properties.
 
