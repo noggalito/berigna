@@ -111,6 +111,19 @@ flowchart TB
 | `ui` | Vistas, diálogos, previsualización de PDF y manejo de hilos | PyGObject, GTK4, libadwaita, Poppler-GLib o pypdfium2 |
 | `berigna-nautilus` | Entradas del menú contextual; solo lanza berigna con las rutas | nautilus-python |
 
+### 3.2 Límites deliberados del driver del DNIe v2
+
+Decisiones de implementación de `core.token.dnie_v2` (ADR-0012), documentadas para la auditoría:
+
+| Decisión | Motivo |
+|---|---|
+| La lista blanca valida la forma exacta de cada comando (AID, archivos, referencia de PIN, plantilla de MSE, `DigestInfo` SHA-2), no solo la instrucción | AM-19: ninguna ruta de código puede enviar otra cosa al chip |
+| `signing_certificate()` solo comprueba el uso de clave (no repudio); la vigencia, la cadena y la revocación las valida la capa de validación (RF-006) | Separación de responsabilidades |
+| PSO:CDS se envía sin `Le` | Comportamiento verificado en el DNIe real (SPK-01 §8.6 y HIL del 2026-10-27) |
+| Ante un fallo transitorio de PC/SC (`SCARD_E_NOT_TRANSACTED`), SELECT y READ BINARY se reintentan hasta dos veces (50 y 150 ms). VERIFY, MSE:SET y PSO:CDS no se reintentan nunca y la sesión se cierra | Medido: 1 de cada 30 sesiones encadenadas fallaba tras el apagado de la anterior; con la política, 0 de 60. Reenviar un VERIFY podría gastar un intento del PIN (P-06) |
+| Límite de longitud del PIN: 255 bytes | Límite de una APDU; la política real la aplica la tarjeta |
+| `Pin.buffer()` devuelve el búfer vivo, y su único consumidor es `verify_pin`, que lo borra | P-04; la confianza se limita a un solo punto del código |
+
 ## 4. Interfaces clave del núcleo (borrador)
 
 ```python

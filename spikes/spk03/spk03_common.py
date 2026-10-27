@@ -1,4 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
+# SPDX-FileCopyrightText: 2026 Calú
 # Prototipo de investigación (spike). No es código de producción.
 """SPK-03 shared helpers: token-like signer (digest in, signature out) and local test TSA."""
 import hashlib

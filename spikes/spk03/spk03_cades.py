@@ -1,4 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
+# SPDX-FileCopyrightText: 2026 Calú
 # Prototipo de investigación (spike). No es código de producción.
 """SPK-03: CAdES B-B / B-T / B-LT / B-LTA (detached .p7s and enveloping .p7m) with pyHanko 0.25.1.
 

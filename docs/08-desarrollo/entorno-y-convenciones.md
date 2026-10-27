@@ -85,6 +85,28 @@ sudo apt install \
 
 La única dependencia que no está en Debian 13 es pyHanko (SPK-05). En desarrollo se instala `pyHanko==0.25.1` sin dependencias (`pip install --no-deps`) en un *virtualenv* con `--system-site-packages`, para usar exactamente las versiones de Debian. En producción se usa el `.deb` del proyecto (ADR-0013).
 
+### 2.1 Entorno de desarrollo sin privilegios
+
+Si no se pueden instalar paquetes del sistema, se usa un entorno virtual que reutiliza los de Debian (`cryptography`, etc.):
+
+```bash
+python3 -m venv --system-site-packages .venv
+.venv/bin/pip install 'pytest==8.3.5' 'hypothesis==6.130.5' 'mypy==1.15.0' 'pytest-cov==5.0.0' ruff
+.venv/bin/pip install --no-deps -e .   # berigna en modo editable (scripts HIL incluidos)
+```
+
+pyscard no tiene un *wheel* para Python 3.13 en PyPI y compilarlo requiere `libpcsclite-dev` y `swig`. Se usa `python3-pyscard` de Debian (`sudo apt install python3-pyscard`), que el entorno virtual ve gracias a `--system-site-packages`.
+
+Comprobaciones antes de cada commit:
+
+```bash
+.venv/bin/ruff format --check src tests && .venv/bin/ruff check src tests
+.venv/bin/mypy
+.venv/bin/pytest --cov=berigna
+```
+
+El script `scripts/verificar.sh` ejecuta exactamente esas comprobaciones (nunca las pruebas HIL). Se puede instalar como *hook* de `pre-push` con `ln -s ../../scripts/verificar.sh .git/hooks/pre-push`.
+
 ## 3. Estilo de código
 
 | Aspecto | Norma |
@@ -109,8 +131,8 @@ La única dependencia que no está en Debian 13 es pyHanko (SPK-05). En desarrol
 ## 5. Integración continua
 
 Pasos mínimos del *pipeline*:
-1. `ruff`, `mypy`, `bandit`.
-2. Pruebas unitarias y de integración con SoftHSM, con la cobertura medida.
+1. `ruff` (incluidas las reglas `S` de flake8-bandit, que sustituyen a ejecutar bandit por separado) y `mypy --strict`.
+2. Pruebas unitarias y de integración con SoftHSM. La cobertura mínima es del 80 % (`fail_under` en `pyproject.toml`); las rutas críticas de firma, validación y *token* deben quedar cubiertas por completo (RNF-MAN-02).
 3. Validación de la matriz de formatos con DSS 6.2: JAR oficiales de Maven Central y un arnés Java mínimo, sin Docker ni imágenes de terceros (SPK-03 §2). Se exige TOTAL_PASSED y PASSED en cada sello.
 4. *Fuzzing* corto (5 min por objetivo) en cada PR; largo cada noche.
 5. Compilación del `.deb`, `lintian` y `piuparts`.
