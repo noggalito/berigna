@@ -1,0 +1,124 @@
+# Configuración y datos
+
+| Campo | Valor |
+|---|---|
+| Documento | BRG-ARQ-003 |
+| Versión | 0.2.0 |
+| Estado | Borrador |
+| Fecha | 2026-10-27 |
+| Responsable | `{{TITULAR}}` |
+
+## 1. Ubicaciones (XDG)
+
+| Dato | Ruta | Formato | Sensible |
+|---|---|---|---|
+| Preferencias | GSettings, esquema `pe.berigna.Berigna` (en dconf) | GVariant | No |
+| Almacén de confianza del sistema (incluido en el paquete) | `/usr/share/berigna/trust/` | PEM y un manifiesto firmado | No |
+| Anclas añadidas por el usuario | `$XDG_DATA_HOME/berigna/trust/` | PEM | No |
+| Perfiles de apariencia | `$XDG_DATA_HOME/berigna/appearances/` | JSON más imagen | Puede contener una imagen de la rúbrica |
+| Historial | `$XDG_DATA_HOME/berigna/history.sqlite3` | SQLite | Sí (nombres de archivo) |
+| Caché de OCSP, CRL y AIA | `$XDG_CACHE_HOME/berigna/revocation/` | DER | No |
+| Registro técnico | `$XDG_STATE_HOME/berigna/logs/` | Texto, rotativo (5 × 1 MB) | Bajo (sin datos sensibles por diseño) |
+| Credenciales de la TSA (si hay) | Llavero del sistema (libsecret, Secret Service) | — | Sí |
+
+Los permisos de los archivos del usuario son `0600` y los de los directorios `0700`.
+
+## 2. Esquema de GSettings (borrador)
+
+| Clave | Tipo | Defecto | Descripción |
+|---|---|---|---|
+| `default-level` | enum | `'B-LT'` (DP-04) | Nivel preseleccionado |
+| `pdf-format` | enum | `'pades'` | Formato para PDF |
+| `xml-format` | enum | `'xades-enveloped'` | Formato para XML |
+| `other-format` | enum | `'cades-detached'` | Formato para el resto de archivos |
+| `output-suffix` | s | `'-firmado'` | Sufijo del archivo de salida |
+| `output-directory` | s | `''` | Vacío: la misma carpeta que el original |
+| `digest-algorithm` | enum | `'sha256'` | — |
+| `tsa-url` | s | `''` (DP-02) | URL de la TSA |
+| `tsa-auth` | enum | `'none'` | none / basic / client-cert |
+| `network-timeout` | u | `10` | Segundos |
+| `proxy-mode` | enum | `'system'` | system / manual / none |
+| `proxy-url` | s | `''` | — |
+| `visible-signature` | b | `false` | Activar la firma visible por defecto |
+| `appearance-profile` | s | `''` | Perfil por defecto |
+| `signature-reason` | s | `''` | Último motivo usado |
+| `signature-location` | s | `''` | Última ubicación usada |
+| `history-enabled` | b | `true` | — |
+| `history-full-path` | b | `false` | Guardar la ruta completa del archivo en el historial; por defecto solo el nombre (AM-12) |
+| `pkcs11-module` | s | `''` | Vacío: detección automática. Solo se usa con el *backend* PKCS#11 (ADR-0012) |
+| `token-backend` | enum | `'auto'` | auto (según el ATR) / dnie-v2 / pkcs11 |
+| `crl-fallback` | b | `false` | Permite descargar CRL como respaldo de OCSP al verificar (la de la CA del DNIe pesa unos 109 MB) |
+| `ui-language` | enum | `'system'` | system / es_PE / en_US; se aplica al reiniciar (ADR-0011) |
+| `report-language` | enum | `'ui'` | ui / es_PE / en_US: idioma del informe PDF exportado |
+
+Los perfiles de apariencia (JSON) incluyen el campo `"language": "es_PE" | "en_US"`, que define el idioma de los textos fijos y del formato de fecha del sello visible (RF-092).
+
+Despliegue en organizaciones: un administrador puede definir valores por defecto y bloquear claves mediante archivos en `/etc/dconf/db/local.d/` y `locks/`. Esto se documentará en el manual de administración.
+
+## 3. Almacén de confianza
+
+- Contenido: las raíces e intermedias de la IOFE necesarias para los certificados del DNIe y para las TSA acreditadas. La lista exacta sale de SPK-04 y de SPK-02.
+- Cadena del DNIe v2, identificada en SPK-01 y SPK-02 (huellas pendientes de confirmar con una fuente oficial):
+
+  | Certificado | SHA-256 |
+  |---|---|
+  | ECERNEP PERU CA ROOT 3 (raíz) | `9650 8217 C36F 3BBC 556E 2E07 D7AB 50C4 0DA8 027C 3882 3581 3322 E41B 87A5 68BE` |
+  | ECEP-RENIEC | `9152 0E1F 381A 4640 2B94 90C0 6749 B2D8 1DDA D4B5 3E7F 252A 1DD7 9B55 DFCB 340B` |
+  | ECEP-RENIEC CA Class 2 II | `EC94 327A 45C4 5A92 8104 D389 B352 5769 18B8 C072 3272 04E1 5E1F 8854 7D86 0A42` |
+
+- También existe "ECERNEP Perú CA Root 5". Hay que incluir todas las raíces vigentes de la IOFE (SPK-04).
+- Hay que incluir también "ECEP-RENIEC CA Class 3", que emite los certificados de personas jurídicas y funcionarios que se ven en documentos del Estado (SPK-04 §3.6).
+- Fuente preferente: la TSL de INDECOPI (ETSI TS 102 231, firmada por INDECOPI; guía v4.0 §3.3 y ACR-24). URL pendiente (Q8).
+- Manifiesto: `trust/manifest.json`, con la huella SHA-256, el origen (URL oficial), la fecha de obtención y el propósito (firma o TSA) de cada certificado.
+- Integridad: el manifiesto se publica dentro del paquete `.deb` firmado. La aplicación comprueba al arrancar que las huellas coinciden con el manifiesto.
+- Actualización: con nuevas versiones del paquete (RF-061). No hay actualizaciones automáticas por red en la v1.
+
+## 4. Historial (SQLite)
+
+```sql
+CREATE TABLE operation (
+  id            INTEGER PRIMARY KEY,
+  ts_utc        TEXT    NOT NULL,           -- ISO 8601
+  kind          TEXT    NOT NULL,           -- sign | verify | batch
+  file_name     TEXT    NOT NULL,           -- nombre del archivo; la ruta completa solo si history-full-path = true
+  file_sha256   TEXT    NOT NULL,
+  format        TEXT,
+  level         TEXT,
+  signer_cn     TEXT,                       -- nombre del firmante
+  signer_serial TEXT,                       -- número de serie del certificado
+  result        TEXT    NOT NULL,           -- ok | error | TOTAL-PASSED | ...
+  detail        TEXT
+);
+```
+
+No se guarda el número de DNI completo ni el contenido de los documentos.
+
+## 5. Formato del informe JSON de verificación (borrador)
+
+```json
+{
+  "berigna_version": "1.0.0",
+  "validated_at": "2026-10-27T15:04:05Z",
+  "report_language": "es_PE",
+  "file": {"name": "contrato-firmado.pdf", "sha256": "…"},
+  "trust_store": {"manifest_sha256": "…", "user_anchors": false},
+  "signatures": [
+    {
+      "id": "Signature1",
+      "format": "PAdES",
+      "level": "B-LT",
+      "signer": {"name": "…", "dni_masked": "****5678", "cert_serial": "…", "issuer": "…"},
+      "signing_time": {"claimed": "…", "timestamp": "…", "tsa": "…"},
+      "indication": "TOTAL-PASSED",
+      "sub_indication": null,
+      "coverage": "entire_revision",
+      "modifications_after": "none",
+      "explanation_code": "VALID_TIMESTAMPED_UNMODIFIED",
+      "explanation": {
+        "es_PE": "La firma es válida…",
+        "en_US": "The signature is valid…"
+      }
+    }
+  ]
+}
+```
