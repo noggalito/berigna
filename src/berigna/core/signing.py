@@ -4,7 +4,8 @@
 
 Order of the steps is part of the security design:
 
-1. The file must still be the one the user saw (SHA-256 of the previewed bytes, RF-018).
+1. The file must still be the one the user saw (SHA-256 of the previewed bytes, RF-018),
+   and it must be a PDF that can be signed.
 2. The signer certificate is validated before any PIN is requested (RF-006).
 3. The PIN is requested through a callback (the UI), which may cancel (P-01).
 4. The file is checked again right before signing, and the bytes in memory are signed.
@@ -19,7 +20,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from berigna.core.errors import OutputExistsError, SigningCancelledError, SourceChangedError
-from berigna.core.formats.pades import PadesOptions, sign_pdf_basic
+from berigna.core.formats.pades import PadesOptions, check_pdf_signable, sign_pdf_basic
 from berigna.core.token.base import TokenSigner
 from berigna.core.token.pin import Pin
 from berigna.core.trust import TrustStore
@@ -74,7 +75,7 @@ def sign_pdf_file(
     crls: Sequence[bytes] = (),
 ) -> SignResult:
     """Sign ``source`` in PAdES B-B and write it to ``output``. See the module docstring."""
-    _read_unchanged(source, expected_sha256)
+    check_pdf_signable(_read_unchanged(source, expected_sha256))
     if output.exists():
         raise OutputExistsError(f"{output.name} already exists")
 

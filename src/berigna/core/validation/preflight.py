@@ -8,13 +8,17 @@ Validity, chain up to an IOFE anchor (ADR-0009), non-repudiation usage and revoc
   used when signing (RF-063).
 - intermediate CAs: CRL (their ARLs are a few hundred bytes).
 
-If revocation cannot be established (no network, responder down) the certificate is still
-checked offline and the caller may only offer a B-B signature, with a warning (RF-006, 2).
-Any other failure rejects the certificate.
+If revocation cannot be established (no network, responder down, out-of-date data) the certificate
+is still checked offline and the caller may only offer a B-B signature, with a warning
+(RF-006, 2); :class:`RevocationNote` says why. Any other failure rejects the certificate.
+
+:func:`check_signer` runs its own asyncio event loop: call it from a worker thread, never from
+inside a running loop (arquitectura-general §5).
 """
 
 import asyncio
 import datetime as dt
+import enum
 from collections.abc import Sequence
 from dataclasses import dataclass
 from typing import cast
@@ -60,6 +64,18 @@ _OFFLINE_POLICY = RevocationCheckingPolicy(
 )
 
 
+class RevocationNote(enum.Enum):
+    """Why revocation could not be established; the UI picks the warning from it.
+
+    pyhanko-certvalidator 0.26.3 reports out-of-date OCSP data under a mandatory rule with the
+    same error as missing data, so an expired response counts as ``UNAVAILABLE`` (or
+    ``OFFLINE``); telling them apart would mean parsing its messages.
+    """
+
+    OFFLINE = "offline"  # network use disabled by the user or the caller
+    UNAVAILABLE = "unavailable"  # online, but no usable OCSP/CRL (network, responder, old data)
+
+
 @dataclass(frozen=True)
 class SignerCheck:
     """Outcome of a successful check. ``revocation_checked`` False means: B-B only."""
@@ -67,6 +83,7 @@ class SignerCheck:
     revocation_checked: bool
     chain: tuple[x509.Certificate, ...]  # trust anchor first, signer certificate last
     moment: dt.datetime
+    revocation_note: RevocationNote | None = None  # set only when revocation_checked is False
 
     @property
     def only_basic_level(self) -> bool:
@@ -122,11 +139,13 @@ def check_signer(
         usage = validator.async_validate_usage({"non_repudiation"})  # type: ignore[no-untyped-call]
         return cast(ValidationPath, asyncio.run(usage))
 
+    note: RevocationNote | None = None
     try:
         try:
-            path, checked = run(_SIGNING_POLICY), True
+            path = run(_SIGNING_POLICY)
         except InsufficientRevinfoError:
-            path, checked = run(_OFFLINE_POLICY), False
+            note = RevocationNote.UNAVAILABLE if online else RevocationNote.OFFLINE
+            path = run(_OFFLINE_POLICY)
     except RevokedError as exc:
         raise CertificateRevokedError(str(exc)) from exc
     except (ExpiredError, NotYetValidError) as exc:
@@ -137,4 +156,6 @@ def check_signer(
         raise CertificateValidationError(str(exc)) from exc
 
     chain = tuple(_to_cryptography(c) for c in path.iter_certs(include_root=True))
-    return SignerCheck(revocation_checked=checked, chain=chain, moment=when)
+    return SignerCheck(
+        revocation_checked=note is None, chain=chain, moment=when, revocation_note=note
+    )

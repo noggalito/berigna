@@ -78,6 +78,23 @@ class _TokenPdfSigner(signers.Signer):
         return self._token.sign_digest(hashlib.new(digest_algorithm, data).digest(), self._digest)
 
 
+def _open(pdf: bytes) -> tuple[IncrementalPdfFileWriter, set[str]]:
+    try:
+        writer = IncrementalPdfFileWriter(io.BytesIO(pdf), strict=False)
+        existing = {name for name, _, _ in enumerate_sig_fields(writer)}
+    except (PdfError, KeyError, ValueError) as exc:
+        raise PdfFormatError(f"cannot read this PDF: {exc}") from exc
+    return writer, existing
+
+
+def check_pdf_signable(pdf: bytes) -> None:
+    """Raise :class:`PdfFormatError` if ``pdf`` cannot be read for signing.
+
+    Called before the PIN is requested, so a damaged file does not cost the user a PIN entry.
+    """
+    _open(pdf)
+
+
 def sign_pdf_basic(
     pdf: bytes,
     token: TokenSigner,
@@ -91,11 +108,7 @@ def sign_pdf_basic(
     Existing signatures are preserved (RF-014).
     """
     opts = options or PadesOptions()
-    try:
-        writer = IncrementalPdfFileWriter(io.BytesIO(pdf), strict=False)
-        existing = {name for name, _, _ in enumerate_sig_fields(writer)}
-    except (PdfError, KeyError, ValueError) as exc:
-        raise PdfFormatError(f"cannot read this PDF: {exc}") from exc
+    writer, existing = _open(pdf)
     field_name = next(
         f"{_FIELD_PREFIX}{n}"
         for n in range(1, len(existing) + 2)
