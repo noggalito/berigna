@@ -110,6 +110,7 @@ Algunos documentos públicos citan identificadores cuyo detalle está en la docu
 | CAdES y XAdES | Fase 4 (viabilidad probada en SPK-03) | RF-020 a RF-033 | — |
 | DNIe 1.0 y DNIe 3.0 | Versión 1.1 (decisión del 2026-10-27); identificación pendiente en SPK-06 | RNF-COM-05 | — |
 | Interfaz gráfica, i18n, firma visible, lotes, Nautilus | Fases 3 y 5 | — | — |
+| Extensión de LibreOffice "Firmar con berigna" | Versión 1.2 (decisión del 2026-10-27) | RF-074 | — |
 | Empaquetado `.deb` | Fase 5 | ADR-0006, ADR-0013 | — |
 
 Verificación local: `scripts/verificar.sh` (ruff, mypy estricto, pytest con cobertura mínima del 80 %; hoy 100 % del núcleo con 106 pruebas). Pruebas con hardware: `BERIGNA_HIL=1 pytest -m hil` (sin PIN) y los *scripts* manuales de `tests/hil/` (con PIN, según el protocolo).
