@@ -240,6 +240,14 @@ def test_atomic_write_never_replaces_and_leaves_no_temporary_files(tmp_path: Pat
     assert [p.name for p in tmp_path.iterdir()] == ["salida.pdf"]
 
 
+def test_atomic_write_replaces_only_when_asked(tmp_path: Path) -> None:
+    target = tmp_path / "informe.pdf"
+    target.write_bytes(b"anterior")
+    write_atomically(target, b"nuevo", replace=True)
+    assert target.read_bytes() == b"nuevo"
+    assert [p.name for p in tmp_path.iterdir()] == ["informe.pdf"]
+
+
 def test_atomic_write_detects_a_file_created_meanwhile(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
