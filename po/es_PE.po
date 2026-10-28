@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: berigna\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-28 14:59-0500\n"
+"POT-Creation-Date: 2026-10-28 16:03-0500\n"
 "PO-Revision-Date: 2026-10-27 23:38-0500\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -330,7 +330,7 @@ msgstr "Sello de tiempo de la firma"
 msgid "Changes after signing"
 msgstr "Cambios después de la firma"
 
-#: src/berigna/core/report/messages.py:144 src/berigna/ui/verification.py:191
+#: src/berigna/core/report/messages.py:144
 msgid "Signed version"
 msgstr "Versión firmada"
 
@@ -343,7 +343,7 @@ msgstr "primeros {length} bytes del archivo"
 msgid "None"
 msgstr "Ninguno"
 
-#: src/berigna/core/report/messages.py:147 src/berigna/ui/verification.py:164
+#: src/berigna/core/report/messages.py:147 src/berigna/ui/verification.py:170
 msgid "Document time-stamps"
 msgstr "Sellos de tiempo de documento"
 
@@ -530,7 +530,9 @@ msgstr "Ese nivel de firma no está disponible ahora. Elige un nivel inferior."
 msgid ""
 "The author certified this document so that it cannot be changed: it does not "
 "accept more signatures."
-msgstr "El autor certificó este documento para que no se pueda modificar: no admite más firmas."
+msgstr ""
+"El autor certificó este documento para que no se pueda modificar: no admite "
+"más firmas."
 
 #: src/berigna/core/report/messages.py:209
 msgid "The document could not be verified."
@@ -653,7 +655,9 @@ msgstr "Validación a largo plazo"
 msgid ""
 "Also includes the information needed to verify the signature years from now. "
 "Recommended."
-msgstr "Incluye además la información necesaria para verificar la firma años después. Recomendado."
+msgstr ""
+"Incluye además la información necesaria para verificar la firma años "
+"después. Recomendado."
 
 #: src/berigna/ui/presentation.py:243
 msgid "Long-term archival"
@@ -663,7 +667,9 @@ msgstr "Archivo a largo plazo"
 msgid ""
 "Protects the signature against cryptographic obsolescence. For documents "
 "that must be kept for many years."
-msgstr "Protege la firma contra la obsolescencia criptográfica. Para documentos que deban conservarse muchos años."
+msgstr ""
+"Protege la firma contra la obsolescencia criptográfica. Para documentos que "
+"deban conservarse muchos años."
 
 #: src/berigna/ui/presentation.py:250
 msgid "With timestamp"
@@ -683,7 +689,8 @@ msgstr "Firma sin sello de tiempo. La fecha la declara tu equipo."
 
 #: src/berigna/ui/presentation.py:258
 msgid "Needs a timestamping authority, which is not configured yet."
-msgstr "Necesita una autoridad de sellado de tiempo, que todavía no está configurada."
+msgstr ""
+"Necesita una autoridad de sellado de tiempo, que todavía no está configurada."
 
 #: src/berigna/ui/presentation.py:282
 msgid "Document"
@@ -710,14 +717,19 @@ msgid ""
 "The PIN was not correct. You have {n} try left before the PIN is blocked."
 msgid_plural ""
 "The PIN was not correct. You have {n} tries left before the PIN is blocked."
-msgstr[0] "El PIN no era correcto. Te queda {n} intento antes de que el PIN se bloquee."
-msgstr[1] "El PIN no era correcto. Te quedan {n} intentos antes de que el PIN se bloquee."
+msgstr[0] ""
+"El PIN no era correcto. Te queda {n} intento antes de que el PIN se bloquee."
+msgstr[1] ""
+"El PIN no era correcto. Te quedan {n} intentos antes de que el PIN se "
+"bloquee."
 
 #: src/berigna/ui/presentation.py:310
 msgid ""
 "Revocation of your certificate could not be checked online, so only a basic "
 "signature is possible."
-msgstr "No se pudo comprobar en línea si tu certificado está revocado; por eso solo es posible una firma básica."
+msgstr ""
+"No se pudo comprobar en línea si tu certificado está revocado; por eso solo "
+"es posible una firma básica."
 
 #: src/berigna/ui/presentation.py:320
 #, python-brace-format
@@ -728,7 +740,9 @@ msgstr "Guardado como {name}, nivel {level}."
 msgid ""
 "The validation data could not be added because the revocation services did "
 "not answer."
-msgstr "No se pudieron añadir los datos de validación porque los servicios de revocación no respondieron."
+msgstr ""
+"No se pudieron añadir los datos de validación porque los servicios de "
+"revocación no respondieron."
 
 #: src/berigna/ui/presentation.py:330
 msgid "The document time-stamp could not be added."
@@ -768,7 +782,7 @@ msgid "_Cancel"
 msgstr "_Cancelar"
 
 #: src/berigna/ui/signing.py:115 src/berigna/ui/signing.py:188
-#: src/berigna/ui/verification.py:67
+#: src/berigna/ui/verification.py:70
 msgid "_Sign"
 msgstr "_Firmar"
 
@@ -780,7 +794,9 @@ msgstr "_Cerrar"
 msgid ""
 "Some of the signatures already in this document are not valid. Your "
 "signature will be added anyway."
-msgstr "Alguna de las firmas que ya tiene este documento no es válida. Tu firma se añadirá igualmente."
+msgstr ""
+"Alguna de las firmas que ya tiene este documento no es válida. Tu firma se "
+"añadirá igualmente."
 
 #: src/berigna/ui/signing.py:220
 msgid "Signature Level"
@@ -838,90 +854,90 @@ msgstr "_Volver"
 msgid "Sign Without _Timestamp (B-B)"
 msgstr "Firmar sin _sello de tiempo (B-B)"
 
-#: src/berigna/ui/verification.py:41
+#: src/berigna/ui/verification.py:44
 #, python-brace-format
 msgid "{stem} - verification report.pdf"
 msgstr "{stem} - informe de verificación.pdf"
 
-#: src/berigna/ui/verification.py:42
+#: src/berigna/ui/verification.py:45
 #, python-brace-format
 msgid "{stem} - verification report (Quechua).pdf"
 msgstr "{stem} - informe de verificación (quechua).pdf"
 
-#: src/berigna/ui/verification.py:43
+#: src/berigna/ui/verification.py:46
 #, python-brace-format
 msgid "{stem} - verification report.json"
 msgstr "{stem} - informe de verificación.json"
 
-#: src/berigna/ui/verification.py:45
+#: src/berigna/ui/verification.py:48
 #, python-brace-format
 msgid "{stem} - signed version {number}.pdf"
 msgstr "{stem} - versión firmada {number}.pdf"
 
-#: src/berigna/ui/verification.py:60
+#: src/berigna/ui/verification.py:63
 msgid "PDF Report in Spanish"
 msgstr "Informe PDF en español"
 
-#: src/berigna/ui/verification.py:61
+#: src/berigna/ui/verification.py:64
 msgid "PDF Report in Quechua"
 msgstr "Informe PDF en quechua"
 
-#: src/berigna/ui/verification.py:62
+#: src/berigna/ui/verification.py:65
 msgid "JSON Report"
 msgstr "Informe JSON"
 
-#: src/berigna/ui/verification.py:64
+#: src/berigna/ui/verification.py:67
 msgid "Export"
 msgstr "Exportar"
 
-#: src/berigna/ui/verification.py:64
+#: src/berigna/ui/verification.py:67
 msgid "Export Report"
 msgstr "Exportar el informe"
 
-#: src/berigna/ui/verification.py:70
+#: src/berigna/ui/verification.py:73
 msgid "Add your signature to this document"
 msgstr "Añadir tu firma a este documento"
 
-#: src/berigna/ui/verification.py:76
+#: src/berigna/ui/verification.py:79
 msgid "Verify Again"
 msgstr "Verificar de nuevo"
 
-#: src/berigna/ui/verification.py:82
+#: src/berigna/ui/verification.py:85
 msgid "Verifying signatures…"
 msgstr "Verificando las firmas…"
 
-#: src/berigna/ui/verification.py:83
+#: src/berigna/ui/verification.py:86
 msgid "Checking the certificates may take a few seconds."
 msgstr "La comprobación de los certificados puede tardar unos segundos."
 
-#: src/berigna/ui/verification.py:125 src/berigna/ui/window.py:99
+#: src/berigna/ui/verification.py:128 src/berigna/ui/window.py:99
 #: src/berigna/ui/window.py:178
 #, python-brace-format
 msgid "{name} could not be opened."
 msgstr "No se pudo abrir {name}."
 
-#: src/berigna/ui/verification.py:134
+#: src/berigna/ui/verification.py:140
 msgid "The document could not be verified"
 msgstr "No se pudo verificar el documento"
 
-#: src/berigna/ui/verification.py:181
+#: src/berigna/ui/verification.py:187
 msgid "Technical Details"
 msgstr "Detalles técnicos"
 
-#: src/berigna/ui/verification.py:184
+#: src/berigna/ui/verification.py:190 src/berigna/ui/verification.py:197
 msgid "Save the Signed Version"
 msgstr "Guardar la versión firmada"
 
-#: src/berigna/ui/verification.py:192
+#: src/berigna/ui/verification.py:198
 msgid "The document as this signature left it"
 msgstr "El documento tal como quedó con esta firma"
 
-#: src/berigna/ui/verification.py:237
+#: src/berigna/ui/verification.py:243
 #, python-brace-format
 msgid "{name} could not be saved."
 msgstr "No se pudo guardar {name}."
 
-#: src/berigna/ui/verification.py:239
+#: src/berigna/ui/verification.py:245
 #, python-brace-format
 msgid "Saved {name}"
 msgstr "Se guardó {name}"

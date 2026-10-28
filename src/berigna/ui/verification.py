@@ -194,7 +194,7 @@ class VerificationPage:
         )
         save.add_css_class("flat")
         revision = Adw.ActionRow(
-            title=_("Signed version"),
+            title=_("Save the Signed Version"),
             subtitle=_("The document as this signature left it"),
             use_markup=False,
         )
