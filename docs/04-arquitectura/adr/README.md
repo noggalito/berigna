@@ -29,6 +29,7 @@ Un ADR aceptado no se edita. Si la decisión cambia, se escribe un ADR nuevo que
 | [ADR-0013](ADR-0013-pyhanko-0-25-empaquetado-debian.md) | pyHanko 0.25.x empaquetado para Debian 13 | Aceptado |
 | [ADR-0014](ADR-0014-tsl-indecopi-fuente-de-confianza.md) | La TSL de INDECOPI como fuente del almacén de confianza | Aceptado |
 | [ADR-0015](ADR-0015-idiomas-es-pe-y-quechua-sureno.md) | Idiomas de la v1.0, español del Perú y quechua sureño | Aceptado |
+| [ADR-0016](ADR-0016-previsualizacion-pdf-poppler.md) | Previsualización de PDF con Poppler | Aceptado |
 
 ## Fe de erratas
 
