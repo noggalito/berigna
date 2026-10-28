@@ -20,6 +20,7 @@ from berigna.core.report.explanations import explain_error  # noqa: E402
 from berigna.core.token.monitor import DeviceStatus  # noqa: E402
 from berigna.ui import presentation  # noqa: E402
 from berigna.ui.i18n import _, catalogue, current_language, translate_view  # noqa: E402
+from berigna.ui.signing import SigningPage, SigningServices  # noqa: E402
 from berigna.ui.verification import VerificationPage, Verify  # noqa: E402
 
 VIEW = "/pe/berigna/Berigna/ui/window.ui"
@@ -28,13 +29,16 @@ VIEW = "/pe/berigna/Berigna/ui/window.ui"
 class MainWindow:
     """Wraps the window built from the view; the application rebuilds it to change language."""
 
-    def __init__(self, application: Adw.Application, verify: Verify) -> None:
+    def __init__(
+        self, application: Adw.Application, verify: Verify, signing: SigningServices
+    ) -> None:
         view = Gio.resources_lookup_data(VIEW, Gio.ResourceLookupFlags.NONE).get_data()
         builder = Gtk.Builder()
         builder.add_from_string(translate_view(view))
         self.window: Adw.ApplicationWindow = builder.get_object("window")
         self.window.set_application(application)
         self._verify = verify
+        self._signing = signing
         self._toasts: Adw.ToastOverlay = builder.get_object("toasts")
         self._navigation: Adw.NavigationView = builder.get_object("navigation")
         self._status_icon: Gtk.Image = builder.get_object("status_icon")
@@ -43,6 +47,7 @@ class MainWindow:
         self._setup_banner(self._banner)
         self.document: DocumentInfo | None = None
         self.verification: VerificationPage | None = None
+        self.signing: SigningPage | None = None
 
         open_action = Gio.SimpleAction.new("open", None)
         open_action.connect("activate", lambda *_args: self._choose_file())
@@ -83,6 +88,20 @@ class MainWindow:
     def show_page(self, page: Adw.NavigationPage) -> None:
         # replace(), not pop and push: a page being popped keeps its tag while it animates.
         self._navigation.replace([self._navigation.find_page("start"), page])
+
+    def sign(self, document: DocumentInfo, *, existing_problems: bool = False) -> None:
+        """Open the signing page; over the verification page when the PDF is signed (CU-03)."""
+        try:
+            self.signing = SigningPage(
+                self, document, self._signing, existing_problems=existing_problems
+            )
+        except OSError:
+            self.toast(_("{name} could not be opened.").format(name=document.path.name))
+            return
+        if self.verification is not None:
+            self._navigation.push(self.signing.page)
+        else:
+            self.show_page(self.signing.page)
 
     def show_device_status(self, status: DeviceStatus | None) -> None:
         view = presentation.device_status(status)
@@ -139,11 +158,13 @@ class MainWindow:
     ) -> bool:
         if isinstance(outcome, DocumentInfo):
             self.document = outcome
-            self.verification = None
+            self.verification = self.signing = None
             if outcome.kind is DocumentKind.PDF and outcome.signed:
                 self.verification = VerificationPage(self, outcome, self._verify)
                 self.show_page(self.verification.page)
-            else:  # signing comes with increment 3
+            elif outcome.kind is DocumentKind.PDF:
+                self.sign(outcome)
+            else:  # CAdES and XAdES come in Phase 4
                 status = Adw.StatusPage(
                     icon_name="x-office-document-symbolic",
                     title=path.name,

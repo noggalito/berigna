@@ -9,9 +9,11 @@ from typing import Any
 
 import pytest
 from pyhanko.pdf_utils.reader import PdfFileReader
+from pyhanko.sign.fields import MDPPerm
 
 from berigna.core.errors import (
     CertificateRevokedError,
+    CertifiedDocumentError,
     LevelNotAvailableError,
     OutputExistsError,
     PdfFormatError,
@@ -20,11 +22,12 @@ from berigna.core.errors import (
     TsaError,
 )
 from berigna.core.formats.pades import SignatureLevel
-from berigna.core.signing import sign_pdf_file, write_atomically
+from berigna.core.signing import output_path, sign_pdf_file, write_atomically
 from berigna.core.token.dnie_v2 import INS_PSO, INS_VERIFY, DnieV2Token
 from berigna.core.token.pin import Pin
 from berigna.core.validation import Indication, SignerCheck, verify_pdf
 from support.cards import make_card
+from support.certified import certified_pdf
 from support.pki import Pki, build_pki, minimal_pdf
 from support.tsa import make_timestamper
 
@@ -337,3 +340,33 @@ def test_level_above_b_b_needs_revocation_checked(pki: Pki, document: tuple[Path
 def test_unreachable_tsa_is_detected_before_the_pin(pki: Pki, document: tuple[Path, str]) -> None:
     stamper, _ = make_timestamper(pki, fail_on=frozenset({1}))
     _refused_before_the_pin(pki, document, TsaError, timestamper=stamper, revinfo=True)
+
+
+def test_certified_document_is_rejected_before_the_pin(tmp_path: Path, pki: Pki) -> None:
+    """CU-03: the author forbade all changes; known before the PIN, not inside the signature."""
+    data = certified_pdf(pki, MDPPerm.NO_CHANGES)
+    source = tmp_path / "certificado.pdf"
+    source.write_bytes(data)
+    card, _leaf = make_card(pki, "FIRMANTE")
+    prompt = PinPrompt()
+    with DnieV2Token(card) as token, pytest.raises(CertifiedDocumentError):
+        sign_pdf_file(
+            source,
+            tmp_path / "salida.pdf",
+            expected_sha256=hashlib.sha256(data).hexdigest(),
+            token=token,
+            store=pki.store,
+            ask_pin=prompt,
+            online=False,
+        )
+    assert prompt.shown == []
+
+
+def test_output_path_never_reuses_a_name(tmp_path: Path) -> None:
+    source = tmp_path / "contrato.pdf"
+    assert output_path(source, "-firmado") == tmp_path / "contrato-firmado.pdf"
+    (tmp_path / "contrato-firmado.pdf").write_bytes(b"")
+    (tmp_path / "contrato-firmado-2.pdf").write_bytes(b"")
+    assert output_path(source, "-firmado") == tmp_path / "contrato-firmado-3.pdf"
+    other = tmp_path / "otra"
+    assert output_path(source, "-f", other) == other / "contrato-f.pdf"

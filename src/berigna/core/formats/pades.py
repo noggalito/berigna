@@ -28,10 +28,11 @@ from pyhanko.pdf_utils.incremental_writer import IncrementalPdfFileWriter
 from pyhanko.pdf_utils.misc import PdfError
 from pyhanko.pdf_utils.reader import PdfFileReader
 from pyhanko.sign import signers
-from pyhanko.sign.fields import SigSeedSubFilter, enumerate_sig_fields
+from pyhanko.sign.fields import MDPPerm, SigSeedSubFilter, enumerate_sig_fields
 from pyhanko.sign.general import SigningError
 from pyhanko.sign.timestamps import TimeStamper
 from pyhanko.sign.timestamps.common_utils import TimestampRequestError
+from pyhanko.sign.validation import read_certification_data
 from pyhanko.sign.validation.dss import async_add_validation_info
 from pyhanko.sign.validation.errors import SignatureValidationError
 from pyhanko_certvalidator import ValidationContext
@@ -39,7 +40,7 @@ from pyhanko_certvalidator.errors import CRLValidationError, OCSPValidationError
 from pyhanko_certvalidator.registry import SimpleCertificateStore
 
 from berigna.core.certs import to_asn1
-from berigna.core.errors import PdfFormatError, TsaError
+from berigna.core.errors import CertifiedDocumentError, PdfFormatError, TsaError
 from berigna.core.token.base import HashAlgorithmName, TokenSigner
 
 _SIGNATURE_SIZE = 256  # RSA-2048 (DNIe v2, SPK-01)
@@ -127,11 +128,23 @@ def _open(pdf: bytes) -> tuple[IncrementalPdfFileWriter, set[str]]:
 
 
 def check_pdf_signable(pdf: bytes) -> None:
-    """Raise :class:`PdfFormatError` if ``pdf`` cannot be read for signing.
+    """Raise :class:`PdfFormatError` if ``pdf`` cannot be read for signing, and
+    :class:`CertifiedDocumentError` if its author forbade all changes (DocMDP, CU-03).
 
-    Called before the PIN is requested, so a damaged file does not cost the user a PIN entry.
+    Called before the PIN is requested, so neither costs the user a PIN entry.
     """
-    _open(pdf)
+    writer, _existing = _open(pdf)
+    if no_changes_allowed(writer.prev):
+        raise CertifiedDocumentError("the author's certification forbids all changes")
+
+
+def no_changes_allowed(reader: PdfFileReader) -> bool:
+    """Whether a certification signature forbids every change (DocMDP P=1)."""
+    try:
+        info = read_certification_data(reader)
+    except (PdfError, KeyError, ValueError, TypeError):
+        return False  # unreadable certification data: pyHanko decides when signing
+    return info is not None and info.permission is MDPPerm.NO_CHANGES
 
 
 def _required[T](value: T | None, level: SignatureLevel, what: str) -> T:

@@ -11,11 +11,9 @@ kept.
 
 import datetime as dt
 import json
-import re
 from typing import Any
 
 from cryptography import x509
-from cryptography.x509.oid import NameOID
 
 import berigna
 from berigna.core.i18n import Language, translations
@@ -23,6 +21,7 @@ from berigna.core.report.explanations import (
     common_name,
     explain_signature,
     explain_timestamp,
+    masked_id,
 )
 from berigna.core.trust import TrustStore
 from berigna.core.validation import PdfVerification, TimestampReport
@@ -36,18 +35,12 @@ def _iso(moment: dt.datetime | None) -> str | None:
     return moment.astimezone(dt.UTC).isoformat().replace("+00:00", "Z")
 
 
-def _masked_id(certificate: x509.Certificate) -> str | None:
-    serials = certificate.subject.get_attributes_for_oid(NameOID.SERIAL_NUMBER)
-    digits = re.sub(r"\D", "", str(serials[0].value)) if serials else ""
-    return f"****{digits[-4:]}" if len(digits) >= 4 else None
-
-
 def _signer(certificate: x509.Certificate | None) -> dict[str, Any] | None:
     if certificate is None:
         return None
     return {
         "name": common_name(certificate),
-        "id_masked": _masked_id(certificate),
+        "id_masked": masked_id(certificate),
         "cert_serial": format(certificate.serial_number, "x"),
         "issuer": certificate.issuer.rfc4514_string(),
     }
