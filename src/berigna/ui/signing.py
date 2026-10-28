@@ -14,7 +14,8 @@ import logging
 import threading
 from collections.abc import Callable
 from dataclasses import dataclass
-from typing import TYPE_CHECKING
+from pathlib import Path
+from typing import TYPE_CHECKING, cast
 
 import gi
 
@@ -35,7 +36,7 @@ from berigna.core.formats.pades import PadesOptions, SignatureLevel  # noqa: E40
 from berigna.core.i18n import Language, translations  # noqa: E402
 from berigna.core.report.explanations import explain_error  # noqa: E402
 from berigna.core.signing import SignResult, output_path, sign_pdf_file  # noqa: E402
-from berigna.core.token.base import TokenSigner  # noqa: E402
+from berigna.core.token.base import HashAlgorithmName, TokenSigner  # noqa: E402
 from berigna.core.token.pin import Pin  # noqa: E402
 from berigna.core.trust import TrustStore  # noqa: E402
 from berigna.core.validation import SignerCheck  # noqa: E402
@@ -304,8 +305,16 @@ class SigningPage:
             settings.set_string("signature-reason", reason)
             settings.set_string("signature-location", location)
         suffix = settings.get_string("output-suffix") if settings else "-firmado"
-        options = PadesOptions(reason=reason or None, location=location or None)
-        output = output_path(self.document.path, suffix)
+        folder = settings.get_string("output-directory") if settings else ""
+        digest = settings.get_string("digest-algorithm") if settings else "sha256"
+        options = PadesOptions(
+            reason=reason or None,
+            location=location or None,
+            digest=cast(HashAlgorithmName, digest),
+        )
+        # A folder that no longer exists (removed, unmounted) falls back to the original's.
+        directory = Path(folder) if folder and Path(folder).is_dir() else None
+        output = output_path(self.document.path, suffix, directory)
         self._set_busy(_("Checking your certificate…"))
         services = self._services
 

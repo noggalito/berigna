@@ -12,8 +12,26 @@ gnome.compile_resources(
   'berigna.gresource.xml',
   gresource_bundle: true,
   dependencies: blueprints,
+  source_dir: meson.current_source_dir(),
   install: true,
   install_dir: pkgdatadir,
+)
+
+install_data(
+  'icons' / application_id + '.svg',
+  install_dir: get_option('datadir') / 'icons' / 'hicolor' / 'scalable' / 'apps',
+)
+# Small sizes: the reduced symbol, which reads better than the full one (data/brand/README.md).
+foreach size : ['16x16', '24x24', '32x32']
+  install_data(
+    'icons' / application_id + '-small.svg',
+    rename: application_id + '.svg',
+    install_dir: get_option('datadir') / 'icons' / 'hicolor' / size / 'apps',
+  )
+endforeach
+install_data(
+  'icons' / application_id + '-symbolic.svg',
+  install_dir: get_option('datadir') / 'icons' / 'hicolor' / 'symbolic' / 'apps',
 )
 
 install_data(
