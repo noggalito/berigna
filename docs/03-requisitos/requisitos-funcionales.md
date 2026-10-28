@@ -211,6 +211,8 @@ Prioridades según MoSCoW (ver convenciones). Cada requisito tiene criterios de 
 - Prioridad: Debe. Descripción: los archivos soltados en la ventana principal se abren para firmarlos o verificarlos (según se detecte si ya llevan firma).
 ### RF-073: Instancia única
 - Prioridad: Debe. Descripción: abrir archivos con la aplicación ya en ejecución los entrega a la instancia existente (`GApplication` con D-Bus).
+### RF-074: Extensión de LibreOffice "Firmar con berigna"
+- Prioridad: Podría (versión 1.2, decisión del 2026-10-27). Descripción: una extensión de LibreOffice (Python UNO), distribuida en un paquete propio `berigna-libreoffice`, añade la acción "Firmar con berigna". La acción exporta el documento abierto a un PDF y abre berigna con ese archivo; la firma, el PIN y la validación ocurren en berigna, nunca en el proceso de LibreOffice (mismo principio que RNF-SEG-10). Hasta entonces, el flujo es exportar a PDF desde LibreOffice y abrir el archivo en berigna. No se contempla la firma nativa de documentos ODF ni que LibreOffice firme con el DNIe mediante PKCS#11.
 
 ## 9. Preferencias, historial y registros
 
