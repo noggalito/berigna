@@ -23,9 +23,7 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 
 from asn1crypto import algos
-from asn1crypto import x509 as asn1_x509
 from cryptography import x509
-from cryptography.hazmat.primitives import serialization
 from pyhanko.pdf_utils.incremental_writer import IncrementalPdfFileWriter
 from pyhanko.pdf_utils.misc import PdfError
 from pyhanko.pdf_utils.reader import PdfFileReader
@@ -40,6 +38,7 @@ from pyhanko_certvalidator import ValidationContext
 from pyhanko_certvalidator.errors import CRLValidationError, OCSPValidationError, ValidationError
 from pyhanko_certvalidator.registry import SimpleCertificateStore
 
+from berigna.core.certs import to_asn1
 from berigna.core.errors import PdfFormatError, TsaError
 from berigna.core.token.base import HashAlgorithmName, TokenSigner
 
@@ -83,14 +82,10 @@ class PadesOptions:
     digest: HashAlgorithmName = "sha256"
 
 
-def _to_asn1(certificate: x509.Certificate) -> asn1_x509.Certificate:
-    return asn1_x509.Certificate.load(certificate.public_bytes(serialization.Encoding.DER))
-
-
 def _registry(certificates: Sequence[x509.Certificate]) -> SimpleCertificateStore:
     store = SimpleCertificateStore()  # type: ignore[no-untyped-call]
     for certificate in certificates:
-        store.register(_to_asn1(certificate))
+        store.register(to_asn1(certificate))
     return store
 
 
@@ -104,7 +99,7 @@ class _TokenPdfSigner(signers.Signer):
         digest: HashAlgorithmName,
     ) -> None:
         super().__init__(
-            signing_cert=_to_asn1(chain[-1]),
+            signing_cert=to_asn1(chain[-1]),
             cert_registry=_registry(chain[:-1]),
             signature_mechanism=algos.SignedDigestAlgorithm({"algorithm": f"{digest}_rsa"}),
             embed_roots=False,

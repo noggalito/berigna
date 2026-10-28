@@ -435,3 +435,37 @@ def test_generic_chain_failure_is_diagnosed(
     monkeypatch.setattr(CertificateValidator, "async_validate_usage", second_look)
     [report] = verify_pdf(signed, pki.store, online=False).signatures
     assert report.subindication == subindication
+
+
+@pytest.mark.parametrize(
+    ("key_size", "digest", "indication"),
+    [
+        (2048, "sha256", Indication.TOTAL_PASSED),
+        (2048, "sha1", Indication.INDETERMINATE),
+        (1024, "sha256", Indication.INDETERMINATE),
+    ],
+    ids=["rsa2048-sha256", "sha1", "rsa1024"],
+)
+def test_obsolete_algorithms_are_not_accepted(
+    pki: Pki, key_size: int, digest: str, indication: Indication
+) -> None:
+    """ACR-18 (guía de INDECOPI, anexo 1): SHA-1, MD5 and RSA below 2048 bits never pass."""
+    key = rsa.generate_private_key(public_exponent=65537, key_size=key_size)
+    leaf = pki.leaf(f"FIRMANTE RSA{key_size} {digest}", key=key)
+    registry = SimpleCertificateStore()  # type: ignore[no-untyped-call]
+    registry.register(_asn1(pki.ca))
+    signer = signers.SimpleSigner(
+        signing_cert=_asn1(leaf), signing_key=_asn1_key(key), cert_registry=registry
+    )
+    metadata = signers.PdfSignatureMetadata(
+        field_name="Firma", md_algorithm=digest, subfilter=SigSeedSubFilter.PADES
+    )
+    data = signers.sign_pdf(
+        IncrementalPdfFileWriter(io.BytesIO(minimal_pdf())), metadata, signer=signer
+    ).getvalue()
+    [report] = verify_pdf(
+        data, pki.store, online=False, ocsp_responses=[pki.ocsp(leaf)], crls=[pki.arl()]
+    ).signatures
+    assert report.indication is indication
+    if indication is Indication.INDETERMINATE:
+        assert report.subindication == "CRYPTO_CONSTRAINTS_FAILURE"
