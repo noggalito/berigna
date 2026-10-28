@@ -21,7 +21,11 @@ os.environ.setdefault("BERIGNA_RESOURCES", str(BUILD / "berigna.gresource"))
 os.environ.setdefault("GSETTINGS_SCHEMA_DIR", str(BUILD))
 os.environ["GSETTINGS_BACKEND"] = "memory"
 
-if not (os.environ.get("DISPLAY") or os.environ.get("WAYLAND_DISPLAY")):
+# Only the X display of xvfb-run: in a Wayland session GTK would otherwise prefer the user's
+# desktop and the test windows would appear on it.
+os.environ.pop("WAYLAND_DISPLAY", None)
+os.environ["GDK_BACKEND"] = "x11"
+if not os.environ.get("DISPLAY"):
     pytest.skip("needs a display: run under xvfb-run", allow_module_level=True)
 if not Path(os.environ["BERIGNA_RESOURCES"]).exists():
     pytest.fail("compile the views first: meson setup build/meson && meson compile -C build/meson")

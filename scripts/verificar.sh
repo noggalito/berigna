@@ -13,6 +13,7 @@ scripts/traducciones.sh compilar
 # Views and settings schema of the interface (ADR-0010); the tests read them from build/meson.
 [ -d build/meson ] || meson setup build/meson
 meson compile -C build/meson
-# The interface tests need a display: Xvfb, so that they also run without a desktop.
-env -u BERIGNA_HIL BERIGNA_LOCALEDIR="$PWD/build/locale" \
+# The interface tests need a display: Xvfb, so that they also run without a desktop. Without
+# WAYLAND_DISPLAY, or GTK would open the windows on the user's Wayland desktop instead.
+env -u BERIGNA_HIL -u WAYLAND_DISPLAY GDK_BACKEND=x11 BERIGNA_LOCALEDIR="$PWD/build/locale" \
     xvfb-run --auto-servernum "$PY/pytest" -q --cov=berigna

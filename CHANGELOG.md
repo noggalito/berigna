@@ -47,6 +47,7 @@ Interfaz (Fase 3):
 
 ### Corregido
 
+- Las pruebas de la interfaz abrían sus ventanas en el escritorio del usuario en una sesión Wayland: GTK prefería `WAYLAND_DISPLAY` a la pantalla virtual de `xvfb-run`. Ahora usan solo X11 sobre Xvfb. Una prueba nueva comprueba que el núcleo no importa GTK ni la interfaz (RNF-MAN-01).
 - La verificación y la validación previa "en este momento" rechazaban como "demasiado reciente" una respuesta OCSP producida mientras se esperaba al servicio: la tolerancia de pyhanko-certvalidator es de 1 s y RENIEC tarda segundos (R-17). Un PDF firmado con el DNIe real salía INDETERMINATE / TRY_LATER y la firma quedaba limitada a B-B. Ahora la tolerancia es de 5 minutos al validar en el momento actual; la validación en una fecha pasada no cambia.
 
 Proyecto:
