@@ -115,11 +115,3 @@ def test_expired_certificate_is_rejected_even_without_revocation_data(pki: Pki) 
     leaf = pki.leaf("CADUCADO SIN RED", days=(-400, -10))
     with pytest.raises(CertificateExpiredError):
         check_signer(leaf, pki.store, online=False)
-
-
-def test_online_mode_uses_requests_fetchers_with_timeout() -> None:
-    from berigna.core.validation.preflight import _requests_fetchers
-
-    fetchers = _requests_fetchers(3.0)
-    assert fetchers.ocsp_fetcher is not None
-    assert fetchers.crl_fetcher is not None

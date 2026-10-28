@@ -5,23 +5,28 @@
 import hashlib
 import io
 from pathlib import Path
+from typing import Any
 
 import pytest
 from pyhanko.pdf_utils.reader import PdfFileReader
 
 from berigna.core.errors import (
     CertificateRevokedError,
+    LevelNotAvailableError,
     OutputExistsError,
     PdfFormatError,
     SigningCancelledError,
     SourceChangedError,
+    TsaError,
 )
+from berigna.core.formats.pades import SignatureLevel
 from berigna.core.signing import sign_pdf_file, write_atomically
 from berigna.core.token.dnie_v2 import INS_PSO, INS_VERIFY, DnieV2Token
 from berigna.core.token.pin import Pin
-from berigna.core.validation import SignerCheck
+from berigna.core.validation import Indication, SignerCheck, verify_pdf
 from support.cards import make_card
 from support.pki import Pki, build_pki, minimal_pdf
+from support.tsa import make_timestamper
 
 
 @pytest.fixture(scope="module")
@@ -72,7 +77,8 @@ def test_signs_and_writes_a_new_file(pki: Pki, document: tuple[Path, str]) -> No
             crls=[pki.arl()],
         )
     assert result.output == output
-    assert result.level == "B-B"
+    assert result.level is SignatureLevel.B_B
+    assert result.level_note is None
     assert result.revocation_checked
     assert result.sha256 == hashlib.sha256(output.read_bytes()).hexdigest()
     assert len(PdfFileReader(io.BytesIO(output.read_bytes())).embedded_signatures) == 1
@@ -249,3 +255,77 @@ def test_atomic_write_detects_a_file_created_meanwhile(
         write_atomically(target, b"mio")
     assert target.read_bytes() == b"otro proceso"
     assert [p.name for p in tmp_path.iterdir()] == ["carrera.pdf"]
+
+
+# -- Levels above B-B (RF-010, RF-062) ----------------------------------------------------------
+
+
+def test_signs_b_lt_with_a_tsa(pki: Pki, document: tuple[Path, str]) -> None:
+    source, sha = document
+    card, leaf = make_card(pki, "FIRMANTE B-LT")
+    stamper, tsa_cert = make_timestamper(pki)
+    output = source.with_name("b-lt.pdf")
+    with DnieV2Token(card) as token:
+        result = sign_pdf_file(
+            source,
+            output,
+            expected_sha256=sha,
+            token=token,
+            store=pki.store,
+            ask_pin=PinPrompt(),
+            level=SignatureLevel.B_LT,
+            timestamper=stamper,
+            online=False,
+            ocsp_responses=[pki.ocsp(leaf), pki.ocsp(tsa_cert)],
+            crls=[pki.arl()],
+        )
+    assert result.level is SignatureLevel.B_LT
+    assert result.level_note is None
+    [report] = verify_pdf(output.read_bytes(), pki.store, online=False).signatures
+    assert report.indication is Indication.TOTAL_PASSED
+
+
+def _refused_before_the_pin(
+    pki: Pki,
+    document: tuple[Path, str],
+    error: type[Exception],
+    *,
+    timestamper: Any = None,
+    revinfo: bool = False,
+) -> None:
+    source, sha = document
+    card, leaf = make_card(pki, "FIRMANTE")
+    prompt = PinPrompt()
+    output = source.with_name("f.pdf")
+    with DnieV2Token(card) as token, pytest.raises(error):
+        sign_pdf_file(
+            source,
+            output,
+            expected_sha256=sha,
+            token=token,
+            store=pki.store,
+            ask_pin=prompt,
+            level=SignatureLevel.B_T,
+            timestamper=timestamper,
+            online=False,
+            ocsp_responses=[pki.ocsp(leaf)] if revinfo else [],
+            crls=[pki.arl()] if revinfo else [],
+        )
+    assert prompt.shown == []
+    assert INS_VERIFY not in card.instructions()
+    assert not output.exists()
+
+
+def test_level_above_b_b_needs_a_tsa(pki: Pki, document: tuple[Path, str]) -> None:
+    _refused_before_the_pin(pki, document, LevelNotAvailableError, revinfo=True)
+
+
+def test_level_above_b_b_needs_revocation_checked(pki: Pki, document: tuple[Path, str]) -> None:
+    """RF-006: without revocation data only B-B may be offered."""
+    stamper, _ = make_timestamper(pki)
+    _refused_before_the_pin(pki, document, LevelNotAvailableError, timestamper=stamper)
+
+
+def test_unreachable_tsa_is_detected_before_the_pin(pki: Pki, document: tuple[Path, str]) -> None:
+    stamper, _ = make_timestamper(pki, fail_on=frozenset({1}))
+    _refused_before_the_pin(pki, document, TsaError, timestamper=stamper, revinfo=True)

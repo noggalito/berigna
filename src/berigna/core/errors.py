@@ -181,6 +181,18 @@ class PdfFormatError(SigningError):
     code = "ERR-304"
 
 
+class TsaError(SigningError):
+    """The TSA could not be reached or did not issue a valid time-stamp."""
+
+    code = "ERR-305"
+
+
+class LevelNotAvailableError(SigningError):
+    """The requested signature level cannot be produced (no TSA, or revocation not checked)."""
+
+    code = "ERR-306"
+
+
 class VerificationError(BerignaError):
     """A document could not be verified at all (individual signature results are not errors)."""
 
