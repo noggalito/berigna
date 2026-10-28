@@ -149,3 +149,33 @@ class CertificateValidationError(SignerCertificateError):
     """Any other validation failure (bad signature, disallowed algorithm, wrong usage)."""
 
     code = "ERR-214"
+
+
+class SigningError(BerignaError):
+    """The document could not be signed."""
+
+    code = "ERR-300"
+
+
+class SourceChangedError(SigningError):
+    """The file on disk changed after it was shown to the user (RF-018, AM-02)."""
+
+    code = "ERR-301"
+
+
+class OutputExistsError(SigningError):
+    """The output file already exists; berigna never overwrites without consent (RF-045)."""
+
+    code = "ERR-302"
+
+
+class SigningCancelledError(SigningError):
+    """The user cancelled before the PIN was sent."""
+
+    code = "ERR-303"
+
+
+class PdfFormatError(SigningError):
+    """The PDF cannot be signed (damaged, encrypted or with forbidden modifications)."""
+
+    code = "ERR-304"
