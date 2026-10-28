@@ -27,3 +27,4 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/); v
 - Dependencias pyHanko, pyhanko-certvalidator y asn1crypto declaradas en `pyproject.toml`, alineadas con las versiones de Debian 13.
 - Plan de compatibilidad: DNIe 1.0 y DNIe 3.0 previstos para la versión 1.1 (investigación SPK-06).
 - Requisito RF-074: extensión de LibreOffice "Firmar con berigna", prevista para la versión 1.2.
+- Verificador de firmas PDF (`berigna.core.validation.verify_pdf`, primer incremento de la Fase 2): indicación y subindicación de ETSI EN 319 102-1 con el proceso básico, datos de revocación embebidos (DSS y `revocationInfoArchival` de las firmas heredadas `adbe.pkcs7.detached`), revisión firmada y clasificación de los cambios posteriores (RF-055). Los sellos de documento se listan como pendientes. Errores ERR-400 y ERR-401.
