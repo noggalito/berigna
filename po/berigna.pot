@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-28 14:59-0500\n"
+"POT-Creation-Date: 2026-10-28 16:03-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -293,7 +293,7 @@ msgstr ""
 msgid "Changes after signing"
 msgstr ""
 
-#: src/berigna/core/report/messages.py:144 src/berigna/ui/verification.py:191
+#: src/berigna/core/report/messages.py:144
 msgid "Signed version"
 msgstr ""
 
@@ -306,7 +306,7 @@ msgstr ""
 msgid "None"
 msgstr ""
 
-#: src/berigna/core/report/messages.py:147 src/berigna/ui/verification.py:164
+#: src/berigna/core/report/messages.py:147 src/berigna/ui/verification.py:170
 msgid "Document time-stamps"
 msgstr ""
 
@@ -713,7 +713,7 @@ msgid "_Cancel"
 msgstr ""
 
 #: src/berigna/ui/signing.py:115 src/berigna/ui/signing.py:188
-#: src/berigna/ui/verification.py:67
+#: src/berigna/ui/verification.py:70
 msgid "_Sign"
 msgstr ""
 
@@ -783,90 +783,90 @@ msgstr ""
 msgid "Sign Without _Timestamp (B-B)"
 msgstr ""
 
-#: src/berigna/ui/verification.py:41
+#: src/berigna/ui/verification.py:44
 #, python-brace-format
 msgid "{stem} - verification report.pdf"
 msgstr ""
 
-#: src/berigna/ui/verification.py:42
+#: src/berigna/ui/verification.py:45
 #, python-brace-format
 msgid "{stem} - verification report (Quechua).pdf"
 msgstr ""
 
-#: src/berigna/ui/verification.py:43
+#: src/berigna/ui/verification.py:46
 #, python-brace-format
 msgid "{stem} - verification report.json"
 msgstr ""
 
-#: src/berigna/ui/verification.py:45
+#: src/berigna/ui/verification.py:48
 #, python-brace-format
 msgid "{stem} - signed version {number}.pdf"
 msgstr ""
 
-#: src/berigna/ui/verification.py:60
+#: src/berigna/ui/verification.py:63
 msgid "PDF Report in Spanish"
 msgstr ""
 
-#: src/berigna/ui/verification.py:61
+#: src/berigna/ui/verification.py:64
 msgid "PDF Report in Quechua"
 msgstr ""
 
-#: src/berigna/ui/verification.py:62
+#: src/berigna/ui/verification.py:65
 msgid "JSON Report"
 msgstr ""
 
-#: src/berigna/ui/verification.py:64
+#: src/berigna/ui/verification.py:67
 msgid "Export"
 msgstr ""
 
-#: src/berigna/ui/verification.py:64
+#: src/berigna/ui/verification.py:67
 msgid "Export Report"
 msgstr ""
 
-#: src/berigna/ui/verification.py:70
+#: src/berigna/ui/verification.py:73
 msgid "Add your signature to this document"
 msgstr ""
 
-#: src/berigna/ui/verification.py:76
+#: src/berigna/ui/verification.py:79
 msgid "Verify Again"
 msgstr ""
 
-#: src/berigna/ui/verification.py:82
+#: src/berigna/ui/verification.py:85
 msgid "Verifying signatures…"
 msgstr ""
 
-#: src/berigna/ui/verification.py:83
+#: src/berigna/ui/verification.py:86
 msgid "Checking the certificates may take a few seconds."
 msgstr ""
 
-#: src/berigna/ui/verification.py:125 src/berigna/ui/window.py:99
+#: src/berigna/ui/verification.py:128 src/berigna/ui/window.py:99
 #: src/berigna/ui/window.py:178
 #, python-brace-format
 msgid "{name} could not be opened."
 msgstr ""
 
-#: src/berigna/ui/verification.py:134
+#: src/berigna/ui/verification.py:140
 msgid "The document could not be verified"
 msgstr ""
 
-#: src/berigna/ui/verification.py:181
+#: src/berigna/ui/verification.py:187
 msgid "Technical Details"
 msgstr ""
 
-#: src/berigna/ui/verification.py:184
+#: src/berigna/ui/verification.py:190 src/berigna/ui/verification.py:197
 msgid "Save the Signed Version"
 msgstr ""
 
-#: src/berigna/ui/verification.py:192
+#: src/berigna/ui/verification.py:198
 msgid "The document as this signature left it"
 msgstr ""
 
-#: src/berigna/ui/verification.py:237
+#: src/berigna/ui/verification.py:243
 #, python-brace-format
 msgid "{name} could not be saved."
 msgstr ""
 
-#: src/berigna/ui/verification.py:239
+#: src/berigna/ui/verification.py:245
 #, python-brace-format
 msgid "Saved {name}"
 msgstr ""

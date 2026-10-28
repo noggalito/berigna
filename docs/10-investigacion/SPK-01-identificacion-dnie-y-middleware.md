@@ -124,7 +124,7 @@ Se cruzan el ATR, la descripción de `pcsc_scan`, el aspecto físico y la inform
 | Referencias de PIN | 0x81 (firma, verificada) y 0x83 (cifrado, según peru-dnie). `[VERIFICAR]` si existe un PIN de autenticación distinto |
 | Persistencia del VERIFY entre firmas | Sí: un VERIFY permite varias PSO:CDS, aunque se repita el MSE:SET o se vuelva a seleccionar el *applet*. Solo se pierde al apagar o reiniciar la tarjeta (§8.6) |
 | ¿Firma de prueba verificada? | Sí: 4 firmas RSA PKCS#1 v1.5 con SHA-256, verificadas con `cryptography` y con `openssl dgst -verify` |
-| ¿PAdES B-B válido en un validador oficial? | Sí, en el validador Firma Perú (PCM) y en DSS 6.2 (SPK-03 §7). ReFirma: pendiente como prueba de interoperabilidad (PR-INT-01) |
+| ¿PAdES B-B válido en un validador oficial? | Sí, en el validador Firma Perú (PCM) y en DSS 6.2 (SPK-03 §7). ReFirma: válido el 2026-10-28 para un PAdES B-B firmado desde la interfaz de berigna (PR-INT-01, parcial: falta la matriz B-T a B-LTA) |
 | Tiempo de la operación de firma en el chip | PSO:CDS unos 277 ms; VERIFY 40 ms; MSE:SET 26 ms (lector "Hyperion") |
 | Conclusión | DP-01 cerrada con ADR-0012: driver APDU propio en Python y, en paralelo, contribución de un driver a OpenSC |
 
