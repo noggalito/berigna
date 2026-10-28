@@ -23,7 +23,13 @@ from pyhanko.sign.fields import SigSeedSubFilter
 from pyhanko.sign.timestamps.dummy_client import DummyTimeStamper
 from pyhanko.sign.validation.dss import DocumentSecurityStore
 from pyhanko.sign.validation.pdf_embedded import EmbeddedPdfSignature
-from pyhanko_certvalidator import ValidationContext
+from pyhanko_certvalidator import CertificateValidator, ValidationContext
+from pyhanko_certvalidator.errors import (
+    ExpiredError,
+    InsufficientRevinfoError,
+    NotYetValidError,
+    PathValidationError,
+)
 from pyhanko_certvalidator.registry import SimpleCertificateStore
 
 from berigna.core.errors import UnreadableDocumentError
@@ -119,6 +125,7 @@ def test_without_revocation_data_the_result_is_indeterminate(pki: Pki) -> None:
     signed, _ = _sign(pki, minimal_pdf())
     [report] = verify_pdf(signed, pki.store, online=False).signatures
     assert report.indication is Indication.INDETERMINATE
+    assert report.subindication == "TRY_LATER"  # ETSI §5.2.6, as DSS reports it
     assert report.covers_whole_document
     assert report.modifications is Modifications.NONE
 
@@ -400,3 +407,31 @@ def test_empty_trust_store_trusts_nothing(pki: Pki) -> None:
     data, _ = _signed_with_revinfo(pki)
     [report] = verify_pdf(data, TrustStore([]), online=False).signatures
     assert report.indication is Indication.INDETERMINATE
+
+
+@pytest.mark.parametrize(
+    ("error", "subindication"),
+    [
+        (ExpiredError, "OUT_OF_BOUNDS_NO_POE"),
+        (NotYetValidError, "NOT_YET_VALID"),
+        (InsufficientRevinfoError, "TRY_LATER"),
+        (PathValidationError, "CERTIFICATE_CHAIN_GENERAL_FAILURE"),
+        (None, "TRY_LATER"),  # passes on the second look: the first failure was transient
+    ],
+)
+def test_generic_chain_failure_is_diagnosed(
+    pki: Pki,
+    monkeypatch: pytest.MonkeyPatch,
+    error: type[Exception] | None,
+    subindication: str,
+) -> None:
+    """pyHanko folds these causes into CERTIFICATE_CHAIN_GENERAL_FAILURE; ETSI does not."""
+    signed, _ = _sign(pki, minimal_pdf())
+
+    async def second_look(self: CertificateValidator, usage: set[str]) -> None:
+        if error is not None:
+            raise error.__new__(error)
+
+    monkeypatch.setattr(CertificateValidator, "async_validate_usage", second_look)
+    [report] = verify_pdf(signed, pki.store, online=False).signatures
+    assert report.subindication == subindication

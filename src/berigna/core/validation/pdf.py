@@ -52,10 +52,18 @@ from pyhanko.sign.validation.policy_decl import (
     RevinfoOnlineFetchingRule,
     RevocationInfoGatheringSpec,
     SignatureValidationSpec,
+    bootstrap_validation_data_handlers,
 )
 from pyhanko.sign.validation.settings import KeyUsageConstraints
 from pyhanko.sign.validation.status import SignatureCoverageLevel
+from pyhanko_certvalidator import CertificateValidator
 from pyhanko_certvalidator.context import CertValidationPolicySpec
+from pyhanko_certvalidator.errors import (
+    ExpiredError,
+    InsufficientRevinfoError,
+    NotYetValidError,
+    ValidationError,
+)
 from pyhanko_certvalidator.ltv.types import ValidationTimingInfo
 from pyhanko_certvalidator.policy_decl import (
     CertRevTrustPolicy,
@@ -257,6 +265,40 @@ def _validate_timestamp(
     )
 
 
+_GENERIC_CHAIN_FAILURE = "CERTIFICATE_CHAIN_GENERAL_FAILURE"
+
+
+def _diagnose_chain(
+    sig: EmbeddedPdfSignature, spec: SignatureValidationSpec, context: _Context
+) -> str:
+    """Name the ETSI subindication pyHanko folds into CERTIFICATE_CHAIN_GENERAL_FAILURE.
+
+    pyHanko 0.25.1 reports missing revocation data and an expired CA certificate with that
+    generic value; ETSI EN 319 102-1 (§5.2.6) distinguishes them. The chain is validated again
+    on its own to see which error comes out. If it passes this time, the first failure was
+    transient (a service that did not answer): TRY_LATER as well.
+    """
+    handlers = bootstrap_validation_data_handlers(spec, timing_info=context.timing)
+    validation_context = spec.cert_validation_policy.build_validation_context(
+        timing_info=context.timing, handlers=handlers
+    )
+    embedded = [c.chosen for c in sig.signed_data["certificates"] if c.name == "certificate"]
+    validator = CertificateValidator(
+        sig.signer_cert, intermediate_certs=embedded, validation_context=validation_context
+    )
+    try:
+        asyncio.run(validator.async_validate_usage({"non_repudiation"}))  # type: ignore[no-untyped-call]
+    except InsufficientRevinfoError:
+        return "TRY_LATER"
+    except NotYetValidError:
+        return "NOT_YET_VALID"
+    except ExpiredError:
+        return "OUT_OF_BOUNDS_NO_POE"
+    except ValidationError:
+        return _GENERIC_CHAIN_FAILURE
+    return "TRY_LATER"
+
+
 def _verify_signature(sig: EmbeddedPdfSignature, context: _Context) -> PdfSignatureReport:
     subfilter = str(sig.sig_object.get("/SubFilter", ""))
     try:
@@ -294,6 +336,9 @@ def _verify_signature(sig: EmbeddedPdfSignature, context: _Context) -> PdfSignat
         )
         result, timestamp = lta, _timestamp_report(ts_result)
     indication, subindication = _indication(result.ades_subindic)
+    if subindication == _GENERIC_CHAIN_FAILURE and tst is None:
+        # Basic process only: under the LTA process the cause may be in the past validation.
+        subindication = _diagnose_chain(sig, spec, context)
     return PdfSignatureReport(
         field_name=sig.field_name,
         indication=indication,
