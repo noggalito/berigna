@@ -2,7 +2,6 @@
 # SPDX-FileCopyrightText: 2026 Calú
 """PAdES verification (RF-050, RF-053, RF-055): ETSI indications and later modifications."""
 
-import asyncio
 import datetime as dt
 import io
 from typing import Any
@@ -25,7 +24,6 @@ from pyhanko.sign.timestamps.dummy_client import DummyTimeStamper
 from pyhanko.sign.validation.dss import DocumentSecurityStore
 from pyhanko.sign.validation.pdf_embedded import EmbeddedPdfSignature
 from pyhanko_certvalidator import ValidationContext
-from pyhanko_certvalidator.errors import CRLFetchError
 from pyhanko_certvalidator.registry import SimpleCertificateStore
 
 from berigna.core.errors import UnreadableDocumentError
@@ -34,7 +32,7 @@ from berigna.core.token.dnie_v2 import DnieV2Token
 from berigna.core.token.pin import Pin
 from berigna.core.trust import TrustStore
 from berigna.core.validation import Indication, Modifications, verify_pdf
-from berigna.core.validation.pdf import _CaOnlyCrlFetcher, _modifications
+from berigna.core.validation.pdf import _modifications
 from support.cards import make_card
 from support.pki import NOW, Pki, build_pki, minimal_pdf
 
@@ -383,33 +381,6 @@ def test_online_verification_with_unreachable_services(
     [report] = verify_pdf(signed, pki.store, online=True, timeout=1.0).signatures
     assert report.indication is Indication.INDETERMINATE
     assert urls  # the services in the certificates were tried
-
-
-class FakeCrlFetcher:
-    def __init__(self) -> None:
-        self.fetched: list[Any] = []
-
-    async def fetch(self, cert: Any, *, use_deltas: Any = None) -> list[Any]:
-        self.fetched.append(cert)
-        return []
-
-    def fetched_crls(self) -> list[Any]:
-        return ["crl"]
-
-    def fetched_crls_for_cert(self, cert: Any) -> list[Any]:
-        return ["crl-for-cert"]
-
-
-def test_end_entity_crls_are_never_downloaded(pki: Pki) -> None:
-    """RF-063: the CRL of the DNIe issuing CA weighs ~109 MB."""
-    inner = FakeCrlFetcher()
-    fetcher = _CaOnlyCrlFetcher(inner)  # type: ignore[arg-type]
-    with pytest.raises(CRLFetchError):
-        asyncio.run(fetcher.fetch(_asn1(pki.leaf("FIRMANTE"))))
-    assert asyncio.run(fetcher.fetch(_asn1(pki.ca))) == []
-    assert [c.dump() for c in inner.fetched] == [_asn1(pki.ca).dump()]
-    assert list(fetcher.fetched_crls()) == ["crl"]
-    assert list(fetcher.fetched_crls_for_cert(_asn1(pki.ca))) == ["crl-for-cert"]
 
 
 def test_modification_levels_map_to_reported_categories() -> None:

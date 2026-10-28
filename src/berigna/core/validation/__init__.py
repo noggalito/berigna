@@ -10,7 +10,12 @@ from berigna.core.validation.pdf import (
     TimestampReport,
     verify_pdf,
 )
-from berigna.core.validation.preflight import RevocationNote, SignerCheck, check_signer
+from berigna.core.validation.preflight import (
+    RevocationNote,
+    SignerCheck,
+    check_signer,
+    signing_validation_context,
+)
 
 __all__ = [
     "Indication",
@@ -21,5 +26,6 @@ __all__ = [
     "SignerCheck",
     "TimestampReport",
     "check_signer",
+    "signing_validation_context",
     "verify_pdf",
 ]

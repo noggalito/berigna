@@ -37,8 +37,6 @@ from pyhanko_certvalidator.errors import (
     RevokedError,
     ValidationError,
 )
-from pyhanko_certvalidator.fetchers.api import Fetchers
-from pyhanko_certvalidator.fetchers.requests_fetchers import RequestsFetcherBackend
 from pyhanko_certvalidator.path import ValidationPath
 from pyhanko_certvalidator.policy_decl import (
     CertRevTrustPolicy,
@@ -52,6 +50,7 @@ from berigna.core.errors import (
     CertificateValidationError,
     UntrustedCertificateError,
 )
+from berigna.core.net.fetchers import revocation_fetchers
 from berigna.core.trust import TrustStore
 
 _SIGNING_POLICY = RevocationCheckingPolicy(
@@ -90,17 +89,37 @@ class SignerCheck:
         return not self.revocation_checked
 
 
-def _requests_fetchers(timeout: float) -> Fetchers:
-    backend = RequestsFetcherBackend(per_request_timeout=timeout)  # type: ignore[no-untyped-call]
-    return backend.get_fetchers()
-
-
 def _to_asn1(certificate: x509.Certificate) -> asn1_x509.Certificate:
     return asn1_x509.Certificate.load(certificate.public_bytes(serialization.Encoding.DER))
 
 
 def _to_cryptography(certificate: asn1_x509.Certificate) -> x509.Certificate:
     return x509.load_der_x509_certificate(certificate.dump())
+
+
+def signing_validation_context(
+    store: TrustStore,
+    *,
+    moment: dt.datetime | None = None,
+    online: bool = True,
+    ocsp_responses: Sequence[bytes] = (),
+    crls: Sequence[bytes] = (),
+    timeout: float = 10.0,
+    policy: RevocationCheckingPolicy = _SIGNING_POLICY,
+) -> ValidationContext:
+    """Validation context with the signing rules: OCSP for end-entity certificates, CRLs for
+    CAs, anchors of ``store``. Also used to gather the data embedded in a B-LT signature.
+    """
+    return ValidationContext(
+        trust_roots=[_to_asn1(c) for c in store.roots],
+        other_certs=[_to_asn1(c) for c in store.intermediates],
+        moment=moment,
+        allow_fetching=online,
+        crls=list(crls),
+        ocsps=list(ocsp_responses),
+        revinfo_policy=CertRevTrustPolicy(policy),
+        fetchers=revocation_fetchers(timeout) if online else None,
+    )
 
 
 def check_signer(
@@ -121,19 +140,16 @@ def check_signer(
     """
     when = moment or dt.datetime.now(dt.UTC)
     leaf = _to_asn1(certificate)
-    roots = [_to_asn1(c) for c in store.roots]
-    others = [_to_asn1(c) for c in store.intermediates]
 
     def run(policy: RevocationCheckingPolicy) -> ValidationPath:
-        context = ValidationContext(
-            trust_roots=roots,
-            other_certs=others,
+        context = signing_validation_context(
+            store,
             moment=when,
-            allow_fetching=online,
-            crls=list(crls),
-            ocsps=list(ocsp_responses),
-            revinfo_policy=CertRevTrustPolicy(policy),
-            fetchers=_requests_fetchers(timeout) if online else None,
+            online=online,
+            ocsp_responses=ocsp_responses,
+            crls=crls,
+            timeout=timeout,
+            policy=policy,
         )
         validator = CertificateValidator(leaf, validation_context=context)
         usage = validator.async_validate_usage({"non_repudiation"})  # type: ignore[no-untyped-call]
