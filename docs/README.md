@@ -106,8 +106,8 @@ Algunos documentos públicos citan identificadores cuyo detalle está en la docu
 | `core.token.monitor` | Implementado | RF-001, RF-002 | Sin conectarse a la tarjeta (`SCardGetStatusChange`); HIL: no interfiere con una sesión exclusiva |
 | PIN pad (PC/SC parte 10) | Aplazado a la versión 1.1 (decisión del 2026-10-27; requiere un lector de clase 2) | RF-005, P-08 | — |
 | *Backend* PKCS#11 + SoftHSM | Aplazado a la versión 1.1 (decisión del 2026-10-27; el DNIe v2 no lo necesita) | ADR-0003 | — |
-| `core.validation.pdf` (verificador PAdES, primer incremento) | Implementado: proceso básico de ETSI EN 319 102-1 (§5.3), datos de revocación embebidos (DSS y `revocationInfoArchival` de Adobe), cobertura y modificaciones posteriores | RF-050 (sin sellos de tiempo), RF-053 (indicaciones), RF-055 | PKI de pruebas; documentos reales: misma indicación principal que DSS 6.2 |
-| Sellos de tiempo en la verificación, subindicaciones alineadas con DSS, explicaciones e informes | Fase 2 (siguientes incrementos) | RF-050, RF-053, RF-054, RF-056 | — |
+| `core.validation.pdf` (verificador PAdES) | Implementado: procesos de ETSI EN 319 102-1 básico (§5.3) y de validación a largo plazo (§5.6.3), sellos de firma y de documento (§5.4), validación en el pasado, datos de revocación embebidos (DSS y `revocationInfoArchival` de Adobe), cobertura y modificaciones posteriores | RF-050, RF-053 (indicaciones), RF-055, RF-056 | PKI y TSA de pruebas (B-B, B-LT, B-LTA, certificado vencido con prueba de existencia); documentos reales: misma indicación principal que DSS 6.2 |
+| Subindicaciones alineadas con DSS, explicaciones e informes | Fase 2 (siguientes incrementos) | RF-053, RF-054 | — |
 | B-T, B-LT, B-LTA y cliente TSA | Fase 2 | RF-010, RF-062 a RF-065 | — |
 | CAdES y XAdES | Fase 4 (viabilidad probada en SPK-03) | RF-020 a RF-033 | — |
 | DNIe 1.0 y DNIe 3.0 | Versión 1.1 (decisión del 2026-10-27); identificación pendiente en SPK-06 | RNF-COM-05 | — |
@@ -115,5 +115,5 @@ Algunos documentos públicos citan identificadores cuyo detalle está en la docu
 | Extensión de LibreOffice "Firmar con berigna" | Versión 1.2 (decisión del 2026-10-27) | RF-074 | — |
 | Empaquetado `.deb` | Fase 5 | ADR-0006, ADR-0013 | — |
 
-Verificación local: `scripts/verificar.sh` (ruff, mypy estricto, pytest con cobertura mínima del 80 %; hoy 100 % del núcleo con 124 pruebas). Pruebas con hardware: `BERIGNA_HIL=1 pytest -m hil` (sin PIN) y los *scripts* manuales de `tests/hil/` (con PIN, según el protocolo).
+Verificación local: `scripts/verificar.sh` (ruff, mypy estricto, pytest con cobertura mínima del 80 %; hoy 100 % del núcleo con 129 pruebas). Pruebas con hardware: `BERIGNA_HIL=1 pytest -m hil` (sin PIN) y los *scripts* manuales de `tests/hil/` (con PIN, según el protocolo).
 
