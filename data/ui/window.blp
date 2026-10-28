@@ -1,0 +1,86 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+// SPDX-FileCopyrightText: 2026 Calú
+// Main window (BRG-UX-001 §3.1). Translated by berigna.ui.i18n.translate_view, not by GTK.
+using Gtk 4.0;
+using Adw 1;
+
+Adw.ApplicationWindow window {
+  title: "berigna";
+  default-width: 900;
+  default-height: 640;
+  width-request: 360;
+  height-request: 400;
+
+  content: Adw.ToastOverlay toasts {
+    child: Adw.ToolbarView {
+      [top]
+      Adw.HeaderBar {
+        [end]
+        MenuButton {
+          icon-name: "open-menu-symbolic";
+          menu-model: primary_menu;
+          primary: true;
+          tooltip-text: _("Main Menu");
+        }
+      }
+
+      [top]
+      Adw.Banner unreviewed_banner {
+        button-label: _("Show in Spanish");
+        action-name: "app.show-in-spanish";
+      }
+
+      content: Adw.NavigationView navigation {
+        Adw.NavigationPage {
+          title: "berigna";
+          tag: "start";
+
+          child: Adw.StatusPage {
+            icon-name: "document-open-symbolic";
+            title: _("Drop a document here to sign or verify it");
+
+            child: Button {
+              label: _("_Open Document…");
+              use-underline: true;
+              halign: center;
+              action-name: "win.open";
+
+              styles [
+                "pill",
+                "suggested-action",
+              ]
+            };
+          };
+        }
+      };
+
+      [bottom]
+      Box {
+        spacing: 8;
+        margin-start: 12;
+        margin-end: 12;
+        margin-top: 6;
+        margin-bottom: 6;
+
+        Image status_icon {
+          accessible-role: presentation;
+        }
+
+        Label status_label {
+          xalign: 0;
+          wrap: true;
+          hexpand: true;
+        }
+      }
+    };
+  };
+}
+
+menu primary_menu {
+  section {
+    item {
+      label: _("_About berigna");
+      action: "app.about";
+    }
+  }
+}

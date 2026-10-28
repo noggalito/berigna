@@ -59,6 +59,17 @@ packages = ["berigna"]
 module = ["smartcard.*", "asn1crypto.*", "requests.*", "lxml.*", "signxml.*", "reportlab.*"]
 ignore_missing_imports = true
 
+# PyGObject has no type information in Debian: GTK classes are Any for mypy, so the interface
+# may subclass them (ADR-0002, entorno y convenciones §3: "en ui, modo normal").
+[[tool.mypy.overrides]]
+module = ["gi", "gi.*"]
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = ["berigna.ui.*"]
+disallow_subclassing_any = false
+warn_return_any = false
+
 [tool.coverage.run]
 source = ["berigna"]
 branch = true

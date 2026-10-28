@@ -1,0 +1,132 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# SPDX-FileCopyrightText: 2026 Calú
+"""Main window: start page, opened document and the DNIe status bar (BRG-UX-001 §3.1)."""
+
+import threading
+from collections.abc import Callable
+from pathlib import Path
+
+import gi
+
+gi.require_version("Gtk", "4.0")
+gi.require_version("Adw", "1")
+from gi.repository import Adw, Gdk, Gio, GLib, Gtk  # noqa: E402
+
+from berigna.core.documents import DocumentInfo, inspect_document  # noqa: E402
+from berigna.core.errors import BerignaError  # noqa: E402
+from berigna.core.i18n import Language, translations  # noqa: E402
+from berigna.core.report.explanations import explain_error  # noqa: E402
+from berigna.core.token.monitor import DeviceStatus  # noqa: E402
+from berigna.ui import presentation  # noqa: E402
+from berigna.ui.i18n import _, catalogue, current_language, translate_view  # noqa: E402
+
+VIEW = "/pe/berigna/Berigna/ui/window.ui"
+
+
+class MainWindow:
+    """Wraps the window built from the view; the application rebuilds it to change language."""
+
+    def __init__(self, application: Adw.Application) -> None:
+        view = Gio.resources_lookup_data(VIEW, Gio.ResourceLookupFlags.NONE).get_data()
+        builder = Gtk.Builder()
+        builder.add_from_string(translate_view(view))
+        self.window: Adw.ApplicationWindow = builder.get_object("window")
+        self.window.set_application(application)
+        self._toasts: Adw.ToastOverlay = builder.get_object("toasts")
+        self._navigation: Adw.NavigationView = builder.get_object("navigation")
+        self._status_icon: Gtk.Image = builder.get_object("status_icon")
+        self._status_label: Gtk.Label = builder.get_object("status_label")
+        self._banner: Adw.Banner = builder.get_object("unreviewed_banner")
+        self._setup_banner(self._banner)
+        self.document: DocumentInfo | None = None
+
+        open_action = Gio.SimpleAction.new("open", None)
+        open_action.connect("activate", lambda *_args: self._choose_file())
+        self.window.add_action(open_action)
+
+        drop = Gtk.DropTarget.new(Gdk.FileList, Gdk.DragAction.COPY)
+        drop.connect("drop", self._on_drop)
+        self.window.add_controller(drop)
+        self.show_device_status(None)
+
+    def _setup_banner(self, banner: Adw.Banner) -> None:
+        quechua = current_language() is Language.QUZ_PE
+        banner.set_revealed(quechua)
+        if quechua:
+            texts = [
+                translations(language).gettext(presentation.UNREVIEWED_TRANSLATION)
+                for language in (Language.QUZ_PE, Language.ES_PE)
+            ]
+            banner.set_title(" · ".join(dict.fromkeys(texts)))
+
+    def show_device_status(self, status: DeviceStatus | None) -> None:
+        view = presentation.device_status(status)
+        self._status_icon.set_from_icon_name(view.icon)
+        self._status_label.set_label(view.message)
+
+    def toast(self, message: str) -> None:
+        self._toasts.add_toast(Adw.Toast.new(message))
+
+    def _choose_file(self) -> None:
+        pdf = Gtk.FileFilter()
+        pdf.set_name(_("PDF documents"))
+        pdf.add_mime_type("application/pdf")
+        filters = Gio.ListStore.new(Gtk.FileFilter)
+        filters.append(pdf)
+        dialog = Gtk.FileDialog(title=_("Open Document"), filters=filters, default_filter=pdf)
+        dialog.open(self.window, None, self._on_file_chosen)
+
+    def _on_file_chosen(self, dialog: Gtk.FileDialog, result: Gio.AsyncResult) -> None:
+        try:
+            file = dialog.open_finish(result)
+        except GLib.Error:  # dismissed by the user
+            return
+        self.open_file(file)
+
+    def _on_drop(self, _target: Gtk.DropTarget, files: Gdk.FileList, _x: float, _y: float) -> bool:
+        dropped = files.get_files()
+        if dropped:
+            self.open_file(dropped[0])
+        return bool(dropped)
+
+    def open_file(self, file: Gio.File, on_done: Callable[[], None] | None = None) -> None:
+        """Inspect ``file`` in a worker thread and show it; ``on_done`` runs afterwards."""
+        path = file.get_path()
+        if path is None:  # not a local file (for instance, a remote location)
+            self.toast(_("Only files on this computer can be opened."))
+            return
+
+        def work() -> None:
+            outcome: DocumentInfo | BaseException
+            try:
+                outcome = inspect_document(Path(path))
+            except (OSError, BerignaError) as exc:
+                outcome = exc
+            GLib.idle_add(self._show_document, Path(path), outcome, on_done)
+
+        threading.Thread(target=work, name="berigna-open", daemon=True).start()
+
+    def _show_document(
+        self,
+        path: Path,
+        outcome: DocumentInfo | BaseException,
+        on_done: Callable[[], None] | None,
+    ) -> bool:
+        if isinstance(outcome, DocumentInfo):
+            self.document = outcome
+            page = Adw.StatusPage(
+                icon_name="x-office-document-symbolic",
+                title=path.name,
+                description=presentation.document_summary(outcome),
+            )
+            document = Adw.NavigationPage(title=path.name, tag="document", child=page)
+            # replace(), not pop and push: a page being popped keeps its tag while it animates.
+            self._navigation.replace([self._navigation.find_page("start"), document])
+        elif isinstance(outcome, BerignaError):
+            reason = explain_error(outcome.code, catalogue()) or ""
+            self.toast(f"{path.name}: {reason}")
+        else:
+            self.toast(_("{name} could not be opened.").format(name=path.name))
+        if on_done is not None:
+            on_done()
+        return GLib.SOURCE_REMOVE
