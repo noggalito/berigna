@@ -3,6 +3,7 @@
 """Signer check before the PIN (RF-006): PR-VAL-02 to PR-VAL-05, PR-TOK-04."""
 
 import pytest
+import requests
 
 from berigna.core.errors import (
     CertificateExpiredError,
@@ -11,7 +12,7 @@ from berigna.core.errors import (
     UntrustedCertificateError,
 )
 from berigna.core.trust import TrustedCertificate, TrustStore
-from berigna.core.validation import check_signer
+from berigna.core.validation import RevocationNote, check_signer
 from support.pki import Pki, build_pki
 
 
@@ -27,6 +28,7 @@ def test_valid_certificate_with_fresh_ocsp(pki: Pki) -> None:
     )
     assert result.revocation_checked
     assert not result.only_basic_level
+    assert result.revocation_note is None
     assert [c.subject for c in result.chain] == [pki.root.subject, pki.ca.subject, leaf.subject]
 
 
@@ -86,7 +88,27 @@ def test_without_revocation_data_only_basic_level_is_allowed(pki: Pki) -> None:
     result = check_signer(leaf, pki.store, online=False)
     assert not result.revocation_checked
     assert result.only_basic_level
+    assert result.revocation_note is RevocationNote.OFFLINE
     assert result.chain[-1] == leaf
+
+
+def test_unreachable_responders_degrade_to_basic_level(
+    pki: Pki, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Online, but OCSP and CRL cannot be fetched: B-B only, and the note says why."""
+    urls: list[str] = []
+
+    def refuse(url: str, *args: object, **kwargs: object) -> requests.Response:
+        urls.append(url)
+        raise requests.ConnectionError(f"no route to {url}")
+
+    monkeypatch.setattr(requests, "get", refuse)
+    monkeypatch.setattr(requests, "post", refuse)
+    leaf = pki.leaf("FIRMANTE CON OCSP CAIDO")
+    result = check_signer(leaf, pki.store, online=True, timeout=1.0)
+    assert result.only_basic_level
+    assert result.revocation_note is RevocationNote.UNAVAILABLE
+    assert urls  # the responders were actually tried
 
 
 def test_expired_certificate_is_rejected_even_without_revocation_data(pki: Pki) -> None:

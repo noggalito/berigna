@@ -12,6 +12,7 @@ from pyhanko.pdf_utils.reader import PdfFileReader
 from berigna.core.errors import (
     CertificateRevokedError,
     OutputExistsError,
+    PdfFormatError,
     SigningCancelledError,
     SourceChangedError,
 )
@@ -139,6 +140,27 @@ def test_cancelling_sends_no_pin(pki: Pki, document: tuple[Path, str]) -> None:
         )
     assert INS_VERIFY not in card.instructions()
     assert not output.exists()
+
+
+def test_damaged_pdf_is_rejected_before_asking_the_pin(pki: Pki, tmp_path: Path) -> None:
+    """D-2: a file that cannot be signed must not cost the user a PIN entry."""
+    source = tmp_path / "danado.pdf"
+    data = b"%PDF-1.7\nesto no es un PDF completo\n"
+    source.write_bytes(data)
+    card, _ = make_card(pki, "FIRMANTE")
+    prompt = PinPrompt()
+    with DnieV2Token(card) as token, pytest.raises(PdfFormatError):
+        sign_pdf_file(
+            source,
+            tmp_path / "f.pdf",
+            expected_sha256=hashlib.sha256(data).hexdigest(),
+            token=token,
+            store=pki.store,
+            ask_pin=prompt,
+            online=False,
+        )
+    assert prompt.shown == []
+    assert INS_VERIFY not in card.instructions()
 
 
 def test_file_changed_before_starting(pki: Pki, document: tuple[Path, str]) -> None:

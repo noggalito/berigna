@@ -17,9 +17,15 @@ license = "GPL-3.0-or-later"
 license-files = ["LICENSE"]
 requires-python = ">=3.12"
 authors = [{ name = "Calú" }]
+# Production installs come from Debian 13 packages (ADR-0013, SPK-05); these bounds follow
+# those versions. pyHanko is pinned: 0.25.3 needs pyhanko-certvalidator>=0.26.5, newer than
+# Debian's 0.26.3.
 dependencies = [
     "cryptography>=42",
     "pyscard>=2.2",
+    "pyhanko==0.25.1",
+    "pyhanko-certvalidator~=0.26.3",
+    "asn1crypto~=1.5",
 ]
 
 [tool.setuptools.packages.find]
