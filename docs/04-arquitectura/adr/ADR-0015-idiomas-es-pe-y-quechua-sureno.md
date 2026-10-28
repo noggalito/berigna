@@ -33,7 +33,7 @@ Se evaluaron el kichwa amazónico (variedades de Lamas, `qvs`, y del Napo, `qvo`
 ## Consecuencias
 
 - La CI exige es_PE y quechua al 100 % (PR-I18N-*). Una cadena nueva no se integra en `main` sin su traducción al quechua o sin una entrada marcada como pendiente de los traductores, que bloquea la versión (riesgo R-19).
-- Sin corrección humana hasta la 1.1, un texto crítico puede cambiar de sentido en quechua (riesgo R-19). Se mitiga con el glosario, la traducción cruzada al castellano de los textos críticos y la prevalencia del texto es_PE (punto 7).
+- Sin corrección humana hasta la 1.1, un texto crítico puede cambiar de sentido en quechua (riesgo R-19). Se mitiga con el glosario, la traducción cruzada al castellano de los textos críticos, la prevalencia del texto es_PE (punto 7) y un aviso de traducción sin revisar en la interfaz y en el informe PDF en quechua (diseño de interfaz §4.2).
 - Las pruebas de usabilidad (RNF-USA-06) incluyen al menos una sesión con participantes quechuahablantes.
 - Los lectores de pantalla (Orca y speech-dispatcher) no tienen voz en quechua. La accesibilidad por voz en quechua queda fuera de la v1.0.
 - Los textos que hoy están en en_US en los requisitos y en el diseño de la interfaz (ejemplos de explicaciones, tabla de niveles) se reescriben para es_PE y quechua; los de en_US se conservan como referencia para la 1.1.
