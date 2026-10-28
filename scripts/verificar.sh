@@ -9,4 +9,5 @@ PY=${PYTHON:-.venv/bin}
 "$PY/ruff" format --check src tests
 "$PY/ruff" check src tests
 "$PY/mypy"
-env -u BERIGNA_HIL "$PY/pytest" -q --cov=berigna
+scripts/traducciones.sh compilar
+env -u BERIGNA_HIL BERIGNA_LOCALEDIR="$PWD/build/locale" "$PY/pytest" -q --cov=berigna

@@ -4,6 +4,7 @@
 
 import datetime as dt
 import os
+from pathlib import Path
 
 import pytest
 from cryptography import x509
@@ -13,6 +14,11 @@ from cryptography.x509.oid import NameOID
 
 from berigna.core.token.dnie_v2 import CertificateSlot
 from sim.dnie_v2 import DnieV2Simulator
+
+# Compiled catalogues of the source tree (scripts/traducciones.sh compilar, run by verificar.sh).
+os.environ.setdefault(
+    "BERIGNA_LOCALEDIR", str(Path(__file__).resolve().parents[1] / "build" / "locale")
+)
 
 
 def _key_usage(**flags: bool) -> x509.KeyUsage:
