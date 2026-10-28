@@ -205,6 +205,12 @@ class LevelNotAvailableError(SigningError):
     code = "ERR-306"
 
 
+class AppearanceError(SigningError):
+    """The visible signature cannot be drawn: box too small, or an image that cannot be read."""
+
+    code = "ERR-308"
+
+
 class CertifiedDocumentError(PdfFormatError):
     """The author certified the document so that no change, not even a signature, is allowed
     (DocMDP P=1, CU-03)."""

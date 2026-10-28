@@ -31,6 +31,7 @@ Un ADR aceptado no se edita. Si la decisión cambia, se escribe un ADR nuevo que
 | [ADR-0015](ADR-0015-idiomas-es-pe-y-quechua-sureno.md) | Idiomas de la v1.0, español del Perú y quechua sureño | Aceptado |
 | [ADR-0016](ADR-0016-previsualizacion-pdf-poppler.md) | Previsualización de PDF con Poppler | Aceptado |
 | [ADR-0017](ADR-0017-ayuda-contextual-en-linea.md) | Ayuda contextual en línea, por versión | Aceptado |
+| [ADR-0018](ADR-0018-apariencia-de-la-firma-visible.md) | Apariencia de la firma visible | Aceptado |
 
 ## Fe de erratas
 

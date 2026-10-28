@@ -202,6 +202,11 @@ ERRORS: dict[str, str] = {
     "ERR-304": N_("This PDF cannot be signed: it is damaged or protected."),
     "ERR-305": N_("The time-stamping authority did not answer. Check the connection or the TSA."),
     "ERR-306": N_("That signature level is not available now. Choose a lower level."),
+    "ERR-308": N_(
+        "The visible signature cannot be drawn: the box is too small, the page is rotated or "
+        "the image cannot be read. Make the box larger, use another page or choose another "
+        "image in Preferences."
+    ),
     "ERR-307": N_(
         "The author certified this document so that it cannot be changed: "
         "it does not accept more signatures."

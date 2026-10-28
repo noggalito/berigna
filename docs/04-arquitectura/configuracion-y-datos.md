@@ -44,7 +44,9 @@ Proxy (RF-064): el valor se aplica a las variables de entorno estándar del proc
 | `proxy-mode` | enum | `'system'` | system / manual / none |
 | `proxy-url` | s | `''` | — |
 | `visible-signature` | b | `false` | Activar la firma visible por defecto |
-| `appearance-profile` | s | `''` | Perfil por defecto |
+| `appearance-kind` | enum | `'text'` | text / rubric / logo / qr: apariencia de la firma visible (ADR-0018) |
+| `appearance-language` | enum | `'es_PE'` | es_PE / quz_PE: idioma de los textos fijos y de la fecha del sello (RF-092) |
+| `appearance-profile` | s | `''` | Perfil por defecto (perfiles con nombre, RF-081: pendiente) |
 | `signature-reason` | s | `''` | Último motivo usado |
 | `signature-location` | s | `''` | Última ubicación usada |
 | `history-enabled` | b | `true` | — |

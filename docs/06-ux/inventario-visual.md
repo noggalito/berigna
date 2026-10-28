@@ -87,6 +87,9 @@ Formato: SVG de 128 a 256 px que se vea bien en modo claro y oscuro. Si se hacen
 
 ## 6. Firma visible (incremento 5; RF-012, RF-081, RF-092)
 
+Hecho el 2026-10-28 (ADR-0018): solo texto, rúbrica, logotipo o código QR; Source Sans 3 para el texto y Arvo Bold para el nombre; tinta carbón con un filete burdeos. Lo que sigue queda como referencia para afinar el diseño.
+
+
 Es la pieza gráfica que más ven terceros, porque queda impresa en los documentos. Hace falta diseñar:
 
 1. **Plantillas de apariencia** del recuadro, con las variables `{nombre}`, `{dni}`, `{fecha}`, `{motivo}` y `{ubicacion}`:

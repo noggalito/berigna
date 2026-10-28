@@ -8,6 +8,7 @@ and lock keys for a whole organisation with dconf (configuracion-y-datos §2).
 
 import threading
 from collections.abc import Sequence
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 import gi
@@ -17,7 +18,13 @@ gi.require_version("Adw", "1")
 from gi.repository import Adw, Gio, GLib, Gtk  # noqa: E402
 from pyhanko.sign.timestamps import TimeStamper  # noqa: E402
 
-from berigna.core.errors import BerignaError  # noqa: E402
+from berigna.core.appearance import (  # noqa: E402
+    AppearanceKind,
+    remove_image,
+    store_image,
+    stored_image,
+)
+from berigna.core.errors import AppearanceError, BerignaError  # noqa: E402
 from berigna.core.net.proxy import ProxyMode, valid_proxy_url  # noqa: E402
 from berigna.core.net.tsa import probe  # noqa: E402
 from berigna.core.report.explanations import explain_error  # noqa: E402
@@ -25,7 +32,8 @@ from berigna.core.trust.cache import TslRefresh  # noqa: E402
 from berigna.ui import presentation  # noqa: E402
 from berigna.ui.help import HelpTopic, help_button  # noqa: E402
 from berigna.ui.i18n import _, catalogue  # noqa: E402
-from berigna.ui.signing import LEVEL_ORDER  # noqa: E402
+from berigna.ui.signing import APPEARANCES, LEVEL_ORDER  # noqa: E402
+from berigna.ui.widgets import label_factory  # noqa: E402
 
 if TYPE_CHECKING:
     from berigna.ui.application import BerignaApplication
@@ -37,7 +45,7 @@ DIGESTS = (("sha256", "SHA-256"), ("sha384", "SHA-384"), ("sha512", "SHA-512"))
 
 class PreferencesDialog(Adw.PreferencesDialog):
     def __init__(self, application: "BerignaApplication") -> None:
-        super().__init__(search_enabled=False)
+        super().__init__(search_enabled=False, content_width=720)
         self._app = application
         settings = application.settings
         if settings is None:
@@ -46,7 +54,9 @@ class PreferencesDialog(Adw.PreferencesDialog):
         self._general_page = self._general()
         self._network_page = self._network()
         self._trust_page = self._trust()
-        for page in (self._general_page, self._network_page, self._trust_page):
+        self._visible_page = self._visible()
+        pages = (self._general_page, self._visible_page, self._network_page, self._trust_page)
+        for page in pages:
             self.add(page)
 
     # -- Helpers -------------------------------------------------------------------------------
@@ -62,8 +72,8 @@ class PreferencesDialog(Adw.PreferencesDialog):
         row = Adw.ComboRow(
             title=title,
             model=Gtk.StringList.new(labels),
-            factory=_label_factory(visible=False),
-            list_factory=_label_factory(visible=True),
+            factory=label_factory(visible=False),
+            list_factory=label_factory(visible=True),
             subtitle_lines=0,
         )
         current = self._settings.get_string(key)
@@ -163,6 +173,99 @@ class PreferencesDialog(Adw.PreferencesDialog):
                 self.set_folder(str(folder.get_path()))
 
         dialog.select_folder(self.get_root(), None, chosen)
+
+    # -- Visible signature (RF-012, RF-092) ------------------------------------------------------
+
+    def _visible(self) -> Adw.PreferencesPage:
+        page = Adw.PreferencesPage(title=_("Visible Signature"), icon_name="document-edit-symbolic")
+        defaults = Adw.PreferencesGroup(title=_("Defaults"))
+        self.visible_default = Adw.SwitchRow(title=_("Show the Signature on the Page"))
+        self._settings.bind(
+            "visible-signature", self.visible_default, "active", Gio.SettingsBindFlags.DEFAULT
+        )
+        self.appearance = self._combo(
+            _("Appearance"), "appearance-kind", [(k.value, _(label)) for k, label in APPEARANCES]
+        )
+        self.stamp_language = self._combo(
+            _("Language of the Signature"),
+            "appearance-language",
+            [(value, label) for value, label in LANGUAGES if label is not None],
+        )
+        for row in (self.visible_default, self.appearance, self.stamp_language):
+            defaults.add(row)
+        page.add(defaults)
+
+        images = Adw.PreferencesGroup(
+            title=_("Images"),
+            description=_(
+                "Loaded once and kept by berigna, without the metadata of the original file."
+            ),
+        )
+        self.image_rows: dict[AppearanceKind, tuple[Adw.ActionRow, Gtk.Button]] = {}
+        for kind, title in (
+            (AppearanceKind.RUBRIC, _("Handwritten Signature")),
+            (AppearanceKind.LOGO, _("Logo")),
+        ):
+            row = Adw.ActionRow(title=title, use_markup=False)
+            choose = Gtk.Button(
+                icon_name="document-open-symbolic",
+                tooltip_text=_("Choose Image"),
+                valign=Gtk.Align.CENTER,
+            )
+            choose.add_css_class("flat")
+            choose.connect("clicked", lambda _b, k=kind: self._choose_image(k))
+            remove = Gtk.Button(
+                icon_name="edit-clear-symbolic",
+                tooltip_text=_("Remove Image"),
+                valign=Gtk.Align.CENTER,
+            )
+            remove.add_css_class("flat")
+            remove.connect("clicked", lambda _b, k=kind: self.remove_image(k))
+            row.add_suffix(choose)
+            row.add_suffix(remove)
+            self.image_rows[kind] = (row, remove)
+            images.add(row)
+            self._show_image(kind)
+        page.add(images)
+        return page
+
+    def _show_image(self, kind: AppearanceKind) -> None:
+        row, remove = self.image_rows[kind]
+        has = stored_image(self._app.appearance_dir(), kind) is not None
+        row.set_subtitle(_("Loaded") if has else _("No image"))
+        remove.set_visible(has)
+
+    def set_image(self, kind: AppearanceKind, source: Path) -> None:
+        try:
+            store_image(self._app.appearance_dir(), kind, source)
+        except AppearanceError as exc:
+            self.toast(explain_error(exc.code, catalogue()) or "")
+        except OSError:
+            self.toast(_("{name} could not be saved.").format(name=source.name))
+        self._show_image(kind)
+
+    def remove_image(self, kind: AppearanceKind) -> None:
+        remove_image(self._app.appearance_dir(), kind)
+        self._show_image(kind)
+
+    def _choose_image(self, kind: AppearanceKind) -> None:
+        images = Gtk.FileFilter()
+        images.set_name(_("Images"))
+        for mime in ("image/png", "image/jpeg"):
+            images.add_mime_type(mime)
+        filters = Gio.ListStore.new(Gtk.FileFilter)
+        filters.append(images)
+        dialog = Gtk.FileDialog(title=_("Choose Image"), filters=filters, default_filter=images)
+
+        def chosen(dialog: Gtk.FileDialog, result: Gio.AsyncResult) -> None:
+            try:
+                file = dialog.open_finish(result)
+            except GLib.Error:  # dismissed by the user
+                return
+            if file.get_path():
+                self.set_image(kind, Path(file.get_path()))
+
+        dialog.open(self.get_root(), None, chosen)
 
     # -- Network -------------------------------------------------------------------------------
 
@@ -295,18 +398,3 @@ class PreferencesDialog(Adw.PreferencesDialog):
                 self.toast(_("The trusted list is up to date."))
 
         self._app.refresh_tsl(force=True, on_done=done)
-
-
-def _label_factory(*, visible: bool) -> Gtk.SignalListItemFactory:
-    """Items of a combo row: wrapped in the list (``visible``), or none next to the title."""
-    factory = Gtk.SignalListItemFactory()
-
-    def setup(_factory: Gtk.SignalListItemFactory, item: Gtk.ListItem) -> None:
-        item.set_child(Gtk.Label(xalign=0, wrap=True, max_width_chars=40, visible=visible))
-
-    def bind(_factory: Gtk.SignalListItemFactory, item: Gtk.ListItem) -> None:
-        item.get_child().set_label(item.get_item().get_string())
-
-    factory.connect("setup", setup)
-    factory.connect("bind", bind)
-    return factory
