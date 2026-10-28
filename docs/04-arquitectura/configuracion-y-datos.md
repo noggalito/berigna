@@ -36,7 +36,7 @@ Los permisos de los archivos del usuario son `0600` y los de los directorios `07
 | `digest-algorithm` | enum | `'sha256'` | — |
 | `tsa-url` | s | `''` (DP-02) | URL de la TSA |
 | `tsa-auth` | enum | `'none'` | none / basic / client-cert |
-| `network-timeout` | u | `10` | Segundos |
+| `network-timeout` | u | `10` | Segundos de espera de la respuesta (lectura). La conexión espera al menos 20 s, para cubrir los reenvíos de SYN de la red de RENIEC (R-17, `core.net.fetchers`) |
 | `proxy-mode` | enum | `'system'` | system / manual / none |
 | `proxy-url` | s | `''` | — |
 | `visible-signature` | b | `false` | Activar la firma visible por defecto |

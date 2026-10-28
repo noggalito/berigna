@@ -99,12 +99,12 @@ flowchart TB
 | `core.formats.pades` | Firma y validación PAdES, DSS/VRI, sellos de documento, DocMDP. Firma mediante un `Signer` personalizado de pyHanko que delega en `TokenSigner` | pyHanko 0.25.1 (ADR-0004, ADR-0013); implementada la firma B-B, B-T, B-LT y B-LTA |
 | `core.formats.cades` | Firma y validación CMS/CAdES separada y envuelta | pyHanko (API CMS genérica), asn1crypto (ADR-0008) |
 | `core.formats.xades` | Firma y validación XAdES | Según SPK-03 (ADR-0008) |
-| `core.trust` | Almacén de confianza de la IOFE incluido (anclas como recurso del paquete con manifiesto de huellas) y anclas añadidas por el usuario | cryptography; implementado |
+| `core.trust` | Almacén de confianza de la IOFE incluido (anclas como recurso del paquete con manifiesto de huellas), anclas añadidas por el usuario y TSL de INDECOPI (`tsl`, ADR-0014) | cryptography, lxml, signxml; implementado |
 | `core.net` | Clientes HTTP para TSA, OCSP, CRL y AIA, con caché, tiempos de espera y proxy | requests. Implementados `fetchers` (OCSP y CRL para validación previa, firma B-LT y verificación) y `tsa` (cliente RFC 3161 sobre el de pyHanko). Caché y proxy, pendientes |
 | `core.appearance` | Composición del sello visible a partir de una plantilla de texto y una imagen | pyHanko stamp + Pillow |
 | `core.signing` | Orquestación: comprobar que el archivo no cambió, validar el certificado antes del PIN, firmar y escribir de forma atómica | Implementado para PDF (B-B) |
 | `core.validation` | Validación previa del firmante (`preflight`, RF-006) y verificación de firmas PDF con indicaciones ETSI (`pdf`, RF-050, RF-053, RF-055) | pyhanko-certvalidator 0.26.3 y la validación AdES de pyHanko 0.25.1; `preflight` implementado; `pdf` con sellos de tiempo y validación en el pasado |
-| `core.report` | Explicaciones en lenguaje llano de cada indicación y subindicación ETSI y de cada `ERR-xxx` (`messages`, `explanations`); informe de verificación en JSON con explicaciones en ambos idiomas (`json_report`) y en PDF (en es_PE o en quechua) | gettext; JSON implementado; PDF pendiente (ReportLab o pyHanko) |
+| `core.report` | Explicaciones en lenguaje llano de cada indicación y subindicación ETSI y de cada `ERR-xxx` (`messages`, `explanations`); informe de verificación en JSON con explicaciones en ambos idiomas (`json_report`) y en PDF en es_PE o en quechua (`pdf_report`) | gettext, ReportLab; implementado |
 | `core.i18n` | Idiomas es_PE y quechua sureño, elección según la configuración del usuario con es_PE de respaldo (ADR-0015) y carga de los catálogos; el quechua cae en es_PE, nunca en el texto fuente inglés | gettext de la biblioteca estándar; implementado |
 | `core.history` | Historial local en SQLite | sqlite3 (biblioteca estándar) |
 | `core.config` | Acceso tipado a la configuración (GSettings vía una interfaz, para no acoplar el núcleo a GTK) | — |
@@ -128,6 +128,8 @@ Decisiones de implementación de `core.token.dnie_v2` (ADR-0012), documentadas p
 | `sign_pdf_file` comprueba que el PDF se puede leer antes de validar el certificado y pedir el PIN | Un archivo dañado no le cuesta al usuario teclear el PIN |
 | `verify_pdf` elige el proceso de ETSI según la firma: el básico (`ades_basic_validation`) si no tiene sello de tiempo y el de material de validación a largo plazo (`ades_lta_validation`) si lo tiene. La integridad del PDF (cobertura, diferencias) se calcula por separado | `ades_lta_validation` exige un sello de tiempo y da INDETERMINATE a toda firma B-B; y `ades_basic_validation` de pyHanko 0.25.1 falla si se le pide el estado propio de PDF |
 | Si pyHanko devuelve la subindicación genérica `CERTIFICATE_CHAIN_GENERAL_FAILURE` en el proceso básico, la cadena se valida otra vez por separado y la subindicación se precisa según el error: falta de datos de revocación → `TRY_LATER`, certificado vencido en la cadena → `OUT_OF_BOUNDS_NO_POE`, aún no vigente → `NOT_YET_VALID`. Si esta vez pasa, el primer fallo fue transitorio → `TRY_LATER` | pyHanko 0.25.1 agrupa esas causas, que ETSI EN 319 102-1 (§5.2.6) distingue y DSS informa por separado. Cada una lleva una explicación distinta para el usuario (RF-053) |
+| La política de algoritmos (resúmenes MD2, MD5 y SHA-1 prohibidos; RSA de al menos 2048 bits) está escrita en `core.validation.algorithms` y se aplica a cadenas, firmas y sellos en la validación previa y en la verificación. La validación previa comprueba además la clave del propio firmante | ACR-18. Los valores por defecto de pyhanko-certvalidator podrían cambiar con una actualización; y su política solo juzga las claves que firman a otros certificados, no la del firmante |
+| Si falta un catálogo de traducción, se devuelve el texto fuente; las explicaciones lo detectan y quedan vacías, y los informes se generan igual | Una instalación incompleta no impide verificar ni exportar, y no se mezclan idiomas |
 | Cada sello (de firma y de documento) se informa con su propia indicación (§5.4). Si pyHanko no devuelve el estado del sello de la firma, porque el proceso se detuvo antes, el sello se valida aparte | RF-053: un sello inválido se muestra aunque la firma sea válida, y al revés |
 | Al verificar, la indicación ETSI y las modificaciones posteriores se informan por separado; una cobertura que no abarca una revisión completa es TOTAL-FAILED/FORMAT_FAILURE | La firma puede ser íntegra aunque el documento cambiara después (RF-055); un rango de bytes parcial es la huella de un ataque de envoltura (AM-05) |
 | En línea (validación previa, firma B-LT y verificación), nunca se descarga la CRL de un certificado final (solo OCSP); las CRL se descargan para las CA, con descarga propia: se pide al primer espejo y el siguiente solo entra si el anterior no responde en 2 s o falla; gana la primera CRL que llega. Tiempo de conexión de 20 s, separado del de lectura. Cada consulta fallida se reintenta una vez tras 0,5 s, salvo un OCSP cuya conexión agotó los 20 s (`core.net.fetchers`) | La CRL de la CA emisora del DNIe pesa ~109 MB (RF-063). La red de RENIEC descarta intentos de conexión de forma intermitente (conexiones a `crl2` de 12,6 y 15,25 s, OCSP sin respuesta durante más de 20 s; R-17). pyhanko-certvalidator 0.26.3 fallaba si cualquier espejo fallaba y guardaba en caché las descargas fallidas |
@@ -137,7 +139,7 @@ Decisiones de implementación de `core.token.dnie_v2` (ADR-0012), documentadas p
 
 ## 4. Interfaces clave del núcleo
 
-Implementadas (Fase 1):
+Implementadas (Fases 1 y 2):
 
 ```python
 class TokenSigner(Protocol):                      # core.token.base
@@ -162,6 +164,16 @@ def sign_pdf_file(source, output, *, expected_sha256, token, store, ask_pin, opt
                   ocsp_responses=(), crls=()) -> SignResult                     # core.signing
 # SignResult.level es el nivel alcanzado; level_note explica por qué es inferior al pedido
 
+def sign_pdf_pades(pdf, token, chain, options=None, *, level=SignatureLevel.B_B,
+                   timestamper=None, validation_context=None) -> PadesResult  # core.formats.pades
+
+def load_tsl(data, *, moment=None, signer_crl=None, minimum_sequence=None) -> TrustedList  # core.trust.tsl
+def fetch_tsl(*, url=TSL_URL, timeout=30.0) -> TrustedList
+def extend_store(store, trusted_list) -> TrustStore
+
+def report_data(verification, *, file_name, file_sha256, store) -> dict           # core.report.json_report
+def pdf_report(verification, *, file_name, file_sha256, store,
+               language=Language.ES_PE) -> bytes                                  # core.report.pdf_report
 def http_timestamper(TsaSettings(url, timeout, username, password)) -> TimeStamper  # core.net.tsa
 def probe(timestamper, md_algorithm="sha256", deadline=30.0) -> None              # core.net.tsa
 ```

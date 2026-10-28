@@ -23,9 +23,8 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 from typing import cast
 
-from asn1crypto import x509 as asn1_x509
 from cryptography import x509
-from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.asymmetric import rsa
 from pyhanko_certvalidator import CertificateValidator, ValidationContext
 from pyhanko_certvalidator.errors import (
     ExpiredError,
@@ -44,6 +43,7 @@ from pyhanko_certvalidator.policy_decl import (
     RevocationCheckingRule,
 )
 
+from berigna.core.certs import to_asn1, to_cryptography
 from berigna.core.errors import (
     CertificateExpiredError,
     CertificateRevokedError,
@@ -52,6 +52,7 @@ from berigna.core.errors import (
 )
 from berigna.core.net.fetchers import revocation_fetchers
 from berigna.core.trust import TrustStore
+from berigna.core.validation.algorithms import MIN_RSA_BITS, algorithm_policy
 
 _SIGNING_POLICY = RevocationCheckingPolicy(
     ee_certificate_rule=RevocationCheckingRule.OCSP_REQUIRED,
@@ -89,14 +90,6 @@ class SignerCheck:
         return not self.revocation_checked
 
 
-def _to_asn1(certificate: x509.Certificate) -> asn1_x509.Certificate:
-    return asn1_x509.Certificate.load(certificate.public_bytes(serialization.Encoding.DER))
-
-
-def _to_cryptography(certificate: asn1_x509.Certificate) -> x509.Certificate:
-    return x509.load_der_x509_certificate(certificate.dump())
-
-
 def signing_validation_context(
     store: TrustStore,
     *,
@@ -111,15 +104,25 @@ def signing_validation_context(
     CAs, anchors of ``store``. Also used to gather the data embedded in a B-LT signature.
     """
     return ValidationContext(
-        trust_roots=[_to_asn1(c) for c in store.roots],
-        other_certs=[_to_asn1(c) for c in store.intermediates],
+        trust_roots=[to_asn1(c) for c in store.roots],
+        other_certs=[to_asn1(c) for c in store.intermediates],
         moment=moment,
         allow_fetching=online,
         crls=list(crls),
         ocsps=list(ocsp_responses),
         revinfo_policy=CertRevTrustPolicy(policy),
+        algorithm_usage_policy=algorithm_policy(),
         fetchers=revocation_fetchers(timeout) if online else None,
     )
+
+
+def _check_key_size(certificate: x509.Certificate) -> None:
+    """The signer's own key (ACR-18): the chain policy only judges the keys that sign others."""
+    key = certificate.public_key()
+    if isinstance(key, rsa.RSAPublicKey) and key.key_size < MIN_RSA_BITS:
+        raise CertificateValidationError(
+            f"RSA key of {key.key_size} bits; at least {MIN_RSA_BITS} are required"
+        )
 
 
 def check_signer(
@@ -139,7 +142,8 @@ def check_signer(
     supply revocation data; with ``online`` they are fetched from the URLs in the chain.
     """
     when = moment or dt.datetime.now(dt.UTC)
-    leaf = _to_asn1(certificate)
+    _check_key_size(certificate)
+    leaf = to_asn1(certificate)
 
     def run(policy: RevocationCheckingPolicy) -> ValidationPath:
         context = signing_validation_context(
@@ -171,7 +175,7 @@ def check_signer(
     except (InvalidCertificateError, PathValidationError, ValidationError) as exc:
         raise CertificateValidationError(str(exc)) from exc
 
-    chain = tuple(_to_cryptography(c) for c in path.iter_certs(include_root=True))
+    chain = tuple(to_cryptography(c) for c in path.iter_certs(include_root=True))
     return SignerCheck(
         revocation_checked=note is None, chain=chain, moment=when, revocation_note=note
     )

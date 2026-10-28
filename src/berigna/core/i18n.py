@@ -9,7 +9,9 @@ for the translators falls back to es_PE as well, never to the English source.
 
 Catalogues are looked up in ``$BERIGNA_LOCALEDIR`` when set (development and tests, where
 ``scripts/traducciones.sh compilar`` writes them to ``build/locale``) and otherwise in the
-system directory (``/usr/share/locale`` in the package).
+system directory (``/usr/share/locale`` in the package). A missing catalogue (an incomplete
+installation) does not stop the program: the untranslated source comes back, which the
+explanations detect and leave empty, so no language is mixed.
 """
 
 import enum
@@ -74,12 +76,14 @@ def translations(language: Language, *, strict: bool = False) -> gettext.NullTra
     ``strict`` returns the Quechua catalogue alone, so that a missing translation shows as the
     untranslated source and can be detected (the JSON report leaves it empty).
     """
-    spanish = gettext.translation(DOMAIN, localedir(), languages=[Language.ES_PE.catalogue])
+    spanish = _catalogue(Language.ES_PE)
     if language is Language.ES_PE:
         return spanish
-    quechua = gettext.translation(
-        DOMAIN, localedir(), languages=[Language.QUZ_PE.catalogue], fallback=strict
-    )
+    quechua = _catalogue(Language.QUZ_PE)
     if not strict:
         quechua.add_fallback(spanish)
     return quechua
+
+
+def _catalogue(language: Language) -> gettext.NullTranslations:
+    return gettext.translation(DOMAIN, localedir(), languages=[language.catalogue], fallback=True)

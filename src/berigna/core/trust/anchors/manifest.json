@@ -1,7 +1,7 @@
 {
   "format": 1,
   "retrieved": "2026-10-27",
-  "note": "Anclas de confianza de la IOFE. Fuente definitiva prevista: TSL de INDECOPI (ADR-0014).",
+  "note": "Anclas base de la IOFE incluidas en el paquete. En tiempo de ejecución las amplía la TSL de INDECOPI verificada (ADR-0014).",
   "certificates": [
     {
       "file": "ecernep-peru-ca-root-3.pem",

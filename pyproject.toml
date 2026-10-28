@@ -27,13 +27,16 @@ dependencies = [
     "pyhanko-certvalidator~=0.26.3",
     "asn1crypto~=1.5",
     "requests>=2.31",
+    "lxml>=5",
+    "signxml~=4.0",
+    "reportlab>=4",
 ]
 
 [tool.setuptools.packages.find]
 where = ["src"]
 
 [tool.setuptools.package-data]
-"berigna.core.trust" = ["anchors/*.pem", "anchors/manifest.json"]
+"berigna.core.trust" = ["anchors/*.pem", "anchors/manifest.json", "tsl/*.crt"]
 
 [tool.ruff]
 line-length = 100
@@ -53,7 +56,7 @@ mypy_path = "src"
 packages = ["berigna"]
 
 [[tool.mypy.overrides]]
-module = ["smartcard.*", "asn1crypto.*", "requests.*"]
+module = ["smartcard.*", "asn1crypto.*", "requests.*", "lxml.*", "signxml.*", "reportlab.*"]
 ignore_missing_imports = true
 
 [tool.coverage.run]
@@ -74,6 +77,8 @@ filterwarnings = [
     # pyscard's SWIG binding on Python 3.13; not raised by berigna code.
     "ignore:builtin type Swig.* has no __module__ attribute:DeprecationWarning",
     "ignore:builtin type swigvarlink has no __module__ attribute:DeprecationWarning",
+    # The real INDECOPI root says C=PERU (the country code must have two letters).
+    "ignore:Attribute's length must be >= 2 and <= 2:UserWarning",
 ]
 markers = [
     "hil: requiere un lector y un DNIe reales; nunca se ejecuta en CI (BERIGNA_HIL=1 para activarlas)",

@@ -144,7 +144,7 @@ Cada celda se ejecuta en tres entornos: (a) SoftHSM en CI, (b) validación con D
 | PR-I18N-05 | Selector de idioma en las preferencias (`ui-language`) | El idioma forzado se aplica tras reiniciar | Manual |
 | PR-I18N-06 | Formato de fechas y horas en el resultado de verificación y en el sello visible, en ambos idiomas | Formato regional correcto; zona horaria indicada | Sí |
 | PR-I18N-07 | Explicaciones de verificación: cada código ETSI y cada `ERR-xxx` tienen su texto en es_PE y en quechua | Cobertura completa | Sí |
-| PR-I18N-08 | Revisión de los textos críticos por personas nativas (RNF-USA-09) | Acta de revisión archivada en las evidencias | No |
+| PR-I18N-08 | Revisión de los textos críticos por personas nativas (RNF-USA-09; en quechua, desde la versión 1.1) | Acta de revisión archivada en las evidencias | No |
 
 Las pruebas de usabilidad (RNF-USA-06) se hacen con participantes hispanohablantes y, al menos en una sesión, con participantes quechuahablantes (ADR-0015).
 

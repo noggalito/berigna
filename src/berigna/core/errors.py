@@ -121,6 +121,18 @@ class InvalidAnchorError(TrustError):
     code = "ERR-202"
 
 
+class TslError(TrustError):
+    """The INDECOPI trusted list cannot be used (signature, signer, format or rollback)."""
+
+    code = "ERR-203"
+
+
+class TslExpiredError(TslError):
+    """The trusted list is past its NextUpdate date."""
+
+    code = "ERR-204"
+
+
 class SignerCertificateError(BerignaError):
     """The signer certificate cannot be used to sign now (RF-006). Checked before the PIN."""
 

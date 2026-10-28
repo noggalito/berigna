@@ -189,7 +189,7 @@ Prioridades según MoSCoW (ver convenciones). Cada requisito tiene criterios de 
 ### RF-060: Almacén de confianza de la IOFE
 - Prioridad: Debe. Descripción: berigna incluye su propio conjunto de certificados raíz e intermedios de la IOFE y no depende del almacén del sistema. El usuario puede ver su contenido.
 ### RF-061: Actualización del almacén de confianza
-- Prioridad: Debe. Descripción: el almacén se actualiza junto con el paquete `.deb`. El usuario puede añadir anclas adicionales, que se marcan como "añadidas por el usuario" en los informes.
+- Prioridad: Debe. Descripción: el almacén base se actualiza junto con el paquete `.deb`. En tiempo de ejecución se le añaden las CA de la TSL de INDECOPI, verificada contra la raíz de INDECOPI fijada en el paquete; si la TSL no está disponible, no verifica o está vencida, se usa el almacén base (ADR-0014). El usuario puede añadir anclas adicionales, que se marcan como "añadidas por el usuario" en los informes.
 ### RF-062: Configuración de la TSA
 - Prioridad: Debe. Descripción: URL, autenticación opcional (usuario y contraseña, o certificado de cliente), algoritmo de *hash* y tiempo de espera. Incluye un botón "Probar".
 ### RF-063: OCSP y CRL

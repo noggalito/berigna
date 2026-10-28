@@ -5,7 +5,8 @@
 Codes are the normalised ETSI ones; explanations go in both languages of berigna 1.0
 (ADR-0015). A Quechua explanation still waiting for the translators is ``null``, never a
 Spanish or English stand-in. Times are ISO 8601 in UTC (ADR-0011 §6). Of the signer's national
-identity number only the last four digits are kept.
+identity number (in the serial number and in the common name) only the last four digits are
+kept.
 """
 
 import datetime as dt
@@ -74,7 +75,7 @@ def _catalogues() -> dict[Language, Any]:
     }
 
 
-def pdf_report(
+def report_data(
     verification: PdfVerification,
     *,
     file_name: str,
