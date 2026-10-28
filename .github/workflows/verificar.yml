@@ -1,0 +1,51 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# SPDX-FileCopyrightText: 2026 Calú
+# Same checks as scripts/verificar.sh, on Debian 13 with Debian's Python packages (ADR-0013):
+# only pyHanko (not in Debian, SPK-05) and the development tools come from PyPI. Never runs
+# the HIL tests (no card reader, no PIN).
+name: verificar
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verificar:
+    runs-on: ubuntu-latest
+    container: debian:trixie
+    timeout-minutes: 20
+    steps:
+      # Before the checkout: without git, actions/checkout downloads a tarball with no .git,
+      # and verificar.sh needs `git rev-parse`.
+      - name: Paquetes de Debian 13
+        run: |
+          apt-get update
+          DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+            ca-certificates git gettext poppler-utils fonts-dejavu-core libpcsclite1 \
+            python3 python3-venv \
+            python3-cryptography python3-asn1crypto python3-lxml python3-pyscard \
+            python3-pyhanko-certvalidator python3-signxml python3-requests python3-reportlab \
+            python3-qrcode python3-tzlocal python3-click python3-yaml
+
+      - uses: actions/checkout@v4
+
+      - name: Entorno virtual con los paquetes del sistema
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          python3 -m venv --system-site-packages .venv
+          .venv/bin/pip install --no-cache-dir \
+            'pytest==8.3.5' 'hypothesis==6.130.5' 'mypy==1.15.0' 'pytest-cov==5.0.0' 'ruff==0.17.3'
+          .venv/bin/pip install --no-cache-dir --no-deps 'pyHanko==0.25.1'
+          .venv/bin/pip install --no-cache-dir --no-deps -e .
+
+      - name: Formato, lint, tipos y pruebas
+        run: scripts/verificar.sh
