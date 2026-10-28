@@ -262,12 +262,29 @@ def test_ocsp_is_retried_once(failures: int, succeeds: bool) -> None:
     assert list(fetcher.fetched_responses_for_cert("cert")) == ["ocsp-for-cert"]
 
 
-def test_ocsp_connection_timeout_is_not_retried() -> None:
+def _wrapped(cause: BaseException) -> BaseException:
+    outer = requests.ConnectionError("connection failed")
+    outer.__cause__ = cause
+    return outer
+
+
+@pytest.mark.parametrize(
+    "cause",
+    [requests.ConnectTimeout("no SYN-ACK"), _wrapped(requests.ConnectTimeout("no SYN-ACK"))],
+    ids=["directa", "envuelta"],
+)
+def test_ocsp_connection_timeout_is_not_retried(cause: BaseException) -> None:
     """After waiting CONNECT_TIMEOUT, a retry only doubled the wait (R-17)."""
-    inner = FlakyOcsp(1, requests.ConnectTimeout("no SYN-ACK"))
+    inner = FlakyOcsp(1, cause)  # type: ignore[arg-type]
     with pytest.raises(OCSPFetchError):
         asyncio.run(RetryingOcspFetcher(inner, pause=0).fetch("cert", "authority"))  # type: ignore[arg-type]
     assert inner.calls == 1
+
+
+def test_cause_chain_with_a_cycle_ends() -> None:
+    first, second = ValueError("a"), ValueError("b")
+    first.__cause__, second.__cause__ = second, first
+    assert not fetchers._caused_by_connect_timeout(first)
 
 
 def test_http_fetchers_apply_the_rules() -> None:

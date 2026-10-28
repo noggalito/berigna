@@ -166,6 +166,18 @@ class CaOnlyCrlFetcher(CRLFetcher):
         return self._by_cert[issuer_serial(cert)]
 
 
+def _caused_by_connect_timeout(error: BaseException) -> bool:
+    """Whether a connection time-out is anywhere in the chain of causes of ``error``."""
+    seen: set[int] = set()
+    cause: BaseException | None = error.__cause__ or error.__context__
+    while cause is not None and id(cause) not in seen:
+        if isinstance(cause, requests.ConnectTimeout):
+            return True
+        seen.add(id(cause))
+        cause = cause.__cause__ or cause.__context__
+    return False
+
+
 class RetryingOcspFetcher(OCSPFetcher):
     """Retries a failed OCSP request once, unless the connection itself timed out."""
 
@@ -177,7 +189,7 @@ class RetryingOcspFetcher(OCSPFetcher):
         try:
             return await self._inner.fetch(cert, authority)
         except OCSPFetchError as exc:
-            if isinstance(exc.__cause__, requests.ConnectTimeout):
+            if _caused_by_connect_timeout(exc):
                 raise
             await asyncio.sleep(self._pause)
             return await self._inner.fetch(cert, authority)
