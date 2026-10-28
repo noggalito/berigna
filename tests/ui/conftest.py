@@ -13,7 +13,10 @@ from pathlib import Path
 import pytest
 
 from berigna.core.i18n import Language
+from berigna.core.token.dnie_v2 import DnieV2Token
 from berigna.core.token.monitor import ReaderState
+from sim.dnie_v2 import DnieV2Simulator
+from support.cards import make_card
 from support.pki import Pki, build_pki
 
 BUILD = Path(__file__).resolve().parents[2] / "build" / "meson" / "data"
@@ -99,10 +102,29 @@ def pki() -> Pki:
     return build_pki()
 
 
+def open_card(card: DnieV2Simulator) -> DnieV2Token:
+    """A new session, as a new PC/SC connection would be: powered on, PIN not verified."""
+    card.closed = False
+    card.authenticated = False
+    return DnieV2Token(card)
+
+
 @pytest.fixture
-def app(readers: FakeReaders, pki: Pki) -> Iterator[BerignaApplication]:
-    """Offline, with the test PKI as trust store: results do not depend on the network."""
+def card(pki: Pki) -> DnieV2Simulator:
+    """A simulated DNIe v2 (PIN 123456, three tries)."""
+    simulator, _leaf = make_card(pki, "QUISPE MAMANI ROSA FIR 87654321 hard")
+    return simulator
+
+
+@pytest.fixture
+def app(readers: FakeReaders, pki: Pki, card: DnieV2Simulator) -> Iterator[BerignaApplication]:
+    """Offline, with the test PKI as trust store and the simulated card: results do not
+    depend on the network or on hardware."""
     yield BerignaApplication(
-        status_source=lambda: readers, trust_store=lambda: pki.store, online=False, unique=False
+        status_source=lambda: readers,
+        trust_store=lambda: pki.store,
+        open_token=lambda: open_card(card),
+        online=False,
+        unique=False,
     )
     i18n.set_language(Language.ES_PE)

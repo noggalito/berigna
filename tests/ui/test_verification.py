@@ -193,3 +193,21 @@ def test_reports_need_a_result(app: BerignaApplication, pki: Pki, tmp_path: Path
             page.signed_revision(1)
 
     drive(app, script, args=[str(path)])
+
+
+def test_unexpected_verification_errors_are_shown(
+    readers: FakeReaders, pki: Pki, tmp_path: Path
+) -> None:
+    def broken_store() -> TrustStore:
+        raise RuntimeError("bug")
+
+    app = BerignaApplication(
+        status_source=lambda: readers, trust_store=broken_store, online=False, unique=False
+    )
+    path = _file(tmp_path, signed_with_revinfo(pki))
+
+    def script(app: BerignaApplication) -> Generator[None, None, None]:
+        yield from wait_until(lambda: _shown(app) == "error")
+        assert _error_text(app) == "Error inesperado."
+
+    drive(app, script, args=[str(path)])

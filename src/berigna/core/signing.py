@@ -60,6 +60,18 @@ def _read_unchanged(path: Path, expected_sha256: str) -> bytes:
     return data
 
 
+def output_path(source: Path, suffix: str, directory: Path | None = None) -> Path:
+    """Where to write the signed copy of ``source``: ``<name><suffix>.pdf`` in ``directory``
+    (the folder of ``source`` by default), numbered when that name is taken (RF-045)."""
+    folder = directory or source.parent
+    candidate = folder / f"{source.stem}{suffix}{source.suffix}"
+    number = 2
+    while candidate.exists():
+        candidate = folder / f"{source.stem}{suffix}-{number}{source.suffix}"
+        number += 1
+    return candidate
+
+
 def write_atomically(path: Path, data: bytes, *, replace: bool = False) -> None:
     """Write ``data`` to ``path`` with fsync, all or nothing (RNF-FIA-01).
 

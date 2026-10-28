@@ -205,6 +205,13 @@ class LevelNotAvailableError(SigningError):
     code = "ERR-306"
 
 
+class CertifiedDocumentError(PdfFormatError):
+    """The author certified the document so that no change, not even a signature, is allowed
+    (DocMDP P=1, CU-03)."""
+
+    code = "ERR-307"
+
+
 class VerificationError(BerignaError):
     """A document could not be verified at all (individual signature results are not errors)."""
 

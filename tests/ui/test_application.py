@@ -55,8 +55,7 @@ def test_open_from_the_command_line(app: BerignaApplication, tmp_path: Path) -> 
     def script(app: BerignaApplication) -> Generator[None, None, None]:
         yield from wait_until(lambda: app.main_window is not None)
         yield from wait_until(lambda: _visible_title(app) == "contrato.pdf")
-        page = _window(app)._navigation.get_visible_page().get_child().get_content()
-        assert page.get_description() == "Documento PDF, 1 página, sin firmas"
+        assert _window(app).signing is not None  # a PDF without signatures is for signing
         document = _window(app).document
         assert document is not None
         assert document.path == path
@@ -174,3 +173,30 @@ def test_every_icon_exists_in_the_theme() -> None:
     names |= {icon for icon, _message in presentation._DEVICE.values()}
     names.add("open-menu-symbolic")
     assert [name for name in sorted(names) if not theme.has_icon(name)] == []
+
+
+def test_files_that_are_not_pdf(app: BerignaApplication, tmp_path: Path) -> None:
+    path = tmp_path / "datos.xml"
+    path.write_bytes(b"<datos/>")
+
+    def script(app: BerignaApplication) -> Generator[None, None, None]:
+        yield from wait_until(lambda: app.main_window is not None)
+        yield from wait_until(lambda: _visible_title(app) == "datos.xml")
+        page = _window(app)._navigation.get_visible_page().get_child().get_content()
+        assert page.get_description().startswith("berigna todavía no puede firmar")
+
+    drive(app, script, args=[str(path)])
+
+
+@pytest.mark.parametrize(
+    ("url", "configured"),
+    [("", False), ("https://tsa.example", True), ("ftp://tsa.example", False)],
+)
+def test_tsa_comes_from_the_preferences(url: str, configured: bool) -> None:
+    app = BerignaApplication(unique=False)
+    app.settings = Gio.Settings.new("pe.berigna.Berigna")
+    app.settings.set_string("tsa-url", url)
+    try:
+        assert (app._configured_timestamper() is not None) is configured
+    finally:
+        app.settings.reset("tsa-url")
