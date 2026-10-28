@@ -73,10 +73,11 @@ from pyhanko_certvalidator.policy_decl import (
 from pyhanko_certvalidator.registry import SimpleTrustManager
 from pyhanko_certvalidator.revinfo.archival import CRLContainer, OCSPContainer
 
+from berigna.core.certs import to_asn1, to_cryptography
 from berigna.core.errors import UnreadableDocumentError
 from berigna.core.net.fetchers import RevocationFetcherBackend
 from berigna.core.trust import TrustStore
-from berigna.core.validation.preflight import _to_asn1, _to_cryptography
+from berigna.core.validation.algorithms import algorithm_policy, signature_algorithm_policy
 
 _VERIFICATION_POLICY = RevocationCheckingPolicy(
     ee_certificate_rule=RevocationCheckingRule.CRL_OR_OCSP_REQUIRED,
@@ -219,14 +220,15 @@ def _spec(context: _Context, adobe: tuple[list[Any], list[Any]]) -> SignatureVal
     ocsps = dss_ocsps + adobe[0] + context.extra[0]
     crls = dss_crls + adobe[1] + context.extra[1]
     knowledge = LocalKnowledge(
-        known_certs=[_to_asn1(c) for c in store.intermediates] + dss_certs,
+        known_certs=[to_asn1(c) for c in store.intermediates] + dss_certs,
         known_ocsps=[c for o in ocsps for c in OCSPContainer.load_multi(o)],
         known_crls=[CRLContainer(c) for c in crls],
     )
     return SignatureValidationSpec(
         cert_validation_policy=CertValidationPolicySpec(
-            trust_manager=SimpleTrustManager.build(trust_roots=[_to_asn1(c) for c in store.roots]),
+            trust_manager=SimpleTrustManager.build(trust_roots=[to_asn1(c) for c in store.roots]),
             revinfo_policy=CertRevTrustPolicy(_VERIFICATION_POLICY),
+            algorithm_usage_policy=algorithm_policy(),
         ),
         revinfo_gathering_policy=RevocationInfoGatheringSpec(
             online_fetching_rule=(
@@ -238,6 +240,7 @@ def _spec(context: _Context, adobe: tuple[list[Any], list[Any]]) -> SignatureVal
         ),
         local_knowledge=knowledge,
         key_usage_settings=KeyUsageConstraints(key_usage={"non_repudiation"}),
+        signature_algorithm_policy=signature_algorithm_policy(),
     )
 
 
@@ -250,7 +253,7 @@ def _timestamp_report(
         indication=indication,
         subindication=subindication,
         time=getattr(status, "timestamp", None),
-        tsa=_to_cryptography(status.signing_cert) if status is not None else None,
+        tsa=to_cryptography(status.signing_cert) if status is not None else None,
         field_name=field_name,
     )
 
@@ -343,7 +346,7 @@ def _verify_signature(sig: EmbeddedPdfSignature, context: _Context) -> PdfSignat
         field_name=sig.field_name,
         indication=indication,
         subindication=subindication,
-        signer=_to_cryptography(sig.signer_cert),
+        signer=to_cryptography(sig.signer_cert),
         claimed_signing_time=sig.self_reported_timestamp,
         subfilter=subfilter,
         covers_whole_document=coverage == SignatureCoverageLevel.ENTIRE_FILE,

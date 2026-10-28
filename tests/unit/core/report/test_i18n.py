@@ -3,6 +3,7 @@
 """Languages of berigna 1.0 (ADR-0015): choice, fallbacks and catalogues (PR-I18N-04)."""
 
 import gettext
+from pathlib import Path
 
 import pytest
 
@@ -72,3 +73,25 @@ def test_strict_quechua_never_answers_in_spanish() -> None:
     assert strict.gettext(message) != translations(Language.ES_PE).gettext(message)
     assert Language.QUZ_PE.catalogue == "quz"
     assert Language.ES_PE.catalogue == "es_PE"
+
+
+def test_missing_catalogues_do_not_break_reports(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """An incomplete installation: explanations stay empty, reports are still produced."""
+    from berigna.core.report.explanations import explain_error
+    from berigna.core.report.json_report import report_data
+    from berigna.core.report.pdf_report import pdf_report
+    from berigna.core.validation import PdfVerification
+    from support.pki import NOW, build_pki
+
+    monkeypatch.setenv("BERIGNA_LOCALEDIR", str(tmp_path))
+    for language in Language:
+        assert translations(language).gettext("The signature is valid.") == (
+            "The signature is valid."
+        )
+    assert explain_error("ERR-101", translations(Language.ES_PE)) is None
+    store = build_pki().store
+    empty = PdfVerification((), (), NOW)
+    assert report_data(empty, file_name="a.pdf", file_sha256="00", store=store)["signatures"] == []
+    assert pdf_report(empty, file_name="a.pdf", file_sha256="00", store=store).startswith(b"%PDF")

@@ -38,3 +38,6 @@ evidencias-personales/
 
 # Brand PNG exports are regenerated from the SVG sources
 data/brand/*.png
+
+# Pinned root of the INDECOPI trusted list (ADR-0014); overrides a global *.crt ignore rule
+!src/berigna/core/trust/tsl/*.crt

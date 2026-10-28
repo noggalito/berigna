@@ -14,7 +14,7 @@ Se evaluaron el kichwa amazónico (variedades de Lamas, `qvs`, y del Napo, `qvo`
 ## Decisión
 
 1. Idiomas de la v1.0: es_PE y quechua sureño, ambos completos. La interfaz, las explicaciones de verificación, los informes, el sello visible, el aviso legal y el manual de usuario se traducen.
-2. Variedad y escritura del quechua: la configuración regional de referencia es `quz_PE` (cusco-collao). La traducción usa el alfabeto oficial y la norma escrita del quechua sureño, que también leen los hablantes de la variedad ayacucho-chanka. Los traductores se buscan en el Registro Nacional de Intérpretes y Traductores de Lenguas Indígenas u Originarias del Ministerio de Cultura, y deben validar la terminología antes de empezar el catálogo.
+2. Variedad y escritura del quechua: la configuración regional de referencia es `quz_PE` (cusco-collao). La traducción usa el alfabeto oficial y la norma escrita del quechua sureño, que también leen los hablantes de la variedad ayacucho-chanka. Modificado el 2026-10-28 (DP-14): en la v1.0 la traducción se hace con traductores en línea y ayuda de IA, con un glosario terminológico propio; la corrección por personas hablantes llega en la versión 1.1.
 3. Catálogo: `po/quz.po`, que se instala como `quz`, `quy` y `qu`, para que cualquier configuración de quechua sureño lo encuentre.
 4. en_US pasa a la versión 1.1. Los textos fuente (`msgid`) siguen escritos en inglés, según la convención de gettext (ADR-0011, punto 2), pero en la v1.0 no son un idioma ofrecido al usuario.
 5. Reglas de respaldo, que sustituyen al punto 5 de ADR-0011:
@@ -33,7 +33,7 @@ Se evaluaron el kichwa amazónico (variedades de Lamas, `qvs`, y del Napo, `qvo`
 ## Consecuencias
 
 - La CI exige es_PE y quechua al 100 % (PR-I18N-*). Una cadena nueva no se integra en `main` sin su traducción al quechua o sin una entrada marcada como pendiente de los traductores, que bloquea la versión (riesgo R-19).
-- Hay que conseguir traductores con experiencia en terminología técnica o administrativa (firma digital, certificado, revocación). El plazo y el coste de la traducción entran en la planificación de la Fase 3.
+- Sin corrección humana hasta la 1.1, un texto crítico puede cambiar de sentido en quechua (riesgo R-19). Se mitiga con el glosario, la traducción cruzada al castellano de los textos críticos y la prevalencia del texto es_PE (punto 7).
 - Las pruebas de usabilidad (RNF-USA-06) incluyen al menos una sesión con participantes quechuahablantes.
 - Los lectores de pantalla (Orca y speech-dispatcher) no tienen voz en quechua. La accesibilidad por voz en quechua queda fuera de la v1.0.
 - Los textos que hoy están en en_US en los requisitos y en el diseño de la interfaz (ejemplos de explicaciones, tabla de niveles) se reescriben para es_PE y quechua; los de en_US se conservan como referencia para la 1.1.
