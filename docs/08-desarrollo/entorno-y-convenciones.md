@@ -95,8 +95,8 @@ El script `scripts/verificar.sh` ejecuta exactamente esas comprobaciones (nunca 
 | Formato y *lint* | `ruff format` y `ruff check` (incluidas las reglas de seguridad `S`) |
 | Tipos | `mypy --strict` en `berigna.core`; en `ui`, modo normal |
 | Nombres | Código e identificadores en inglés |
-| Cadenas de la interfaz | Texto fuente en inglés (en_US) dentro de `_()`, con comentarios para traductores (`# Translators:`) cuando el contexto no sea obvio. Toda cadena nueva debe llegar con su traducción a `po/es_PE.po` en el mismo PR (ADR-0011). Nada de concatenar frases: se usan marcadores con nombre (`_("Signed by {name}").format(name=…)`) y `ngettext` para los plurales |
-| Configuración regional en desarrollo | Generar `es_PE.UTF-8` y `en_US.UTF-8` con `sudo dpkg-reconfigure locales` para poder probar ambos idiomas |
+| Cadenas de la interfaz | Texto fuente en inglés (en_US) dentro de `_()`, con comentarios para traductores (`# Translators:`) cuando el contexto no sea obvio. Toda cadena nueva debe llegar con su traducción a `po/es_PE.po` en el mismo PR y con su entrada en `po/quz.po`, traducida o marcada como pendiente para los traductores; una entrada pendiente bloquea la publicación de una versión (ADR-0011, ADR-0015). Nada de concatenar frases: se usan marcadores con nombre (`_("Signed by {name}").format(name=…)`) y `ngettext` para los plurales |
+| Configuración regional en desarrollo | Generar `es_PE.UTF-8` y `quz_PE` con `sudo dpkg-reconfigure locales` para poder probar ambos idiomas; las pruebas automáticas no dependen de que estén generadas. Herramientas: paquete `gettext` (`msgfmt`, `xgettext`) |
 | Comentarios y *docstrings* | En inglés. La documentación de producto, en español |
 | Cabeceras | `# SPDX-License-Identifier: GPL-3.0-or-later` y `# SPDX-FileCopyrightText: <año> {{TITULAR}}` |
 | Errores | Jerarquía `BerignaError` con un código (`ERR-xxx`) vinculado al catálogo de mensajes de UX |

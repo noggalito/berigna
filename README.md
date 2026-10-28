@@ -17,7 +17,7 @@ Aplicación de escritorio para GNU/Linux (Debian) que permite firmar digitalment
 | Funciones adicionales | Verificación de firmas, firma visible, firma por lotes, integración con Nautilus |
 | Objetivo normativo | Acreditación como software de firma digital ante INDECOPI (IOFE) |
 | Distribución | Paquete `.deb` (Fedora y otras distribuciones en la hoja de ruta) |
-| Idiomas | Español del Perú (es_PE) e inglés (en_US), ambos completos |
+| Idiomas | Español del Perú (es_PE) y quechua sureño, ambos completos; inglés (en_US) en la versión 1.1 |
 | Licencia | GPL-3.0-or-later |
 | Titular | `{{TITULAR}}` (pendiente) |
 

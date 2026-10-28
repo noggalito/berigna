@@ -16,7 +16,7 @@
 4. No hay sorpresas legales: el nivel, el certificado y el documento se muestran antes del PIN.
 5. Errores accionables: qué pasó, por qué y qué hacer, con un botón hacia el diagnóstico.
 6. Cumplimiento de la HIG de GNOME y de libadwaita: `AdwHeaderBar`, `AdwToastOverlay`, `AdwPreferencesDialog`, `AdwStatusPage`.
-7. Dos idiomas con el mismo cuidado: cada texto se redacta en es_PE y en en_US con el mismo tono llano. No se traduce palabra por palabra. Los bocetos de §3 están en es_PE; los textos en_US salen del catálogo (ADR-0011).
+7. Dos idiomas con el mismo cuidado: cada texto se redacta en es_PE y en quechua con el mismo tono llano. No se traduce palabra por palabra. Los bocetos de §3 están en es_PE; los textos en quechua salen del catálogo, redactados por los traductores (ADR-0015; ADR-0011).
 8. Diseño para longitudes variables: ninguna etiqueta depende de una anchura fija, porque los textos pueden crecer hasta un 40 % entre idiomas (RNF-USA-08).
 
 ## 1.1 Identidad visual
@@ -161,15 +161,17 @@ flowchart LR
 | B-LT | Validación a largo plazo | Incluye además la información necesaria para verificar la firma años después. Recomendado. | Long-term validation | Also includes the information needed to verify the signature years from now. Recommended. |
 | B-LTA | Archivo a largo plazo | Protege la firma contra la obsolescencia criptográfica. Para documentos que deban conservarse muchos años. | Long-term archival | Protects the signature against cryptographic obsolescence. For documents that must be kept for many years. |
 
+Las columnas en_US se conservan para la versión 1.1. Los textos en quechua los redactan los traductores a partir de las columnas es_PE (ADR-0015).
+
 ## 4.1 Selector de idioma
 
-En "Preferencias → General → Idioma" se elige entre "Usar el idioma del sistema", "Español (Perú)" y "English (United States)". Cada idioma aparece escrito en su propia lengua. Tras cambiarlo se muestra un aviso con el botón "Reiniciar ahora". El idioma del informe PDF se elige en el propio diálogo de exportación.
+En "Preferencias → General → Idioma" se elige entre "Usar el idioma del sistema", "Español (Perú)" y "Runasimi (quechua)". Cada idioma aparece escrito en su propia lengua. Tras cambiarlo se muestra un aviso con el botón "Reiniciar ahora". El idioma del informe PDF se elige en el propio diálogo de exportación.
 
 ## 5. Pendientes
 
 - [ ] Prototipo de alta fidelidad (Figma o Penpot) de las cinco vistas.
 - [ ] Icono de la aplicación según la guía de iconos de GNOME.
 - [ ] Prueba de usabilidad (RNF-USA-06) en la Fase 3.
-- [ ] Microcopia completa de errores (catálogo `ERR-xxx`, con su mensaje, su causa y la acción sugerida) en es_PE y en_US.
+- [ ] Microcopia completa de errores (catálogo `ERR-xxx`, con su mensaje, su causa y la acción sugerida) en es_PE y en quechua.
 - [ ] Glosario terminológico bilingüe para traductores (por ejemplo: sello de tiempo / timestamp, firmante / signer, revocado / revoked), para mantener la coherencia.
-- [ ] Revisión de los bocetos en en_US para detectar textos que se desborden.
+- [ ] Revisión de los bocetos en quechua para detectar textos que se desborden (las palabras aglutinantes suelen ser largas).

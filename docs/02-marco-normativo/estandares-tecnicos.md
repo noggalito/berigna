@@ -63,7 +63,7 @@
 | freedesktop Desktop Entry, Shared MIME-info, AppStream | Integración con el escritorio |
 | Debian Policy Manual, Debian Python Policy | Empaquetado `.deb` |
 | XDG Base Directory | Ubicación de la configuración, la caché y los datos |
-| GNU gettext / itstool | Traducción de la interfaz y del manual (es_PE y en_US) |
+| GNU gettext / itstool | Traducción de la interfaz y del manual (es_PE y quechua sureño) |
 | BCP 47 (IETF) | Etiquetas de idioma en AppStream (`es-PE`, `en-US`) |
 | Unicode CLDR / POSIX locale | Formatos regionales de fechas, horas y números |
 

@@ -170,11 +170,11 @@ Prioridades según MoSCoW (ver convenciones). Cada requisito tiene criterios de 
 - Prioridad: Debe.
 - Descripción: cada firma recibe una indicación según ETSI EN 319 102-1 (TOTAL-PASSED, TOTAL-FAILED o INDETERMINATE, con su subindicación) y una explicación en lenguaje llano en el idioma de la interfaz, por ejemplo:
   - es_PE: "La firma es válida. El documento no ha sido modificado desde que Juan Pérez lo firmó el 27/10/2026 a las 10:15 (hora certificada por la TSA)."
-  - en_US: "The signature is valid. The document has not been modified since Juan Pérez signed it on 10/27/2026 at 10:15 AM (time certified by the TSA)."
-- Aceptación: todas las combinaciones de indicación y subindicación tienen su explicación en ambos idiomas. El informe muestra además el estado de cada sello de tiempo (de firma, de archivo y de documento) por separado: un sello de archivo inválido se señala aunque la firma sea válida en la fecha actual (SPK-03 §5).
+  - quechua: texto equivalente redactado por los traductores (ADR-0015). El ejemplo en en_US se conserva para la versión 1.1: "The signature is valid. The document has not been modified since Juan Pérez signed it on 10/27/2026 at 10:15 AM (time certified by the TSA)."
+- Aceptación: todas las combinaciones de indicación y subindicación tienen su explicación en es_PE y en quechua. El informe muestra además el estado de cada sello de tiempo (de firma, de archivo y de documento) por separado: un sello de archivo inválido se señala aunque la firma sea válida en la fecha actual (SPK-03 §5).
 
 ### RF-054: Informe exportable
-- Prioridad: Debe. Descripción: se exporta un informe en PDF (legible) y en JSON (para máquinas). Debería poder exportarse también en XML según ETSI TS 119 102-2. El informe PDF se genera en es_PE o en_US, a elección del usuario (por defecto, el idioma de la interfaz). El JSON lleva los códigos normalizados y las explicaciones en ambos idiomas.
+- Prioridad: Debe. Descripción: se exporta un informe en PDF (legible) y en JSON (para máquinas). Debería poder exportarse también en XML según ETSI TS 119 102-2. El informe PDF se genera en es_PE o en quechua, a elección del usuario (por defecto, el idioma de la interfaz). El JSON lleva los códigos normalizados y las explicaciones en ambos idiomas (es_PE y quechua; ADR-0015).
 
 ### RF-055: Detección de modificaciones posteriores
 - Prioridad: Debe.
@@ -217,7 +217,7 @@ Prioridades según MoSCoW (ver convenciones). Cada requisito tiene criterios de 
 ## 9. Preferencias, historial y registros
 
 ### RF-080: Preferencias
-- Prioridad: Debe. Descripción: nivel por defecto, formato por tipo de archivo, sufijo y carpeta de salida, TSA, red, apariencia de la firma visible e idioma de la interfaz (sistema, es_PE o en_US; ver RF-090).
+- Prioridad: Debe. Descripción: nivel por defecto, formato por tipo de archivo, sufijo y carpeta de salida, TSA, red, apariencia de la firma visible e idioma de la interfaz (sistema, es_PE o quechua; ver RF-090).
 ### RF-081: Perfiles de apariencia de la firma visible
 - Prioridad: Debería. Descripción: se guardan varios perfiles con nombre (por ejemplo, "Rúbrica" y "Sello institucional").
 ### RF-082: Historial local de operaciones
@@ -227,22 +227,22 @@ Prioridades según MoSCoW (ver convenciones). Cada requisito tiene criterios de 
 
 ## 10. Idioma y ayuda
 
-### RF-090: Interfaz bilingüe (es_PE y en_US)
+### RF-090: Interfaz bilingüe (es_PE y quechua sureño)
 - Prioridad: Debe.
-- Descripción: la aplicación está disponible completa en español del Perú (es_PE) e inglés (en_US), según ADR-0011:
-  - Todas las cadenas pasan por gettext. El texto fuente es en_US.
-  - Por defecto se usa el idioma del sistema. Las variantes del español muestran es_PE y cualquier otro idioma muestra en_US.
-  - Desde las preferencias se puede forzar es_PE o en_US (se aplica al reiniciar).
+- Descripción: la aplicación está disponible completa en español del Perú (es_PE) y en quechua sureño (catálogo `quz`, configuración regional `quz_PE`), según ADR-0011 y ADR-0015. en_US llega en la versión 1.1.
+  - Todas las cadenas pasan por gettext. El texto fuente (`msgid`) está en inglés, pero no se muestra en la v1.0.
+  - Por defecto se usa el idioma del sistema. Las configuraciones de quechua sureño (`quz`, `quy`, `qu`) muestran el quechua y cualquier otro idioma muestra es_PE.
+  - Desde las preferencias se puede forzar es_PE o quechua (se aplica al reiniciar).
   - Las fechas, las horas y los números siguen la configuración regional activa.
   - Cubre la interfaz, los mensajes de error, las explicaciones de verificación, los informes, la extensión de Nautilus, el `.desktop` y la metainfo de AppStream.
 - Aceptación:
   1. Ambos catálogos están traducidos al 100 % (`msgfmt --statistics` sin cadenas sin traducir ni marcadas como *fuzzy*).
-  2. Con `LANGUAGE=es_MX` la interfaz aparece en es_PE; con `LANGUAGE=fr_FR`, en en_US.
+  2. Con `LANGUAGE=quz_PE` o `LANGUAGE=quy_PE` la interfaz aparece en quechua; con `LANGUAGE=es_MX`, `fr_FR`, `en_US` o `C`, en es_PE.
 
 ### RF-091: Manuales y ayuda integrada
 - Prioridad: Debe (es evidencia obligatoria de la acreditación: requisito 10 de la guía de INDECOPI, ACR-22).
-- Descripción: un manual de usuario y un manual de administración (despliegue, configuración con GSettings y dconf, almacén de confianza), en formato Mallard (ADR-0011), accesibles desde el menú, en es_PE y en_US. Ayuda contextual en los errores en el idioma de la interfaz.
+- Descripción: un manual de usuario y un manual de administración (despliegue, configuración con GSettings y dconf, almacén de confianza), en formato Mallard (ADR-0011), accesibles desde el menú. El manual de usuario se publica en es_PE y en quechua; el de administración, en es_PE (ADR-0015). Ayuda contextual en los errores en el idioma de la interfaz.
 
 ### RF-092: Idioma del sello visible
 - Prioridad: Debe.
-- Descripción: cada perfil de apariencia de la firma visible define el idioma de sus textos fijos (por ejemplo, "Firmado digitalmente por" o "Digitally signed by") y del formato de la fecha, con independencia del idioma de la interfaz. Por defecto es es_PE.
+- Descripción: cada perfil de apariencia de la firma visible define el idioma de sus textos fijos (por ejemplo, "Firmado digitalmente por" o su equivalente en quechua) y del formato de la fecha, con independencia del idioma de la interfaz. Por defecto es es_PE.

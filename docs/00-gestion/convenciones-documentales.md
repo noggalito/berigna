@@ -11,8 +11,8 @@
 ## 1. Idioma y formato
 
 - La documentación del proyecto (esta carpeta `docs/`) se redacta en español (variante Perú) y en Markdown (CommonMark + tablas GFM).
-- La documentación dirigida al usuario final (manual, aviso legal, política de privacidad, notas de versión, metainfo de AppStream) se publica en es_PE y en en_US (DP-07, ADR-0011). En caso de discrepancia prevalece la versión es_PE.
-- Notación de idiomas: en los documentos y en gettext se usan los códigos POSIX `es_PE` y `en_US`; en AppStream y en HTML, las etiquetas BCP 47 `es-PE` y `en-US`.
+- La documentación dirigida al usuario final (manual, aviso legal, política de privacidad, notas de versión, metainfo de AppStream) se publica en es_PE y en quechua sureño (DP-07, DP-14, ADR-0011, ADR-0015). En caso de discrepancia prevalece la versión es_PE.
+- Notación de idiomas: en los documentos y en gettext se usan los códigos POSIX `es_PE` y `quz_PE` (catálogo `quz`); en AppStream y en HTML, las etiquetas BCP 47 `es-PE` y `quz-PE`. `en_US` y `en-US` se reservan para la versión 1.1.
 - Los diagramas se escriben en Mermaid dentro del propio Markdown, para que se puedan versionar como texto.
 - Los términos técnicos que no tienen una traducción establecida se mantienen en inglés y en cursiva la primera vez que aparecen (por ejemplo, *token*, *spike*). Se definen en el [glosario](glosario.md).
 

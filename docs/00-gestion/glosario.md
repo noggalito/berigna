@@ -32,7 +32,8 @@
 | gettext | Sistema estándar de traducción de software (GNU). Extrae las cadenas marcadas con `_()` y las traduce mediante catálogos `.po` / `.mo`. |
 | i18n / l10n | Internacionalización (preparar el software para varios idiomas) y localización (traducirlo y adaptarlo a un idioma o región concretos). |
 | IOFE | Infraestructura Oficial de Firma Electrónica del Perú. |
-| *Locale* (configuración regional) | Combinación de idioma y región (por ejemplo, `es_PE` o `en_US`) que determina los textos y el formato de fechas y números. |
+| *Locale* (configuración regional) | Combinación de idioma y región (por ejemplo, `es_PE` o `quz_PE`) que determina los textos y el formato de fechas y números. |
+| Quechua sureño | Rama del quechua hablada en el sur del Perú (variedades cusco-collao, `quz`, y ayacucho-chanka, `quy`). Segundo idioma de berigna 1.0 (ADR-0015). No confundir con el kichwa amazónico (`qvs`, `qvo`). |
 | LTV | *Long Term Validation*: capacidad de validar una firma años después, cuando los certificados ya caducaron o los servicios de revocación ya no responden. |
 | Middleware | Software que traduce entre una aplicación y la tarjeta (por ejemplo, OpenSC). Expone una interfaz PKCS#11. |
 | Módulo PKCS#11 | Biblioteca compartida (`.so`) que implementa la API PKCS#11 para un *token* concreto. |
