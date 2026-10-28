@@ -54,8 +54,11 @@ def test_general_preferences(app: BerignaApplication, tmp_path: Path) -> None:
         dialog.toast = toasts.append  # type: ignore[method-assign]
         settings = app.settings
         assert settings is not None
+        # The chosen value is the subtitle, in full, from the start (it used to be cut).
+        assert dialog.level.get_subtitle() == "Validación a largo plazo (B-LT)"
         dialog.level.set_selected(3)  # Basic
         assert settings.get_string("default-level") == "B-B"
+        assert dialog.level.get_subtitle() == "Básica (B-B)"
         dialog.digest.set_selected(2)
         assert settings.get_string("digest-algorithm") == "sha512"
         dialog.suffix.set_text("-con-firma")

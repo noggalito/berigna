@@ -23,6 +23,7 @@ from berigna.core.net.tsa import probe  # noqa: E402
 from berigna.core.report.explanations import explain_error  # noqa: E402
 from berigna.core.trust.cache import TslRefresh  # noqa: E402
 from berigna.ui import presentation  # noqa: E402
+from berigna.ui.help import HelpTopic, help_button  # noqa: E402
 from berigna.ui.i18n import _, catalogue  # noqa: E402
 from berigna.ui.signing import LEVEL_ORDER  # noqa: E402
 
@@ -53,13 +54,24 @@ class PreferencesDialog(Adw.PreferencesDialog):
     def _combo(self, title: str, key: str, options: Sequence[tuple[str, str]]) -> Adw.ComboRow:
         """A combo row bound to a string or enum key: ``options`` are (value, label) pairs."""
         values = [value for value, _label in options]
+        labels = [label for _value, label in options]
+        # The chosen value goes under the title, where it has the whole width: on the right it
+        # was cut ("Validación a largo plazo (…"), and so were the items of the list. The
+        # subtitle is set here, because AdwComboRow (use-subtitle) leaves it empty until the
+        # selection first changes.
         row = Adw.ComboRow(
-            title=title, model=Gtk.StringList.new([label for _value, label in options])
+            title=title,
+            model=Gtk.StringList.new(labels),
+            factory=_label_factory(visible=False),
+            list_factory=_label_factory(visible=True),
+            subtitle_lines=0,
         )
         current = self._settings.get_string(key)
         row.set_selected(values.index(current) if current in values else 0)
+        row.set_subtitle(labels[row.get_selected()])
 
         def changed(row: Adw.ComboRow, _param: object) -> None:
+            row.set_subtitle(labels[row.get_selected()])
             value = values[row.get_selected()]
             if self._settings.get_string(key) != value:
                 self._settings.set_string(key, value)
@@ -94,7 +106,9 @@ class PreferencesDialog(Adw.PreferencesDialog):
             "default-level",
             [(level.value, presentation.level_title(level)) for level in LEVEL_ORDER],
         )
+        self.level.add_suffix(help_button(HelpTopic.SIGNATURE_LEVELS))
         self.digest = self._combo(_("Hash Algorithm"), "digest-algorithm", DIGESTS)
+        self.digest.add_suffix(help_button(HelpTopic.HASH_ALGORITHM))
         self.suffix = self._entry(_("Suffix of Signed Files"), "output-suffix")
         self.suffix.connect("apply", self._on_suffix)
         self.folder = Adw.ActionRow(title=_("Folder for Signed Files"), use_markup=False)
@@ -155,6 +169,7 @@ class PreferencesDialog(Adw.PreferencesDialog):
     def _network(self) -> Adw.PreferencesPage:
         page = Adw.PreferencesPage(title=_("Network"), icon_name="network-server-symbolic")
         tsa = Adw.PreferencesGroup(
+            header_suffix=help_button(HelpTopic.TIMESTAMPING_AUTHORITY),
             title=_("Timestamping Authority"),
             description=_(
                 "Needed for the levels with a timestamp. Use a timestamping authority "
@@ -173,6 +188,7 @@ class PreferencesDialog(Adw.PreferencesDialog):
         self.timeout = Adw.SpinRow.new_with_range(1, 300, 1)
         self.timeout.set_title(_("Network Timeout"))
         self.timeout.set_subtitle(_("Seconds to wait for each answer"))
+        self.timeout.add_suffix(help_button(HelpTopic.NETWORK_TIMEOUT))
         self._settings.bind("network-timeout", self.timeout, "value", Gio.SettingsBindFlags.DEFAULT)
         self.proxy = self._combo(
             _("Proxy"),
@@ -183,6 +199,7 @@ class PreferencesDialog(Adw.PreferencesDialog):
                 (ProxyMode.NONE.value, _("No Proxy")),
             ],
         )
+        self.proxy.add_suffix(help_button(HelpTopic.PROXY))
         self.proxy_url = self._entry(_("Proxy Address"), "proxy-url")
         self.proxy_url.connect("apply", self._on_proxy_url)
         self.proxy.connect("notify::selected", lambda *_a: self._show_proxy())
@@ -242,6 +259,7 @@ class PreferencesDialog(Adw.PreferencesDialog):
     def _trust(self) -> Adw.PreferencesPage:
         page = Adw.PreferencesPage(title=_("Trust"), icon_name="security-high-symbolic")
         tsl = Adw.PreferencesGroup(
+            header_suffix=help_button(HelpTopic.TRUSTED_LIST),
             title=_("INDECOPI Trusted List"),
             description=_(
                 "berigna adds the certification authorities accredited by INDECOPI to its own "
@@ -277,3 +295,18 @@ class PreferencesDialog(Adw.PreferencesDialog):
                 self.toast(_("The trusted list is up to date."))
 
         self._app.refresh_tsl(force=True, on_done=done)
+
+
+def _label_factory(*, visible: bool) -> Gtk.SignalListItemFactory:
+    """Items of a combo row: wrapped in the list (``visible``), or none next to the title."""
+    factory = Gtk.SignalListItemFactory()
+
+    def setup(_factory: Gtk.SignalListItemFactory, item: Gtk.ListItem) -> None:
+        item.set_child(Gtk.Label(xalign=0, wrap=True, max_width_chars=40, visible=visible))
+
+    def bind(_factory: Gtk.SignalListItemFactory, item: Gtk.ListItem) -> None:
+        item.get_child().set_label(item.get_item().get_string())
+
+    factory.connect("setup", setup)
+    factory.connect("bind", bind)
+    return factory
