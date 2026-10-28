@@ -7,8 +7,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: berigna\n"
-"Report-Msgid-Bugs-To: https://github.com/noggalito/berigna/issues\n"
-"POT-Creation-Date: 2026-10-28 00:29-0500\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-10-28 13:05-0500\n"
 "PO-Revision-Date: 2026-10-27 23:38-0500\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -17,6 +17,26 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: data/ui/window.blp:23
+msgid "Main Menu"
+msgstr "Menú principal"
+
+#: data/ui/window.blp:29
+msgid "Show in Spanish"
+msgstr "Ver en español"
+
+#: data/ui/window.blp:40
+msgid "Drop a document here to sign or verify it"
+msgstr "Arrastra aquí un documento para firmarlo o verificarlo"
+
+#: data/ui/window.blp:43
+msgid "_Open Document…"
+msgstr "_Abrir documento…"
+
+#: data/ui/window.blp:82
+msgid "_About berigna"
+msgstr "_Acerca de berigna"
 
 #: src/berigna/core/report/messages.py:19
 msgid "The signature is valid."
@@ -505,3 +525,81 @@ msgstr "No se pudo verificar el documento."
 #: src/berigna/core/report/messages.py:201
 msgid "The file is not a document that berigna can read, or it is damaged."
 msgstr "El archivo no es un documento que berigna pueda leer, o está dañado."
+
+#: src/berigna/ui/application.py:116
+msgid "Sign and verify documents with your Peruvian DNIe."
+msgstr "Firma y verifica documentos con tu DNIe."
+
+#: src/berigna/ui/presentation.py:14
+msgid ""
+"Translation not reviewed by speakers. If in doubt, the Spanish text prevails."
+msgstr "Traducción sin revisar por hablantes. En caso de duda, prevalece el texto en español."
+
+#: src/berigna/ui/presentation.py:28
+msgid "The smart card service (pcscd) is not running"
+msgstr "El servicio de tarjetas inteligentes (pcscd) no está en funcionamiento"
+
+#: src/berigna/ui/presentation.py:30
+msgid "Connect a card reader"
+msgstr "Conecta un lector de tarjetas"
+
+#: src/berigna/ui/presentation.py:31
+msgid "Insert your DNIe in the reader"
+msgstr "Inserta tu DNIe en el lector"
+
+#: src/berigna/ui/presentation.py:32
+msgid "This card is not supported"
+msgstr "Tarjeta no compatible"
+
+#: src/berigna/ui/presentation.py:33
+msgid "DNIe ready"
+msgstr "DNIe listo"
+
+#: src/berigna/ui/presentation.py:40
+msgid "Looking for card readers…"
+msgstr "Buscando lectores de tarjetas…"
+
+#: src/berigna/ui/presentation.py:48
+msgid "berigna cannot sign or verify this kind of file yet."
+msgstr "berigna todavía no puede firmar ni verificar este tipo de archivo."
+
+#: src/berigna/ui/presentation.py:50
+#, python-brace-format
+msgid "PDF document, {n} page"
+msgid_plural "PDF document, {n} pages"
+msgstr[0] "Documento PDF, {n} página"
+msgstr[1] "Documento PDF, {n} páginas"
+
+#: src/berigna/ui/presentation.py:52
+#, python-brace-format
+msgid "{document}, not signed"
+msgstr "{document}, sin firmas"
+
+#: src/berigna/ui/presentation.py:54
+#, python-brace-format
+msgid "{n} signature"
+msgid_plural "{n} signatures"
+msgstr[0] "{n} firma"
+msgstr[1] "{n} firmas"
+
+#: src/berigna/ui/presentation.py:56
+#, python-brace-format
+msgid "{document}, {signatures}"
+msgstr "{document}, {signatures}"
+
+#: src/berigna/ui/window.py:71
+msgid "PDF documents"
+msgstr "Documentos PDF"
+
+#: src/berigna/ui/window.py:75
+msgid "Open Document"
+msgstr "Abrir documento"
+
+#: src/berigna/ui/window.py:96
+msgid "Only files on this computer can be opened."
+msgstr "Solo se pueden abrir archivos de este equipo."
+
+#: src/berigna/ui/window.py:128
+#, python-brace-format
+msgid "{name} could not be opened."
+msgstr "No se pudo abrir {name}."

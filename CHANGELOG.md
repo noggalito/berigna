@@ -36,6 +36,14 @@ Verificación e informes:
 - Infraestructura de traducción con GNU gettext (`po/`, `scripts/traducciones.sh`, `berigna.core.i18n`): catálogo es_PE completo y catálogo de quechua sureño a la espera de los traductores; el quechua pendiente se muestra en es_PE, nunca en el texto fuente inglés (ADR-0015).
 - Matriz de validación externa PAdES por niveles contra DSS 6.2 (`tests/interop/`, `docs/07-calidad/validacion-externa-fase2.md`).
 
+Interfaz (Fase 3):
+
+- Aplicación GTK 4 y libadwaita `pe.berigna.Berigna` construida con Meson (ADR-0010): vistas en Blueprint, recursos, esquema de GSettings, catálogos con alias `quy` y `qu`, y lanzador. `scripts/ejecutar.sh` la lanza desde el árbol de trabajo.
+- Ventana principal: abrir un documento con el botón, arrastrándolo o como argumento; estado del lector y del DNIe en la barra inferior.
+- `berigna.core.documents`: tipo de documento, páginas, firmas y SHA-256 al abrirlo.
+- Las vistas se traducen con `core.i18n` y no con el gettext de C, que mostraba el inglés con la configuración regional C; el idioma cambia sin reiniciar.
+- Aviso de traducción sin revisar con la interfaz en quechua, con el botón "Ver en español" (DP-14).
+
 Proyecto:
 
 - Logotipos SVG de la identidad visual (`data/brand/`), bajo GPL-3.0-or-later como el resto del proyecto.
