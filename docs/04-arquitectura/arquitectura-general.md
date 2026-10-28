@@ -95,7 +95,7 @@ flowchart TB
 
 | Módulo | Responsabilidad | Bibliotecas (estado al 2026-10-27) |
 |---|---|---|
-| `core.token` | Detección de lectores y tarjetas, y selección del *backend* según el ATR. Dos *backends* con la misma interfaz `TokenSigner`: `dnie_v2`, driver APDU para el DNIe v2 (*applet* PKI, lectura de certificados, VERIFY, MSE:SET y PSO:CDS, con lista blanca de instrucciones), y `pkcs11`, el genérico (*slots*, login y logout, `C_Sign`) | pyscard (ADR-0012), implementado para el DNIe v2; python-pkcs11 (ADR-0003), pendiente |
+| `core.token` | Detección de lectores y tarjetas, y selección del *backend* según el ATR. Dos *backends* con la misma interfaz `TokenSigner`: `dnie_v2`, driver APDU para el DNIe v2 (*applet* PKI, lectura de certificados, VERIFY, MSE:SET y PSO:CDS, con lista blanca de instrucciones), y `pkcs11`, el genérico (*slots*, login y logout, `C_Sign`) | pyscard (ADR-0012), implementado para el DNIe v2, con monitor en caliente; python-pkcs11 (ADR-0003), aplazado a la versión 1.1 |
 | `core.formats.pades` | Firma y validación PAdES, DSS/VRI, sellos de documento, DocMDP. Firma mediante un `Signer` personalizado de pyHanko que delega en `TokenSigner` | pyHanko 0.25.1 (ADR-0004, ADR-0013); implementada la firma B-B |
 | `core.formats.cades` | Firma y validación CMS/CAdES separada y envuelta | pyHanko (API CMS genérica), asn1crypto (ADR-0008) |
 | `core.formats.xades` | Firma y validación XAdES | Según SPK-03 (ADR-0008) |
@@ -123,6 +123,9 @@ Decisiones de implementación de `core.token.dnie_v2` (ADR-0012), documentadas p
 | Ante un fallo transitorio de PC/SC (`SCARD_E_NOT_TRANSACTED`), SELECT y READ BINARY se reintentan hasta dos veces (50 y 150 ms). VERIFY, MSE:SET y PSO:CDS no se reintentan nunca y la sesión se cierra | Medido: 1 de cada 30 sesiones encadenadas fallaba tras el apagado de la anterior; con la política, 0 de 60. Reenviar un VERIFY podría gastar un intento del PIN (P-06) |
 | Límite de longitud del PIN: 255 bytes | Límite de una APDU; la política real la aplica la tarjeta |
 | `Pin.buffer()` devuelve el búfer vivo, y su único consumidor es `verify_pin`, que lo borra | P-04; la confianza se limita a un solo punto del código |
+| El monitor (`core.token.monitor`) consulta `SCardGetStatusChange` con tiempo de espera 0 y duerme entre sondeos con un `threading.Event` | Decisión deliberada: `stop()` responde de inmediato, sin esperar a que pcscd devuelva una llamada bloqueante ni recurrir a `SCardCancel`; el coste de CPU de dos sondeos por segundo es despreciable |
+| Los nombres de lector se normalizan a `str` aunque pyscard los devuelva como `bytes` | El contrato de `ReaderState` no depende de la versión de pyscard |
+| `sign_pdf_file` comprueba que el PDF se puede leer antes de validar el certificado y pedir el PIN | Un archivo dañado no le cuesta al usuario teclear el PIN |
 
 ## 4. Interfaces clave del núcleo
 
@@ -137,6 +140,8 @@ class TokenSigner(Protocol):                      # core.token.base
 
 def check_signer(certificate, store, *, moment=None, online=True,
                  ocsp_responses=(), crls=(), timeout=10.0) -> SignerCheck   # core.validation
+# SignerCheck: revocation_checked, chain, moment y revocation_note (OFFLINE o UNAVAILABLE
+# cuando no se pudo comprobar la revocación y solo cabe B-B)
 
 def sign_pdf_file(source, output, *, expected_sha256, token, store, ask_pin,
                   options=None, online=True, ocsp_responses=(), crls=()) -> SignResult  # core.signing
@@ -182,8 +187,9 @@ class TokenSigner(Protocol):
 
 - La interfaz se ejecuta en el bucle principal de GLib.
 - Las operaciones del núcleo se ejecutan en un único hilo de trabajo dedicado al *token* (las llamadas al *token*, sea PKCS#11 o APDU sobre una única conexión PC/SC, se serializan). La red y la validación pueden usar un pool de hilos aparte.
+- `check_signer` (y por tanto `sign_pdf_file`) crea su propio bucle de asyncio para pyhanko-certvalidator: debe llamarse desde un hilo de trabajo, nunca desde dentro de un bucle de asyncio en marcha.
 - La comunicación hacia la interfaz se hace con `GLib.idle_add` o con `Gio.Task`. La cancelación usa `Gio.Cancellable`, que se traduce a un token de cancelación del núcleo.
-- La detección de lectores y tarjetas se hace con un sondeo de baja frecuencia (1 s) o, si el módulo lo soporta, con `C_WaitForSlotEvent` en un hilo propio.
+- La detección de lectores y tarjetas (`core.token.monitor`) sondea cada 0,5 s con `SCardGetStatusChange` en un hilo propio, sin conectarse a la tarjeta, de modo que no interfiere con una sesión de firma exclusiva. Solo avisa cuando cambia el estado (sin servicio PC/SC, sin lector, sin tarjeta, tarjeta no compatible con su ATR, DNIe listo), y la interfaz debe pasar el aviso al bucle principal con `GLib.idle_add`.
 
 ## 6. Proceso y empaquetado
 
