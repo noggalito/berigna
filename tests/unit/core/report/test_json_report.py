@@ -10,7 +10,7 @@ from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.x509.oid import NameOID
 
-from berigna.core.report.json_report import SCHEMA, dumps, pdf_report
+from berigna.core.report.json_report import SCHEMA, dumps, report_data
 from berigna.core.trust import TrustedCertificate, TrustStore
 from berigna.core.validation import (
     Indication,
@@ -61,7 +61,7 @@ def _verification(signer: x509.Certificate | None) -> PdfVerification:
 def test_report_structure() -> None:
     signer = _dnie_like("PNOPE-12345678")
     store = TrustStore([TrustedCertificate(signer, "root", "usuario", user_added=True)])
-    report = pdf_report(
+    report = report_data(
         _verification(signer), file_name="contrato.pdf", file_sha256="ab" * 32, store=store
     )
     assert report["schema"] == SCHEMA
@@ -91,7 +91,7 @@ def test_report_structure() -> None:
 
 def test_signer_without_identity_number_and_damaged_signature() -> None:
     signer = _dnie_like(None)
-    report = pdf_report(
+    report = report_data(
         _verification(signer), file_name="a.pdf", file_sha256="00", store=TrustStore([])
     )
     assert report["signatures"][0]["signer"]["id_masked"] is None
@@ -112,7 +112,7 @@ def test_signer_without_identity_number_and_damaged_signature() -> None:
         (),
         NOW,
     )
-    [signature] = pdf_report(failed, file_name="a.pdf", file_sha256="00", store=TrustStore([]))[
+    [signature] = report_data(failed, file_name="a.pdf", file_sha256="00", store=TrustStore([]))[
         "signatures"
     ]
     assert signature["signer"] is None
@@ -120,7 +120,7 @@ def test_signer_without_identity_number_and_damaged_signature() -> None:
 
 
 def test_dumps_is_valid_utf8_json() -> None:
-    report = pdf_report(
+    report = report_data(
         _verification(_dnie_like("PNOPE-12345678")),
         file_name="contraseña.pdf",
         file_sha256="00",

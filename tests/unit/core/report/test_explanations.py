@@ -133,6 +133,20 @@ def test_pending_quechua_gives_no_explanation_rather_than_a_mixed_one(pki: Pki) 
     assert explain_error("ERR-101", STRICT_QUECHUA) is None
 
 
+def test_identity_numbers_are_masked(pki: Pki) -> None:
+    from berigna.core.report.explanations import mask_numbers
+
+    assert (
+        mask_numbers("PEREZ QUISPE JUAN FIR 12345678 hard") == "PEREZ QUISPE JUAN FIR ****5678 hard"
+    )
+    assert mask_numbers("EMPRESA FAU 20123456789 soft") == "EMPRESA FAU ****6789 soft"
+    assert mask_numbers("CLASS 2 II") == "CLASS 2 II"
+    text = explain_signature(_report(pki.leaf("PEREZ JUAN FIR 12345678 hard")), SPANISH)
+    assert text is not None
+    assert "Firmado por PEREZ JUAN FIR ****5678 hard." in text
+    assert "12345678" not in text
+
+
 def test_times_are_shown_in_utc() -> None:
     lima = dt.timezone(dt.timedelta(hours=-5))
     assert format_time(dt.datetime(2026, 10, 27, 10, 15, tzinfo=lima)) == "27/10/2026 15:15 UTC"
