@@ -1,0 +1,387 @@
+# Spanish translations for berigna package
+# Traducciones al español para el paquete berigna.
+# Copyright (C) 2026 Calú
+# This file is distributed under the same license as the berigna package.
+# Automatically generated, 2026.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: berigna\n"
+"Report-Msgid-Bugs-To: https://github.com/noggalito/berigna/issues\n"
+"POT-Creation-Date: 2026-10-27 23:38-0500\n"
+"PO-Revision-Date: 2026-10-27 23:38-0500\n"
+"Last-Translator: Automatically generated\n"
+"Language-Team: none\n"
+"Language: es_PE\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: src/berigna/core/report/messages.py:19
+msgid "The signature is valid."
+msgstr "La firma es válida."
+
+#: src/berigna/core/report/messages.py:20
+msgid "The signature is not valid."
+msgstr "La firma no es válida."
+
+#: src/berigna/core/report/messages.py:21
+msgid "It could not be determined whether the signature is valid."
+msgstr "No se pudo determinar si la firma es válida."
+
+#: src/berigna/core/report/messages.py:27
+msgid "The signature is damaged or does not have the expected format."
+msgstr "La firma está dañada o no tiene el formato esperado."
+
+#: src/berigna/core/report/messages.py:29
+msgid "The signed content was changed after it was signed."
+msgstr "El contenido firmado se modificó después de la firma."
+
+#: src/berigna/core/report/messages.py:31
+msgid "The signature value does not match the signer's certificate."
+msgstr "El valor de la firma no corresponde al certificado del firmante."
+
+#: src/berigna/core/report/messages.py:34
+msgid ""
+"The signer's certificate had been revoked before the signature was made."
+msgstr ""
+"El certificado del firmante ya estaba revocado cuando se hizo la firma."
+
+#: src/berigna/core/report/messages.py:37
+msgid "The signature was made before the signer's certificate became valid."
+msgstr ""
+"La firma se hizo antes de que el certificado del firmante entrara en "
+"vigencia."
+
+#: src/berigna/core/report/messages.py:40
+msgid "The signature does not meet the requirements of the validation policy."
+msgstr "La firma no cumple los requisitos de la política de validación."
+
+#: src/berigna/core/report/messages.py:43
+msgid ""
+"A certificate in the chain does not meet the requirements of the validation "
+"policy."
+msgstr ""
+"Un certificado de la cadena no cumple los requisitos de la política de "
+"validación."
+
+#: src/berigna/core/report/messages.py:46
+msgid "The certificate chain of the signer could not be validated."
+msgstr "No se pudo validar la cadena de certificados del firmante."
+
+#: src/berigna/core/report/messages.py:49
+msgid ""
+"The signature uses an algorithm or a key size that is no longer considered "
+"secure."
+msgstr ""
+"La firma usa un algoritmo o un tamaño de clave que ya no se considera seguro."
+
+#: src/berigna/core/report/messages.py:52
+msgid ""
+"The signer's certificate has expired, and nothing proves that the signature "
+"was made while it was valid."
+msgstr ""
+"El certificado del firmante venció y nada prueba que la firma se hiciera "
+"mientras estaba vigente."
+
+#: src/berigna/core/report/messages.py:56
+msgid ""
+"The signer's certificate is not yet valid at the time of the verification."
+msgstr ""
+"El certificado del firmante todavía no está vigente en el momento de la "
+"verificación."
+
+#: src/berigna/core/report/messages.py:58
+msgid "The signature policy could not be processed."
+msgstr "No se pudo procesar la política de firma."
+
+#: src/berigna/core/report/messages.py:60
+msgid "The signature policy that the signature refers to is not available."
+msgstr ""
+"La política de firma a la que hace referencia la firma no está disponible."
+
+#: src/berigna/core/report/messages.py:63
+msgid "The time-stamps of the signature are not in a consistent order."
+msgstr "Los sellos de tiempo de la firma no siguen un orden coherente."
+
+#: src/berigna/core/report/messages.py:65
+msgid "The signer's certificate was not found."
+msgstr "No se encontró el certificado del firmante."
+
+#: src/berigna/core/report/messages.py:67
+msgid "The signer's certificate does not lead to any trusted root certificate."
+msgstr ""
+"El certificado del firmante no lleva a ningún certificado raíz de confianza."
+
+#: src/berigna/core/report/messages.py:70
+msgid ""
+"The signer's certificate has been revoked, and nothing proves that the "
+"signature was made before the revocation."
+msgstr ""
+"El certificado del firmante fue revocado y nada prueba que la firma se "
+"hiciera antes de la revocación."
+
+#: src/berigna/core/report/messages.py:74
+msgid ""
+"A certification authority in the chain has been revoked, and nothing proves "
+"that the signature was made before the revocation."
+msgstr ""
+"Una entidad de certificación de la cadena fue revocada y nada prueba que la "
+"firma se hiciera antes de la revocación."
+
+#: src/berigna/core/report/messages.py:78
+msgid ""
+"A certificate in the chain is outside its validity period, and nothing "
+"proves that the signature was made while it was valid."
+msgstr ""
+"Un certificado de la cadena está fuera de su periodo de vigencia y nada "
+"prueba que la firma se hiciera mientras estaba vigente."
+
+#: src/berigna/core/report/messages.py:82
+msgid ""
+"The revocation information is outside its validity period, and nothing "
+"proves when it was obtained."
+msgstr ""
+"La información de revocación está fuera de su periodo de vigencia y nada "
+"prueba cuándo se obtuvo."
+
+#: src/berigna/core/report/messages.py:86
+msgid ""
+"The signer's certificate has expired without being revoked; a time-stamp is "
+"needed to prove when the signature was made."
+msgstr ""
+"El certificado del firmante venció sin haber sido revocado; hace falta un "
+"sello de tiempo para probar cuándo se hizo la firma."
+
+#: src/berigna/core/report/messages.py:90
+msgid ""
+"The signature uses an algorithm that is no longer considered secure, and "
+"nothing proves that it was made while the algorithm still was."
+msgstr ""
+"La firma usa un algoritmo que ya no se considera seguro y nada prueba que se "
+"hiciera cuando todavía lo era."
+
+#: src/berigna/core/report/messages.py:93
+msgid "Nothing proves that the signature existed at the required time."
+msgstr "Nada prueba que la firma existiera en el momento requerido."
+
+#: src/berigna/core/report/messages.py:95
+msgid ""
+"The revocation status of a certificate could not be checked. Try again "
+"later, with an Internet connection."
+msgstr ""
+"No se pudo comprobar si un certificado está revocado. Vuelve a intentarlo "
+"más tarde, con conexión a internet."
+
+#: src/berigna/core/report/messages.py:98
+msgid "The signed data was not found."
+msgstr "No se encontraron los datos firmados."
+
+#: src/berigna/core/report/messages.py:99
+msgid "The signature could not be validated for another reason."
+msgstr "No se pudo validar la firma por otro motivo."
+
+#: src/berigna/core/report/messages.py:103
+msgid "The document has not been changed since it was signed."
+msgstr "El documento no se ha modificado desde que se firmó."
+
+#: src/berigna/core/report/messages.py:105
+msgid ""
+"After signing, only validation data and time-stamps were added; the content "
+"has not changed."
+msgstr ""
+"Después de la firma solo se añadieron datos de validación y sellos de "
+"tiempo; el contenido no ha cambiado."
+
+#: src/berigna/core/report/messages.py:109
+msgid ""
+"After signing, form fields were filled in or other signatures were added."
+msgstr ""
+"Después de la firma se rellenaron campos de formulario o se añadieron otras "
+"firmas."
+
+#: src/berigna/core/report/messages.py:111
+msgid "After signing, comments or annotations were added."
+msgstr "Después de la firma se añadieron comentarios o anotaciones."
+
+#: src/berigna/core/report/messages.py:113
+msgid ""
+"The document was changed after it was signed. Open the signed version to see "
+"exactly what was signed."
+msgstr ""
+"El documento se modificó después de la firma. Abre la versión firmada para "
+"ver exactamente qué se firmó."
+
+#: src/berigna/core/report/messages.py:118
+#, python-brace-format
+msgid "Signed by {name}."
+msgstr "Firmado por {name}."
+
+#: src/berigna/core/report/messages.py:119
+#, python-brace-format
+msgid "The time of signing, {time}, is certified by a time-stamping authority."
+msgstr ""
+"La hora de la firma, {time}, está certificada por una autoridad de sellado "
+"de tiempo."
+
+#: src/berigna/core/report/messages.py:121
+#, python-brace-format
+msgid ""
+"The time of signing, {time}, was declared by the signer's computer and is "
+"not certified."
+msgstr ""
+"La hora de la firma, {time}, la declaró el equipo del firmante y no está "
+"certificada."
+
+#: src/berigna/core/report/messages.py:123
+#, python-brace-format
+msgid "Document time-stamp issued on {time}."
+msgstr "Sello de tiempo de documento emitido el {time}."
+
+#: src/berigna/core/report/messages.py:125
+msgid ""
+"The chain ends in a root certificate that you added yourself, not in an "
+"official one."
+msgstr ""
+"La cadena termina en un certificado raíz que añadiste tú, no en uno oficial."
+
+#: src/berigna/core/report/messages.py:129
+msgid "Unexpected error."
+msgstr "Error inesperado."
+
+#: src/berigna/core/report/messages.py:130
+msgid "Problem with the card reader or the card."
+msgstr "Problema con el lector o con la tarjeta."
+
+#: src/berigna/core/report/messages.py:131
+msgid "Insert your DNIe in the card reader."
+msgstr "Inserta tu DNIe en el lector."
+
+#: src/berigna/core/report/messages.py:132
+msgid "This card is not supported. Only the DNIe is supported."
+msgstr "Esta tarjeta no es compatible. Solo se admite el DNIe."
+
+#: src/berigna/core/report/messages.py:133
+msgid "The DNIe gave an unexpected answer. Remove it and insert it again."
+msgstr "El DNIe dio una respuesta inesperada. Retíralo y vuelve a insertarlo."
+
+#: src/berigna/core/report/messages.py:134
+msgid "The certificate on the card is not meant for signing."
+msgstr "El certificado de la tarjeta no sirve para firmar."
+
+#: src/berigna/core/report/messages.py:135
+msgid "The DNIe was removed during the operation. Nothing was signed."
+msgstr "Se retiró el DNIe durante la operación. No se firmó nada."
+
+#: src/berigna/core/report/messages.py:136
+msgid "Another program is using the DNIe. Close it and try again."
+msgstr "Otro programa está usando el DNIe. Ciérralo y vuelve a intentarlo."
+
+#: src/berigna/core/report/messages.py:137
+msgid "The smart card service (pcscd) is not running. Install it or start it."
+msgstr ""
+"El servicio de tarjetas inteligentes (pcscd) no está en funcionamiento. "
+"Instálalo o inícialo."
+
+#: src/berigna/core/report/messages.py:138
+msgid "Communication with the card failed for a moment. Try again."
+msgstr "La comunicación con la tarjeta falló un momento. Vuelve a intentarlo."
+
+#: src/berigna/core/report/messages.py:140
+msgid ""
+"The PIN is incorrect. Check it carefully before trying again: after several "
+"failed attempts the DNIe is blocked."
+msgstr ""
+"El PIN es incorrecto. Revísalo con cuidado antes de volver a intentarlo: "
+"tras varios intentos fallidos el DNIe se bloquea."
+
+#: src/berigna/core/report/messages.py:143
+msgid "The PIN is blocked. Go to RENIEC to unblock it."
+msgstr "El PIN está bloqueado. Acude a RENIEC para desbloquearlo."
+
+#: src/berigna/core/report/messages.py:144
+msgid "The DNIe did not accept the operation because the PIN was not verified."
+msgstr "El DNIe no aceptó la operación porque el PIN no se verificó."
+
+#: src/berigna/core/report/messages.py:145
+msgid "berigna refused to send a command that is not allowed to the card."
+msgstr "berigna se negó a enviar a la tarjeta un comando no permitido."
+
+#: src/berigna/core/report/messages.py:146
+msgid "Problem with the trusted root certificates."
+msgstr "Problema con los certificados raíz de confianza."
+
+#: src/berigna/core/report/messages.py:148
+msgid ""
+"The trusted root certificates installed with berigna have been altered. "
+"Reinstall berigna."
+msgstr ""
+"Los certificados raíz de confianza instalados con berigna han sido "
+"alterados. Reinstala berigna."
+
+#: src/berigna/core/report/messages.py:150
+msgid "A root certificate you added is not valid as a root."
+msgstr "Un certificado raíz que añadiste no es válido como raíz."
+
+#: src/berigna/core/report/messages.py:151
+msgid "Your certificate cannot be used to sign."
+msgstr "Tu certificado no se puede usar para firmar."
+
+#: src/berigna/core/report/messages.py:152
+msgid "Your certificate has expired or is not yet valid."
+msgstr "Tu certificado venció o todavía no está vigente."
+
+#: src/berigna/core/report/messages.py:153
+msgid "Your certificate has been revoked. Go to RENIEC."
+msgstr "Tu certificado fue revocado. Acude a RENIEC."
+
+#: src/berigna/core/report/messages.py:154
+msgid "Your certificate does not lead to a trusted root certificate."
+msgstr "Tu certificado no lleva a un certificado raíz de confianza."
+
+#: src/berigna/core/report/messages.py:155
+msgid "Your certificate could not be validated."
+msgstr "No se pudo validar tu certificado."
+
+#: src/berigna/core/report/messages.py:156
+msgid "The document could not be signed."
+msgstr "No se pudo firmar el documento."
+
+#: src/berigna/core/report/messages.py:158
+msgid ""
+"The file changed after you opened it. Open it again and check it before "
+"signing."
+msgstr ""
+"El archivo cambió después de que lo abriste. Vuelve a abrirlo y revísalo "
+"antes de firmar."
+
+#: src/berigna/core/report/messages.py:160
+msgid "A file with that name already exists. Choose another name."
+msgstr "Ya existe un archivo con ese nombre. Elige otro nombre."
+
+#: src/berigna/core/report/messages.py:161
+msgid "Signing was cancelled. The PIN was not sent."
+msgstr "Se canceló la firma. El PIN no se envió."
+
+#: src/berigna/core/report/messages.py:162
+msgid "This PDF cannot be signed: it is damaged or protected."
+msgstr "Este PDF no se puede firmar: está dañado o protegido."
+
+#: src/berigna/core/report/messages.py:163
+msgid ""
+"The time-stamping authority did not answer. Check the connection or the TSA."
+msgstr ""
+"La autoridad de sellado de tiempo no respondió. Revisa la conexión o la TSA."
+
+#: src/berigna/core/report/messages.py:164
+msgid "That signature level is not available now. Choose a lower level."
+msgstr "Ese nivel de firma no está disponible ahora. Elige un nivel inferior."
+
+#: src/berigna/core/report/messages.py:165
+msgid "The document could not be verified."
+msgstr "No se pudo verificar el documento."
+
+#: src/berigna/core/report/messages.py:166
+msgid "The file is not a document that berigna can read, or it is damaged."
+msgstr "El archivo no es un documento que berigna pueda leer, o está dañado."

@@ -1,0 +1,138 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# SPDX-FileCopyrightText: 2026 Calú
+"""Plain-language explanations (RF-053) in es_PE, and nothing mixed in for Quechua."""
+
+import datetime as dt
+
+import pytest
+from cryptography import x509
+
+from berigna.core.i18n import Language, translations
+from berigna.core.report.explanations import (
+    explain_error,
+    explain_signature,
+    explain_timestamp,
+    format_time,
+    subindication_key,
+)
+from berigna.core.validation import (
+    Indication,
+    Modifications,
+    PdfSignatureReport,
+    TimestampReport,
+)
+from support.pki import NOW, Pki, build_pki
+
+SPANISH = translations(Language.ES_PE)
+STRICT_QUECHUA = translations(Language.QUZ_PE, strict=True)
+
+
+@pytest.fixture(scope="module")
+def pki() -> Pki:
+    return build_pki()
+
+
+def _report(signer: x509.Certificate | None, **changes: object) -> PdfSignatureReport:
+    values: dict[str, object] = {
+        "field_name": "FirmaBerigna1",
+        "indication": Indication.TOTAL_PASSED,
+        "subindication": None,
+        "signer": signer,
+        "claimed_signing_time": NOW,
+        "subfilter": "/ETSI.CAdES.detached",
+        "covers_whole_document": True,
+        "modifications": Modifications.NONE,
+        "signed_revision_length": 100,
+    }
+    values.update(changes)
+    return PdfSignatureReport(**values)  # type: ignore[arg-type]
+
+
+def test_valid_signature_with_certified_time(pki: Pki) -> None:
+    stamp = TimestampReport(Indication.TOTAL_PASSED, None, NOW, None)
+    text = explain_signature(_report(pki.leaf("JUAN PEREZ"), timestamp=stamp), SPANISH)
+    assert text == (
+        "La firma es válida. Firmado por JUAN PEREZ. "
+        f"La hora de la firma, {format_time(NOW)}, está certificada por una autoridad de "
+        "sellado de tiempo. El documento no se ha modificado desde que se firmó."
+    )
+
+
+def test_claimed_time_is_said_to_be_uncertified(pki: Pki) -> None:
+    text = explain_signature(_report(pki.leaf("FIRMANTE")), SPANISH)
+    assert text is not None
+    assert "la declaró el equipo del firmante y no está certificada" in text
+
+
+def test_invalid_timestamp_falls_back_to_the_claimed_time(pki: Pki) -> None:
+    stamp = TimestampReport(Indication.INDETERMINATE, "NO_CERTIFICATE_CHAIN_FOUND", NOW, None)
+    text = explain_signature(_report(pki.leaf("FIRMANTE"), timestamp=stamp), SPANISH)
+    assert text is not None
+    assert "no está certificada" in text
+
+
+def test_failure_with_its_reason_and_later_changes(pki: Pki) -> None:
+    report = _report(
+        pki.leaf("FIRMANTE"),
+        indication=Indication.INDETERMINATE,
+        subindication="REVOKED_NO_POE",
+        claimed_signing_time=None,
+        modifications=Modifications.OTHER,
+    )
+    text = explain_signature(report, SPANISH, user_anchor=True)
+    assert text is not None
+    assert text.startswith("No se pudo determinar si la firma es válida. El certificado")
+    assert "Abre la versión firmada" in text
+    assert text.endswith(
+        "La cadena termina en un certificado raíz que añadiste tú, no en uno oficial."
+    )
+
+
+def test_damaged_signature_says_nothing_about_the_content() -> None:
+    report = _report(
+        None,
+        indication=Indication.TOTAL_FAILED,
+        subindication="FORMAT_FAILURE",
+        claimed_signing_time=None,
+        modifications=Modifications.OTHER,
+    )
+    assert explain_signature(report, SPANISH) == (
+        "La firma no es válida. La firma está dañada o no tiene el formato esperado."
+    )
+
+
+def test_unknown_subindication_gets_the_generic_text() -> None:
+    assert subindication_key(Indication.INDETERMINATE, "SOMETHING_NEW") == "INDETERMINATE:GENERIC"
+    assert subindication_key(Indication.TOTAL_PASSED, None) is None
+    assert (
+        subindication_key(Indication.TOTAL_FAILED, "NOT_YET_VALID") == "TOTAL_FAILED:NOT_YET_VALID"
+    )
+
+
+def test_document_timestamp() -> None:
+    stamp = TimestampReport(Indication.TOTAL_PASSED, None, NOW, None, "SelloBerigna1")
+    assert explain_timestamp(stamp, SPANISH) == (
+        f"La firma es válida. Sello de tiempo de documento emitido el {format_time(NOW)}."
+    )
+    assert explain_timestamp(
+        TimestampReport(Indication.TOTAL_FAILED, "FORMAT_FAILURE", None, None), SPANISH
+    ) == ("La firma no es válida. La firma está dañada o no tiene el formato esperado.")
+
+
+def test_errors() -> None:
+    assert explain_error("ERR-303", SPANISH) == "Se canceló la firma. El PIN no se envió."
+    assert explain_error("ERR-999", SPANISH) == "Error inesperado."
+
+
+def test_pending_quechua_gives_no_explanation_rather_than_a_mixed_one(pki: Pki) -> None:
+    assert explain_signature(_report(pki.leaf("FIRMANTE")), STRICT_QUECHUA) is None
+    assert (
+        explain_timestamp(TimestampReport(Indication.TOTAL_PASSED, None, NOW, None), STRICT_QUECHUA)
+        is None
+    )
+    assert explain_error("ERR-101", STRICT_QUECHUA) is None
+
+
+def test_times_are_shown_in_utc() -> None:
+    lima = dt.timezone(dt.timedelta(hours=-5))
+    assert format_time(dt.datetime(2026, 10, 27, 10, 15, tzinfo=lima)) == "27/10/2026 15:15 UTC"
