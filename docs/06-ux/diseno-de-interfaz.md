@@ -190,7 +190,7 @@ Implementado en la Fase 3, incremento 4 (CU-08), como `AdwPreferencesDialog` con
 - Red: dirección de la TSA con el botón "Probar"; tiempo de espera; proxy del sistema, manual o ninguno.
 - Confianza: estado de la TSL de INDECOPI (secuencia, fechas y número de CA acreditadas) y "Actualizar ahora".
 
-Cambiar el idioma reconstruye la ventana y vuelve a abrir las Preferencias en el nuevo idioma. Pendiente: ver el contenido del almacén de confianza (RF-060) y la autenticación con la TSA (RF-062).
+Cambiar el idioma reconstruye la ventana y vuelve a abrir las Preferencias en el nuevo idioma. En las listas desplegables el valor elegido va como subtítulo, completo, y las opciones de la lista se ajustan en varias líneas en vez de cortarse. Las opciones técnicas tienen un botón "Más información" que abre la ayuda en línea de esa versión (ADR-0017). Pendiente: ver el contenido del almacén de confianza (RF-060) y la autenticación con la TSA (RF-062).
 
 ## 5. Pendientes
 
