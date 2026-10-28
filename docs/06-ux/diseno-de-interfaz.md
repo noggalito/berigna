@@ -165,13 +165,13 @@ Las columnas en_US se conservan para la versión 1.1. Los textos en quechua se t
 
 ## 4.1 Selector de idioma
 
-En "Preferencias → General → Idioma" se elige entre "Usar el idioma del sistema", "Español (Perú)" y "Runasimi (quechua)". Cada idioma aparece escrito en su propia lengua. Tras cambiarlo se muestra un aviso con el botón "Reiniciar ahora". El idioma del informe PDF se elige en el propio diálogo de exportación.
+En "Preferencias → General → Idioma" se elige entre "Usar el idioma del sistema", "Español (Perú)" y "Runasimi (quechua)". Cada idioma aparece escrito en su propia lengua. El cambio se aplica al momento, sin reiniciar: berigna reconstruye la ventana en el nuevo idioma y vuelve a abrir el documento en curso. El idioma del informe PDF se elige en el propio diálogo de exportación.
 
 ## 4.2 Aviso de traducción sin revisar
 
 Hasta que la traducción al quechua tenga corrección humana (versión 1.1, DP-14), berigna lo dice abiertamente:
 
-- Con la interfaz en quechua, la ventana principal muestra un `AdwBanner` con el texto, en quechua y en español, "Traducción sin revisar por hablantes. En caso de duda, prevalece el texto en español" y el botón "Ver en español", que cambia `ui-language` a es_PE y ofrece reiniciar. Se puede cerrar, y vuelve a aparecer en cada inicio.
+- Con la interfaz en quechua, la ventana principal muestra un `AdwBanner` con el texto, en quechua y en español, "Traducción sin revisar por hablantes. En caso de duda, prevalece el texto en español" y el botón "Ver en español", que cambia `ui-language` a es_PE (al momento, §4.1). No se puede cerrar: `AdwBanner` admite un solo botón, y el aviso debe seguir visible mientras la interfaz esté en quechua.
 - El diálogo del PIN y el resultado de la verificación en quechua incluyen el enlace "Ver en español", que muestra el mismo texto en es_PE sin cambiar de idioma.
 - El informe PDF en quechua añade la misma advertencia junto a la nota de prevalencia del español (ADR-0015, punto 7).
 - El aviso desaparece en la versión que incorpore la corrección por personas.
@@ -182,6 +182,6 @@ Hasta que la traducción al quechua tenga corrección humana (versión 1.1, DP-1
 - [ ] Icono de la aplicación según la guía de iconos de GNOME.
 - [ ] Prueba de usabilidad (RNF-USA-06) en la Fase 3.
 - [ ] Microcopia completa de errores (catálogo `ERR-xxx`, con su mensaje, su causa y la acción sugerida) en es_PE y en quechua.
-- [ ] Aviso de traducción sin revisar (§4.2).
+- [x] Aviso de traducción sin revisar en la ventana principal (§4.2). Faltan el diálogo del PIN, el resultado de la verificación y el informe PDF.
 - [ ] Glosario terminológico bilingüe para traductores (por ejemplo: sello de tiempo / timestamp, firmante / signer, revocado / revoked), para mantener la coherencia.
 - [ ] Revisión de los bocetos en quechua para detectar textos que se desborden (las palabras aglutinantes suelen ser largas).
