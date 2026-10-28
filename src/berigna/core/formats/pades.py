@@ -19,8 +19,10 @@ import asyncio
 import enum
 import hashlib
 import io
+import tempfile
 from collections.abc import Sequence
 from dataclasses import dataclass
+from typing import Any
 
 from asn1crypto import algos
 from cryptography import x509
@@ -28,13 +30,14 @@ from pyhanko.pdf_utils.incremental_writer import IncrementalPdfFileWriter
 from pyhanko.pdf_utils.misc import PdfError
 from pyhanko.pdf_utils.reader import PdfFileReader
 from pyhanko.sign import signers
-from pyhanko.sign.fields import MDPPerm, SigSeedSubFilter, enumerate_sig_fields
+from pyhanko.sign.fields import MDPPerm, SigFieldSpec, SigSeedSubFilter, enumerate_sig_fields
 from pyhanko.sign.general import SigningError
 from pyhanko.sign.timestamps import TimeStamper
 from pyhanko.sign.timestamps.common_utils import TimestampRequestError
 from pyhanko.sign.validation import read_certification_data
 from pyhanko.sign.validation.dss import async_add_validation_info
 from pyhanko.sign.validation.errors import SignatureValidationError
+from pyhanko.stamp import StaticStampStyle
 from pyhanko_certvalidator import ValidationContext
 from pyhanko_certvalidator.errors import CRLValidationError, OCSPValidationError, ValidationError
 from pyhanko_certvalidator.registry import SimpleCertificateStore
@@ -74,13 +77,24 @@ class PadesResult:
 
 
 @dataclass(frozen=True)
+class VisibleStamp:
+    """A visible signature field: page (from 0), box (x1, y1, x2, y2) in PDF points and its
+    appearance as a one-page PDF (:func:`berigna.core.appearance.render_appearance`)."""
+
+    page: int
+    box: tuple[int, int, int, int]
+    appearance: bytes
+
+
+@dataclass(frozen=True)
 class PadesOptions:
-    """Optional signature dictionary entries (RF-013)."""
+    """Optional signature dictionary entries (RF-013) and the visible signature (RF-012)."""
 
     reason: str | None = None
     location: str | None = None
     contact: str | None = None
     digest: HashAlgorithmName = "sha256"
+    visible: VisibleStamp | None = None
 
 
 def _registry(certificates: Sequence[x509.Certificate]) -> SimpleCertificateStore:
@@ -125,6 +139,42 @@ def _open(pdf: bytes) -> tuple[IncrementalPdfFileWriter, set[str]]:
     except (PdfError, KeyError, ValueError) as exc:
         raise PdfFormatError(f"cannot read this PDF: {exc}") from exc
     return writer, existing
+
+
+def page_count(pdf: bytes) -> int:
+    return int(_open(pdf)[0].prev.root["/Pages"]["/Count"])
+
+
+@dataclass(frozen=True)
+class PageGeometry:
+    """What a preview shows of a page: its crop box (origin and size) and its rotation."""
+
+    x: float
+    y: float
+    width: float
+    height: float
+    rotation: int  # degrees, 0, 90, 180 or 270
+
+
+def page_geometry(pdf: bytes, index: int) -> PageGeometry:
+    """Crop box (or media box) and rotation of page ``index``, inherited attributes included."""
+    reader = _open(pdf)[0].prev
+    page_ref, _resources = reader.find_page_for_modification(index)  # type: ignore[no-untyped-call]
+    page = page_ref.get_object()
+
+    def inherited(key: str) -> Any:
+        node = page
+        while node is not None:
+            if key in node:
+                return node[key]
+            # Indexing resolves the indirect reference; .get() would not.
+            node = node["/Parent"] if "/Parent" in node else None  # noqa: SIM401
+        return None
+
+    box = inherited("/CropBox") or inherited("/MediaBox") or [0, 0, 612, 792]
+    x1, y1, x2, y2 = (float(value) for value in box)
+    rotation = int(inherited("/Rotate") or 0) % 360
+    return PageGeometry(min(x1, x2), min(y1, y2), abs(x2 - x1), abs(y2 - y1), rotation)
 
 
 def check_pdf_signable(pdf: bytes) -> None:
@@ -215,7 +265,7 @@ def sign_pdf_pades(
     )
     signer = _TokenPdfSigner(token, chain, opts.digest)
     try:
-        output = signers.sign_pdf(writer, metadata, signer=signer, timestamper=stamper)
+        output = _sign(writer, metadata, signer, stamper, opts.visible, field_name)
     except TimestampRequestError as exc:
         raise TsaError(f"the TSA did not time-stamp the signature: {exc}") from exc
     except (PdfError, SigningError) as exc:
@@ -236,6 +286,27 @@ def sign_pdf_pades(
     except _SERVICE_ERRORS as exc:
         return PadesResult(data, SignatureLevel.B_LT, f"document time-stamp not added: {exc}")
     return PadesResult(data, SignatureLevel.B_LTA)
+
+
+def _sign(
+    writer: IncrementalPdfFileWriter,
+    metadata: signers.PdfSignatureMetadata,
+    signer: signers.Signer,
+    stamper: TimeStamper | None,
+    visible: VisibleStamp | None,
+    field_name: str,
+) -> io.BytesIO:
+    if visible is None:
+        return signers.sign_pdf(writer, metadata, signer=signer, timestamper=stamper)  # type: ignore[no-any-return]
+    with tempfile.NamedTemporaryFile(suffix=".pdf") as appearance:
+        appearance.write(visible.appearance)
+        appearance.flush()
+        style = StaticStampStyle.from_pdf_file(appearance.name, border_width=0)
+        spec = SigFieldSpec(field_name, on_page=visible.page, box=visible.box)
+        pdf_signer = signers.PdfSigner(
+            metadata, signer, timestamper=stamper, stamp_style=style, new_field_spec=spec
+        )
+        return pdf_signer.sign_pdf(writer)  # type: ignore[no-any-return]
 
 
 def sign_pdf_basic(

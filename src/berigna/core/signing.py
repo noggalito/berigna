@@ -16,12 +16,14 @@ Order of the steps is part of the security design:
 
 import hashlib
 from collections.abc import Callable, Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from pathlib import Path
 
 from pyhanko.sign.timestamps import TimeStamper
 
+from berigna.core.appearance import VisibleSignature, render_appearance, stamp_data
 from berigna.core.errors import (
+    AppearanceError,
     LevelNotAvailableError,
     OutputExistsError,
     SigningCancelledError,
@@ -31,7 +33,10 @@ from berigna.core.files import write_atomically
 from berigna.core.formats.pades import (
     PadesOptions,
     SignatureLevel,
+    VisibleStamp,
     check_pdf_signable,
+    page_count,
+    page_geometry,
     sign_pdf_pades,
 )
 from berigna.core.net.tsa import probe
@@ -71,6 +76,29 @@ def output_path(source: Path, suffix: str, directory: Path | None = None) -> Pat
     return candidate
 
 
+def _visible_stamp(
+    visible: VisibleSignature,
+    check: SignerCheck,
+    options: PadesOptions,
+    source: Path,
+    expected_sha256: str,
+) -> VisibleStamp:
+    pdf = _read_unchanged(source, expected_sha256)
+    pages = page_count(pdf)
+    if not 0 <= visible.page < pages:
+        raise AppearanceError(f"page {visible.page + 1} of {pages} does not exist")
+    geometry = page_geometry(pdf, visible.page)
+    if geometry.rotation:
+        raise AppearanceError(f"page {visible.page + 1} is rotated {geometry.rotation} degrees")
+    data = stamp_data(check.chain[-1], reason=options.reason, location=options.location)
+    # The box is relative to what the preview shows, the crop box; the field is placed in
+    # the coordinates of the page.
+    x, y, width, height = visible.box
+    x, y = x + geometry.x, y + geometry.y
+    box = (round(x), round(y), round(x + width), round(y + height))
+    return VisibleStamp(visible.page, box, render_appearance(visible, data))
+
+
 def sign_pdf_file(
     source: Path,
     output: Path,
@@ -85,8 +113,12 @@ def sign_pdf_file(
     online: bool = True,
     ocsp_responses: Sequence[bytes] = (),
     crls: Sequence[bytes] = (),
+    visible: VisibleSignature | None = None,
 ) -> SignResult:
     """Sign ``source`` in PAdES at ``level`` and write it to ``output``. See the module docstring.
+
+    With ``visible``, the appearance is drawn with the signer's data before the PIN is
+    requested, so a box on a missing page or an unreadable image costs no PIN entry.
 
     Raises :class:`~berigna.core.errors.LevelNotAvailableError` (before the PIN) when the level
     needs a TSA and none is given, or revocation could not be checked (RF-006: B-B only).
@@ -109,6 +141,9 @@ def sign_pdf_file(
         if check.only_basic_level:
             raise LevelNotAvailableError(f"revocation not checked: B-B only, not {level.value}")
         probe(stamper)
+    opts = options or PadesOptions()
+    if visible is not None:
+        opts = replace(opts, visible=_visible_stamp(visible, check, opts, source, expected_sha256))
     pin = ask_pin(check)
     if pin is None:
         raise SigningCancelledError("signature cancelled before sending the PIN")
@@ -124,7 +159,7 @@ def sign_pdf_file(
         data,
         token,
         check.chain,
-        options,
+        opts,
         level=level,
         timestamper=stamper,
         validation_context=context,

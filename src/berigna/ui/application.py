@@ -64,6 +64,7 @@ class BerignaApplication(Adw.Application):
         timestamper: Callable[[], TimeStamper | None] | None = None,
         tsl_cache: TslCache | None = None,
         tsl_download: Download | None = None,
+        appearance_dir: Path | None = None,
         online: bool = True,
         unique: bool = True,
     ) -> None:
@@ -78,6 +79,7 @@ class BerignaApplication(Adw.Application):
         self._uses_tsl = trust_store is None
         self._tsl_cache = tsl_cache
         self._tsl_download = tsl_download
+        self._appearance_dir = appearance_dir
         self.tsl: TslRefresh | None = None
         self.preferences: PreferencesDialog | None = None
         self._open_token = open_token or _open_dnie
@@ -135,12 +137,19 @@ class BerignaApplication(Adw.Application):
                 timestamper=self._timestamper,
                 settings=self.settings,
                 online=self._online,
+                appearance_dir=self.appearance_dir(),
             )
             self.main_window = MainWindow(self, self.verify, services)
             self.main_window.show_device_status(self._device_status)
         return self.main_window
 
     # -- Trust store and trusted list (RF-061, ADR-0014) ----------------------------------------
+
+    def appearance_dir(self) -> Path:
+        """Where the preloaded rubric and logo are kept (RF-012)."""
+        if self._appearance_dir is None:
+            self._appearance_dir = Path(GLib.get_user_data_dir()) / "berigna" / "apariencia"
+        return self._appearance_dir
 
     def tsl_cache(self) -> TslCache:
         if self._tsl_cache is None:
