@@ -44,6 +44,7 @@ Interfaz (Fase 3):
 - Las vistas se traducen con `core.i18n` y no con el gettext de C, que mostraba el inglés con la configuración regional C; el idioma cambia sin reiniciar.
 - Aviso de traducción sin revisar con la interfaz en quechua, con el botón "Ver en español" (DP-14); también en el informe PDF en quechua.
 - Verificación de PDF firmados (CU-06): resumen global, una tarjeta por firma con su explicación y sus detalles técnicos, sellos de documento, "Verificar de nuevo" si algún resultado es indeterminado, exportación del informe (PDF en español o en quechua, y JSON) y de la versión que dejó cada firma. Cada página tiene su barra de título con el botón de volver.
+- Ayuda contextual (ADR-0017): botón "Más información" junto al nivel de firma, el algoritmo de *hash*, la TSA, el tiempo de espera, el proxy y la lista de confianza, que abre `https://berigna.noggalito.com/ayuda/<versión>/<idioma>/<tema>`.
 - Preferencias (CU-08): idioma, nivel por defecto, algoritmo de *hash*, sufijo y carpeta de los archivos firmados; TSA con el botón "Probar"; tiempo de espera; proxy del sistema, manual o ninguno (RF-064); estado de la TSL de INDECOPI con "Actualizar ahora".
 - TSL de INDECOPI en uso (ADR-0014, RF-061): se comprueba al arrancar si la guardada tiene más de un día y sus CA amplían el almacén; caché en `~/.local/share/berigna/tsl/` con el número de secuencia aceptado, que impide volver a una lista anterior (`core.trust.cache`).
 - `core.net.proxy`: el proxy configurado se aplica a todas las peticiones HTTP, también a las de pyhanko-certvalidator. `core.files.write_atomically` sustituye a `core.signing.write_atomically`, que sigue disponible.
@@ -54,6 +55,7 @@ Interfaz (Fase 3):
 
 ### Corregido
 
+- En Preferencias, el valor de las listas desplegables se cortaba ("Validación a largo plazo (…"), también al desplegarlas; ahora va completo como subtítulo y las opciones se ajustan en varias líneas.
 - Una excepción inesperada en el hilo de verificación o de firma dejaba la interfaz esperando para siempre; ahora se muestra como error inesperado (ERR-000) y se registra.
 - Las pruebas de la interfaz abrían sus ventanas en el escritorio del usuario en una sesión Wayland: GTK prefería `WAYLAND_DISPLAY` a la pantalla virtual de `xvfb-run`. Ahora usan solo X11 sobre Xvfb. Una prueba nueva comprueba que el núcleo no importa GTK ni la interfaz (RNF-MAN-01).
 - La verificación y la validación previa "en este momento" rechazaban como "demasiado reciente" una respuesta OCSP producida mientras se esperaba al servicio: la tolerancia de pyhanko-certvalidator es de 1 s y RENIEC tarda segundos (R-17). Un PDF firmado con el DNIe real salía INDETERMINATE / TRY_LATER y la firma quedaba limitada a B-B. Ahora la tolerancia es de 5 minutos al validar en el momento actual; la validación en una fecha pasada no cambia.
