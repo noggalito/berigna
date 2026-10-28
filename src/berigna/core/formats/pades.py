@@ -2,10 +2,21 @@
 # SPDX-FileCopyrightText: 2026 Calú
 """PAdES signatures with pyHanko 0.25.x; the private-key operation happens in the token.
 
-Only the PAdES baseline B-B level (no timestamp) is produced here for now; B-T, B-LT and
-B-LTA come in Phase 2 with the TSA client and the embedding of validation data.
+Baseline levels (ETSI EN 319 142-1):
+
+- B-B: the signature alone.
+- B-T: plus a signature time-stamp from a TSA (RF-062).
+- B-LT: plus the validation data (certificates, OCSP responses, CRLs of the CAs) in the DSS,
+  gathered with the signing rules of :func:`berigna.core.validation.signing_validation_context`.
+- B-LTA: plus a document time-stamp over all of it.
+
+The levels above B-T are added after the card has signed, as incremental updates. If one of
+them fails (a service does not answer), the signature already made is not thrown away: the
+result carries the level actually reached and the reason, and the caller must tell the user.
 """
 
+import asyncio
+import enum
 import hashlib
 import io
 from collections.abc import Sequence
@@ -17,16 +28,49 @@ from cryptography import x509
 from cryptography.hazmat.primitives import serialization
 from pyhanko.pdf_utils.incremental_writer import IncrementalPdfFileWriter
 from pyhanko.pdf_utils.misc import PdfError
+from pyhanko.pdf_utils.reader import PdfFileReader
 from pyhanko.sign import signers
 from pyhanko.sign.fields import SigSeedSubFilter, enumerate_sig_fields
 from pyhanko.sign.general import SigningError
+from pyhanko.sign.timestamps import TimeStamper
+from pyhanko.sign.timestamps.common_utils import TimestampRequestError
+from pyhanko.sign.validation.dss import async_add_validation_info
+from pyhanko.sign.validation.errors import SignatureValidationError
+from pyhanko_certvalidator import ValidationContext
+from pyhanko_certvalidator.errors import CRLValidationError, OCSPValidationError, ValidationError
 from pyhanko_certvalidator.registry import SimpleCertificateStore
 
-from berigna.core.errors import PdfFormatError
+from berigna.core.errors import PdfFormatError, TsaError
 from berigna.core.token.base import HashAlgorithmName, TokenSigner
 
 _SIGNATURE_SIZE = 256  # RSA-2048 (DNIe v2, SPK-01)
 _FIELD_PREFIX = "FirmaBerigna"
+_TIMESTAMP_PREFIX = "SelloBerigna"
+
+# Failures of a service after the card has signed: they lower the level, they do not lose work.
+_SERVICE_ERRORS = (
+    TimestampRequestError,
+    ValidationError,
+    CRLValidationError,
+    OCSPValidationError,
+    SignatureValidationError,
+    PdfError,
+    ValueError,
+)
+
+
+class SignatureLevel(enum.Enum):
+    B_B = "B-B"
+    B_T = "B-T"
+    B_LT = "B-LT"
+    B_LTA = "B-LTA"
+
+
+@dataclass(frozen=True)
+class PadesResult:
+    data: bytes
+    level: SignatureLevel  # level reached; lower than requested only if ``note`` says why
+    note: str | None = None
 
 
 @dataclass(frozen=True)
@@ -95,25 +139,64 @@ def check_pdf_signable(pdf: bytes) -> None:
     _open(pdf)
 
 
-def sign_pdf_basic(
+def _required[T](value: T | None, level: SignatureLevel, what: str) -> T:
+    if value is None:
+        raise ValueError(f"{level.value} needs {what}")
+    return value
+
+
+def _next_name(prefix: str, existing: set[str]) -> str:
+    return next(
+        f"{prefix}{n}" for n in range(1, len(existing) + 2) if f"{prefix}{n}" not in existing
+    )
+
+
+def _add_validation_info(pdf: bytes, field_name: str, context: ValidationContext) -> bytes:
+    reader = PdfFileReader(io.BytesIO(pdf), strict=False)
+    sig = next(s for s in reader.embedded_signatures if s.field_name == field_name)
+    output = io.BytesIO()
+    asyncio.run(async_add_validation_info(sig, context, output=output))
+    return output.getvalue()
+
+
+def _add_document_timestamp(
+    pdf: bytes, timestamper: TimeStamper, context: ValidationContext, digest: str
+) -> bytes:
+    writer, existing = _open(pdf)
+    stamper = signers.PdfTimeStamper(
+        timestamper, field_name=_next_name(_TIMESTAMP_PREFIX, existing)
+    )
+    output = asyncio.run(stamper.async_timestamp_pdf(writer, digest, validation_context=context))
+    return output.getvalue()  # type: ignore[no-any-return]
+
+
+def sign_pdf_pades(
     pdf: bytes,
     token: TokenSigner,
     chain: Sequence[x509.Certificate],
     options: PadesOptions | None = None,
-) -> bytes:
-    """Return ``pdf`` with a new PAdES B-B signature appended as an incremental update.
+    *,
+    level: SignatureLevel = SignatureLevel.B_B,
+    timestamper: TimeStamper | None = None,
+    validation_context: ValidationContext | None = None,
+) -> PadesResult:
+    """Return ``pdf`` with a new PAdES signature of ``level``, appended as incremental updates.
 
     ``chain`` goes from the trust anchor to the signer certificate (as returned by
     :func:`berigna.core.validation.check_signer`); the anchor itself is not embedded.
-    Existing signatures are preserved (RF-014).
+    Existing signatures are preserved (RF-014). B-T and above need ``timestamper``; B-LT and
+    B-LTA also ``validation_context``. A TSA failure while time-stamping the signature raises
+    :class:`~berigna.core.errors.TsaError` and nothing is returned.
     """
+    stamper = (
+        _required(timestamper, level, "a time-stamper") if level is not SignatureLevel.B_B else None
+    )
+    long_term = level in (SignatureLevel.B_LT, SignatureLevel.B_LTA)
+    context = _required(validation_context, level, "a validation context") if long_term else None
+
     opts = options or PadesOptions()
     writer, existing = _open(pdf)
-    field_name = next(
-        f"{_FIELD_PREFIX}{n}"
-        for n in range(1, len(existing) + 2)
-        if f"{_FIELD_PREFIX}{n}" not in existing
-    )
+    field_name = _next_name(_FIELD_PREFIX, existing)
     metadata = signers.PdfSignatureMetadata(
         field_name=field_name,
         md_algorithm=opts.digest,
@@ -124,7 +207,34 @@ def sign_pdf_basic(
     )
     signer = _TokenPdfSigner(token, chain, opts.digest)
     try:
-        output = signers.sign_pdf(writer, metadata, signer=signer)
+        output = signers.sign_pdf(writer, metadata, signer=signer, timestamper=stamper)
+    except TimestampRequestError as exc:
+        raise TsaError(f"the TSA did not time-stamp the signature: {exc}") from exc
     except (PdfError, SigningError) as exc:
         raise PdfFormatError(f"cannot sign this PDF: {exc}") from exc
-    return output.getvalue()  # type: ignore[no-any-return]
+    data: bytes = output.getvalue()
+    if stamper is None:
+        return PadesResult(data, SignatureLevel.B_B)
+    if context is None:
+        return PadesResult(data, SignatureLevel.B_T)
+    try:
+        data = _add_validation_info(data, field_name, context)
+    except _SERVICE_ERRORS as exc:
+        return PadesResult(data, SignatureLevel.B_T, f"validation data not embedded: {exc}")
+    if level is SignatureLevel.B_LT:
+        return PadesResult(data, SignatureLevel.B_LT)
+    try:
+        data = _add_document_timestamp(data, stamper, context, opts.digest)
+    except _SERVICE_ERRORS as exc:
+        return PadesResult(data, SignatureLevel.B_LT, f"document time-stamp not added: {exc}")
+    return PadesResult(data, SignatureLevel.B_LTA)
+
+
+def sign_pdf_basic(
+    pdf: bytes,
+    token: TokenSigner,
+    chain: Sequence[x509.Certificate],
+    options: PadesOptions | None = None,
+) -> bytes:
+    """Shortcut for a PAdES B-B signature (see :func:`sign_pdf_pades`)."""
+    return sign_pdf_pades(pdf, token, chain, options).data

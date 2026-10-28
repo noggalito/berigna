@@ -26,6 +26,7 @@ dependencies = [
     "pyhanko==0.25.1",
     "pyhanko-certvalidator~=0.26.3",
     "asn1crypto~=1.5",
+    "requests>=2.31",
 ]
 
 [tool.setuptools.packages.find]
@@ -52,7 +53,7 @@ mypy_path = "src"
 packages = ["berigna"]
 
 [[tool.mypy.overrides]]
-module = ["smartcard.*", "asn1crypto.*"]
+module = ["smartcard.*", "asn1crypto.*", "requests.*"]
 ignore_missing_imports = true
 
 [tool.coverage.run]
