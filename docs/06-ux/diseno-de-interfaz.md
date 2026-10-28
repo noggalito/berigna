@@ -71,6 +71,8 @@ flowchart LR
 
 ### 3.2 Firmar
 
+Implementado en la Fase 3, incremento 3 (sin firma visible ni apariencia, que llegan en el incremento 5). Diferencias con el boceto: la vista previa encaja la página entera, sin zoom; los niveles que necesitan una TSA aparecen desactivados mientras no haya una configurada (DP-02); un documento certificado "sin cambios" muestra el motivo y no deja firmar (ERR-307).
+
 ```
 ┌──────────────────────────────────────────────────────────────┐
 │ ←  contrato.pdf                                  [ Firmar ]  │
@@ -96,6 +98,8 @@ flowchart LR
 ```
 
 ### 3.3 Resumen y PIN
+
+Implementado en la Fase 3, incremento 3, con `Gtk.PasswordEntry` (P-05). Tras un PIN incorrecto el diálogo vuelve a aparecer con los intentos restantes (P-07) y el usuario debe escribir y confirmar de nuevo (P-06); con 0 intentos se explica el bloqueo. El campo se vacía en cuanto se toma el PIN.
 
 ```
 ┌───────────────────────────────────────────────┐
@@ -184,6 +188,6 @@ Hasta que la traducción al quechua tenga corrección humana (versión 1.1, DP-1
 - [ ] Icono de la aplicación según la guía de iconos de GNOME.
 - [ ] Prueba de usabilidad (RNF-USA-06) en la Fase 3.
 - [ ] Microcopia completa de errores (catálogo `ERR-xxx`, con su mensaje, su causa y la acción sugerida) en es_PE y en quechua.
-- [x] Aviso de traducción sin revisar en la ventana principal y en el informe PDF en quechua (§4.2). Falta el enlace "Ver en español" en el diálogo del PIN y en el resultado de la verificación.
+- [x] Aviso de traducción sin revisar en la ventana principal, en el informe PDF en quechua y "Ver en español" en el diálogo del PIN (§4.2). Falta "Ver en español" en el resultado de la verificación.
 - [ ] Glosario terminológico bilingüe para traductores (por ejemplo: sello de tiempo / timestamp, firmante / signer, revocado / revoked), para mantener la coherencia.
 - [ ] Revisión de los bocetos en quechua para detectar textos que se desborden (las palabras aglutinantes suelen ser largas).

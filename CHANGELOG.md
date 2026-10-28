@@ -44,9 +44,13 @@ Interfaz (Fase 3):
 - Las vistas se traducen con `core.i18n` y no con el gettext de C, que mostraba el inglés con la configuración regional C; el idioma cambia sin reiniciar.
 - Aviso de traducción sin revisar con la interfaz en quechua, con el botón "Ver en español" (DP-14); también en el informe PDF en quechua.
 - Verificación de PDF firmados (CU-06): resumen global, una tarjeta por firma con su explicación y sus detalles técnicos, sellos de documento, "Verificar de nuevo" si algún resultado es indeterminado, exportación del informe (PDF en español o en quechua, y JSON) y de la versión que dejó cada firma. Cada página tiene su barra de título con el botón de volver.
+- Firma de PDF (CU-01, CU-03): vista previa con Poppler (ADR-0016), nivel (los que necesitan una TSA, desactivados mientras no haya una), motivo y ubicación; diálogo del PIN con el resumen, el DNI enmascarado y los intentos restantes; resultado con "Abrir", "Mostrar en la carpeta" y "Verificar"; ofrece firmar en B-B si la revocación no se pudo comprobar. Firmar encima de un PDF ya firmado avisa si alguna firma existente no es válida.
+- `core.signing.output_path`: el nombre del archivo firmado se numera si ya existe, sin sobrescribir nunca (RF-045).
+- ERR-307: un documento certificado por su autor sin cambios permitidos (DocMDP) se rechaza antes del PIN; `inspect_document` lo indica (`locked`).
 
 ### Corregido
 
+- Una excepción inesperada en el hilo de verificación o de firma dejaba la interfaz esperando para siempre; ahora se muestra como error inesperado (ERR-000) y se registra.
 - Las pruebas de la interfaz abrían sus ventanas en el escritorio del usuario en una sesión Wayland: GTK prefería `WAYLAND_DISPLAY` a la pantalla virtual de `xvfb-run`. Ahora usan solo X11 sobre Xvfb. Una prueba nueva comprueba que el núcleo no importa GTK ni la interfaz (RNF-MAN-01).
 - La verificación y la validación previa "en este momento" rechazaban como "demasiado reciente" una respuesta OCSP producida mientras se esperaba al servicio: la tolerancia de pyhanko-certvalidator es de 1 s y RENIEC tarda segundos (R-17). Un PDF firmado con el DNIe real salía INDETERMINATE / TRY_LATER y la firma quedaba limitada a B-B. Ahora la tolerancia es de 5 minutos al validar en el momento actual; la validación en una fecha pasada no cambia.
 
