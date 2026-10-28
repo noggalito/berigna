@@ -117,7 +117,9 @@ def card(pki: Pki) -> DnieV2Simulator:
 
 
 @pytest.fixture
-def app(readers: FakeReaders, pki: Pki, card: DnieV2Simulator) -> Iterator[BerignaApplication]:
+def app(
+    readers: FakeReaders, pki: Pki, card: DnieV2Simulator, tmp_path_factory: pytest.TempPathFactory
+) -> Iterator[BerignaApplication]:
     """Offline, with the test PKI as trust store and the simulated card: results do not
     depend on the network or on hardware."""
     yield BerignaApplication(
@@ -126,5 +128,6 @@ def app(readers: FakeReaders, pki: Pki, card: DnieV2Simulator) -> Iterator[Berig
         open_token=lambda: open_card(card),
         online=False,
         unique=False,
+        appearance_dir=tmp_path_factory.mktemp("apariencia"),
     )
     i18n.set_language(Language.ES_PE)

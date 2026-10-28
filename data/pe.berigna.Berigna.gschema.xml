@@ -45,6 +45,16 @@
     <value nick="es_PE" value="1"/>
     <value nick="quz_PE" value="2"/>
   </enum>
+  <enum id="pe.berigna.Berigna.AppearanceKind">
+    <value nick="text" value="0"/>
+    <value nick="rubric" value="1"/>
+    <value nick="logo" value="2"/>
+    <value nick="qr" value="3"/>
+  </enum>
+  <enum id="pe.berigna.Berigna.StampLanguage">
+    <value nick="es_PE" value="0"/>
+    <value nick="quz_PE" value="1"/>
+  </enum>
   <enum id="pe.berigna.Berigna.ReportLanguage">
     <value nick="ui" value="0"/>
     <value nick="es_PE" value="1"/>
@@ -105,6 +115,15 @@
     <key name="visible-signature" type="b">
       <default>false</default>
       <summary>Make signatures visible by default</summary>
+    </key>
+    <key name="appearance-kind" enum="pe.berigna.Berigna.AppearanceKind">
+      <default>'text'</default>
+      <summary>Appearance of visible signatures: text, rubric, logo or QR code (RF-012)</summary>
+      <description>The rubric and the logo are images loaded once in the preferences.</description>
+    </key>
+    <key name="appearance-language" enum="pe.berigna.Berigna.StampLanguage">
+      <default>'es_PE'</default>
+      <summary>Language of the fixed texts and the date of visible signatures (RF-092)</summary>
     </key>
     <key name="appearance-profile" type="s">
       <default>''</default>

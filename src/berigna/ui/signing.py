@@ -9,6 +9,7 @@ explicit confirmation (P-06); after a wrong PIN the user starts again, with the 
 shown (P-07).
 """
 
+import datetime as dt
 import hashlib
 import logging
 import threading
@@ -24,8 +25,16 @@ gi.require_version("Adw", "1")
 from gi.repository import Adw, Gio, GLib, Gtk  # noqa: E402
 from pyhanko.sign.timestamps import TimeStamper  # noqa: E402
 
+from berigna.core.appearance import (  # noqa: E402
+    AppearanceKind,
+    StampData,
+    VisibleSignature,
+    render_appearance,
+    stored_image,
+)
 from berigna.core.documents import DocumentInfo  # noqa: E402
 from berigna.core.errors import (  # noqa: E402
+    AppearanceError,
     BerignaError,
     LevelNotAvailableError,
     PinBlockedError,
@@ -42,8 +51,9 @@ from berigna.core.trust import TrustStore  # noqa: E402
 from berigna.core.validation import SignerCheck  # noqa: E402
 from berigna.ui import presentation  # noqa: E402
 from berigna.ui.help import HelpTopic, help_button  # noqa: E402
-from berigna.ui.i18n import _, catalogue, current_language  # noqa: E402
+from berigna.ui.i18n import N_, _, catalogue, current_language  # noqa: E402
 from berigna.ui.preview import PdfPreview  # noqa: E402
+from berigna.ui.widgets import label_factory  # noqa: E402
 
 if TYPE_CHECKING:
     from berigna.ui.window import MainWindow
@@ -63,6 +73,16 @@ class SigningServices:
     timestamper: Callable[[], TimeStamper | None]  # None: no TSA configured (DP-02)
     settings: Gio.Settings | None
     online: bool = True
+    appearance_dir: Path | None = None  # preloaded rubric and logo (None: none available)
+
+
+# Kinds of visible signature, in the order of the list (decision of 2026-10-28).
+APPEARANCES = (
+    (AppearanceKind.TEXT, N_("Text only")),
+    (AppearanceKind.RUBRIC, N_("Handwritten signature (image)")),
+    (AppearanceKind.LOGO, N_("Logo")),
+    (AppearanceKind.QR, N_("QR code")),
+)
 
 
 class PinDialog(Adw.Dialog):
@@ -256,14 +276,100 @@ class SigningPage:
             self.location.set_text(settings.get_string("signature-location"))
         data.add(self.reason)
         data.add(self.location)
-        panel.add(data)
 
         self.preview = PdfPreview(self.data)
+        self.preview.on_box_changed = lambda _box: self.update_appearance()
+        if self.preview.page_count:
+            panel.add(self._visible_group())
+        panel.add(data)
         layout = Gtk.Box()
         layout.append(self.preview)
         layout.append(Gtk.Separator(orientation=Gtk.Orientation.VERTICAL))
         layout.append(panel)
         return layout
+
+    def _visible_group(self) -> Adw.PreferencesGroup:
+        """Visible signature (CU-02): on or off, its appearance, and the box on the preview."""
+        settings = self._services.settings
+        group = Adw.PreferencesGroup(title=_("Visible Signature"))
+        self.visible = Adw.SwitchRow(
+            title=_("Show the Signature on the Page"),
+            subtitle=_("Drag on the page to place it; drag the box to move it."),
+            subtitle_lines=0,
+        )
+        labels = [_(label) for _kind, label in APPEARANCES]
+        # The value goes in the subtitle, in full (see berigna.ui.preferences._combo).
+        self.appearance = Adw.ComboRow(
+            title=_("Appearance"),
+            model=Gtk.StringList.new(labels),
+            factory=label_factory(visible=False),
+            list_factory=label_factory(visible=True),
+            subtitle_lines=0,
+        )
+        kind = settings.get_string("appearance-kind") if settings else "text"
+        kinds = [k.value for k, _label in APPEARANCES]
+        self.appearance.set_selected(kinds.index(kind) if kind in kinds else 0)
+        self.appearance.connect("notify::selected", lambda *_a: self.update_appearance())
+        self.visible.connect("notify::active", lambda *_a: self._on_visible())
+        self.reason.connect("changed", lambda _e: self.update_appearance())
+        self.location.connect("changed", lambda _e: self.update_appearance())
+        group.add(self.visible)
+        group.add(self.appearance)
+        self.visible.set_active(settings.get_boolean("visible-signature") if settings else False)
+        self._on_visible()
+        return group
+
+    def appearance_kind(self) -> AppearanceKind:
+        return APPEARANCES[self.appearance.get_selected()][0]
+
+    def _image(self, kind: AppearanceKind) -> Path | None:
+        directory = self._services.appearance_dir
+        return stored_image(directory, kind) if directory is not None else None
+
+    def _on_visible(self) -> None:
+        active = self.visible.get_active()
+        self.appearance.set_sensitive(active)
+        self.preview.set_box(self.preview.box or self.preview.default_box() if active else None)
+        self.update_appearance()
+
+    def visible_signature(self) -> VisibleSignature | None:
+        box = self.preview.box
+        if box is None or not self.visible.get_active():
+            return None
+        settings = self._services.settings
+        language = settings.get_string("appearance-language") if settings else "es_PE"
+        kind = self.appearance_kind()
+        return VisibleSignature(
+            box.page,
+            (box.x, box.y, box.width, box.height),
+            kind,
+            self._image(kind),
+            Language(language),
+        )
+
+    def update_appearance(self) -> None:
+        """Draw the appearance in the box with sample data: the real name and DNI come from
+        the card when signing."""
+        visible = self.visible_signature()
+        kind = self.appearance_kind()
+        missing = kind in (AppearanceKind.RUBRIC, AppearanceKind.LOGO) and not self._image(kind)
+        label = _(APPEARANCES[self.appearance.get_selected()][1])
+        warning = _("Load the image in Preferences → Visible Signature.")
+        self.appearance.set_subtitle(f"{label}\n{warning}" if missing else label)
+        if visible is None:
+            self.preview.set_appearance(None)
+            return
+        sample = StampData(
+            _("NAMES AND SURNAMES"),
+            "****0000",
+            dt.datetime.now().astimezone(),
+            self.reason.get_text().strip() or None,
+            self.location.get_text().strip() or None,
+        )
+        try:
+            self.preview.set_appearance(render_appearance(visible, sample))
+        except AppearanceError:
+            self.preview.set_appearance(None)
 
     def _preferred_level(self) -> SignatureLevel:
         settings = self._services.settings
@@ -318,6 +424,7 @@ class SigningPage:
         # A folder that no longer exists (removed, unmounted) falls back to the original's.
         directory = Path(folder) if folder and Path(folder).is_dir() else None
         output = output_path(self.document.path, suffix, directory)
+        visible = self.visible_signature() if self.preview.page_count else None
         self._set_busy(_("Checking your certificate…"))
         services = self._services
 
@@ -335,6 +442,7 @@ class SigningPage:
                         level=level,
                         timestamper=services.timestamper(),
                         online=services.online,
+                        visible=visible,
                     )
             except BerignaError as exc:
                 GLib.idle_add(self._failed, exc, level)
