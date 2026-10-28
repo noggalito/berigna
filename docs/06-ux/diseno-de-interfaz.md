@@ -3,9 +3,9 @@
 | Campo | Valor |
 |---|---|
 | Documento | BRG-UX-001 |
-| Versión | 0.2.0 |
+| Versión | 0.3.0 |
 | Estado | Borrador (bocetos de baja fidelidad) |
-| Fecha | 2026-10-27 |
+| Fecha | 2026-10-28 |
 | Responsable | `{{TITULAR}}` |
 
 ## 1. Principios de UX
@@ -16,7 +16,7 @@
 4. No hay sorpresas legales: el nivel, el certificado y el documento se muestran antes del PIN.
 5. Errores accionables: qué pasó, por qué y qué hacer, con un botón hacia el diagnóstico.
 6. Cumplimiento de la HIG de GNOME y de libadwaita: `AdwHeaderBar`, `AdwToastOverlay`, `AdwPreferencesDialog`, `AdwStatusPage`.
-7. Dos idiomas con el mismo cuidado: cada texto se redacta en es_PE y en quechua con el mismo tono llano. No se traduce palabra por palabra. Los bocetos de §3 están en es_PE; los textos en quechua salen del catálogo, redactados por los traductores (ADR-0015; ADR-0011).
+7. Dos idiomas con el mismo cuidado: cada texto se redacta en es_PE y en quechua con el mismo tono llano. No se traduce palabra por palabra. Los bocetos de §3 están en es_PE; los textos en quechua salen del catálogo, traducidos en línea y con ayuda de IA a partir de un glosario propio, y corregidos por personas hablantes en la versión 1.1 (ADR-0015, DP-14; ADR-0011).
 8. Diseño para longitudes variables: ninguna etiqueta depende de una anchura fija, porque los textos pueden crecer hasta un 40 % entre idiomas (RNF-USA-08).
 
 ## 1.1 Identidad visual
@@ -161,11 +161,20 @@ flowchart LR
 | B-LT | Validación a largo plazo | Incluye además la información necesaria para verificar la firma años después. Recomendado. | Long-term validation | Also includes the information needed to verify the signature years from now. Recommended. |
 | B-LTA | Archivo a largo plazo | Protege la firma contra la obsolescencia criptográfica. Para documentos que deban conservarse muchos años. | Long-term archival | Protects the signature against cryptographic obsolescence. For documents that must be kept for many years. |
 
-Las columnas en_US se conservan para la versión 1.1. Los textos en quechua los redactan los traductores a partir de las columnas es_PE (ADR-0015).
+Las columnas en_US se conservan para la versión 1.1. Los textos en quechua se traducen a partir de las columnas es_PE (ADR-0015).
 
 ## 4.1 Selector de idioma
 
 En "Preferencias → General → Idioma" se elige entre "Usar el idioma del sistema", "Español (Perú)" y "Runasimi (quechua)". Cada idioma aparece escrito en su propia lengua. Tras cambiarlo se muestra un aviso con el botón "Reiniciar ahora". El idioma del informe PDF se elige en el propio diálogo de exportación.
+
+## 4.2 Aviso de traducción sin revisar
+
+Hasta que la traducción al quechua tenga corrección humana (versión 1.1, DP-14), berigna lo dice abiertamente:
+
+- Con la interfaz en quechua, la ventana principal muestra un `AdwBanner` con el texto, en quechua y en español, "Traducción sin revisar por hablantes. En caso de duda, prevalece el texto en español" y el botón "Ver en español", que cambia `ui-language` a es_PE y ofrece reiniciar. Se puede cerrar, y vuelve a aparecer en cada inicio.
+- El diálogo del PIN y el resultado de la verificación en quechua incluyen el enlace "Ver en español", que muestra el mismo texto en es_PE sin cambiar de idioma.
+- El informe PDF en quechua añade la misma advertencia junto a la nota de prevalencia del español (ADR-0015, punto 7).
+- El aviso desaparece en la versión que incorpore la corrección por personas.
 
 ## 5. Pendientes
 
@@ -173,5 +182,6 @@ En "Preferencias → General → Idioma" se elige entre "Usar el idioma del sist
 - [ ] Icono de la aplicación según la guía de iconos de GNOME.
 - [ ] Prueba de usabilidad (RNF-USA-06) en la Fase 3.
 - [ ] Microcopia completa de errores (catálogo `ERR-xxx`, con su mensaje, su causa y la acción sugerida) en es_PE y en quechua.
+- [ ] Aviso de traducción sin revisar (§4.2).
 - [ ] Glosario terminológico bilingüe para traductores (por ejemplo: sello de tiempo / timestamp, firmante / signer, revocado / revoked), para mantener la coherencia.
 - [ ] Revisión de los bocetos en quechua para detectar textos que se desborden (las palabras aglutinantes suelen ser largas).
