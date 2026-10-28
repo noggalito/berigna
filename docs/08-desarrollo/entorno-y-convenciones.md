@@ -18,20 +18,25 @@ berigna/
 ├── meson.build                   # (previsto, Fase 3: aplicación GTK, ADR-0010)
 ├── LICENSE, README.md, SECURITY.md, CHANGELOG.md
 ├── scripts/verificar.sh          # verificación local (y hook de pre-push opcional)
+├── scripts/traducciones.sh       # plantilla, catálogos y compilación a build/locale (gettext)
 ├── src/berigna/
 │   ├── core/
 │   │   ├── errors.py             # jerarquía de errores ERR-xxx
 │   │   ├── token/                # base (TokenSigner), pin, transport (PC/SC), dnie_v2 (APDU)
 │   │   ├── trust/                # store + anchors/ (certificados IOFE y manifest.json)
-│   │   ├── validation/           # preflight (RF-006)
-│   │   ├── formats/              # pades (B-B); cades y xades (previstos, Fase 4)
+│   │   ├── validation/           # preflight (RF-006) y pdf (verificación, RF-050)
+│   │   ├── formats/              # pades (B-B a B-LTA); cades y xades (previstos, Fase 4)
+│   │   ├── net/                  # fetchers (OCSP, CRL) y tsa (RFC 3161)
+│   │   ├── report/               # messages, explanations (RF-053) y json_report (RF-054)
+│   │   ├── i18n.py               # idiomas es_PE y quechua, catálogos gettext (ADR-0015)
 │   │   ├── signing.py            # orquestación de la firma de PDF
-│   │   └── net/, appearance/, report/, history.py, config.py, batch.py   # (previstos)
+│   │   └── appearance/, history.py, config.py, batch.py   # (previstos)
 │   ├── main.py, ui/              # (previsto, Fase 3)
 ├── data/
 │   ├── brand/                    # logotipos SVG (GPL-3.0-or-later)
 │   └── *.desktop.in, *.metainfo.xml.in, *.gschema.xml, icons/   # (previstos)
-├── po/, help/                    # (previstos: traducciones y manual Mallard)
+├── po/                           # LINGUAS, POTFILES, berigna.pot, es_PE.po, quz.po
+├── help/                         # (previsto: manual Mallard)
 ├── tests/
 │   ├── unit/                     # pruebas unitarias por módulo
 │   ├── sim/                      # simulador del applet PKI del DNIe v2
@@ -86,7 +91,7 @@ Comprobaciones antes de cada commit:
 .venv/bin/pytest --cov=berigna
 ```
 
-El script `scripts/verificar.sh` ejecuta exactamente esas comprobaciones (nunca las pruebas HIL). Se puede instalar como *hook* de `pre-push` con `ln -s ../../scripts/verificar.sh .git/hooks/pre-push`.
+El script `scripts/verificar.sh` ejecuta exactamente esas comprobaciones (nunca las pruebas HIL), después de compilar los catálogos con `scripts/traducciones.sh compilar` (necesita el paquete `gettext`). Tras añadir o cambiar un texto traducible: `scripts/traducciones.sh actualizar`, traducir la entrada en `po/es_PE.po` y dejarla en `po/quz.po` para los traductores; una prueba comprueba que `po/berigna.pot` está al día. Se puede instalar como *hook* de `pre-push` con `ln -s ../../scripts/verificar.sh .git/hooks/pre-push`.
 
 ## 3. Estilo de código
 

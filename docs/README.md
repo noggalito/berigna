@@ -108,7 +108,8 @@ Algunos documentos públicos citan identificadores cuyo detalle está en la docu
 | PIN pad (PC/SC parte 10) | Aplazado a la versión 1.1 (decisión del 2026-10-27; requiere un lector de clase 2) | RF-005, P-08 | — |
 | *Backend* PKCS#11 + SoftHSM | Aplazado a la versión 1.1 (decisión del 2026-10-27; el DNIe v2 no lo necesita) | ADR-0003 | — |
 | `core.validation.pdf` (verificador PAdES) | Implementado: procesos de ETSI EN 319 102-1 básico (§5.3) y de validación a largo plazo (§5.6.3), sellos de firma y de documento (§5.4), validación en el pasado, datos de revocación embebidos (DSS y `revocationInfoArchival` de Adobe), cobertura y modificaciones posteriores | RF-050, RF-053 (indicaciones), RF-055, RF-056 | PKI y TSA de pruebas (B-B, B-LT, B-LTA, certificado vencido con prueba de existencia); documentos reales: misma indicación principal que DSS 6.2, y subindicaciones de ETSI precisas en lugar de la genérica de pyHanko |
-| Explicaciones en es_PE y quechua e informes JSON y PDF | Fase 2 (siguiente incremento; requiere GNU gettext) | RF-053, RF-054 | — |
+| `core.i18n` y `core.report` (explicaciones e informe JSON) | Implementado: catálogos gettext es_PE (completo) y quechua (pendiente de los traductores, ADR-0015); explicación de cada indicación y subindicación ETSI y de cada `ERR-xxx`; informe JSON con explicaciones en ambos idiomas | RF-053, RF-054 (JSON), PR-I18N-04, PR-I18N-07 | Pruebas de cobertura del catálogo; documentos reales |
+| Informe PDF | Fase 2 | RF-054 | — |
 | TSA de producción, proxy y caché de red | Fase 2 (DP-02 abierta: aún no hay TSA peruana contratada) | RF-062, RF-064, RF-065 | — |
 | CAdES y XAdES | Fase 4 (viabilidad probada en SPK-03) | RF-020 a RF-033 | — |
 | DNIe 1.0 y DNIe 3.0 | Versión 1.1 (decisión del 2026-10-27); identificación pendiente en SPK-06 | RNF-COM-05 | — |
@@ -116,5 +117,5 @@ Algunos documentos públicos citan identificadores cuyo detalle está en la docu
 | Extensión de LibreOffice "Firmar con berigna" | Versión 1.2 (decisión del 2026-10-27) | RF-074 | — |
 | Empaquetado `.deb` | Fase 5 | ADR-0006, ADR-0013 | — |
 
-Verificación local: `scripts/verificar.sh` (ruff, mypy estricto, pytest con cobertura mínima del 80 %; hoy 100 % del núcleo con 157 pruebas). Pruebas con hardware: `BERIGNA_HIL=1 pytest -m hil` (sin PIN) y los *scripts* manuales de `tests/hil/` (con PIN, según el protocolo).
+Verificación local: `scripts/verificar.sh` (ruff, mypy estricto, pytest con cobertura mínima del 80 %; hoy 100 % del núcleo con 202 pruebas). Pruebas con hardware: `BERIGNA_HIL=1 pytest -m hil` (sin PIN) y los *scripts* manuales de `tests/hil/` (con PIN, según el protocolo).
 

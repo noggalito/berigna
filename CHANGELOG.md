@@ -29,8 +29,14 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/); v
 - Cliente de sellado de tiempo RFC 3161 (`berigna.core.net.tsa`) con comprobación previa y plazo total, también con IPv6 roto.
 - Consultas OCSP y CRL comunes (`berigna.core.net.fetchers`): un reintento ante fallo (R-17) y nunca la CRL de un certificado final.
 - Subindicaciones de ETSI precisas en la verificación: la falta de datos de revocación (`TRY_LATER`) y un certificado vencido en la cadena (`OUT_OF_BOUNDS_NO_POE`) ya no se informan con la subindicación genérica de pyHanko.
+- Infraestructura de traducción con GNU gettext (`po/`, `scripts/traducciones.sh`, `berigna.core.i18n`): catálogo es_PE completo y catálogo de quechua sureño a la espera de los traductores; el quechua pendiente se muestra en es_PE, nunca en el texto fuente inglés (ADR-0015).
+- Explicaciones en lenguaje llano de cada indicación y subindicación ETSI y de cada código de error (`berigna.core.report`, RF-053), e informe de verificación JSON con explicaciones en ambos idiomas (RF-054). Del DNI del firmante solo se conservan los cuatro últimos dígitos.
 - Plan de compatibilidad: DNIe 1.0 y DNIe 3.0 previstos para la versión 1.1 (investigación SPK-06).
 - Idiomas de la versión 1.0: español del Perú y quechua sureño (ADR-0015); el inglés pasa a la versión 1.1.
 - Requisito RF-074: extensión de LibreOffice "Firmar con berigna", prevista para la versión 1.2.
 - Verificador de firmas PDF (`berigna.core.validation.verify_pdf`, primer incremento de la Fase 2): indicación y subindicación de ETSI EN 319 102-1 con el proceso básico, datos de revocación embebidos (DSS y `revocationInfoArchival` de las firmas heredadas `adbe.pkcs7.detached`), revisión firmada y clasificación de los cambios posteriores (RF-055). Errores ERR-400 y ERR-401.
 - Verificación de sellos de tiempo: las firmas B-T, B-LT y B-LTA se validan con el proceso de ETSI para material de validación a largo plazo, de modo que una firma cuyo certificado ya venció sigue siendo válida si un sello prueba que existía antes (RF-056). Cada sello de firma y de documento tiene su propia indicación (RF-053). `verify_pdf` acepta además respuestas OCSP y CRL aportadas por quien llama.
+
+### Corregido
+
+- Consultas de revocación a RENIEC que daban INDETERMINATE/TRY_LATER sin motivo (R-17): las CRL de las CA se descargan con un cliente propio que se queda con el primer espejo que responde y solo pide el siguiente si el anterior tarda más de 2 s, y el tiempo de conexión es de 20 s, separado del de lectura. pyhanko-certvalidator 0.26.3 fallaba si cualquier espejo fallaba y guardaba en caché las descargas fallidas.
