@@ -71,7 +71,7 @@ flowchart LR
 
 ### 3.2 Firmar
 
-Implementado en la Fase 3, incremento 3 (sin firma visible ni apariencia, que llegan en el incremento 5). Diferencias con el boceto: la vista previa encaja la página entera, sin zoom; los niveles que necesitan una TSA aparecen desactivados mientras no haya una configurada (DP-02); un documento certificado "sin cambios" muestra el motivo y no deja firmar (ERR-307).
+Implementado en la Fase 3, incremento 3; la firma visible, en el incremento 5 (ADR-0018): un interruptor y la apariencia (solo texto, rúbrica, logotipo o código QR) en el panel, y el recuadro sobre la vista previa, que se dibuja arrastrando sobre la página y se mueve arrastrándolo, con el sello dibujado en vivo con datos de muestra. Diferencias con el boceto: la vista previa encaja la página entera, sin zoom; los niveles que necesitan una TSA aparecen desactivados mientras no haya una configurada (DP-02); un documento certificado "sin cambios" muestra el motivo y no deja firmar (ERR-307).
 
 ```
 ┌──────────────────────────────────────────────────────────────┐
