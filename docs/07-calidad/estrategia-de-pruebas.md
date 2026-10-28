@@ -33,7 +33,7 @@
 
 ### 3.1 PKI de pruebas que imita la IOFE
 
-Se genera con un script reproducible (`tests/pki/build.py`) y nunca se distribuye en el paquete:
+Se genera al vuelo en las pruebas (`tests/support/pki.py`, con raíz, CA intermedia con ARL, firmantes con OCSP, CRL y respuestas OCSP buenas o revocadas) y nunca se distribuye en el paquete. La versión de SPK-03, con TSA y CRL servidas por HTTP, está en `spikes/spk03/spk03_pki.py`:
 
 ```
 Raíz de pruebas "ECERNEP-TEST"
