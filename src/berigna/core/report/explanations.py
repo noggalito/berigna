@@ -9,6 +9,7 @@ for the translators makes the whole explanation ``None`` instead of mixing langu
 
 import datetime as dt
 import gettext
+import re
 
 from cryptography import x509
 from cryptography.x509.oid import NameOID
@@ -33,9 +34,23 @@ def format_time(moment: dt.datetime) -> str:
     return moment.astimezone(dt.UTC).strftime("%d/%m/%Y %H:%M UTC")
 
 
+def mask_numbers(text: str) -> str:
+    """Hide all but the last four digits of every run of five or more digits.
+
+    The common name of a DNIe certificate carries the full national identity number
+    ("… FIR 12345678 hard"), and company certificates their RUC: reports keep the last four.
+    """
+    return re.sub(r"\d{5,}", lambda match: "****" + match.group()[-4:], text)
+
+
+def display_name(name: x509.Name) -> str:
+    """The common name of ``name`` (or the whole name), with long numbers masked."""
+    names = name.get_attributes_for_oid(NameOID.COMMON_NAME)
+    return mask_numbers(str(names[0].value) if names else name.rfc4514_string())
+
+
 def common_name(certificate: x509.Certificate) -> str:
-    names = certificate.subject.get_attributes_for_oid(NameOID.COMMON_NAME)
-    return str(names[0].value) if names else certificate.subject.rfc4514_string()
+    return display_name(certificate.subject)
 
 
 def subindication_key(indication: Indication, subindication: str | None) -> str | None:
