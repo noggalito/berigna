@@ -7,6 +7,7 @@ from berigna.core.validation.pdf import (
     Modifications,
     PdfSignatureReport,
     PdfVerification,
+    TimestampReport,
     verify_pdf,
 )
 from berigna.core.validation.preflight import RevocationNote, SignerCheck, check_signer
@@ -18,6 +19,7 @@ __all__ = [
     "PdfVerification",
     "RevocationNote",
     "SignerCheck",
+    "TimestampReport",
     "check_signer",
     "verify_pdf",
 ]
