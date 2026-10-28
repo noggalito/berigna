@@ -12,10 +12,14 @@ DOMAIN=berigna
 LINGUAS=$(grep -v '^#' po/LINGUAS)
 
 update() {
-    grep -v '^#' po/POTFILES | xgettext --files-from=- --language=Python --from-code=UTF-8 \
-        --keyword=N_ --keyword=_ --add-comments=Translators: --sort-by-file \
+    grep -v '^#' po/POTFILES | grep '\.py$' | xgettext --files-from=- --language=Python \
+        --from-code=UTF-8 --keyword=N_ --keyword=_ --add-comments=Translators: --sort-by-file \
         --package-name=berigna --msgid-bugs-address=https://github.com/noggalito/berigna/issues \
         --copyright-holder="Calú" --output=po/$DOMAIN.pot
+    # Blueprint views: _("…") and C_("context", "…") read as C.
+    grep -v '^#' po/POTFILES | grep '\.blp$' | xgettext --files-from=- --language=C \
+        --from-code=UTF-8 --keyword=_ --keyword=C_:1c,2 --add-comments=Translators: \
+        --sort-by-file --join-existing --output=po/$DOMAIN.pot
     for lang in $LINGUAS; do
         if [ -f "po/$lang.po" ]; then
             msgmerge --quiet --update --backup=none --no-fuzzy-matching "po/$lang.po" po/$DOMAIN.pot

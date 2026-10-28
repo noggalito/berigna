@@ -1,0 +1,12 @@
+#!@PYTHON@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# SPDX-FileCopyrightText: 2026 Calú
+import os
+import sys
+
+os.environ.setdefault("BERIGNA_RESOURCES", "@RESOURCES@")
+os.environ.setdefault("BERIGNA_LOCALEDIR", "@LOCALEDIR@")
+
+from berigna.main import main  # noqa: E402
+
+sys.exit(main())
