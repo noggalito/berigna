@@ -10,8 +10,8 @@ that follow, so a signature whose certificate has since expired can still pass (
 Each check covers integrity, signer certificate, chain up to the trust store and revocation.
 Revocation data comes from the document first (DSS, the Adobe ``revocationInfoArchival``
 attribute of legacy ``adbe.pkcs7.detached`` signatures, certificates in the CMS) and, when
-``online``, from OCSP and from the CRLs of the CAs. The CRL of an end-entity certificate is
-never downloaded: for the DNIe it weighs ~109 MB (RF-063).
+``online``, from OCSP and from the CRLs of the CAs, with the rules of
+:mod:`berigna.core.net.fetchers` (never the CRL of an end-entity certificate, RF-063).
 
 Separately from the indication, each signature reports which revision it covers and how the
 document changed afterwards (RF-055), with pyHanko's difference analysis. A change that cannot
@@ -29,7 +29,7 @@ import asyncio
 import datetime as dt
 import enum
 import io
-from collections.abc import Iterable, Sequence
+from collections.abc import Sequence
 from dataclasses import dataclass
 from typing import Any
 
@@ -56,9 +56,6 @@ from pyhanko.sign.validation.policy_decl import (
 from pyhanko.sign.validation.settings import KeyUsageConstraints
 from pyhanko.sign.validation.status import SignatureCoverageLevel
 from pyhanko_certvalidator.context import CertValidationPolicySpec
-from pyhanko_certvalidator.errors import CRLFetchError
-from pyhanko_certvalidator.fetchers.api import CRLFetcher, FetcherBackend, Fetchers
-from pyhanko_certvalidator.fetchers.requests_fetchers import RequestsFetcherBackend
 from pyhanko_certvalidator.ltv.types import ValidationTimingInfo
 from pyhanko_certvalidator.policy_decl import (
     CertRevTrustPolicy,
@@ -69,6 +66,7 @@ from pyhanko_certvalidator.registry import SimpleTrustManager
 from pyhanko_certvalidator.revinfo.archival import CRLContainer, OCSPContainer
 
 from berigna.core.errors import UnreadableDocumentError
+from berigna.core.net.fetchers import RevocationFetcherBackend
 from berigna.core.trust import TrustStore
 from berigna.core.validation.preflight import _to_asn1, _to_cryptography
 
@@ -130,39 +128,6 @@ class PdfVerification:
     signatures: tuple[PdfSignatureReport, ...]
     document_timestamps: tuple[TimestampReport, ...]
     moment: dt.datetime
-
-
-class _CaOnlyCrlFetcher(CRLFetcher):
-    """Fetches CRLs for CA certificates only; end-entity CRLs can be huge (RF-063)."""
-
-    def __init__(self, inner: CRLFetcher) -> None:
-        self._inner = inner
-
-    async def fetch(
-        self, cert: Any, *, use_deltas: Any = None
-    ) -> Iterable[asn1_crl.CertificateList]:
-        if not isinstance(cert, asn1_x509.Certificate) or not cert.ca:
-            raise CRLFetchError("CRLs of end-entity certificates are never downloaded")
-        return await self._inner.fetch(cert, use_deltas=use_deltas)
-
-    def fetched_crls(self) -> Iterable[asn1_crl.CertificateList]:
-        return self._inner.fetched_crls()
-
-    def fetched_crls_for_cert(self, cert: Any) -> Iterable[asn1_crl.CertificateList]:
-        return self._inner.fetched_crls_for_cert(cert)
-
-
-class _VerificationFetcherBackend(FetcherBackend):
-    def __init__(self, timeout: float) -> None:
-        self._inner = RequestsFetcherBackend(per_request_timeout=timeout)  # type: ignore[no-untyped-call]
-
-    def get_fetchers(self) -> Fetchers:
-        fetchers = self._inner.get_fetchers()
-        return Fetchers(
-            ocsp_fetcher=fetchers.ocsp_fetcher,
-            crl_fetcher=_CaOnlyCrlFetcher(fetchers.crl_fetcher),
-            cert_fetcher=fetchers.cert_fetcher,
-        )
 
 
 def _dss_contents(reader: PdfFileReader) -> tuple[list[Any], list[Any], list[Any]]:
@@ -261,7 +226,7 @@ def _spec(context: _Context, adobe: tuple[list[Any], list[Any]]) -> SignatureVal
                 if context.online
                 else RevinfoOnlineFetchingRule.LOCAL_ONLY
             ),
-            fetcher_backend=_VerificationFetcherBackend(context.timeout),
+            fetcher_backend=RevocationFetcherBackend(context.timeout),
         ),
         local_knowledge=knowledge,
         key_usage_settings=KeyUsageConstraints(key_usage={"non_repudiation"}),
