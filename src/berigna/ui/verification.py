@@ -7,6 +7,7 @@ The verification runs in a worker thread: it may query OCSP and CRL services for
 """
 
 import hashlib
+import logging
 import threading
 from collections.abc import Callable
 from pathlib import Path
@@ -33,6 +34,8 @@ from berigna.ui.i18n import N_, _, catalogue  # noqa: E402
 if TYPE_CHECKING:
     from berigna.ui.window import MainWindow
 
+log = logging.getLogger(__name__)
+
 # Verifies the bytes of a PDF; returns the result and the trust store it used.
 Verify = Callable[[bytes], tuple[PdfVerification, TrustStore]]
 
@@ -54,6 +57,7 @@ class VerificationPage:
         self._store: TrustStore | None = None
         self._data = b""
         self._sha256 = ""
+        self._existing_problems = False
 
         menu = Gio.Menu()
         menu.append(_("PDF Report in Spanish"), "verification.export::pdf-es")
@@ -62,6 +66,14 @@ class VerificationPage:
         self._export = Gtk.MenuButton(
             label=_("Export"), menu_model=menu, sensitive=False, tooltip_text=_("Export Report")
         )
+        self._sign = Gtk.Button(
+            label=_("_Sign"),
+            use_underline=True,
+            sensitive=False,
+            tooltip_text=_("Add your signature to this document"),
+        )
+        self._sign.add_css_class("suggested-action")
+        self._sign.connect("clicked", lambda _b: self._add_signature())
         self._retry = Gtk.Button(
             icon_name="view-refresh-symbolic",
             tooltip_text=_("Verify Again"),
@@ -77,7 +89,7 @@ class VerificationPage:
         spinner.get_paintable().set_widget(spinner)
         self._stack.add_named(spinner, "loading")
         self.page = window.page(
-            document.path.name, "verification", self._stack, [self._export, self._retry]
+            document.path.name, "verification", self._stack, [self._sign, self._export, self._retry]
         )
 
         actions = Gio.SimpleActionGroup()
@@ -100,6 +112,7 @@ class VerificationPage:
         """Verify in a worker thread; the page shows a spinner meanwhile."""
         self._stack.set_visible_child_name("loading")
         self._export.set_sensitive(False)
+        self._sign.set_sensitive(False)
         self._retry.set_visible(False)
 
         def work() -> None:
@@ -114,6 +127,9 @@ class VerificationPage:
                     self._show_error,
                     _("{name} could not be opened.").format(name=self.document.path.name),
                 )
+            except Exception:  # never leave the spinner turning: unexpected error (ERR-000)
+                log.exception("verification failed")
+                GLib.idle_add(self._show_error, explain_error("ERR-000", catalogue()) or "")
 
         threading.Thread(target=work, name="berigna-verify", daemon=True).start()
 
@@ -160,7 +176,9 @@ class VerificationPage:
 
         self._replace("result", result)
         self._export.set_sensitive(True)
+        self._sign.set_sensitive(not self.document.locked)
         self._retry.set_visible(view.retry)
+        self._existing_problems = view.style != "success"
         return GLib.SOURCE_REMOVE
 
     def _result_group(self, view: presentation.ResultView, number: int) -> Adw.PreferencesGroup:
@@ -184,6 +202,10 @@ class VerificationPage:
         expander.add_row(revision)
         group.add(expander)
         return group
+
+    def _add_signature(self) -> None:
+        """CU-03: sign on top; warn first if some existing signature is not valid."""
+        self._window.sign(self.document, existing_problems=self._existing_problems)
 
     # -- Reports and signed versions -------------------------------------------------------
 

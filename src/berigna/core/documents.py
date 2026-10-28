@@ -17,6 +17,7 @@ from pyhanko.pdf_utils.misc import PdfError
 from pyhanko.pdf_utils.reader import PdfFileReader
 
 from berigna.core.errors import UnreadableDocumentError
+from berigna.core.formats.pades import no_changes_allowed
 
 # ISO 32000 allows bytes before the header; readers accept it within the first kilobyte.
 _PDF_HEADER = b"%PDF-"
@@ -36,6 +37,7 @@ class DocumentInfo:
     sha256: str
     pages: int | None = None  # PDF only
     signatures: int = 0  # signature fields with a value, document timestamps included
+    locked: bool = False  # certified by its author with no changes allowed (DocMDP P=1)
 
     @property
     def signed(self) -> bool:
@@ -57,4 +59,5 @@ def inspect_document(path: Path) -> DocumentInfo:
         signatures = len(reader.embedded_signatures)
     except (PdfError, ValueError, KeyError, TypeError) as exc:
         raise UnreadableDocumentError(f"cannot read this PDF: {exc}") from exc
-    return DocumentInfo(path, DocumentKind.PDF, len(data), digest, pages, signatures)
+    locked = no_changes_allowed(reader)
+    return DocumentInfo(path, DocumentKind.PDF, len(data), digest, pages, signatures, locked)

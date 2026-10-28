@@ -2,10 +2,12 @@
 # SPDX-FileCopyrightText: 2026 Calú
 """Texts and icons the window shows, kept apart from GTK so they can be tested headless."""
 
+import gettext
 from collections import Counter
 from dataclasses import dataclass
 
 from berigna.core.documents import DocumentInfo, DocumentKind
+from berigna.core.formats.pades import SignatureLevel
 from berigna.core.report import messages
 from berigna.core.report.explanations import (
     common_name,
@@ -13,10 +15,12 @@ from berigna.core.report.explanations import (
     explain_signature,
     explain_timestamp,
     format_time,
+    masked_id,
 )
+from berigna.core.signing import SignResult
 from berigna.core.token.monitor import DeviceState, DeviceStatus
 from berigna.core.trust import TrustStore
-from berigna.core.validation import Indication, PdfVerification
+from berigna.core.validation import Indication, PdfVerification, SignerCheck
 from berigna.core.validation.pdf import PdfSignatureReport, TimestampReport
 from berigna.ui.i18n import N_, _, catalogue, ngettext
 
@@ -223,3 +227,105 @@ def verification_view(verification: PdfVerification, store: TrustStore) -> Verif
         timestamps=tuple(_timestamp_view(t) for t in verification.document_timestamps),
         retry=Indication.INDETERMINATE in indications,
     )
+
+
+# -- Signing (CU-01, BRG-UX-001 §3.2, §3.3 and §4) -----------------------------------------------
+
+LEVELS: dict[SignatureLevel, tuple[str, str]] = {
+    SignatureLevel.B_LT: (
+        N_("Long-term validation"),
+        N_(
+            "Also includes the information needed to verify the signature years from now. "
+            "Recommended."
+        ),
+    ),
+    SignatureLevel.B_LTA: (
+        N_("Long-term archival"),
+        N_(
+            "Protects the signature against cryptographic obsolescence. "
+            "For documents that must be kept for many years."
+        ),
+    ),
+    SignatureLevel.B_T: (
+        N_("With timestamp"),
+        N_("A timestamping authority certifies the date and time of the signature."),
+    ),
+    SignatureLevel.B_B: (
+        N_("Basic"),
+        N_("Signature without a timestamp. The date is declared by your computer."),
+    ),
+}
+NEEDS_TSA = N_("Needs a timestamping authority, which is not configured yet.")
+
+
+def level_title(level: SignatureLevel, translations: gettext.NullTranslations | None = None) -> str:
+    """ "Long-term validation (B-LT)": plain words first, the code as secondary text."""
+    gettext_ = (translations or catalogue()).gettext
+    return f"{gettext_(LEVELS[level][0])} ({level.value})"
+
+
+def pin_summary(
+    document: DocumentInfo,
+    check: SignerCheck,
+    level: SignatureLevel,
+    translations: gettext.NullTranslations | None = None,
+) -> tuple[Detail, ...]:
+    """What the PIN dialog shows before the PIN is sent (P-01, BRG-UX-001 §3.3).
+
+    ``translations`` gives it in another language: Quechua users can read it in Spanish.
+    """
+    t = translations or catalogue()
+    certificate = check.chain[-1]
+    pages = document.pages or 0
+    rows = [
+        Detail(
+            t.gettext("Document"),
+            t.ngettext("{name} ({n} page)", "{name} ({n} pages)", pages).format(
+                name=document.path.name, n=pages
+            ),
+        ),
+        Detail(t.gettext(messages.REPORT_SIGNER), common_name(certificate)),
+    ]
+    identity = masked_id(certificate)
+    if identity is not None:
+        rows.append(Detail(t.gettext("DNI"), identity))
+    rows.append(Detail(t.gettext("Level"), level_title(level, t)))
+    return tuple(rows)
+
+
+def pin_warnings(check: SignerCheck, remaining_tries: int | None) -> tuple[str, ...]:
+    """Warnings shown above the PIN entry (P-07, RF-006)."""
+    warnings = []
+    if remaining_tries is not None:
+        warnings.append(
+            ngettext(
+                "The PIN was not correct. You have {n} try left before the PIN is blocked.",
+                "The PIN was not correct. You have {n} tries left before the PIN is blocked.",
+                remaining_tries,
+            ).format(n=remaining_tries)
+        )
+    if check.only_basic_level:
+        warnings.append(
+            _(
+                "Revocation of your certificate could not be checked online, "
+                "so only a basic signature is possible."
+            )
+        )
+    return tuple(warnings)
+
+
+def signed_summary(result: SignResult, requested: SignatureLevel) -> str:
+    """One line under "Document signed": file, level reached and, if it is lower than
+    ``requested``, what was left out (the core's note is technical and goes to the log)."""
+    text = _("Saved as {name}, level {level}.").format(
+        name=result.output.name, level=level_title(result.level)
+    )
+    if result.level is requested:
+        return text
+    if result.level is SignatureLevel.B_T:
+        missing = _(
+            "The validation data could not be added because the revocation services did not answer."
+        )
+    else:
+        missing = _("The document time-stamp could not be added.")
+    return f"{text} {missing}"
