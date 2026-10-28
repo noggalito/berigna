@@ -42,7 +42,12 @@ Interfaz (Fase 3):
 - Ventana principal: abrir un documento con el botón, arrastrándolo o como argumento; estado del lector y del DNIe en la barra inferior.
 - `berigna.core.documents`: tipo de documento, páginas, firmas y SHA-256 al abrirlo.
 - Las vistas se traducen con `core.i18n` y no con el gettext de C, que mostraba el inglés con la configuración regional C; el idioma cambia sin reiniciar.
-- Aviso de traducción sin revisar con la interfaz en quechua, con el botón "Ver en español" (DP-14).
+- Aviso de traducción sin revisar con la interfaz en quechua, con el botón "Ver en español" (DP-14); también en el informe PDF en quechua.
+- Verificación de PDF firmados (CU-06): resumen global, una tarjeta por firma con su explicación y sus detalles técnicos, sellos de documento, "Verificar de nuevo" si algún resultado es indeterminado, exportación del informe (PDF en español o en quechua, y JSON) y de la versión que dejó cada firma. Cada página tiene su barra de título con el botón de volver.
+
+### Corregido
+
+- La verificación y la validación previa "en este momento" rechazaban como "demasiado reciente" una respuesta OCSP producida mientras se esperaba al servicio: la tolerancia de pyhanko-certvalidator es de 1 s y RENIEC tarda segundos (R-17). Un PDF firmado con el DNIe real salía INDETERMINATE / TRY_LATER y la firma quedaba limitada a B-B. Ahora la tolerancia es de 5 minutos al validar en el momento actual; la validación en una fecha pasada no cambia.
 
 Proyecto:
 
