@@ -350,7 +350,7 @@ def test_fetch_downloads_the_list_and_the_signer_crl(
 
     monkeypatch.setattr(tsl_module, "_download", download)
     monkeypatch.setattr(tsl_module, "tsl_root", lambda: tsl_pki.root)
-    trusted = fetch_tsl(url="https://iofe.example/tsl.xml")
+    trusted, _data = fetch_tsl(url="https://iofe.example/tsl.xml")
     assert trusted.sequence_number == 7
     assert asked == ["https://iofe.example/tsl.xml", "https://crl.example/tsl.crl"]
 
@@ -392,7 +392,7 @@ def test_fetch_tries_every_crl_distribution_point(monkeypatch: pytest.MonkeyPatc
 
     monkeypatch.setattr(tsl_module, "_download", download)
     monkeypatch.setattr(tsl_module, "tsl_root", lambda: mirrors.root)
-    assert fetch_tsl(url="https://iofe.example/tsl.xml").sequence_number == 7
+    assert fetch_tsl(url="https://iofe.example/tsl.xml")[0].sequence_number == 7
     assert asked[1:] == ["https://caido.example/tsl.crl", "https://espejo.example/tsl.crl"]
 
     def nothing_answers(url: str, timeout: float, limit: int) -> bytes:

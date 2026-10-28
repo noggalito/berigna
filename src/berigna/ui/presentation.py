@@ -20,6 +20,7 @@ from berigna.core.report.explanations import (
 from berigna.core.signing import SignResult
 from berigna.core.token.monitor import DeviceState, DeviceStatus
 from berigna.core.trust import TrustStore
+from berigna.core.trust.cache import TslRefresh
 from berigna.core.validation import Indication, PdfVerification, SignerCheck
 from berigna.core.validation.pdf import PdfSignatureReport, TimestampReport
 from berigna.ui.i18n import N_, _, catalogue, ngettext
@@ -329,3 +330,29 @@ def signed_summary(result: SignResult, requested: SignatureLevel) -> str:
     else:
         missing = _("The document time-stamp could not be added.")
     return f"{text} {missing}"
+
+
+# -- Preferences (CU-08) ---------------------------------------------------------------------------
+
+
+def tsl_status(result: TslRefresh | None) -> tuple[str, str]:
+    """Title and subtitle of the trusted list row (ADR-0014)."""
+    if result is None:
+        return _("Checking the trusted list…"), ""
+    trusted = result.trusted_list
+    if trusted is None:
+        return (
+            _("Not available"),
+            _("Only the root certificates included in berigna are used."),
+        )
+    authorities = len(trusted.ca_certificates())
+    return (
+        _("List {sequence}, issued on {date}").format(
+            sequence=trusted.sequence_number, date=trusted.issued.strftime("%d/%m/%Y")
+        ),
+        ngettext(
+            "Valid until {date}. {n} accredited certification authority.",
+            "Valid until {date}. {n} accredited certification authorities.",
+            authorities,
+        ).format(date=trusted.next_update.strftime("%d/%m/%Y"), n=authorities),
+    )
