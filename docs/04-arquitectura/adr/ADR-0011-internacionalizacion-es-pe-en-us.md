@@ -1,6 +1,6 @@
 # ADR-0011: Internacionalización con dos idiomas, es_PE y en_US
 
-- Estado: Aceptado
+- Estado: Aceptado; modificado por [ADR-0015](ADR-0015-idiomas-es-pe-y-quechua-sureno.md). Los idiomas de la v1.0 son es_PE y quechua sureño; en_US pasa a la versión 1.1, y los idiomas no soportados muestran es_PE.
 - Fecha: 2026-10-27
 - Origen: DP-07
 
