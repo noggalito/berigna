@@ -1,9 +1,13 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # SPDX-FileCopyrightText: 2026 Calú
-"""Verification of the signatures in a PDF (RF-050, RF-053, RF-055), first increment.
+"""Verification of the signatures in a PDF (RF-050, RF-053, RF-055, RF-056).
 
-Each signature gets an ETSI EN 319 102-1 indication from pyHanko's AdES *basic* validation
-process (§5.3): integrity, signer certificate, chain up to the trust store and revocation.
+Each signature gets an ETSI EN 319 102-1 indication from pyHanko's AdES validation: the *basic*
+process (§5.3) for signatures without a time-stamp (B-B) and the process for signatures with
+long-term validation material (§5.6.3) for those with a signature time-stamp (B-T and above).
+The latter takes the proof of existence from the time-stamps and from the document time-stamps
+that follow, so a signature whose certificate has since expired can still pass (RF-056).
+Each check covers integrity, signer certificate, chain up to the trust store and revocation.
 Revocation data comes from the document first (DSS, the Adobe ``revocationInfoArchival``
 attribute of legacy ``adbe.pkcs7.detached`` signatures, certificates in the CMS) and, when
 ``online``, from OCSP and from the CRLs of the CAs. The CRL of an end-entity certificate is
@@ -13,9 +17,9 @@ Separately from the indication, each signature reports which revision it covers 
 document changed afterwards (RF-055), with pyHanko's difference analysis. A change that cannot
 be classified as harmless (form filling, annotations, LTV data) is reported as ``OTHER``.
 
-Not in this increment: time-stamps. Signature time-stamps are not evaluated yet (B-T and above
-are validated as basic signatures) and document time-stamps are listed in
-:attr:`PdfVerification.pending`, never silently dropped.
+Signature time-stamps and document time-stamps get their own indication (§5.4), reported
+separately from the signature (RF-053): an invalid archive time-stamp is shown even when the
+signature passes. Time-stamping units are validated against the same trust store.
 
 Like :func:`~berigna.core.validation.check_signer`, :func:`verify_pdf` runs its own asyncio
 event loop: call it from a worker thread.
@@ -25,7 +29,7 @@ import asyncio
 import datetime as dt
 import enum
 import io
-from collections.abc import Iterable
+from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
 from typing import Any
 
@@ -38,12 +42,13 @@ from pyhanko.pdf_utils.misc import PdfError
 from pyhanko.pdf_utils.reader import PdfFileReader
 from pyhanko.sign.ades.report import AdESFailure, AdESIndeterminate, AdESPassed
 from pyhanko.sign.diff_analysis import ModificationLevel, SuspiciousModification
-from pyhanko.sign.validation import ades
+from pyhanko.sign.validation import ades, generic_cms
 from pyhanko.sign.validation.errors import SignatureValidationError, ValidationInfoReadingError
 from pyhanko.sign.validation.ltv import retrieve_adobe_revocation_info
 from pyhanko.sign.validation.pdf_embedded import EmbeddedPdfSignature
 from pyhanko.sign.validation.policy_decl import (
     LocalKnowledge,
+    PdfSignatureValidationSpec,
     RevinfoOnlineFetchingRule,
     RevocationInfoGatheringSpec,
     SignatureValidationSpec,
@@ -92,6 +97,17 @@ class Modifications(enum.Enum):
 
 
 @dataclass(frozen=True)
+class TimestampReport:
+    """A signature time-stamp or a document time-stamp (RF-053)."""
+
+    indication: Indication
+    subindication: str | None
+    time: dt.datetime | None  # the time certified by the TSA; None if unreadable
+    tsa: x509.Certificate | None
+    field_name: str | None = None  # set for document time-stamps
+
+
+@dataclass(frozen=True)
 class PdfSignatureReport:
     field_name: str
     indication: Indication
@@ -102,6 +118,7 @@ class PdfSignatureReport:
     covers_whole_document: bool
     modifications: Modifications
     signed_revision_length: int  # data[:signed_revision_length] is the version that was signed
+    timestamp: TimestampReport | None = None  # signature time-stamp (B-T and above)
 
     @property
     def document_unchanged_since_signing(self) -> bool:
@@ -111,7 +128,7 @@ class PdfSignatureReport:
 @dataclass(frozen=True)
 class PdfVerification:
     signatures: tuple[PdfSignatureReport, ...]
-    pending: tuple[str, ...]  # field names of document time-stamps, not evaluated yet
+    document_timestamps: tuple[TimestampReport, ...]
     moment: dt.datetime
 
 
@@ -211,14 +228,71 @@ def _failed_format(sig: EmbeddedPdfSignature, subfilter: str) -> PdfSignatureRep
     )
 
 
-def _verify_signature(
-    sig: EmbeddedPdfSignature,
-    store: TrustStore,
-    dss: tuple[list[Any], list[Any], list[Any]],
-    timing: ValidationTimingInfo,
-    online: bool,
-    timeout: float,
-) -> PdfSignatureReport:
+@dataclass(frozen=True)
+class _Context:
+    """What every signature of one document is validated with."""
+
+    store: TrustStore
+    dss: tuple[list[Any], list[Any], list[Any]]  # certificates, OCSP responses, CRLs
+    extra: tuple[list[Any], list[Any]]  # OCSP responses and CRLs supplied by the caller
+    timing: ValidationTimingInfo
+    online: bool
+    timeout: float
+
+
+def _spec(context: _Context, adobe: tuple[list[Any], list[Any]]) -> SignatureValidationSpec:
+    store = context.store
+    dss_certs, dss_ocsps, dss_crls = context.dss
+    ocsps = dss_ocsps + adobe[0] + context.extra[0]
+    crls = dss_crls + adobe[1] + context.extra[1]
+    knowledge = LocalKnowledge(
+        known_certs=[_to_asn1(c) for c in store.intermediates] + dss_certs,
+        known_ocsps=[c for o in ocsps for c in OCSPContainer.load_multi(o)],
+        known_crls=[CRLContainer(c) for c in crls],
+    )
+    return SignatureValidationSpec(
+        cert_validation_policy=CertValidationPolicySpec(
+            trust_manager=SimpleTrustManager.build(trust_roots=[_to_asn1(c) for c in store.roots]),
+            revinfo_policy=CertRevTrustPolicy(_VERIFICATION_POLICY),
+        ),
+        revinfo_gathering_policy=RevocationInfoGatheringSpec(
+            online_fetching_rule=(
+                RevinfoOnlineFetchingRule.NO_HISTORICAL_FETCH
+                if context.online
+                else RevinfoOnlineFetchingRule.LOCAL_ONLY
+            ),
+            fetcher_backend=_VerificationFetcherBackend(context.timeout),
+        ),
+        local_knowledge=knowledge,
+        key_usage_settings=KeyUsageConstraints(key_usage={"non_repudiation"}),
+    )
+
+
+def _timestamp_report(
+    result: ades.AdESBasicValidationResult[Any], field_name: str | None = None
+) -> TimestampReport:
+    indication, subindication = _indication(result.ades_subindic)
+    status = result.api_status
+    return TimestampReport(
+        indication=indication,
+        subindication=subindication,
+        time=getattr(status, "timestamp", None),
+        tsa=_to_cryptography(status.signing_cert) if status is not None else None,
+        field_name=field_name,
+    )
+
+
+def _validate_timestamp(
+    tst: cms.SignedData, imprint: bytes, spec: SignatureValidationSpec, context: _Context
+) -> ades.AdESBasicValidationResult[Any]:
+    return asyncio.run(
+        ades.ades_timestamp_validation(
+            tst, spec, expected_tst_imprint=imprint, timing_info=context.timing
+        )
+    )
+
+
+def _verify_signature(sig: EmbeddedPdfSignature, context: _Context) -> PdfSignatureReport:
     subfilter = str(sig.sig_object.get("/SubFilter", ""))
     try:
         sig.compute_integrity_info()  # type: ignore[no-untyped-call]
@@ -233,32 +307,27 @@ def _verify_signature(
         # The byte range does not span a whole revision: signature wrapping (AM-05).
         return _failed_format(sig, subfilter)
 
-    dss_certs, dss_ocsps, dss_crls = dss
-    adobe_ocsps, adobe_crls = _adobe_revinfo(sig.signed_data)
-    knowledge = LocalKnowledge(
-        known_certs=[_to_asn1(c) for c in store.intermediates] + dss_certs,
-        known_ocsps=[c for o in dss_ocsps + adobe_ocsps for c in OCSPContainer.load_multi(o)],
-        known_crls=[CRLContainer(c) for c in dss_crls + adobe_crls],
-    )
-    spec = SignatureValidationSpec(
-        cert_validation_policy=CertValidationPolicySpec(
-            trust_manager=SimpleTrustManager.build(trust_roots=[_to_asn1(c) for c in store.roots]),
-            revinfo_policy=CertRevTrustPolicy(_VERIFICATION_POLICY),
-        ),
-        revinfo_gathering_policy=RevocationInfoGatheringSpec(
-            online_fetching_rule=(
-                RevinfoOnlineFetchingRule.NO_HISTORICAL_FETCH
-                if online
-                else RevinfoOnlineFetchingRule.LOCAL_ONLY
-            ),
-            fetcher_backend=_VerificationFetcherBackend(timeout),
-        ),
-        local_knowledge=knowledge,
-        key_usage_settings=KeyUsageConstraints(key_usage={"non_repudiation"}),
-    )
-    result = asyncio.run(
-        ades.ades_basic_validation(sig.signed_data, spec, timing_info=timing, raw_digest=digest)
-    )
+    spec = _spec(context, _adobe_revinfo(sig.signed_data))
+    timestamp: TimestampReport | None = None
+    tst = sig.attached_timestamp_data
+    tst_imprint = generic_cms.compute_signature_tst_digest(sig.signer_info)
+    if tst is None or tst_imprint is None:
+        result: ades.AdESBasicValidationResult[Any] = asyncio.run(
+            ades.ades_basic_validation(
+                sig.signed_data, spec, timing_info=context.timing, raw_digest=digest
+            )
+        )
+    else:
+        lta = asyncio.run(
+            ades.ades_lta_validation(
+                sig, PdfSignatureValidationSpec(spec), timing_info=context.timing
+            )
+        )
+        # pyHanko leaves the time-stamp status out when it stops early; validate it alone then.
+        ts_result = lta.signature_timestamp_status or _validate_timestamp(
+            tst, tst_imprint, spec, context
+        )
+        result, timestamp = lta, _timestamp_report(ts_result)
     indication, subindication = _indication(result.ades_subindic)
     return PdfSignatureReport(
         field_name=sig.field_name,
@@ -270,7 +339,19 @@ def _verify_signature(
         covers_whole_document=coverage == SignatureCoverageLevel.ENTIRE_FILE,
         modifications=_modifications(integrity),
         signed_revision_length=start2 + len2,
+        timestamp=timestamp,
     )
+
+
+def _verify_document_timestamp(sig: EmbeddedPdfSignature, context: _Context) -> TimestampReport:
+    try:
+        imprint = sig.compute_digest()
+    except (PdfError, SignatureValidationError, ValueError, KeyError, TypeError):
+        return TimestampReport(
+            Indication.TOTAL_FAILED, "FORMAT_FAILURE", None, None, sig.field_name
+        )
+    result = _validate_timestamp(sig.signed_data, imprint, _spec(context, ([], [])), context)
+    return _timestamp_report(result, sig.field_name)
 
 
 def verify_pdf(
@@ -279,9 +360,14 @@ def verify_pdf(
     *,
     moment: dt.datetime | None = None,
     online: bool = True,
+    ocsp_responses: Sequence[bytes] = (),
+    crls: Sequence[bytes] = (),
     timeout: float = 10.0,
 ) -> PdfVerification:
     """Verify every signature in ``data`` at ``moment`` (now by default).
+
+    ``ocsp_responses`` and ``crls`` (DER) add revocation data to what the document carries;
+    with ``online`` the rest is fetched.
 
     Raises :class:`~berigna.core.errors.UnreadableDocumentError` when ``data`` is not a PDF
     that can be parsed. A PDF without signatures gives an empty report.
@@ -297,11 +383,24 @@ def verify_pdf(
     except (PdfError, ValueError, KeyError, TypeError) as exc:
         raise UnreadableDocumentError(f"cannot read this PDF: {exc}") from exc
 
+    context = _Context(
+        store=store,
+        dss=dss,
+        extra=(
+            [asn1_ocsp.OCSPResponse.load(o) for o in ocsp_responses],
+            [asn1_crl.CertificateList.load(c) for c in crls],
+        ),
+        timing=timing,
+        online=online,
+        timeout=timeout,
+    )
     reports: list[PdfSignatureReport] = []
-    pending: list[str] = []
+    stamps: list[TimestampReport] = []
     for sig in embedded:
         if sig.sig_object_type == "/DocTimeStamp":
-            pending.append(sig.field_name)
-            continue
-        reports.append(_verify_signature(sig, store, dss, timing, online, timeout))
-    return PdfVerification(signatures=tuple(reports), pending=tuple(pending), moment=when)
+            stamps.append(_verify_document_timestamp(sig, context))
+        else:
+            reports.append(_verify_signature(sig, context))
+    return PdfVerification(
+        signatures=tuple(reports), document_timestamps=tuple(stamps), moment=when
+    )

@@ -95,7 +95,9 @@ class Pki:
             .sign(self.ca_key, hashes.SHA256())
         )
 
-    def ocsp(self, leaf: x509.Certificate, *, revoked: bool = False) -> bytes:
+    def ocsp(
+        self, leaf: x509.Certificate, *, revoked: bool = False, at: dt.datetime = NOW
+    ) -> bytes:
         status = ocsp.OCSPCertStatus.REVOKED if revoked else ocsp.OCSPCertStatus.GOOD
         response = (
             ocsp.OCSPResponseBuilder()
@@ -104,8 +106,8 @@ class Pki:
                 issuer=self.ca,
                 algorithm=hashes.SHA256(),
                 cert_status=status,
-                this_update=NOW - dt.timedelta(minutes=5),
-                next_update=NOW + dt.timedelta(hours=1),
+                this_update=at - dt.timedelta(minutes=5),
+                next_update=at + dt.timedelta(hours=1),
                 revocation_time=NOW - dt.timedelta(days=1) if revoked else None,
                 revocation_reason=None,
             )
@@ -129,6 +131,17 @@ class Pki:
             .add_extension(_usage(digital_signature=True), critical=True)
             .add_extension(
                 x509.ExtendedKeyUsage([ExtendedKeyUsageOID.TIME_STAMPING]), critical=True
+            )
+            .add_extension(
+                x509.AuthorityInformationAccess(
+                    [
+                        x509.AccessDescription(
+                            AuthorityInformationAccessOID.OCSP,
+                            x509.UniformResourceIdentifier(OCSP_URL),
+                        )
+                    ]
+                ),
+                critical=False,
             )
             .sign(self.ca_key, hashes.SHA256())
         )

@@ -103,7 +103,7 @@ flowchart TB
 | `core.net` | Clientes HTTP para TSA, OCSP, CRL y AIA, con caché, tiempos de espera y proxy | requests. Hoy OCSP y CRL los obtiene pyhanko-certvalidator con sus *fetchers* de `requests` (10 s de tiempo de espera); el módulo propio llega con la TSA (Fase 2) |
 | `core.appearance` | Composición del sello visible a partir de una plantilla de texto y una imagen | pyHanko stamp + Pillow |
 | `core.signing` | Orquestación: comprobar que el archivo no cambió, validar el certificado antes del PIN, firmar y escribir de forma atómica | Implementado para PDF (B-B) |
-| `core.validation` | Validación previa del firmante (`preflight`, RF-006) y verificación de firmas PDF con indicaciones ETSI (`pdf`, RF-050, RF-053, RF-055) | pyhanko-certvalidator 0.26.3 y la validación AdES de pyHanko 0.25.1; `preflight` implementado; `pdf` con el proceso básico (sin sellos de tiempo todavía) |
+| `core.validation` | Validación previa del firmante (`preflight`, RF-006) y verificación de firmas PDF con indicaciones ETSI (`pdf`, RF-050, RF-053, RF-055) | pyhanko-certvalidator 0.26.3 y la validación AdES de pyHanko 0.25.1; `preflight` implementado; `pdf` con sellos de tiempo y validación en el pasado |
 | `core.report` | Informe de verificación en JSON (códigos y explicaciones en ambos idiomas) y en PDF (en es_PE o en_US) | ReportLab o pyHanko |
 | `core.i18n` | Inicialización de gettext, catálogo de explicaciones por código (ETSI y `ERR-xxx`), formato de fechas según la configuración regional y selección explícita del idioma de los documentos generados (informe, sello visible) | gettext, babel o `locale` de la biblioteca estándar |
 | `core.history` | Historial local en SQLite | sqlite3 (biblioteca estándar) |
@@ -126,7 +126,8 @@ Decisiones de implementación de `core.token.dnie_v2` (ADR-0012), documentadas p
 | El monitor (`core.token.monitor`) consulta `SCardGetStatusChange` con tiempo de espera 0 y duerme entre sondeos con un `threading.Event` | Decisión deliberada: `stop()` responde de inmediato, sin esperar a que pcscd devuelva una llamada bloqueante ni recurrir a `SCardCancel`; el coste de CPU de dos sondeos por segundo es despreciable |
 | Los nombres de lector se normalizan a `str` aunque pyscard los devuelva como `bytes` | El contrato de `ReaderState` no depende de la versión de pyscard |
 | `sign_pdf_file` comprueba que el PDF se puede leer antes de validar el certificado y pedir el PIN | Un archivo dañado no le cuesta al usuario teclear el PIN |
-| `verify_pdf` usa el proceso de validación básico de ETSI de pyHanko (`ades_basic_validation`), no `ades_lta_validation`, y calcula la integridad del PDF (cobertura, diferencias) por separado | `ades_lta_validation` exige un sello de tiempo y da INDETERMINATE a toda firma B-B; y `ades_basic_validation` de pyHanko 0.25.1 falla si se le pide el estado propio de PDF |
+| `verify_pdf` elige el proceso de ETSI según la firma: el básico (`ades_basic_validation`) si no tiene sello de tiempo y el de material de validación a largo plazo (`ades_lta_validation`) si lo tiene. La integridad del PDF (cobertura, diferencias) se calcula por separado | `ades_lta_validation` exige un sello de tiempo y da INDETERMINATE a toda firma B-B; y `ades_basic_validation` de pyHanko 0.25.1 falla si se le pide el estado propio de PDF |
+| Cada sello (de firma y de documento) se informa con su propia indicación (§5.4). Si pyHanko no devuelve el estado del sello de la firma, porque el proceso se detuvo antes, el sello se valida aparte | RF-053: un sello inválido se muestra aunque la firma sea válida, y al revés |
 | Al verificar, la indicación ETSI y las modificaciones posteriores se informan por separado; una cobertura que no abarca una revisión completa es TOTAL-FAILED/FORMAT_FAILURE | La firma puede ser íntegra aunque el documento cambiara después (RF-055); un rango de bytes parcial es la huella de un ataque de envoltura (AM-05) |
 | Al verificar en línea, nunca se descarga la CRL de un certificado final (solo OCSP); las CRL se descargan para las CA | La CRL de la CA emisora del DNIe pesa ~109 MB (RF-063) |
 
@@ -146,10 +147,11 @@ def check_signer(certificate, store, *, moment=None, online=True,
 # SignerCheck: revocation_checked, chain, moment y revocation_note (OFFLINE o UNAVAILABLE
 # cuando no se pudo comprobar la revocación y solo cabe B-B)
 
-def verify_pdf(data, store, *, moment=None, online=True, timeout=10.0) -> PdfVerification  # core.validation
+def verify_pdf(data, store, *, moment=None, online=True, ocsp_responses=(), crls=(),
+               timeout=10.0) -> PdfVerification                          # core.validation
 # PdfVerification: signatures (PdfSignatureReport: indicación y subindicación ETSI, firmante,
-# cobertura, modificaciones posteriores, longitud de la revisión firmada) y pending (sellos
-# de documento aún no evaluados)
+# cobertura, modificaciones posteriores, longitud de la revisión firmada y sello de tiempo de
+# la firma) y document_timestamps (TimestampReport de cada sello de documento)
 
 def sign_pdf_file(source, output, *, expected_sha256, token, store, ask_pin,
                   options=None, online=True, ocsp_responses=(), crls=()) -> SignResult  # core.signing
