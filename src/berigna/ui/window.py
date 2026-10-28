@@ -3,7 +3,7 @@
 """Main window: start page, opened document and the DNIe status bar (BRG-UX-001 §3.1)."""
 
 import threading
-from collections.abc import Callable
+from collections.abc import Callable, Sequence
 from pathlib import Path
 
 import gi
@@ -12,13 +12,15 @@ gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
 from gi.repository import Adw, Gdk, Gio, GLib, Gtk  # noqa: E402
 
-from berigna.core.documents import DocumentInfo, inspect_document  # noqa: E402
+from berigna.core.documents import DocumentInfo, DocumentKind, inspect_document  # noqa: E402
 from berigna.core.errors import BerignaError  # noqa: E402
 from berigna.core.i18n import Language, translations  # noqa: E402
+from berigna.core.report import messages  # noqa: E402
 from berigna.core.report.explanations import explain_error  # noqa: E402
 from berigna.core.token.monitor import DeviceStatus  # noqa: E402
 from berigna.ui import presentation  # noqa: E402
 from berigna.ui.i18n import _, catalogue, current_language, translate_view  # noqa: E402
+from berigna.ui.verification import VerificationPage, Verify  # noqa: E402
 
 VIEW = "/pe/berigna/Berigna/ui/window.ui"
 
@@ -26,12 +28,13 @@ VIEW = "/pe/berigna/Berigna/ui/window.ui"
 class MainWindow:
     """Wraps the window built from the view; the application rebuilds it to change language."""
 
-    def __init__(self, application: Adw.Application) -> None:
+    def __init__(self, application: Adw.Application, verify: Verify) -> None:
         view = Gio.resources_lookup_data(VIEW, Gio.ResourceLookupFlags.NONE).get_data()
         builder = Gtk.Builder()
         builder.add_from_string(translate_view(view))
         self.window: Adw.ApplicationWindow = builder.get_object("window")
         self.window.set_application(application)
+        self._verify = verify
         self._toasts: Adw.ToastOverlay = builder.get_object("toasts")
         self._navigation: Adw.NavigationView = builder.get_object("navigation")
         self._status_icon: Gtk.Image = builder.get_object("status_icon")
@@ -39,6 +42,7 @@ class MainWindow:
         self._banner: Adw.Banner = builder.get_object("unreviewed_banner")
         self._setup_banner(self._banner)
         self.document: DocumentInfo | None = None
+        self.verification: VerificationPage | None = None
 
         open_action = Gio.SimpleAction.new("open", None)
         open_action.connect("activate", lambda *_args: self._choose_file())
@@ -54,10 +58,31 @@ class MainWindow:
         banner.set_revealed(quechua)
         if quechua:
             texts = [
-                translations(language).gettext(presentation.UNREVIEWED_TRANSLATION)
+                translations(language).gettext(messages.UNREVIEWED_TRANSLATION)
                 for language in (Language.QUZ_PE, Language.ES_PE)
             ]
             banner.set_title(" · ".join(dict.fromkeys(texts)))
+            banner.set_button_label(_("Show in Spanish"))
+            banner.set_action_name("app.show-in-spanish")
+
+    def page(
+        self, title: str, tag: str, content: Gtk.Widget, end: Sequence[Gtk.Widget] = ()
+    ) -> Adw.NavigationPage:
+        """A document page: header bar with the back button and ``end`` widgets, the Quechua
+        notice and ``content``."""
+        header = Adw.HeaderBar()
+        for widget in end:
+            header.pack_end(widget)
+        banner = Adw.Banner()
+        self._setup_banner(banner)
+        view = Adw.ToolbarView(content=content)
+        view.add_top_bar(header)
+        view.add_top_bar(banner)
+        return Adw.NavigationPage(title=title, tag=tag, child=view)
+
+    def show_page(self, page: Adw.NavigationPage) -> None:
+        # replace(), not pop and push: a page being popped keeps its tag while it animates.
+        self._navigation.replace([self._navigation.find_page("start"), page])
 
     def show_device_status(self, status: DeviceStatus | None) -> None:
         view = presentation.device_status(status)
@@ -114,14 +139,17 @@ class MainWindow:
     ) -> bool:
         if isinstance(outcome, DocumentInfo):
             self.document = outcome
-            page = Adw.StatusPage(
-                icon_name="x-office-document-symbolic",
-                title=path.name,
-                description=presentation.document_summary(outcome),
-            )
-            document = Adw.NavigationPage(title=path.name, tag="document", child=page)
-            # replace(), not pop and push: a page being popped keeps its tag while it animates.
-            self._navigation.replace([self._navigation.find_page("start"), document])
+            self.verification = None
+            if outcome.kind is DocumentKind.PDF and outcome.signed:
+                self.verification = VerificationPage(self, outcome, self._verify)
+                self.show_page(self.verification.page)
+            else:  # signing comes with increment 3
+                status = Adw.StatusPage(
+                    icon_name="x-office-document-symbolic",
+                    title=path.name,
+                    description=presentation.document_summary(outcome),
+                )
+                self.show_page(self.page(path.name, "document", status))
         elif isinstance(outcome, BerignaError):
             reason = explain_error(outcome.code, catalogue()) or ""
             self.toast(f"{path.name}: {reason}")

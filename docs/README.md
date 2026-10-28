@@ -114,8 +114,8 @@ Fases 0, 1 y 2 cerradas.
 | `core.i18n` y `core.report` | Implementado: catálogos gettext es_PE (completo) y quechua (pendiente de los traductores, ADR-0015); explicación de cada indicación y subindicación ETSI y de cada `ERR-xxx`; informes JSON y PDF, con DNI y RUC enmascarados | RF-053, RF-054, PR-I18N-04, PR-I18N-07 | Pruebas de cobertura del catálogo; informe de un PDF real revisado |
 | TSA de producción | Pendiente de DP-02 (aún no hay TSA acreditada contratada) | RF-062 | — |
 | Proxy y caché de red | Fase 3, con la capa de configuración | RF-064, RF-065 | — |
-| `ui` (interfaz gráfica) | En curso, Fase 3. Incremento 1: aplicación `pe.berigna.Berigna` con Meson, ventana principal, estado del DNIe, apertura de archivos (botón, arrastrar y argumentos), esquema de GSettings, cambio de idioma sin reiniciar y aviso de traducción sin revisar | RF-001, RF-002 | Pruebas de la aplicación real con Xvfb, también en la CI |
-| Firma y verificación en la interfaz, firma visible, lotes | Fase 3, incrementos 2 a 6 | RF-012, RF-040 a RF-043, RF-080 a RF-083, RF-090 a RF-092 | — |
+| `ui` (interfaz gráfica) | En curso, Fase 3. Incremento 1: aplicación `pe.berigna.Berigna` con Meson, ventana principal, estado del DNIe, apertura de archivos (botón, arrastrar y argumentos), esquema de GSettings, cambio de idioma sin reiniciar y aviso de traducción sin revisar. Incremento 2: verificación de PDF (CU-06) con resumen, detalles técnicos, informes JSON y PDF y versión firmada | RF-001, RF-002, RF-050, RF-053 a RF-056 | Pruebas de la aplicación real con Xvfb, también en la CI; PDF real firmado con el DNIe verificado en línea (TOTAL-PASSED) |
+| Firma en la interfaz, firma visible, lotes | Fase 3, incrementos 3 a 6 | RF-012, RF-040 a RF-043, RF-080 a RF-083, RF-090 a RF-092 | — |
 | CAdES y XAdES | Fase 4 (viabilidad probada en SPK-03) | RF-020 a RF-033 | — |
 | Extensión de Nautilus y empaquetado `.deb` | Fase 5 | RF-070 a RF-073, ADR-0006, ADR-0013 | — |
 | PIN pad (PC/SC parte 10) | Aplazado a la versión 1.1 (decisión del 2026-10-27; requiere un lector de clase 2) | RF-005, P-08 | — |
@@ -123,5 +123,5 @@ Fases 0, 1 y 2 cerradas.
 | DNIe 1.0 y DNIe 3.0 | Versión 1.1 (decisión del 2026-10-27); identificación pendiente en SPK-06 | RNF-COM-05 | — |
 | Extensión de LibreOffice "Firmar con berigna" | Versión 1.2 (decisión del 2026-10-27) | RF-074 | — |
 
-Verificación local: `scripts/verificar.sh` (ruff, mypy estricto, pytest con cobertura mínima del 80 %; hoy 100 % del núcleo y 99 % del total con 280 pruebas, incluidas las de la interfaz con Xvfb). Pruebas con hardware: `BERIGNA_HIL=1 pytest -m hil` (sin PIN) y los *scripts* manuales de `tests/hil/` (con PIN, según el protocolo).
+Verificación local: `scripts/verificar.sh` (ruff, mypy estricto, pytest con cobertura mínima del 80 %; hoy 100 % del núcleo y 98 % del total con 297 pruebas, incluidas las de la interfaz con Xvfb). Pruebas con hardware: `BERIGNA_HIL=1 pytest -m hil` (sin PIN) y los *scripts* manuales de `tests/hil/` (con PIN, según el protocolo).
 

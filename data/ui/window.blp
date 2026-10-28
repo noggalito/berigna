@@ -13,42 +13,46 @@ Adw.ApplicationWindow window {
 
   content: Adw.ToastOverlay toasts {
     child: Adw.ToolbarView {
-      [top]
-      Adw.HeaderBar {
-        [end]
-        MenuButton {
-          icon-name: "open-menu-symbolic";
-          menu-model: primary_menu;
-          primary: true;
-          tooltip-text: _("Main Menu");
-        }
-      }
-
-      [top]
-      Adw.Banner unreviewed_banner {
-        button-label: _("Show in Spanish");
-        action-name: "app.show-in-spanish";
-      }
-
+      // Each page brings its own header bar (back button, page actions); berigna.ui.window
+      // builds the document pages the same way.
       content: Adw.NavigationView navigation {
         Adw.NavigationPage {
           title: "berigna";
           tag: "start";
 
-          child: Adw.StatusPage {
-            icon-name: "document-open-symbolic";
-            title: _("Drop a document here to sign or verify it");
+          child: Adw.ToolbarView {
+            [top]
+            Adw.HeaderBar {
+              [end]
+              MenuButton {
+                icon-name: "open-menu-symbolic";
+                menu-model: primary_menu;
+                primary: true;
+                tooltip-text: _("Main Menu");
+              }
+            }
 
-            child: Button {
-              label: _("_Open Document…");
-              use-underline: true;
-              halign: center;
-              action-name: "win.open";
+            [top]
+            Adw.Banner unreviewed_banner {
+              button-label: _("Show in Spanish");
+              action-name: "app.show-in-spanish";
+            }
 
-              styles [
-                "pill",
-                "suggested-action",
-              ]
+            content: Adw.StatusPage {
+              icon-name: "document-open-symbolic";
+              title: _("Drop a document here to sign or verify it");
+
+              child: Button {
+                label: _("_Open Document…");
+                use-underline: true;
+                halign: center;
+                action-name: "win.open";
+
+                styles [
+                  "pill",
+                  "suggested-action",
+                ]
+              };
             };
           };
         }
