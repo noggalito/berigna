@@ -10,21 +10,35 @@ import gi
 gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
 from gi.repository import Adw, Gio, GLib, Gtk  # noqa: E402
+from pyhanko.sign.timestamps import TimeStamper  # noqa: E402
 
 from berigna import __version__  # noqa: E402
+from berigna.core.errors import TsaError  # noqa: E402
 from berigna.core.i18n import Language  # noqa: E402
+from berigna.core.net.tsa import TsaSettings, http_timestamper  # noqa: E402
+from berigna.core.token.base import TokenSigner  # noqa: E402
+from berigna.core.token.dnie_v2 import DnieV2Token, is_dnie_v2  # noqa: E402
 from berigna.core.token.monitor import (  # noqa: E402
     DeviceMonitor,
     DeviceStatus,
     PcscStatusSource,
     StatusSource,
 )
+from berigna.core.token.transport import PcscTransport  # noqa: E402
 from berigna.core.trust import TrustStore  # noqa: E402
 from berigna.core.validation import PdfVerification, verify_pdf  # noqa: E402
 from berigna.ui.i18n import _, choose_language, set_language  # noqa: E402
+from berigna.ui.signing import SigningServices  # noqa: E402
 from berigna.ui.window import MainWindow  # noqa: E402
 
 APPLICATION_ID = "pe.berigna.Berigna"
+
+
+def _open_dnie() -> TokenSigner:
+    """An exclusive session with the first reader holding a DNIe v2 (ADR-0012)."""
+    return DnieV2Token(PcscTransport.open_first(is_dnie_v2))
+
+
 WEBSITE = "https://github.com/noggalito/berigna"
 
 
@@ -34,6 +48,8 @@ class BerignaApplication(Adw.Application):
         *,
         status_source: Callable[[], StatusSource] = PcscStatusSource,
         trust_store: Callable[[], TrustStore] = TrustStore.load_bundled,
+        open_token: Callable[[], TokenSigner] | None = None,
+        timestamper: Callable[[], TimeStamper | None] | None = None,
         online: bool = True,
         unique: bool = True,
     ) -> None:
@@ -43,6 +59,8 @@ class BerignaApplication(Adw.Application):
         super().__init__(application_id=APPLICATION_ID, flags=flags)
         self._status_source = status_source
         self._trust_store = trust_store
+        self._open_token = open_token or _open_dnie
+        self._timestamper = timestamper or self._configured_timestamper
         self._online = online
         self._monitor: DeviceMonitor | None = None
         self._device_status: DeviceStatus | None = None
@@ -83,7 +101,14 @@ class BerignaApplication(Adw.Application):
 
     def _window(self) -> MainWindow:
         if self.main_window is None:
-            self.main_window = MainWindow(self, self.verify)
+            services = SigningServices(
+                open_token=self._open_token,
+                trust_store=self._trust_store,
+                timestamper=self._timestamper,
+                settings=self.settings,
+                online=self._online,
+            )
+            self.main_window = MainWindow(self, self.verify, services)
             self.main_window.show_device_status(self._device_status)
         return self.main_window
 
@@ -92,6 +117,19 @@ class BerignaApplication(Adw.Application):
         store = self._trust_store()
         timeout = float(self.settings.get_uint("network-timeout")) if self.settings else 10.0
         return verify_pdf(data, store, online=self._online, timeout=timeout), store
+
+    def _configured_timestamper(self) -> TimeStamper | None:
+        """The TSA of the preferences (``tsa-url``); none until one is configured (DP-02)."""
+        if self.settings is None or not self.settings.get_string("tsa-url"):
+            return None
+        settings = TsaSettings(
+            self.settings.get_string("tsa-url"),
+            timeout=float(self.settings.get_uint("network-timeout")),
+        )
+        try:
+            return http_timestamper(settings)
+        except TsaError:
+            return None
 
     def _on_device_status(self, status: DeviceStatus) -> None:
         """Called from the monitor thread."""

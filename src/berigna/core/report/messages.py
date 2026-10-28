@@ -202,6 +202,10 @@ ERRORS: dict[str, str] = {
     "ERR-304": N_("This PDF cannot be signed: it is damaged or protected."),
     "ERR-305": N_("The time-stamping authority did not answer. Check the connection or the TSA."),
     "ERR-306": N_("That signature level is not available now. Choose a lower level."),
+    "ERR-307": N_(
+        "The author certified this document so that it cannot be changed: "
+        "it does not accept more signatures."
+    ),
     "ERR-400": N_("The document could not be verified."),
     "ERR-401": N_("The file is not a document that berigna can read, or it is damaged."),
 }

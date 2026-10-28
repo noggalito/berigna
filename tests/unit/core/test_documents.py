@@ -4,6 +4,8 @@ import hashlib
 from pathlib import Path
 
 import pytest
+from pyhanko.pdf_utils.misc import PdfError
+from pyhanko.sign.fields import MDPPerm
 
 from berigna.core.documents import DocumentKind, inspect_document
 from berigna.core.errors import UnreadableDocumentError
@@ -11,6 +13,7 @@ from berigna.core.formats.pades import sign_pdf_basic
 from berigna.core.token.dnie_v2 import DnieV2Token
 from berigna.core.token.pin import Pin
 from support.cards import make_card
+from support.certified import certified_pdf
 from support.pki import Pki, build_pki, minimal_pdf
 
 
@@ -41,6 +44,15 @@ def test_signed_pdf(tmp_path: Path, pki: Pki) -> None:
     assert (info.kind, info.signatures, info.signed) == (DocumentKind.PDF, 1, True)
 
 
+@pytest.mark.parametrize(
+    ("permission", "locked"), [(MDPPerm.NO_CHANGES, True), (MDPPerm.FILL_FORMS, False)]
+)
+def test_certified_documents(tmp_path: Path, pki: Pki, permission: MDPPerm, locked: bool) -> None:
+    path = tmp_path / "certificado.pdf"
+    path.write_bytes(certified_pdf(pki, permission))
+    assert inspect_document(path).locked is locked
+
+
 def test_header_after_leading_bytes_is_treated_as_a_pdf(tmp_path: Path) -> None:
     """Readers accept junk before the header; such a file is a damaged PDF, not "other"."""
     path = tmp_path / "con-prefijo.pdf"
@@ -61,3 +73,15 @@ def test_damaged_pdf(tmp_path: Path) -> None:
     path.write_bytes(b"%PDF-1.7\nnot really a pdf")
     with pytest.raises(UnreadableDocumentError):
         inspect_document(path)
+
+
+def test_unreadable_certification_data_is_left_to_pyhanko(
+    tmp_path: Path, pki: Pki, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    def broken(_reader: object) -> None:
+        raise PdfError("bad /Perms")
+
+    monkeypatch.setattr("berigna.core.formats.pades.read_certification_data", broken)
+    path = tmp_path / "certificado.pdf"
+    path.write_bytes(certified_pdf(pki, MDPPerm.NO_CHANGES))
+    assert inspect_document(path).locked is False
