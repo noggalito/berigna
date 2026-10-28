@@ -30,12 +30,14 @@ dependencies = [
     "lxml>=5",
     "signxml~=4.0",
     "reportlab>=4",
+    "pillow>=10",
 ]
 
 [tool.setuptools.packages.find]
 where = ["src"]
 
 [tool.setuptools.package-data]
+"berigna.core" = ["fonts/*.ttf", "fonts/OFL-*"]
 "berigna.core.trust" = ["anchors/*.pem", "anchors/manifest.json", "tsl/*.crt"]
 
 [tool.ruff]
