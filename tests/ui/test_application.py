@@ -10,7 +10,7 @@ from berigna import main as entry
 from berigna.core.i18n import Language
 from berigna.core.token.dnie_v2 import DNIE_V2_ATR
 from berigna.core.token.monitor import ReaderState
-from berigna.ui import i18n
+from berigna.ui import i18n, presentation
 from berigna.ui.application import BerignaApplication
 from berigna.ui.window import MainWindow
 from conftest import FakeReaders, drive, wait_until
@@ -55,7 +55,7 @@ def test_open_from_the_command_line(app: BerignaApplication, tmp_path: Path) -> 
     def script(app: BerignaApplication) -> Generator[None, None, None]:
         yield from wait_until(lambda: app.main_window is not None)
         yield from wait_until(lambda: _visible_title(app) == "contrato.pdf")
-        page = _window(app)._navigation.get_visible_page().get_child()
+        page = _window(app)._navigation.get_visible_page().get_child().get_content()
         assert page.get_description() == "Documento PDF, 1 página, sin firmas"
         document = _window(app).document
         assert document is not None
@@ -162,3 +162,15 @@ def test_entry_point(monkeypatch: pytest.MonkeyPatch) -> None:
     assert entry.main(["berigna"]) == 0
     monkeypatch.delenv("BERIGNA_RESOURCES")
     assert entry.main(["berigna"]) == 1
+
+
+def test_every_icon_exists_in_the_theme() -> None:
+    """A missing symbolic icon shows as an empty box, and no other test would notice."""
+    from gi.repository import Gdk, Gtk
+
+    theme = Gtk.IconTheme.get_for_display(Gdk.Display.get_default())
+    names = set(presentation.ICONS)
+    names |= {icon for icon, _style in presentation._INDICATION_ICONS.values()}
+    names |= {icon for icon, _message in presentation._DEVICE.values()}
+    names.add("open-menu-symbolic")
+    assert [name for name in sorted(names) if not theme.has_icon(name)] == []

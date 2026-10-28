@@ -19,6 +19,8 @@ from berigna.core.token.monitor import (  # noqa: E402
     PcscStatusSource,
     StatusSource,
 )
+from berigna.core.trust import TrustStore  # noqa: E402
+from berigna.core.validation import PdfVerification, verify_pdf  # noqa: E402
 from berigna.ui.i18n import _, choose_language, set_language  # noqa: E402
 from berigna.ui.window import MainWindow  # noqa: E402
 
@@ -31,6 +33,8 @@ class BerignaApplication(Adw.Application):
         self,
         *,
         status_source: Callable[[], StatusSource] = PcscStatusSource,
+        trust_store: Callable[[], TrustStore] = TrustStore.load_bundled,
+        online: bool = True,
         unique: bool = True,
     ) -> None:
         flags = Gio.ApplicationFlags.HANDLES_OPEN
@@ -38,6 +42,8 @@ class BerignaApplication(Adw.Application):
             flags |= Gio.ApplicationFlags.NON_UNIQUE
         super().__init__(application_id=APPLICATION_ID, flags=flags)
         self._status_source = status_source
+        self._trust_store = trust_store
+        self._online = online
         self._monitor: DeviceMonitor | None = None
         self._device_status: DeviceStatus | None = None
         self.main_window: MainWindow | None = None
@@ -77,9 +83,15 @@ class BerignaApplication(Adw.Application):
 
     def _window(self) -> MainWindow:
         if self.main_window is None:
-            self.main_window = MainWindow(self)
+            self.main_window = MainWindow(self, self.verify)
             self.main_window.show_device_status(self._device_status)
         return self.main_window
+
+    def verify(self, data: bytes) -> tuple[PdfVerification, TrustStore]:
+        """Verify a PDF now, online unless disabled (called from a worker thread)."""
+        store = self._trust_store()
+        timeout = float(self.settings.get_uint("network-timeout")) if self.settings else 10.0
+        return verify_pdf(data, store, online=self._online, timeout=timeout), store
 
     def _on_device_status(self, status: DeviceStatus) -> None:
         """Called from the monitor thread."""

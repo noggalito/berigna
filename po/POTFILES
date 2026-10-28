@@ -2,5 +2,6 @@
 src/berigna/core/report/messages.py
 src/berigna/ui/application.py
 src/berigna/ui/presentation.py
+src/berigna/ui/verification.py
 src/berigna/ui/window.py
 data/ui/window.blp
