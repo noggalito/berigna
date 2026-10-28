@@ -58,6 +58,20 @@ _SIGNING_POLICY = RevocationCheckingPolicy(
     ee_certificate_rule=RevocationCheckingRule.OCSP_REQUIRED,
     intermediate_ca_cert_rule=RevocationCheckingRule.CRL_REQUIRED,
 )
+# Validating "now" fixes the moment before the OCSP and CRL services answer, and their answers
+# are dated when they are produced: with pyhanko-certvalidator's default tolerance (1 s) a
+# response that took two seconds was "too recent" and the signer was left unchecked. The
+# services can take up to a minute (R-17: 20 s to connect, a retry, mirrors).
+CURRENT_TIME_TOLERANCE = dt.timedelta(minutes=5)
+# Validation at a given moment in the past keeps the strict default.
+POINT_IN_TIME_TOLERANCE = dt.timedelta(seconds=1)
+
+
+def time_tolerance(moment: dt.datetime | None) -> dt.timedelta:
+    """Tolerance for revocation data when validating at ``moment`` (``None``: now)."""
+    return CURRENT_TIME_TOLERANCE if moment is None else POINT_IN_TIME_TOLERANCE
+
+
 _OFFLINE_POLICY = RevocationCheckingPolicy(
     ee_certificate_rule=RevocationCheckingRule.NO_CHECK,
     intermediate_ca_cert_rule=RevocationCheckingRule.NO_CHECK,
@@ -99,14 +113,18 @@ def signing_validation_context(
     crls: Sequence[bytes] = (),
     timeout: float = 10.0,
     policy: RevocationCheckingPolicy = _SIGNING_POLICY,
+    tolerance: dt.timedelta | None = None,
 ) -> ValidationContext:
     """Validation context with the signing rules: OCSP for end-entity certificates, CRLs for
     CAs, anchors of ``store``. Also used to gather the data embedded in a B-LT signature.
+
+    ``tolerance`` defaults to :func:`time_tolerance` of ``moment``.
     """
     return ValidationContext(
         trust_roots=[to_asn1(c) for c in store.roots],
         other_certs=[to_asn1(c) for c in store.intermediates],
         moment=moment,
+        time_tolerance=time_tolerance(moment) if tolerance is None else tolerance,
         allow_fetching=online,
         crls=list(crls),
         ocsps=list(ocsp_responses),
@@ -154,6 +172,7 @@ def check_signer(
             crls=crls,
             timeout=timeout,
             policy=policy,
+            tolerance=time_tolerance(moment),  # ``when`` is fixed, but it may still be "now"
         )
         validator = CertificateValidator(leaf, validation_context=context)
         usage = validator.async_validate_usage({"non_repudiation"})  # type: ignore[no-untyped-call]

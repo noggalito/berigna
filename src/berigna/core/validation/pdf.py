@@ -78,6 +78,7 @@ from berigna.core.errors import UnreadableDocumentError
 from berigna.core.net.fetchers import RevocationFetcherBackend
 from berigna.core.trust import TrustStore
 from berigna.core.validation.algorithms import algorithm_policy, signature_algorithm_policy
+from berigna.core.validation.preflight import time_tolerance
 
 _VERIFICATION_POLICY = RevocationCheckingPolicy(
     ee_certificate_rule=RevocationCheckingRule.CRL_OR_OCSP_REQUIRED,
@@ -210,6 +211,7 @@ class _Context:
     dss: tuple[list[Any], list[Any], list[Any]]  # certificates, OCSP responses, CRLs
     extra: tuple[list[Any], list[Any]]  # OCSP responses and CRLs supplied by the caller
     timing: ValidationTimingInfo
+    tolerance: dt.timedelta
     online: bool
     timeout: float
 
@@ -228,6 +230,7 @@ def _spec(context: _Context, adobe: tuple[list[Any], list[Any]]) -> SignatureVal
         cert_validation_policy=CertValidationPolicySpec(
             trust_manager=SimpleTrustManager.build(trust_roots=[to_asn1(c) for c in store.roots]),
             revinfo_policy=CertRevTrustPolicy(_VERIFICATION_POLICY),
+            time_tolerance=context.tolerance,
             algorithm_usage_policy=algorithm_policy(),
         ),
         revinfo_gathering_policy=RevocationInfoGatheringSpec(
@@ -404,6 +407,7 @@ def verify_pdf(
             [asn1_crl.CertificateList.load(c) for c in crls],
         ),
         timing=timing,
+        tolerance=time_tolerance(moment),
         online=online,
         timeout=timeout,
     )
