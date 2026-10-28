@@ -21,7 +21,7 @@
 
 ## 1.1 Identidad visual
 
-La identidad de berigna está en [`data/brand/`](../../data/brand/README.md) (© noggalito, todos los derechos reservados; fuera de la GPL).
+La identidad de berigna está en [`data/brand/`](../../data/brand/README.md), bajo GPL-3.0-or-later como el resto del proyecto (© 2026 noggalito). Por eso el icono puede acompañar al paquete en Debian.
 
 - Paleta: burdeos `#6B2232`, dorado `#C2A878`, crema `#F5ECE3`, carbón `#231C1E`. Contraste del burdeos sobre crema: 9,5:1.
 - El nombre se escribe siempre en minúsculas: berigna.

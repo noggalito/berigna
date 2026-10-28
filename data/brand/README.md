@@ -2,7 +2,7 @@
 
 Fuentes vectoriales (SVG) de la identidad de berigna. El texto está convertido a trazos: no dependen de fuentes instaladas.
 
-**Licencia:** © 2026 noggalito, todos los derechos reservados. **No** están cubiertos por la GPL del código. Ver [`LICENSE`](LICENSE).
+**Licencia:** GPL-3.0-or-later, la misma que el resto de berigna (© 2026 noggalito). Ver [`LICENSE`](LICENSE).
 
 | Versión | Archivos | Uso |
 |---|---|---|
