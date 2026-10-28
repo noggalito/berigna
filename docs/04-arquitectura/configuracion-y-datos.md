@@ -13,7 +13,7 @@
 | Dato | Ruta | Formato | Sensible |
 |---|---|---|---|
 | Preferencias | GSettings, esquema `pe.berigna.Berigna` (en dconf) | GVariant | No |
-| Almacén de confianza del sistema (incluido en el paquete) | `/usr/share/berigna/trust/` | PEM y un manifiesto firmado | No |
+| Almacén de confianza (incluido en el paquete) | Recurso del paquete Python: `berigna/core/trust/anchors/` (en el código fuente, `src/berigna/core/trust/anchors/`) | PEM y `manifest.json` con huellas SHA-256; el paquete `.deb` firmado protege su integridad | No |
 | Anclas añadidas por el usuario | `$XDG_DATA_HOME/berigna/trust/` | PEM | No |
 | Perfiles de apariencia | `$XDG_DATA_HOME/berigna/appearances/` | JSON más imagen | Puede contener una imagen de la rúbrica |
 | Historial | `$XDG_DATA_HOME/berigna/history.sqlite3` | SQLite | Sí (nombres de archivo) |

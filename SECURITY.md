@@ -4,7 +4,7 @@ berigna firma documentos con valor legal. Tomamos en serio cualquier fallo que p
 
 ## Versiones con soporte
 
-El proyecto está en desarrollo (Fase 1). Todavía no hay versiones publicadas. Cuando las haya, esta sección indicará cuáles reciben correcciones de seguridad.
+El proyecto está en desarrollo (Fases 1 y 2). Todavía no hay versiones publicadas. Cuando las haya, esta sección indicará cuáles reciben correcciones de seguridad.
 
 ## Cómo reportar una vulnerabilidad
 
