@@ -2,6 +2,8 @@
 # SPDX-FileCopyrightText: 2026 Calú
 """Signer check before the PIN (RF-006): PR-VAL-02 to PR-VAL-05, PR-TOK-04."""
 
+import datetime as dt
+
 import pytest
 import requests
 
@@ -115,3 +117,15 @@ def test_expired_certificate_is_rejected_even_without_revocation_data(pki: Pki) 
     leaf = pki.leaf("CADUCADO SIN RED", days=(-400, -10))
     with pytest.raises(CertificateExpiredError):
         check_signer(leaf, pki.store, online=False)
+
+
+def test_ocsp_answer_dated_after_the_moment_was_fixed(pki: Pki) -> None:
+    """RENIEC can take seconds to answer (R-17): its response is dated after "now" was fixed,
+    which pyhanko-certvalidator's default tolerance of 1 s rejected as "too recent"."""
+    leaf = pki.leaf("FIRMANTE RESPUESTA LENTA")
+    # pki.ocsp dates thisUpdate 5 minutes before ``at``: here, 2 minutes after now.
+    later = dt.datetime.now(dt.UTC) + dt.timedelta(minutes=7)
+    result = check_signer(
+        leaf, pki.store, online=False, ocsp_responses=[pki.ocsp(leaf, at=later)], crls=[pki.arl()]
+    )
+    assert result.revocation_checked

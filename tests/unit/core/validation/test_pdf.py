@@ -469,3 +469,19 @@ def test_obsolete_algorithms_are_not_accepted(
     assert report.indication is indication
     if indication is Indication.INDETERMINATE:
         assert report.subindication == "CRYPTO_CONSTRAINTS_FAILURE"
+
+
+def test_ocsp_answer_dated_after_now_is_accepted(pki: Pki) -> None:
+    """Validating now tolerates responses produced while it ran (R-17). At a past moment
+    pyHanko does not apply "too recent" at all (ETSI EN 319 102-1 §5.2.5.4)."""
+    signed, leaf = _sign(pki, minimal_pdf())
+    # pki.ocsp dates thisUpdate 5 minutes before ``at``: here, 2 minutes after now.
+    later = dt.datetime.now(dt.UTC) + dt.timedelta(minutes=7)
+    [report] = verify_pdf(
+        signed,
+        pki.store,
+        online=False,
+        ocsp_responses=[pki.ocsp(leaf, at=later)],
+        crls=[pki.arl()],
+    ).signatures
+    assert report.indication is Indication.TOTAL_PASSED
