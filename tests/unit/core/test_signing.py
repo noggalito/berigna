@@ -21,8 +21,9 @@ from berigna.core.errors import (
     SourceChangedError,
     TsaError,
 )
+from berigna.core.files import write_atomically
 from berigna.core.formats.pades import SignatureLevel
-from berigna.core.signing import output_path, sign_pdf_file, write_atomically
+from berigna.core.signing import output_path, sign_pdf_file
 from berigna.core.token.dnie_v2 import INS_PSO, INS_VERIFY, DnieV2Token
 from berigna.core.token.pin import Pin
 from berigna.core.validation import Indication, SignerCheck, verify_pdf
@@ -261,7 +262,7 @@ def test_atomic_write_detects_a_file_created_meanwhile(
         Path(dst).write_bytes(b"otro proceso")
         real_link(src, dst)
 
-    monkeypatch.setattr("berigna.core.signing.os.link", racing_link)
+    monkeypatch.setattr("berigna.core.files.os.link", racing_link)
     with pytest.raises(OutputExistsError):
         write_atomically(target, b"mio")
     assert target.read_bytes() == b"otro proceso"
