@@ -21,11 +21,11 @@ from gi.repository import Adw, Gio, GLib, Gtk  # noqa: E402
 
 from berigna.core.documents import DocumentInfo  # noqa: E402
 from berigna.core.errors import BerignaError  # noqa: E402
+from berigna.core.files import write_atomically  # noqa: E402
 from berigna.core.i18n import Language  # noqa: E402
 from berigna.core.report.explanations import explain_error  # noqa: E402
 from berigna.core.report.json_report import dumps, report_data  # noqa: E402
 from berigna.core.report.pdf_report import pdf_report  # noqa: E402
-from berigna.core.signing import write_atomically  # noqa: E402
 from berigna.core.trust import TrustStore  # noqa: E402
 from berigna.core.validation import PdfVerification  # noqa: E402
 from berigna.ui import presentation  # noqa: E402
