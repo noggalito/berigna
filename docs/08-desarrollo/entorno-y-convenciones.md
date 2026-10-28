@@ -8,58 +8,39 @@
 | Fecha | 2026-10-27 |
 | Responsable | `{{TITULAR}}` |
 
-## 1. Estructura prevista del repositorio
+## 1. Estructura del repositorio
+
+Estado al 2026-10-27. Lo marcado con *(previsto)* todavía no existe.
 
 ```
 berigna/
-├── meson.build
-├── pyproject.toml                # herramientas: ruff, mypy, pytest
-├── LICENSE                       # GPL-3.0
-├── README.md
-├── SECURITY.md
-├── CHANGELOG.md
+├── pyproject.toml                # metadatos del núcleo; ruff, mypy, pytest, coverage
+├── meson.build                   # (previsto, Fase 3: aplicación GTK, ADR-0010)
+├── LICENSE, README.md, SECURITY.md, CHANGELOG.md
+├── scripts/verificar.sh          # verificación local (y hook de pre-push opcional)
 ├── src/berigna/
-│   ├── __init__.py
-│   ├── main.py                   # Adw.Application
 │   ├── core/
-│   │   ├── token/                # backends: dnie_v2 (APDU) y pkcs11
-│   │   ├── formats/{pades,cades,xades}/
-│   │   ├── trust/
-│   │   ├── net/
-│   │   ├── appearance/
-│   │   ├── signing.py
-│   │   ├── validation.py
-│   │   ├── batch.py
-│   │   ├── report/
-│   │   ├── history.py
-│   │   └── config.py
-│   └── ui/
-│       ├── window.py
-│       ├── views/
-│       ├── dialogs/
-│       └── blueprints/*.blp
-├── nautilus/berigna_nautilus.py
+│   │   ├── errors.py             # jerarquía de errores ERR-xxx
+│   │   ├── token/                # base (TokenSigner), pin, transport (PC/SC), dnie_v2 (APDU)
+│   │   ├── trust/                # store + anchors/ (certificados IOFE y manifest.json)
+│   │   ├── validation/           # preflight (RF-006)
+│   │   ├── formats/              # pades (B-B); cades y xades (previstos, Fase 4)
+│   │   ├── signing.py            # orquestación de la firma de PDF
+│   │   └── net/, appearance/, report/, history.py, config.py, batch.py   # (previstos)
+│   ├── main.py, ui/              # (previsto, Fase 3)
 ├── data/
-│   ├── pe.berigna.Berigna.desktop.in
-│   ├── pe.berigna.Berigna.metainfo.xml.in
-│   ├── pe.berigna.Berigna.gschema.xml
-│   ├── icons/
-│   └── trust/                    # certificados IOFE + manifest.json
-├── po/
-│   ├── LINGUAS                   # es_PE
-│   ├── POTFILES.in
-│   └── es_PE.po                  # traducción completa (el texto fuente es en_US)
-├── help/
-│   ├── C/                        # manual de usuario, fuente en_US (Mallard)
-│   └── es_PE/es_PE.po            # traducción del manual (itstool)
+│   ├── brand/                    # logotipos SVG (GPL-3.0-or-later)
+│   └── *.desktop.in, *.metainfo.xml.in, *.gschema.xml, icons/   # (previstos)
+├── po/, help/                    # (previstos: traducciones y manual Mallard)
 ├── tests/
-│   ├── unit/
-│   ├── integration/
-│   ├── interop/
-│   ├── fuzz/
-│   ├── pki/                      # generador de la PKI de pruebas
-│   └── fixtures/
-├── debian/
+│   ├── unit/                     # pruebas unitarias por módulo
+│   ├── sim/                      # simulador del applet PKI del DNIe v2
+│   ├── support/                  # PKI de pruebas, PDF mínimo, tarjetas simuladas
+│   ├── hil/                      # hardware real: pytest -m hil (sin PIN) y scripts con PIN
+│   └── integration/, interop/, fuzz/   # (previstos)
+├── spikes/                       # prototipos de la Fase 0 (no es código de producto)
+├── nautilus/                     # (previsto, Fase 5)
+├── debian/                       # (previsto, Fase 5)
 └── docs/                         # esta documentación
 ```
 

@@ -2,7 +2,7 @@
 
 Aplicación de escritorio para GNU/Linux (Debian) que permite firmar digitalmente documentos —especialmente PDF— con los certificados digitales que trae por defecto el DNI electrónico (DNIe) peruano, y verificar documentos firmados.
 
-> Estado: fase de especificación. No existe todavía código de producto; los prototipos de investigación de la Fase 0 están en [`spikes/`](spikes/README.md). La definición del producto vive en [`docs/`](docs/README.md).
+> Estado: en desarrollo, Fase 1 (núcleo de firma) casi completa. El núcleo ya firma PDF en PAdES B-B con el DNIe v2, y esas firmas son válidas en el validador oficial Firma Perú; todavía no hay interfaz gráfica ni versiones publicadas. Estado detallado en [`docs/README.md`](docs/README.md) §7. Los prototipos de investigación de la Fase 0 están en [`spikes/`](spikes/README.md).
 
 ## Resumen del producto
 
@@ -25,7 +25,8 @@ Aplicación de escritorio para GNU/Linux (Debian) que permite firmar digitalment
 
 1. [Índice de la documentación técnica](docs/README.md)
 2. [Requisitos](docs/03-requisitos/requisitos-funcionales.md) y [arquitectura](docs/04-arquitectura/arquitectura-general.md)
-3. [Investigaciones previas (spikes)](docs/10-investigacion/README.md): el criterio de salida de la Fase 0 está cumplido (DNIe v2 identificado, firma con PIN verificada y PAdES B-B válido en el validador oficial Firma Perú; SPK-01, SPK-03). Siguen abiertas la elección de la TSA y las consultas sobre la acreditación.
+3. [Investigaciones previas (spikes)](docs/10-investigacion/README.md) de la Fase 0.
+4. [Entorno de desarrollo](docs/08-desarrollo/entorno-y-convenciones.md) y verificación local con `scripts/verificar.sh`.
 
 ## Licencia
 
