@@ -20,7 +20,9 @@
 | CCID | *Chip Card Interface Device*: clase USB estándar para lectores de tarjeta; en Linux la implementa `libccid`. |
 | CRL | *Certificate Revocation List*: lista de certificados revocados publicada por una entidad de certificación. |
 | DNIe | Documento Nacional de Identidad electrónico del Perú, emitido por RENIEC. Su chip contiene certificados digitales y las claves privadas asociadas. |
+| DNIe 1.0 | Primera generación del DNIe (desde 2013), con chip Oberthur y aplicación IAS-ECC. Prevista en la versión 1.1 de berigna (SPK-06). |
 | DNIe v2 | Segunda generación del DNIe, con un chip NXP JCOP3 (Java Card), un *applet* PKI con tres certificados (firma, autenticación y cifrado) y un *applet* ICAO eMRTD. OpenSC no lo soporta (SPK-01). |
+| DNIe 3.0 | Generación presentada en abril de 2025 y única emitida desde agosto de 2025. Chip por identificar (SPK-06); prevista en la versión 1.1. |
 | DocMDP | *Document Modification Detection and Prevention*: firma de certificación de un PDF que define qué cambios se permiten después de firmar. |
 | ECEP-RENIEC | Entidad de Certificación para el Estado Peruano, operada por RENIEC. Su CA subordinada "ECEP-RENIEC CA Class 2 II" emite los certificados del DNIe v2 (verificado en SPK-01). |
 | ECERNEP | Entidad de Certificación Nacional para el Estado Peruano: raíz de la jerarquía del Estado. Raíz del DNIe v2: "ECERNEP PERU CA ROOT 3". Existe también una "Root 5". `[VERIFICAR]` qué entidad opera actualmente cada raíz (consulta CE-08). |

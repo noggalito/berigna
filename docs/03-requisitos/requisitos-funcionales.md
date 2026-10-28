@@ -42,7 +42,7 @@ Prioridades según MoSCoW (ver convenciones). Cada requisito tiene criterios de 
 
 ### RF-005: Autenticación con PIN
 - Prioridad: Debe. CU: CU-01, CU-04.
-- Descripción: se solicita el PIN en un diálogo propio, justo antes de la operación y después de que el usuario haya revisado lo que va a firmar. Si el lector tiene PIN pad, se pide al usuario que lo teclee en el lector. La detección depende del *backend*: `CKF_PROTECTED_AUTHENTICATION_PATH` (PKCS#11) o `FEATURE_VERIFY_PIN_DIRECT` de PC/SC parte 10 (driver del DNIe v2, ADR-0012).
+- Descripción: se solicita el PIN en un diálogo propio, justo antes de la operación y después de que el usuario haya revisado lo que va a firmar. El soporte de PIN pad queda aplazado a la versión 1.1 (decisión del 2026-10-27): hace falta un lector de clase 2 para desarrollarlo y probarlo. Si el lector tiene PIN pad, se pide al usuario que lo teclee en el lector. La detección depende del *backend*: `CKF_PROTECTED_AUTHENTICATION_PATH` (PKCS#11) o `FEATURE_VERIFY_PIN_DIRECT` de PC/SC parte 10 (driver del DNIe v2, ADR-0012).
 - Aceptación:
   1. El campo del PIN oculta los caracteres y no se puede copiar de él.
   2. Si el *token* informa de que quedan pocos intentos, se muestra una advertencia antes de enviar el PIN. Con PKCS#11: `CKF_USER_PIN_COUNT_LOW` o `CKF_USER_PIN_FINAL_TRY`. Con el DNIe v2 el contador se conoce por la respuesta `63Cx` de un VERIFY fallido; no se consulta por adelantado mientras no se confirme que la consulta sin datos no consume intentos (SPK-01 §9, punto 1).
