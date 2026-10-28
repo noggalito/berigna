@@ -69,6 +69,8 @@ sudo apt update && sudo apt install berigna berigna-nautilus
 
 ## 5. Compilación reproducible y verificación
 
+Herramienta candidata (a evaluar en la Fase 5): [Debcraft](https://optimizedbyotto.com/post/debcraft-1-0-released/) construye el `.deb` en contenedores efímeros (Podman o Docker), aislados de la red durante la compilación, con la distribución de `debian/changelog` y las dependencias de `debian/control`, y compara los artefactos entre compilaciones. Debian 13 ofrece la versión 0.5.0 (`apt install debcraft`); la 1.0 es posterior. No publica repositorios APT: para eso hará falta otra herramienta (por ejemplo, reprepro o aptly).
+
 - Compilación en un entorno limpio con `sbuild` (o `debuild` en un *chroot*), con `SOURCE_DATE_EPOCH` fijado.
 - Verificación con `reprotest`.
 - `lintian --pedantic` sin errores ni avisos injustificados.

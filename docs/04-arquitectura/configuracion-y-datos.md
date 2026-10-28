@@ -66,8 +66,16 @@ Despliegue en organizaciones: un administrador puede definir valores por defecto
   | ECEP-RENIEC | `9152 0E1F 381A 4640 2B94 90C0 6749 B2D8 1DDA D4B5 3E7F 252A 1DD7 9B55 DFCB 340B` |
   | ECEP-RENIEC CA Class 2 II | `EC94 327A 45C4 5A92 8104 D389 B352 5769 18B8 C072 3272 04E1 5E1F 8854 7D86 0A42` |
 
-- También existe "ECERNEP Perú CA Root 5". Hay que incluir todas las raíces vigentes de la IOFE (SPK-04).
-- Hay que incluir también "ECEP-RENIEC CA Class 3", que emite los certificados de personas jurídicas y funcionarios que se ven en documentos del Estado (SPK-04 §3.6).
+- Cadena ROOT 5 (personas jurídicas), obtenida el 2026-10-27. La raíz se descargó por HTTPS desde `cdn.www.gob.pe`; las intermedias, por HTTP desde los dos espejos de RENIEC, que dieron archivos idénticos. La cadena se verificó con un certificado real de SUNARP:
+
+  | Certificado | SHA-256 |
+  |---|---|
+  | ECERNEP PERU CA ROOT 5 (raíz, vigente hasta 2047) | `E33D 6A09 352F 98BA 5CC9 E358 D44F 3ED7 37E8 C73F 29E5 6656 F96A A05A 9D34 DA60` |
+  | ECEP-RENIEC CA ROOT 5 | `E827 B4CF 0DE3 24C8 E92A B20D B973 A070 4883 AE98 2DB1 A108 C834 48EA 463D C3AC` |
+  | ECEP-RENIEC CA Class 3 | `483A 02FB A5A8 2D23 D8C3 AC32 4157 DF39 2229 C0DF 750B 77F2 5096 8807 875D DEC1` |
+
+- Implementación (`berigna.core.trust`): las anclas van como recurso del paquete en `src/berigna/core/trust/anchors/`, con `manifest.json` (huella, rol, jerarquía, origen y forma de verificación). Al cargar el almacén se comprueba cada huella contra el manifiesto. Una diferencia, un archivo que sobra o falta, o un rol que no corresponde al certificado invalidan el almacén entero (ERR-201).
+
 - Fuente preferente: la TSL de INDECOPI (ETSI TS 102 231, firmada por INDECOPI; guía v4.0 §3.3 y ACR-24). URL pendiente (Q8).
 - Manifiesto: `trust/manifest.json`, con la huella SHA-256, el origen (URL oficial), la fecha de obtención y el propósito (firma o TSA) de cada certificado.
 - Integridad: el manifiesto se publica dentro del paquete `.deb` firmado. La aplicación comprueba al arrancar que las huellas coinciden con el manifiesto.
