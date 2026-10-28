@@ -45,7 +45,7 @@ docs/
 │   └── entorno-y-convenciones.md
 ├── 09-despliegue/
 │   └── empaquetado-debian.md
-└── 10-investigacion/                  ← spikes SPK-01, SPK-03 y SPK-05
+└── 10-investigacion/                  ← spikes SPK-01, SPK-03, SPK-05 y SPK-06
 ```
 
 Los prototipos de investigación están en [`../spikes/`](../spikes/README.md).
@@ -76,7 +76,7 @@ Algunos documentos públicos citan identificadores cuyo detalle está en la docu
 | 07-calidad | Borrador | El protocolo de PIN está Vigente |
 | 08-desarrollo | Borrador | — |
 | 09-despliegue | Borrador | — |
-| 10-investigacion | Cerrado | SPK-01, SPK-03 y SPK-05 cerrados |
+| 10-investigacion | En curso | SPK-01, SPK-03 y SPK-05 cerrados; SPK-06 (DNIe 1.0 y 3.0) pendiente |
 
 ## 6. Decisiones técnicas principales
 
@@ -98,18 +98,19 @@ Algunos documentos públicos citan identificadores cuyo detalle está en la docu
 
 | Módulo | Estado | Requisitos | Evidencia |
 |---|---|---|---|
-| `core.token.dnie_v2` y `core.token.transport` | Implementado | RF-002 (parcial), RF-003, RF-004, RF-005 (parcial) | Simulador, 100 % de cobertura; HIL con los lectores "Hyperion" e "innovatech", con PIN real |
+| `core.token.dnie_v2` y `core.token.transport` | Implementado | RF-002, RF-003, RF-004, RF-005 (sin PIN pad) | Simulador, 100 % de cobertura; HIL con los lectores "Hyperion" e "innovatech", con PIN real |
 | `core.trust` | Implementado | RF-060, RF-061 | ROOT 3 y ROOT 5 verificadas; manifiesto de huellas |
 | `core.validation.preflight` | Implementado | RF-006 | PKI de pruebas; HIL en línea contra el OCSP y las ARL de RENIEC |
 | `core.formats.pades` (nivel B-B) | Implementado | RF-010 (B-B), RF-013, RF-014 | Válido en Firma Perú y TOTAL_PASSED en DSS 6.2 con el DNIe real |
 | `core.signing` | Implementado (PDF, B-B) | RF-018, RF-045 | Pruebas del orden de seguridad (TOCTOU, cancelación, no sobrescritura) |
-| Monitor de lectores y tarjetas en caliente | Pendiente (Fase 1) | RF-001, RF-002 | — |
-| PIN pad (PC/SC parte 10) | Pendiente; requiere un lector de clase 2 | RF-005, P-08 | — |
-| *Backend* PKCS#11 + SoftHSM | Pendiente (Fase 1) | ADR-0003 | — |
+| `core.token.monitor` | Implementado | RF-001, RF-002 | Sin conectarse a la tarjeta (`SCardGetStatusChange`); HIL: no interfiere con una sesión exclusiva |
+| PIN pad (PC/SC parte 10) | Aplazado a la versión 1.1 (decisión del 2026-10-27; requiere un lector de clase 2) | RF-005, P-08 | — |
+| *Backend* PKCS#11 + SoftHSM | Aplazado a la versión 1.1 (decisión del 2026-10-27; el DNIe v2 no lo necesita) | ADR-0003 | — |
 | B-T, B-LT, B-LTA, verificación e informes | Fase 2 | RF-010, RF-050 a RF-056, RF-062 a RF-065 | — |
 | CAdES y XAdES | Fase 4 (viabilidad probada en SPK-03) | RF-020 a RF-033 | — |
+| DNIe 1.0 y DNIe 3.0 | Versión 1.1 (decisión del 2026-10-27); identificación pendiente en SPK-06 | RNF-COM-05 | — |
 | Interfaz gráfica, i18n, firma visible, lotes, Nautilus | Fases 3 y 5 | — | — |
 | Empaquetado `.deb` | Fase 5 | ADR-0006, ADR-0013 | — |
 
-Verificación local: `scripts/verificar.sh` (ruff, mypy estricto, pytest con cobertura mínima del 80 %; hoy 100 % del núcleo con 88 pruebas). Pruebas con hardware: `BERIGNA_HIL=1 pytest -m hil` (sin PIN) y los *scripts* manuales de `tests/hil/` (con PIN, según el protocolo).
+Verificación local: `scripts/verificar.sh` (ruff, mypy estricto, pytest con cobertura mínima del 80 %; hoy 100 % del núcleo con 106 pruebas). Pruebas con hardware: `BERIGNA_HIL=1 pytest -m hil` (sin PIN) y los *scripts* manuales de `tests/hil/` (con PIN, según el protocolo).
 

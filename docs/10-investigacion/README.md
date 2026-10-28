@@ -4,7 +4,7 @@
 |---|---|
 | Documento | BRG-INV-000 |
 | Versión | 0.2.0 |
-| Estado | Cerrado |
+| Estado | En curso |
 | Fecha | 2026-10-27 |
 | Responsable | `{{TITULAR}}` |
 
@@ -17,3 +17,4 @@ Los *spikes* se ejecutan en la Fase 0, antes de escribir código de producto. Ca
 | [SPK-03](SPK-03-viabilidad-cades-xades-python.md) | ¿Se pueden generar y validar CAdES y XAdES de B-B a B-LTA en Python con PKCS#11? | DP-03, ADR-0008 | Alta | Cerrado: PKI de pruebas y DNIe real |
 | SPK-04 | ¿Qué exigen la normativa vigente y la guía de acreditación de INDECOPI? | — | Alta | Documentación interna. Conclusiones técnicas públicas: requisitos del software de usuario final (RF/RNF y ADR-0014) |
 | [SPK-05](SPK-05-dependencias-en-debian.md) | ¿Qué dependencias Python están en Debian 13 y cuáles hay que empaquetar? | DP-06 | Media | Cerrado (2026-10-27) |
+| [SPK-06](SPK-06-dnie-1-0-y-3-0.md) | ¿Qué chip, aplicaciones y ruta de firma tienen el DNIe 1.0 y el DNIe 3.0? | RNF-COM-05 (versión 1.1) | Alta | Pendiente: se necesita acceso a las tarjetas |

@@ -18,7 +18,14 @@ pytestmark = pytest.mark.hil
 
 
 def test_reads_the_signing_certificate_from_a_real_dnie() -> None:
-    """PR-TOK-02 / RF-003 on hardware: non-repudiation certificate in under 1 s."""
+    """PR-TOK-02 / RF-003 on hardware: non-repudiation certificate in under 1 s.
+
+    The first PC/SC call of a process loads pyscard and creates the PC/SC context (~0.25 s);
+    the application pays it once at start-up, so it is excluded from the measurement.
+    """
+    from smartcard.System import readers
+
+    readers()  # warm-up, outside the timed section
     start = time.perf_counter()
     with DnieV2Token(PcscTransport.open_first(is_dnie_v2)) as token:
         cert = token.signing_certificate()

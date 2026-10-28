@@ -70,7 +70,7 @@ Nota: el tiempo de la operación criptográfica dentro del chip (medido: unos 0,
 | RNF-COM-02 | Sesiones Wayland y X11 | Debe |
 | RNF-COM-03 | GNOME como escritorio principal; en otros escritorios funciona sin la integración específica con Nautilus | Debe |
 | RNF-COM-04 | Lectores USB CCID de contacto genéricos admitidos por `libccid`. Probados: Realtek `0bda:0169` ("Hyperion") y Alcor Micro AU9540 `058f:9540` ("innovatech"). Las necesidades de hardware de prueba, como un lector con PIN pad, están en 07-calidad §10 | Debe |
-| RNF-COM-05 | Las versiones del DNIe identificadas en SPK-01 | Debe |
+| RNF-COM-05 | Versiones del DNIe: DNIe v2 en la versión 1.0; DNIe 1.0 y DNIe 3.0 en la versión 1.1 (decisión del 2026-10-27; identificación en SPK-06) | Debe |
 | RNF-COM-06 | arm64: el paquete es `Architecture: all` y funciona, pero sin soporte oficial ni pruebas HIL en la v1 (DP-08) | Podría |
 | RNF-COM-07 | Ubuntu LTS actual (por compartir base Debian), sin soporte oficial | Podría |
 
