@@ -26,3 +26,4 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/); v
 - `SignerCheck.revocation_note` indica por qué no se pudo comprobar la revocación (sin red o sin respuesta del servicio), para que la interfaz elija el aviso.
 - Dependencias pyHanko, pyhanko-certvalidator y asn1crypto declaradas en `pyproject.toml`, alineadas con las versiones de Debian 13.
 - Plan de compatibilidad: DNIe 1.0 y DNIe 3.0 previstos para la versión 1.1 (investigación SPK-06).
+- Requisito RF-074: extensión de LibreOffice "Firmar con berigna", prevista para la versión 1.2.
