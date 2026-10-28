@@ -37,7 +37,8 @@ docs/
 │   ├── modelo-de-amenazas.md
 │   └── manejo-de-pin-y-credenciales.md
 ├── 06-ux/
-│   └── diseno-de-interfaz.md
+│   ├── diseno-de-interfaz.md
+│   └── inventario-visual.md       ← iconos, ilustraciones y piezas gráficas por diseñar
 ├── 07-calidad/
 │   ├── estrategia-de-pruebas.md
 │   ├── protocolo-pruebas-con-pin.md   ← obligatorio antes de usar un PIN real
