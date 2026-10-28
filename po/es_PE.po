@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: berigna\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-28 13:05-0500\n"
+"POT-Creation-Date: 2026-10-28 13:34-0500\n"
 "PO-Revision-Date: 2026-10-27 23:38-0500\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -18,23 +18,23 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: data/ui/window.blp:23
+#: data/ui/window.blp:31
 msgid "Main Menu"
 msgstr "Menú principal"
 
-#: data/ui/window.blp:29
+#: data/ui/window.blp:37 src/berigna/ui/window.py:65
 msgid "Show in Spanish"
 msgstr "Ver en español"
 
-#: data/ui/window.blp:40
+#: data/ui/window.blp:43
 msgid "Drop a document here to sign or verify it"
 msgstr "Arrastra aquí un documento para firmarlo o verificarlo"
 
-#: data/ui/window.blp:43
+#: data/ui/window.blp:46
 msgid "_Open Document…"
 msgstr "_Abrir documento…"
 
-#: data/ui/window.blp:82
+#: data/ui/window.blp:86
 msgid "_About berigna"
 msgstr "_Acerca de berigna"
 
@@ -329,7 +329,7 @@ msgstr "Sello de tiempo de la firma"
 msgid "Changes after signing"
 msgstr "Cambios después de la firma"
 
-#: src/berigna/core/report/messages.py:144
+#: src/berigna/core/report/messages.py:144 src/berigna/ui/verification.py:183
 msgid "Signed version"
 msgstr "Versión firmada"
 
@@ -342,7 +342,7 @@ msgstr "primeros {length} bytes del archivo"
 msgid "None"
 msgstr "Ninguno"
 
-#: src/berigna/core/report/messages.py:147
+#: src/berigna/core/report/messages.py:147 src/berigna/ui/verification.py:154
 msgid "Document time-stamps"
 msgstr "Sellos de tiempo de documento"
 
@@ -368,49 +368,56 @@ msgstr ""
 msgid "Page {page}"
 msgstr "Página {page}"
 
-#: src/berigna/core/report/messages.py:156
+#: src/berigna/core/report/messages.py:157
+msgid ""
+"Translation not reviewed by speakers. If in doubt, the Spanish text prevails."
+msgstr ""
+"Traducción sin revisar por hablantes. En caso de duda, prevalece el texto en "
+"español."
+
+#: src/berigna/core/report/messages.py:161
 msgid "Unexpected error."
 msgstr "Error inesperado."
 
-#: src/berigna/core/report/messages.py:157
+#: src/berigna/core/report/messages.py:162
 msgid "Problem with the card reader or the card."
 msgstr "Problema con el lector o con la tarjeta."
 
-#: src/berigna/core/report/messages.py:158
+#: src/berigna/core/report/messages.py:163
 msgid "Insert your DNIe in the card reader."
 msgstr "Inserta tu DNIe en el lector."
 
-#: src/berigna/core/report/messages.py:159
+#: src/berigna/core/report/messages.py:164
 msgid "This card is not supported. Only the DNIe is supported."
 msgstr "Esta tarjeta no es compatible. Solo se admite el DNIe."
 
-#: src/berigna/core/report/messages.py:160
+#: src/berigna/core/report/messages.py:165
 msgid "The DNIe gave an unexpected answer. Remove it and insert it again."
 msgstr "El DNIe dio una respuesta inesperada. Retíralo y vuelve a insertarlo."
 
-#: src/berigna/core/report/messages.py:161
+#: src/berigna/core/report/messages.py:166
 msgid "The certificate on the card is not meant for signing."
 msgstr "El certificado de la tarjeta no sirve para firmar."
 
-#: src/berigna/core/report/messages.py:162
+#: src/berigna/core/report/messages.py:167
 msgid "The DNIe was removed during the operation. Nothing was signed."
 msgstr "Se retiró el DNIe durante la operación. No se firmó nada."
 
-#: src/berigna/core/report/messages.py:163
+#: src/berigna/core/report/messages.py:168
 msgid "Another program is using the DNIe. Close it and try again."
 msgstr "Otro programa está usando el DNIe. Ciérralo y vuelve a intentarlo."
 
-#: src/berigna/core/report/messages.py:164
+#: src/berigna/core/report/messages.py:169
 msgid "The smart card service (pcscd) is not running. Install it or start it."
 msgstr ""
 "El servicio de tarjetas inteligentes (pcscd) no está en funcionamiento. "
 "Instálalo o inícialo."
 
-#: src/berigna/core/report/messages.py:165
+#: src/berigna/core/report/messages.py:170
 msgid "Communication with the card failed for a moment. Try again."
 msgstr "La comunicación con la tarjeta falló un momento. Vuelve a intentarlo."
 
-#: src/berigna/core/report/messages.py:167
+#: src/berigna/core/report/messages.py:172
 msgid ""
 "The PIN is incorrect. Check it carefully before trying again: after several "
 "failed attempts the DNIe is blocked."
@@ -418,23 +425,23 @@ msgstr ""
 "El PIN es incorrecto. Revísalo con cuidado antes de volver a intentarlo: "
 "tras varios intentos fallidos el DNIe se bloquea."
 
-#: src/berigna/core/report/messages.py:170
+#: src/berigna/core/report/messages.py:175
 msgid "The PIN is blocked. Go to RENIEC to unblock it."
 msgstr "El PIN está bloqueado. Acude a RENIEC para desbloquearlo."
 
-#: src/berigna/core/report/messages.py:171
+#: src/berigna/core/report/messages.py:176
 msgid "The DNIe did not accept the operation because the PIN was not verified."
 msgstr "El DNIe no aceptó la operación porque el PIN no se verificó."
 
-#: src/berigna/core/report/messages.py:172
+#: src/berigna/core/report/messages.py:177
 msgid "berigna refused to send a command that is not allowed to the card."
 msgstr "berigna se negó a enviar a la tarjeta un comando no permitido."
 
-#: src/berigna/core/report/messages.py:173
+#: src/berigna/core/report/messages.py:178
 msgid "Problem with the trusted root certificates."
 msgstr "Problema con los certificados raíz de confianza."
 
-#: src/berigna/core/report/messages.py:175
+#: src/berigna/core/report/messages.py:180
 msgid ""
 "The trusted root certificates installed with berigna have been altered. "
 "Reinstall berigna."
@@ -442,11 +449,11 @@ msgstr ""
 "Los certificados raíz de confianza instalados con berigna han sido "
 "alterados. Reinstala berigna."
 
-#: src/berigna/core/report/messages.py:177
+#: src/berigna/core/report/messages.py:182
 msgid "A root certificate you added is not valid as a root."
 msgstr "Un certificado raíz que añadiste no es válido como raíz."
 
-#: src/berigna/core/report/messages.py:179
+#: src/berigna/core/report/messages.py:184
 msgid ""
 "The INDECOPI trusted list could not be used: its signature or its content is "
 "not valid. The trusted root certificates installed with berigna are still "
@@ -456,7 +463,7 @@ msgstr ""
 "no son válidos. Se siguen usando los certificados raíz de confianza "
 "instalados con berigna."
 
-#: src/berigna/core/report/messages.py:183
+#: src/berigna/core/report/messages.py:188
 msgid ""
 "The INDECOPI trusted list is out of date. The trusted root certificates "
 "installed with berigna are still used."
@@ -464,31 +471,31 @@ msgstr ""
 "La lista de confianza de INDECOPI está desactualizada. Se siguen usando los "
 "certificados raíz de confianza instalados con berigna."
 
-#: src/berigna/core/report/messages.py:186
+#: src/berigna/core/report/messages.py:191
 msgid "Your certificate cannot be used to sign."
 msgstr "Tu certificado no se puede usar para firmar."
 
-#: src/berigna/core/report/messages.py:187
+#: src/berigna/core/report/messages.py:192
 msgid "Your certificate has expired or is not yet valid."
 msgstr "Tu certificado venció o todavía no está vigente."
 
-#: src/berigna/core/report/messages.py:188
+#: src/berigna/core/report/messages.py:193
 msgid "Your certificate has been revoked. Go to RENIEC."
 msgstr "Tu certificado fue revocado. Acude a RENIEC."
 
-#: src/berigna/core/report/messages.py:189
+#: src/berigna/core/report/messages.py:194
 msgid "Your certificate does not lead to a trusted root certificate."
 msgstr "Tu certificado no lleva a un certificado raíz de confianza."
 
-#: src/berigna/core/report/messages.py:190
+#: src/berigna/core/report/messages.py:195
 msgid "Your certificate could not be validated."
 msgstr "No se pudo validar tu certificado."
 
-#: src/berigna/core/report/messages.py:191
+#: src/berigna/core/report/messages.py:196
 msgid "The document could not be signed."
 msgstr "No se pudo firmar el documento."
 
-#: src/berigna/core/report/messages.py:193
+#: src/berigna/core/report/messages.py:198
 msgid ""
 "The file changed after you opened it. Open it again and check it before "
 "signing."
@@ -496,110 +503,232 @@ msgstr ""
 "El archivo cambió después de que lo abriste. Vuelve a abrirlo y revísalo "
 "antes de firmar."
 
-#: src/berigna/core/report/messages.py:195
+#: src/berigna/core/report/messages.py:200
 msgid "A file with that name already exists. Choose another name."
 msgstr "Ya existe un archivo con ese nombre. Elige otro nombre."
 
-#: src/berigna/core/report/messages.py:196
+#: src/berigna/core/report/messages.py:201
 msgid "Signing was cancelled. The PIN was not sent."
 msgstr "Se canceló la firma. El PIN no se envió."
 
-#: src/berigna/core/report/messages.py:197
+#: src/berigna/core/report/messages.py:202
 msgid "This PDF cannot be signed: it is damaged or protected."
 msgstr "Este PDF no se puede firmar: está dañado o protegido."
 
-#: src/berigna/core/report/messages.py:198
+#: src/berigna/core/report/messages.py:203
 msgid ""
 "The time-stamping authority did not answer. Check the connection or the TSA."
 msgstr ""
 "La autoridad de sellado de tiempo no respondió. Revisa la conexión o la TSA."
 
-#: src/berigna/core/report/messages.py:199
+#: src/berigna/core/report/messages.py:204
 msgid "That signature level is not available now. Choose a lower level."
 msgstr "Ese nivel de firma no está disponible ahora. Elige un nivel inferior."
 
-#: src/berigna/core/report/messages.py:200
+#: src/berigna/core/report/messages.py:205
 msgid "The document could not be verified."
 msgstr "No se pudo verificar el documento."
 
-#: src/berigna/core/report/messages.py:201
+#: src/berigna/core/report/messages.py:206
 msgid "The file is not a document that berigna can read, or it is damaged."
 msgstr "El archivo no es un documento que berigna pueda leer, o está dañado."
 
-#: src/berigna/ui/application.py:116
+#: src/berigna/ui/application.py:128
 msgid "Sign and verify documents with your Peruvian DNIe."
 msgstr "Firma y verifica documentos con tu DNIe."
 
-#: src/berigna/ui/presentation.py:14
-msgid ""
-"Translation not reviewed by speakers. If in doubt, the Spanish text prevails."
-msgstr "Traducción sin revisar por hablantes. En caso de duda, prevalece el texto en español."
-
-#: src/berigna/ui/presentation.py:28
+#: src/berigna/ui/presentation.py:34
 msgid "The smart card service (pcscd) is not running"
 msgstr "El servicio de tarjetas inteligentes (pcscd) no está en funcionamiento"
 
-#: src/berigna/ui/presentation.py:30
+#: src/berigna/ui/presentation.py:36
 msgid "Connect a card reader"
 msgstr "Conecta un lector de tarjetas"
 
-#: src/berigna/ui/presentation.py:31
+#: src/berigna/ui/presentation.py:37
 msgid "Insert your DNIe in the reader"
 msgstr "Inserta tu DNIe en el lector"
 
-#: src/berigna/ui/presentation.py:32
+#: src/berigna/ui/presentation.py:38
 msgid "This card is not supported"
 msgstr "Tarjeta no compatible"
 
-#: src/berigna/ui/presentation.py:33
+#: src/berigna/ui/presentation.py:39
 msgid "DNIe ready"
 msgstr "DNIe listo"
 
-#: src/berigna/ui/presentation.py:40
+#: src/berigna/ui/presentation.py:46
 msgid "Looking for card readers…"
 msgstr "Buscando lectores de tarjetas…"
 
-#: src/berigna/ui/presentation.py:48
+#: src/berigna/ui/presentation.py:54
 msgid "berigna cannot sign or verify this kind of file yet."
 msgstr "berigna todavía no puede firmar ni verificar este tipo de archivo."
 
-#: src/berigna/ui/presentation.py:50
+#: src/berigna/ui/presentation.py:56
 #, python-brace-format
 msgid "PDF document, {n} page"
 msgid_plural "PDF document, {n} pages"
 msgstr[0] "Documento PDF, {n} página"
 msgstr[1] "Documento PDF, {n} páginas"
 
-#: src/berigna/ui/presentation.py:52
+#: src/berigna/ui/presentation.py:58
 #, python-brace-format
 msgid "{document}, not signed"
 msgstr "{document}, sin firmas"
 
-#: src/berigna/ui/presentation.py:54
+#: src/berigna/ui/presentation.py:59
 #, python-brace-format
 msgid "{n} signature"
 msgid_plural "{n} signatures"
 msgstr[0] "{n} firma"
 msgstr[1] "{n} firmas"
 
-#: src/berigna/ui/presentation.py:56
+#: src/berigna/ui/presentation.py:62
 #, python-brace-format
 msgid "{document}, {signatures}"
 msgstr "{document}, {signatures}"
 
-#: src/berigna/ui/window.py:71
-msgid "PDF documents"
-msgstr "Documentos PDF"
+#: src/berigna/ui/presentation.py:121
+msgid "Format"
+msgstr "Formato"
 
-#: src/berigna/ui/window.py:75
-msgid "Open Document"
-msgstr "Abrir documento"
+#: src/berigna/ui/presentation.py:122 src/berigna/ui/presentation.py:158
+msgid "Signature field"
+msgstr "Campo de firma"
 
-#: src/berigna/ui/window.py:96
-msgid "Only files on this computer can be opened."
-msgstr "Solo se pueden abrir archivos de este equipo."
+#: src/berigna/ui/presentation.py:143
+msgid "Unknown signer"
+msgstr "Firmante desconocido"
 
-#: src/berigna/ui/window.py:128
+#: src/berigna/ui/presentation.py:156
+msgid "Time-stamping authority"
+msgstr "Autoridad de sellado de tiempo"
+
+#: src/berigna/ui/presentation.py:160
+msgid "Unreadable time"
+msgstr "Hora ilegible"
+
+#: src/berigna/ui/presentation.py:175
+#, python-brace-format
+msgid "{n} valid signature"
+msgid_plural "{n} valid signatures"
+msgstr[0] "{n} firma válida"
+msgstr[1] "{n} firmas válidas"
+
+#: src/berigna/ui/presentation.py:178
+#, python-brace-format
+msgid "{n} signature is not valid"
+msgid_plural "{n} signatures are not valid"
+msgstr[0] "{n} firma no es válida"
+msgstr[1] "{n} firmas no son válidas"
+
+#: src/berigna/ui/presentation.py:183
+#, python-brace-format
+msgid "{n} signature could not be verified"
+msgid_plural "{n} signatures could not be verified"
+msgstr[0] "{n} firma no se pudo verificar"
+msgstr[1] "{n} firmas no se pudieron verificar"
+
+#: src/berigna/ui/presentation.py:188
+msgid "The document was not changed after the last signature."
+msgstr "El documento no fue modificado después de la última firma."
+
+#: src/berigna/ui/presentation.py:190
+msgid "The document was changed after the last signature."
+msgstr "El documento fue modificado después de la última firma."
+
+#: src/berigna/ui/verification.py:41
+#, python-brace-format
+msgid "{stem} - verification report.pdf"
+msgstr "{stem} - informe de verificación.pdf"
+
+#: src/berigna/ui/verification.py:42
+#, python-brace-format
+msgid "{stem} - verification report (Quechua).pdf"
+msgstr "{stem} - informe de verificación (quechua).pdf"
+
+#: src/berigna/ui/verification.py:43
+#, python-brace-format
+msgid "{stem} - verification report.json"
+msgstr "{stem} - informe de verificación.json"
+
+#: src/berigna/ui/verification.py:45
+#, python-brace-format
+msgid "{stem} - signed version {number}.pdf"
+msgstr "{stem} - versión firmada {number}.pdf"
+
+#: src/berigna/ui/verification.py:59
+msgid "PDF Report in Spanish"
+msgstr "Informe PDF en español"
+
+#: src/berigna/ui/verification.py:60
+msgid "PDF Report in Quechua"
+msgstr "Informe PDF en quechua"
+
+#: src/berigna/ui/verification.py:61
+msgid "JSON Report"
+msgstr "Informe JSON"
+
+#: src/berigna/ui/verification.py:63
+msgid "Export"
+msgstr "Exportar"
+
+#: src/berigna/ui/verification.py:63
+msgid "Export Report"
+msgstr "Exportar el informe"
+
+#: src/berigna/ui/verification.py:67
+msgid "Verify Again"
+msgstr "Verificar de nuevo"
+
+#: src/berigna/ui/verification.py:73
+msgid "Verifying signatures…"
+msgstr "Verificando las firmas…"
+
+#: src/berigna/ui/verification.py:74
+msgid "Checking the certificates may take a few seconds."
+msgstr "La comprobación de los certificados puede tardar unos segundos."
+
+#: src/berigna/ui/verification.py:115 src/berigna/ui/window.py:157
 #, python-brace-format
 msgid "{name} could not be opened."
 msgstr "No se pudo abrir {name}."
+
+#: src/berigna/ui/verification.py:124
+msgid "The document could not be verified"
+msgstr "No se pudo verificar el documento"
+
+#: src/berigna/ui/verification.py:173
+msgid "Technical Details"
+msgstr "Detalles técnicos"
+
+#: src/berigna/ui/verification.py:176
+msgid "Save the Signed Version"
+msgstr "Guardar la versión firmada"
+
+#: src/berigna/ui/verification.py:184
+msgid "The document as this signature left it"
+msgstr "El documento tal como quedó con esta firma"
+
+#: src/berigna/ui/verification.py:222
+#, python-brace-format
+msgid "{name} could not be saved."
+msgstr "No se pudo guardar {name}."
+
+#: src/berigna/ui/verification.py:224
+#, python-brace-format
+msgid "Saved {name}"
+msgstr "Se guardó {name}"
+
+#: src/berigna/ui/window.py:97
+msgid "PDF documents"
+msgstr "Documentos PDF"
+
+#: src/berigna/ui/window.py:101
+msgid "Open Document"
+msgstr "Abrir documento"
+
+#: src/berigna/ui/window.py:121
+msgid "Only files on this computer can be opened."
+msgstr "Solo se pueden abrir archivos de este equipo."

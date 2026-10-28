@@ -151,6 +151,11 @@ REPORT_SPANISH_PREVAILS = N_(
     "This report is a translation. In case of discrepancy, the Spanish (es_PE) version prevails."
 )
 REPORT_PAGE = N_("Page {page}")
+# Shown in Quechua and in Spanish while no speaker has reviewed the translation (DP-14,
+# BRG-UX-001 §4.2): in the window and in the Quechua PDF report.
+UNREVIEWED_TRANSLATION = N_(
+    "Translation not reviewed by speakers. If in doubt, the Spanish text prevails."
+)
 
 ERRORS: dict[str, str] = {
     "ERR-000": N_("Unexpected error."),

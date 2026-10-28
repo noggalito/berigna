@@ -14,6 +14,7 @@ import pytest
 
 from berigna.core.i18n import Language
 from berigna.core.token.monitor import ReaderState
+from support.pki import Pki, build_pki
 
 BUILD = Path(__file__).resolve().parents[2] / "build" / "meson" / "data"
 os.environ.setdefault("BERIGNA_RESOURCES", str(BUILD / "berigna.gresource"))
@@ -89,7 +90,15 @@ def readers() -> FakeReaders:
     return FakeReaders()
 
 
+@pytest.fixture(scope="session")
+def pki() -> Pki:
+    return build_pki()
+
+
 @pytest.fixture
-def app(readers: FakeReaders) -> Iterator[BerignaApplication]:
-    yield BerignaApplication(status_source=lambda: readers, unique=False)
+def app(readers: FakeReaders, pki: Pki) -> Iterator[BerignaApplication]:
+    """Offline, with the test PKI as trust store: results do not depend on the network."""
+    yield BerignaApplication(
+        status_source=lambda: readers, trust_store=lambda: pki.store, online=False, unique=False
+    )
     i18n.set_language(Language.ES_PE)

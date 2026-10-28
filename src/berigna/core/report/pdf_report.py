@@ -195,6 +195,7 @@ def pdf_report(
     story.append(w.p(w.t(messages.REPORT_GENERATED).format(version=berigna.__version__), w.small))
     if language is not Language.ES_PE:
         story.append(w.p(w.t(messages.REPORT_SPANISH_PREVAILS), w.small))
+        story.append(w.p(w.t(messages.UNREVIEWED_TRANSLATION), w.small))
 
     def footer(canvas: Any, document: Any) -> None:
         canvas.saveState()

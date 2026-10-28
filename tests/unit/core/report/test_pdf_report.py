@@ -112,6 +112,7 @@ def test_spanish_report_contents(pki: Pki, tmp_path: Path) -> None:
 def test_quechua_report_says_spanish_prevails(pki: Pki, tmp_path: Path) -> None:
     text = _text(_report(pki, Language.QUZ_PE), tmp_path)
     assert "prevalece la versión en español (es_PE)" in text
+    assert "Traducción sin revisar por hablantes." in text
 
 
 def test_user_anchors_are_disclosed(pki: Pki, tmp_path: Path) -> None:

@@ -116,6 +116,8 @@ flowchart LR
 
 ### 3.4 Resultado de la verificación
 
+Implementado en la Fase 3, incremento 2. Diferencias con el boceto: la explicación de cada firma va bajo su firmante y los detalles técnicos en una fila desplegable; "Verificar de nuevo" es un botón de la barra de título, visible si algún resultado es indeterminado; cada firma permite guardar la versión del documento que dejó (CU-06).
+
 ```
 ┌──────────────────────────────────────────────────────────────┐
 │ ←  informe-firmado.pdf                    [ Exportar ▾ ]     │
@@ -182,6 +184,6 @@ Hasta que la traducción al quechua tenga corrección humana (versión 1.1, DP-1
 - [ ] Icono de la aplicación según la guía de iconos de GNOME.
 - [ ] Prueba de usabilidad (RNF-USA-06) en la Fase 3.
 - [ ] Microcopia completa de errores (catálogo `ERR-xxx`, con su mensaje, su causa y la acción sugerida) en es_PE y en quechua.
-- [x] Aviso de traducción sin revisar en la ventana principal (§4.2). Faltan el diálogo del PIN, el resultado de la verificación y el informe PDF.
+- [x] Aviso de traducción sin revisar en la ventana principal y en el informe PDF en quechua (§4.2). Falta el enlace "Ver en español" en el diálogo del PIN y en el resultado de la verificación.
 - [ ] Glosario terminológico bilingüe para traductores (por ejemplo: sello de tiempo / timestamp, firmante / signer, revocado / revoked), para mantener la coherencia.
 - [ ] Revisión de los bocetos en quechua para detectar textos que se desborden (las palabras aglutinantes suelen ser largas).
