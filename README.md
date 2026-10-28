@@ -2,7 +2,7 @@
 
 Aplicación de escritorio para GNU/Linux (Debian) que permite firmar digitalmente documentos —especialmente PDF— con los certificados digitales que trae por defecto el DNI electrónico (DNIe) peruano, y verificar documentos firmados.
 
-> Estado: en desarrollo, Fase 1 (núcleo de firma) completada. El núcleo ya firma PDF en PAdES B-B con el DNIe v2, y esas firmas son válidas en el validador oficial Firma Perú; todavía no hay interfaz gráfica ni versiones publicadas. Estado detallado en [`docs/README.md`](docs/README.md) §7. Los prototipos de investigación de la Fase 0 están en [`spikes/`](spikes/README.md).
+> Estado: en desarrollo, Fase 2 (niveles superiores y verificación) en curso. El núcleo ya firma PDF en PAdES B-B con el DNIe v2, y esas firmas son válidas en el validador oficial Firma Perú; también verifica firmas PAdES con indicaciones ETSI; todavía no hay interfaz gráfica ni versiones publicadas. Estado detallado en [`docs/README.md`](docs/README.md) §7. Los prototipos de investigación de la Fase 0 están en [`spikes/`](spikes/README.md).
 
 ## Resumen del producto
 

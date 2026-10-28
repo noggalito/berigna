@@ -10,7 +10,7 @@ from cryptography import x509
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.x509 import ocsp
-from cryptography.x509.oid import AuthorityInformationAccessOID, NameOID
+from cryptography.x509.oid import AuthorityInformationAccessOID, ExtendedKeyUsageOID, NameOID
 
 from berigna.core.trust import TrustedCertificate, TrustStore
 
@@ -113,6 +113,26 @@ class Pki:
             .sign(self.ca_key, hashes.SHA256())
         )
         return response.public_bytes(serialization.Encoding.DER)
+
+    def tsa(self) -> tuple[x509.Certificate, rsa.RSAPrivateKey]:
+        """A time-stamping unit issued by the CA (critical EKU timeStamping, RFC 3161)."""
+        key = _key()
+        cert = (
+            x509.CertificateBuilder()
+            .subject_name(_name("TEST TSA"))
+            .issuer_name(self.ca.subject)
+            .public_key(key.public_key())
+            .serial_number(x509.random_serial_number())
+            .not_valid_before(NOW - dt.timedelta(days=1))
+            .not_valid_after(NOW + dt.timedelta(days=365))
+            .add_extension(x509.BasicConstraints(ca=False, path_length=None), critical=True)
+            .add_extension(_usage(digital_signature=True), critical=True)
+            .add_extension(
+                x509.ExtendedKeyUsage([ExtendedKeyUsageOID.TIME_STAMPING]), critical=True
+            )
+            .sign(self.ca_key, hashes.SHA256())
+        )
+        return cert, key
 
     def arl(self, *, revoke_ca: bool = False) -> bytes:
         builder = (

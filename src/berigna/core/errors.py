@@ -179,3 +179,15 @@ class PdfFormatError(SigningError):
     """The PDF cannot be signed (damaged, encrypted or with forbidden modifications)."""
 
     code = "ERR-304"
+
+
+class VerificationError(BerignaError):
+    """A document could not be verified at all (individual signature results are not errors)."""
+
+    code = "ERR-400"
+
+
+class UnreadableDocumentError(VerificationError):
+    """The file is not a document of the expected format, or it is damaged."""
+
+    code = "ERR-401"
