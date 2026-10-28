@@ -93,17 +93,17 @@ flowchart TB
 
 ### 3.1 Responsabilidades
 
-| Módulo | Responsabilidad | Bibliotecas previstas |
+| Módulo | Responsabilidad | Bibliotecas (estado al 2026-10-27) |
 |---|---|---|
-| `core.token` | Detección de lectores y tarjetas, y selección del *backend* según el ATR. Dos *backends* con la misma interfaz `TokenSigner`: `dnie_v2`, driver APDU para el DNIe v2 (*applet* PKI, lectura de certificados, VERIFY, MSE:SET y PSO:CDS, con lista blanca de instrucciones), y `pkcs11`, el genérico (*slots*, login y logout, `C_Sign`) | pyscard (ADR-0012), python-pkcs11 (ADR-0003) |
-| `core.formats.pades` | Firma y validación PAdES, DSS/VRI, sellos de documento, DocMDP. Firma mediante un `Signer` personalizado de pyHanko que delega en `TokenSigner` | pyHanko 0.25.x (ADR-0004, ADR-0013) |
+| `core.token` | Detección de lectores y tarjetas, y selección del *backend* según el ATR. Dos *backends* con la misma interfaz `TokenSigner`: `dnie_v2`, driver APDU para el DNIe v2 (*applet* PKI, lectura de certificados, VERIFY, MSE:SET y PSO:CDS, con lista blanca de instrucciones), y `pkcs11`, el genérico (*slots*, login y logout, `C_Sign`) | pyscard (ADR-0012), implementado para el DNIe v2; python-pkcs11 (ADR-0003), pendiente |
+| `core.formats.pades` | Firma y validación PAdES, DSS/VRI, sellos de documento, DocMDP. Firma mediante un `Signer` personalizado de pyHanko que delega en `TokenSigner` | pyHanko 0.25.1 (ADR-0004, ADR-0013); implementada la firma B-B |
 | `core.formats.cades` | Firma y validación CMS/CAdES separada y envuelta | pyHanko (API CMS genérica), asn1crypto (ADR-0008) |
 | `core.formats.xades` | Firma y validación XAdES | Según SPK-03 (ADR-0008) |
-| `core.trust` | Almacén de confianza de la IOFE incluido y anclas añadidas por el usuario | pyhanko-certvalidator |
-| `core.net` | Clientes HTTP para TSA, OCSP, CRL y AIA, con caché, tiempos de espera y proxy | requests o aiohttp (lo que use pyHanko) |
+| `core.trust` | Almacén de confianza de la IOFE incluido (anclas como recurso del paquete con manifiesto de huellas) y anclas añadidas por el usuario | cryptography; implementado |
+| `core.net` | Clientes HTTP para TSA, OCSP, CRL y AIA, con caché, tiempos de espera y proxy | requests. Hoy OCSP y CRL los obtiene pyhanko-certvalidator con sus *fetchers* de `requests` (10 s de tiempo de espera); el módulo propio llega con la TSA (Fase 2) |
 | `core.appearance` | Composición del sello visible a partir de una plantilla de texto y una imagen | pyHanko stamp + Pillow |
-| `core.signing` | Orquestación: validar el certificado, construir los parámetros, firmar y escribir de forma atómica | — |
-| `core.validation` | Orquestación de la validación y normalización a indicaciones ETSI | — |
+| `core.signing` | Orquestación: comprobar que el archivo no cambió, validar el certificado antes del PIN, firmar y escribir de forma atómica | Implementado para PDF (B-B) |
+| `core.validation` | Validación previa del firmante (`preflight`, RF-006) y, en la Fase 2, validación de firmas con normalización a indicaciones ETSI | pyhanko-certvalidator 0.26.3; `preflight` implementado |
 | `core.report` | Informe de verificación en JSON (códigos y explicaciones en ambos idiomas) y en PDF (en es_PE o en_US) | ReportLab o pyHanko |
 | `core.i18n` | Inicialización de gettext, catálogo de explicaciones por código (ETSI y `ERR-xxx`), formato de fechas según la configuración regional y selección explícita del idioma de los documentos generados (informe, sello visible) | gettext, babel o `locale` de la biblioteca estándar |
 | `core.history` | Historial local en SQLite | sqlite3 (biblioteca estándar) |
@@ -124,7 +124,26 @@ Decisiones de implementación de `core.token.dnie_v2` (ADR-0012), documentadas p
 | Límite de longitud del PIN: 255 bytes | Límite de una APDU; la política real la aplica la tarjeta |
 | `Pin.buffer()` devuelve el búfer vivo, y su único consumidor es `verify_pin`, que lo borra | P-04; la confianza se limita a un solo punto del código |
 
-## 4. Interfaces clave del núcleo (borrador)
+## 4. Interfaces clave del núcleo
+
+Implementadas (Fase 1):
+
+```python
+class TokenSigner(Protocol):                      # core.token.base
+    def signing_certificate(self) -> x509.Certificate: ...
+    def verify_pin(self, pin: Pin) -> None: ...   # un solo intento; borra el PIN
+    def sign_digest(self, digest: bytes, algorithm: HashAlgorithmName = "sha256") -> bytes: ...
+    def close(self) -> None: ...                  # también como gestor de contexto
+
+def check_signer(certificate, store, *, moment=None, online=True,
+                 ocsp_responses=(), crls=(), timeout=10.0) -> SignerCheck   # core.validation
+
+def sign_pdf_file(source, output, *, expected_sha256, token, store, ask_pin,
+                  options=None, online=True, ocsp_responses=(), crls=()) -> SignResult  # core.signing
+```
+
+Diseño previsto para las fases siguientes (no es código final):
+
 
 ```python
 # Pseudocódigo de diseño, no es código final.
