@@ -60,7 +60,7 @@ Nota: el tiempo de la operación criptográfica dentro del chip (medido: unos 0,
 | RNF-USA-06 | Un usuario nuevo completa CU-01 sin ayuda externa en la prueba de usabilidad (al menos 4 de 5 participantes) | Debe |
 | RNF-USA-07 | La interfaz está completa en es_PE y en quechua sureño; ninguna cadena visible queda sin traducir en ninguno de los dos idiomas (ADR-0011, ADR-0015). en_US, en la versión 1.1 | Debe |
 | RNF-USA-08 | El diseño soporta textos un 40 % más largos que el texto fuente sin truncarlos ni solaparlos (se comprueba con pseudolocalización) | Debe |
-| RNF-USA-09 | Los textos críticos para la seguridad y para el resultado legal (diálogo del PIN, resumen de la firma, resultados de verificación, advertencias) los revisa en ambos idiomas una persona nativa, para que no cambien de significado | Debe |
+| RNF-USA-09 | Los textos críticos para la seguridad y para el resultado legal (diálogo del PIN, resumen de la firma, resultados de verificación, advertencias) los revisa en ambos idiomas una persona nativa, para que no cambien de significado. En quechua, desde la versión 1.1 (DP-14, 2026-10-28) | Debe |
 
 ## 5. Compatibilidad (COM)
 

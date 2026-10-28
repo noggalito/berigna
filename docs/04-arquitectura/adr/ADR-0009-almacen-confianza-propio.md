@@ -1,6 +1,6 @@
 # ADR-0009: Almacén de confianza propio de la IOFE
 
-- Estado: Aceptado; complementado por ADR-0014 (Propuesto: la TSL de INDECOPI como fuente)
+- Estado: Aceptado; complementado por [ADR-0014](ADR-0014-tsl-indecopi-fuente-de-confianza.md) (la TSL de INDECOPI verificada amplía este almacén en tiempo de ejecución)
 - Fecha: 2026-10-27
 
 ## Contexto

@@ -27,7 +27,7 @@ Un ADR aceptado no se edita. Si la decisión cambia, se escribe un ADR nuevo que
 | [ADR-0011](ADR-0011-internacionalizacion-es-pe-en-us.md) | Internacionalización con dos idiomas, es_PE y en_US | Aceptado; modificado por ADR-0015 |
 | [ADR-0012](ADR-0012-driver-dnie-v2-apdu-y-opensc.md) | Driver APDU propio para el DNIe v2 y contribución a OpenSC | Aceptado |
 | [ADR-0013](ADR-0013-pyhanko-0-25-empaquetado-debian.md) | pyHanko 0.25.x empaquetado para Debian 13 | Aceptado |
-| [ADR-0014](ADR-0014-tsl-indecopi-fuente-de-confianza.md) | La TSL de INDECOPI como fuente del almacén de confianza | Propuesto |
+| [ADR-0014](ADR-0014-tsl-indecopi-fuente-de-confianza.md) | La TSL de INDECOPI como fuente del almacén de confianza | Aceptado |
 | [ADR-0015](ADR-0015-idiomas-es-pe-y-quechua-sureno.md) | Idiomas de la v1.0, español del Perú y quechua sureño | Aceptado |
 
 ## Fe de erratas

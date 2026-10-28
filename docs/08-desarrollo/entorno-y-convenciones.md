@@ -10,24 +10,25 @@
 
 ## 1. Estructura del repositorio
 
-Estado al 2026-10-27. Lo marcado con *(previsto)* todavía no existe.
+Estado al 2026-10-28. Lo marcado con *(previsto)* todavía no existe.
 
 ```
 berigna/
 ├── pyproject.toml                # metadatos del núcleo; ruff, mypy, pytest, coverage
 ├── meson.build                   # (previsto, Fase 3: aplicación GTK, ADR-0010)
 ├── LICENSE, README.md, SECURITY.md, CHANGELOG.md
+├── .github/workflows/verificar.yml  # CI: scripts/verificar.sh en Debian 13
 ├── scripts/verificar.sh          # verificación local (y hook de pre-push opcional)
 ├── scripts/traducciones.sh       # plantilla, catálogos y compilación a build/locale (gettext)
 ├── src/berigna/
 │   ├── core/
 │   │   ├── errors.py             # jerarquía de errores ERR-xxx
-│   │   ├── token/                # base (TokenSigner), pin, transport (PC/SC), dnie_v2 (APDU)
-│   │   ├── trust/                # store + anchors/ (certificados IOFE y manifest.json)
+│   │   ├── token/                # base (TokenSigner), pin, transport (PC/SC), dnie_v2 (APDU), monitor
+│   │   ├── trust/                # store + anchors/ (IOFE, manifest.json); tsl + tsl/ (raíz de INDECOPI)
 │   │   ├── validation/           # preflight (RF-006) y pdf (verificación, RF-050)
 │   │   ├── formats/              # pades (B-B a B-LTA); cades y xades (previstos, Fase 4)
 │   │   ├── net/                  # fetchers (OCSP, CRL) y tsa (RFC 3161)
-│   │   ├── report/               # messages, explanations (RF-053) y json_report (RF-054)
+│   │   ├── report/               # messages, explanations (RF-053), json_report y pdf_report (RF-054)
 │   │   ├── i18n.py               # idiomas es_PE y quechua, catálogos gettext (ADR-0015)
 │   │   ├── signing.py            # orquestación de la firma de PDF
 │   │   └── appearance/, history.py, config.py, batch.py   # (previstos)
@@ -40,9 +41,11 @@ berigna/
 ├── tests/
 │   ├── unit/                     # pruebas unitarias por módulo
 │   ├── sim/                      # simulador del applet PKI del DNIe v2
-│   ├── support/                  # PKI de pruebas, PDF mínimo, tarjetas simuladas
+│   ├── support/                  # PKI, TSA y TSL de pruebas, PDF mínimo, tarjetas simuladas
+│   ├── data/                     # datos reales públicos (TSL de INDECOPI y CRL de su firmante)
 │   ├── hil/                      # hardware real: pytest -m hil (sin PIN) y scripts con PIN
-│   └── integration/, interop/, fuzz/   # (previstos)
+│   ├── interop/                  # matriz PAdES contra un validador externo (DSS 6.2)
+│   └── integration/, fuzz/       # (previstos)
 ├── spikes/                       # prototipos de la Fase 0 (no es código de producto)
 ├── nautilus/                     # (previsto, Fase 5)
 ├── debian/                       # (previsto, Fase 5)
@@ -91,7 +94,7 @@ Comprobaciones antes de cada commit:
 .venv/bin/pytest --cov=berigna
 ```
 
-El script `scripts/verificar.sh` ejecuta exactamente esas comprobaciones (nunca las pruebas HIL), después de compilar los catálogos con `scripts/traducciones.sh compilar` (necesita el paquete `gettext`). Tras añadir o cambiar un texto traducible: `scripts/traducciones.sh actualizar`, traducir la entrada en `po/es_PE.po` y dejarla en `po/quz.po` para los traductores; una prueba comprueba que `po/berigna.pot` está al día. Se puede instalar como *hook* de `pre-push` con `ln -s ../../scripts/verificar.sh .git/hooks/pre-push`.
+El script `scripts/verificar.sh` ejecuta exactamente esas comprobaciones (nunca las pruebas HIL), después de compilar los catálogos con `scripts/traducciones.sh compilar` (necesita el paquete `gettext`). Las pruebas del informe PDF necesitan `poppler-utils` (`pdftotext`) y usan la fuente DejaVu (`fonts-dejavu-core`); la TSL y el informe, `python3-lxml`, `python3-signxml` y `python3-reportlab`. Tras añadir o cambiar un texto traducible: `scripts/traducciones.sh actualizar`, traducir la entrada en `po/es_PE.po` y dejarla en `po/quz.po` para los traductores; una prueba comprueba que `po/berigna.pot` está al día. Se puede instalar como *hook* de `pre-push` con `ln -s ../../scripts/verificar.sh .git/hooks/pre-push`.
 
 ## 3. Estilo de código
 
@@ -115,6 +118,8 @@ El script `scripts/verificar.sh` ejecuta exactamente esas comprobaciones (nunca 
 - Los cambios que afectan a `core/token`, `core/formats`, `core/trust` o a la seguridad requieren una revisión adicional y una entrada en el registro de cambios de seguridad.
 
 ## 5. Integración continua
+
+Estado (2026-10-28): GitHub Actions ejecuta `scripts/verificar.sh` (`.github/workflows/verificar.yml`) en cada PR y en cada *push* a `main`, dentro de un contenedor `debian:trixie` con los paquetes Python de Debian; de PyPI solo vienen pyHanko 0.25.1 (sin dependencias) y las herramientas de desarrollo, con las mismas versiones que el entorno local (§2.1). Cubre el paso 1 y las pruebas unitarias del paso 2; faltan SoftHSM (aplazado con el *backend* PKCS#11 a la versión 1.1), DSS (hoy con los *scripts* de `tests/interop/`) y el *fuzzing*.
 
 Pasos mínimos del *pipeline*:
 1. `ruff` (incluidas las reglas `S` de flake8-bandit, que sustituyen a ejecutar bandit por separado) y `mypy --strict`.
