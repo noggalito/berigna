@@ -15,7 +15,7 @@
 3. Adaptadores por formato. PAdES, CAdES y XAdES implementan una misma interfaz `Signer` y una misma interfaz `Validator`, de modo que cambiar una biblioteca no afecta al resto del sistema.
 4. Mínimo de piezas propias en criptografía. Se usan bibliotecas maduras (pyHanko, cryptography, asn1crypto, python-pkcs11). Solo se escribe código propio para la integración y las reglas del dominio peruano.
 5. Explícito ante lo ambiguo. Toda decisión con impacto legal (nivel, certificado, advertencias) se muestra al usuario.
-6. Bilingüe desde el diseño (ADR-0011). El núcleo devuelve resultados con códigos, no frases. La traducción a es_PE o en_US se hace en la capa de presentación y en el generador de informes.
+6. Bilingüe desde el diseño (ADR-0011, ADR-0015). El núcleo devuelve resultados con códigos, no frases. La traducción a es_PE o quechua se hace en la capa de presentación y en el generador de informes.
 
 ## 2. Contexto (C4, nivel 1)
 
@@ -73,7 +73,7 @@ flowchart TB
     settings[config: Settings, ver ADR]
     history[history: HistoryStore]
     report[report: informes PDF/JSON]
-    i18n[i18n: gettext es_PE / en_US]
+    i18n[i18n: gettext es_PE / quz]
   end
 
   subgraph ext[berigna-nautilus]
@@ -104,7 +104,7 @@ flowchart TB
 | `core.appearance` | Composición del sello visible a partir de una plantilla de texto y una imagen | pyHanko stamp + Pillow |
 | `core.signing` | Orquestación: comprobar que el archivo no cambió, validar el certificado antes del PIN, firmar y escribir de forma atómica | Implementado para PDF (B-B) |
 | `core.validation` | Validación previa del firmante (`preflight`, RF-006) y verificación de firmas PDF con indicaciones ETSI (`pdf`, RF-050, RF-053, RF-055) | pyhanko-certvalidator 0.26.3 y la validación AdES de pyHanko 0.25.1; `preflight` implementado; `pdf` con sellos de tiempo y validación en el pasado |
-| `core.report` | Informe de verificación en JSON (códigos y explicaciones en ambos idiomas) y en PDF (en es_PE o en_US) | ReportLab o pyHanko |
+| `core.report` | Informe de verificación en JSON (códigos y explicaciones en ambos idiomas) y en PDF (en es_PE o en quechua) | ReportLab o pyHanko |
 | `core.i18n` | Inicialización de gettext, catálogo de explicaciones por código (ETSI y `ERR-xxx`), formato de fechas según la configuración regional y selección explícita del idioma de los documentos generados (informe, sello visible) | gettext, babel o `locale` de la biblioteca estándar |
 | `core.history` | Historial local en SQLite | sqlite3 (biblioteca estándar) |
 | `core.config` | Acceso tipado a la configuración (GSettings vía una interfaz, para no acoplar el núcleo a GTK) | — |

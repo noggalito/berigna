@@ -48,10 +48,10 @@ Los permisos de los archivos del usuario son `0600` y los de los directorios `07
 | `pkcs11-module` | s | `''` | Vacío: detección automática. Solo se usa con el *backend* PKCS#11 (ADR-0012) |
 | `token-backend` | enum | `'auto'` | auto (según el ATR) / dnie-v2 / pkcs11 |
 | `crl-fallback` | b | `false` | Permite descargar CRL como respaldo de OCSP al verificar (la de la CA del DNIe pesa unos 109 MB) |
-| `ui-language` | enum | `'system'` | system / es_PE / en_US; se aplica al reiniciar (ADR-0011) |
-| `report-language` | enum | `'ui'` | ui / es_PE / en_US: idioma del informe PDF exportado |
+| `ui-language` | enum | `'system'` | system / es_PE / quz_PE; se aplica al reiniciar (ADR-0011, ADR-0015). en_US se añade en la 1.1 |
+| `report-language` | enum | `'ui'` | ui / es_PE / quz_PE: idioma del informe PDF exportado |
 
-Los perfiles de apariencia (JSON) incluyen el campo `"language": "es_PE" | "en_US"`, que define el idioma de los textos fijos y del formato de fecha del sello visible (RF-092).
+Los perfiles de apariencia (JSON) incluyen el campo `"language": "es_PE" | "quz_PE"`, que define el idioma de los textos fijos y del formato de fecha del sello visible (RF-092).
 
 Despliegue en organizaciones: un administrador puede definir valores por defecto y bloquear claves mediante archivos en `/etc/dconf/db/local.d/` y `locks/`. Esto se documentará en el manual de administración.
 
@@ -124,7 +124,7 @@ No se guarda el número de DNI completo ni el contenido de los documentos.
       "explanation_code": "VALID_TIMESTAMPED_UNMODIFIED",
       "explanation": {
         "es_PE": "La firma es válida…",
-        "en_US": "The signature is valid…"
+        "quz_PE": "…"
       }
     }
   ]

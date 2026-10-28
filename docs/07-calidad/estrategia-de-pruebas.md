@@ -27,7 +27,7 @@
 | Seguridad | *Fuzzing*, análisis estático, dependencias, corpus de ataques | atheris, bandit, pip-audit, corpus de ataques PDF y XML | Sí |
 | Empaquetado | Instalación, actualización, desinstalación y lintian | piuparts, lintian, autopkgtest | Sí |
 | Usabilidad | RNF-USA-06 | Sesiones con 5 usuarios | No |
-| Internacionalización | es_PE y en_US completos y coherentes (§8) | msgfmt, xgettext, pseudolocalización | Sí |
+| Internacionalización | es_PE y quechua completos y coherentes (§8) | msgfmt, xgettext, pseudolocalización | Sí |
 
 ## 3. Entorno de pruebas sin hardware
 
@@ -140,13 +140,13 @@ Cada celda se ejecuta en tres entornos: (a) SoftHSM en CI, (b) validación con D
 | PR-I18N-01 | `msgfmt --check --statistics` sobre `po/es_PE.po` y sobre el manual | 100 % traducido, sin *fuzzy* ni errores de formato | Sí |
 | PR-I18N-02 | Detección de cadenas visibles sin marcar con `_()` (análisis estático y `xgettext` comparado con el código) | Ninguna | Sí |
 | PR-I18N-03 | Pseudolocalización (textos alargados un 40 % y con acentos) y recorrido de todas las vistas | Sin truncados ni solapamientos | Parcial |
-| PR-I18N-04 | Respaldo de idioma: `LANGUAGE=es_MX`, `es_ES`, `fr_FR`, `C` | es_PE, es_PE, en_US y en_US, respectivamente | Sí |
+| PR-I18N-04 | Respaldo de idioma: `LANGUAGE=quz_PE`, `quy_PE`, `es_MX`, `fr_FR`, `en_US`, `C` | quechua, quechua y es_PE en los demás casos (ADR-0015) | Sí |
 | PR-I18N-05 | Selector de idioma en las preferencias (`ui-language`) | El idioma forzado se aplica tras reiniciar | Manual |
 | PR-I18N-06 | Formato de fechas y horas en el resultado de verificación y en el sello visible, en ambos idiomas | Formato regional correcto; zona horaria indicada | Sí |
-| PR-I18N-07 | Explicaciones de verificación: cada código ETSI y cada `ERR-xxx` tienen su texto en es_PE y en en_US | Cobertura completa | Sí |
+| PR-I18N-07 | Explicaciones de verificación: cada código ETSI y cada `ERR-xxx` tienen su texto en es_PE y en quechua | Cobertura completa | Sí |
 | PR-I18N-08 | Revisión de los textos críticos por personas nativas (RNF-USA-09) | Acta de revisión archivada en las evidencias | No |
 
-Las pruebas de usabilidad (RNF-USA-06) se hacen con participantes hispanohablantes. Se recomienda además al menos una sesión en en_US.
+Las pruebas de usabilidad (RNF-USA-06) se hacen con participantes hispanohablantes y, al menos en una sesión, con participantes quechuahablantes (ADR-0015).
 
 ## 9. Registro de evidencias
 
