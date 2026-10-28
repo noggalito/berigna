@@ -3,6 +3,7 @@
 """PAdES verification (RF-050, RF-053, RF-055): ETSI indications and later modifications."""
 
 import asyncio
+import datetime as dt
 import io
 from typing import Any
 
@@ -35,7 +36,7 @@ from berigna.core.trust import TrustStore
 from berigna.core.validation import Indication, Modifications, verify_pdf
 from berigna.core.validation.pdf import _CaOnlyCrlFetcher, _modifications
 from support.cards import make_card
-from support.pki import Pki, build_pki, minimal_pdf
+from support.pki import NOW, Pki, build_pki, minimal_pdf
 
 
 @pytest.fixture(scope="module")
@@ -101,7 +102,8 @@ def test_valid_signature_with_embedded_revocation_data(pki: Pki) -> None:
     assert report.field_name == "FirmaBerigna1"
     assert report.subfilter == "/ETSI.CAdES.detached"
     assert report.claimed_signing_time is not None
-    assert result.pending == ()
+    assert result.document_timestamps == ()
+    assert report.timestamp is None
 
 
 def test_adding_validation_data_does_not_count_as_a_change(pki: Pki) -> None:
@@ -205,24 +207,128 @@ def test_legacy_adobe_signature_with_archived_revocation_data(pki: Pki) -> None:
     assert report.indication is Indication.TOTAL_PASSED
 
 
-def test_document_timestamps_are_listed_as_pending(pki: Pki) -> None:
+def _pades(
+    pki: Pki,
+    level: str,
+    *,
+    leaf_days: tuple[int, int] = (-1, 365),
+    tsa_pki: Pki | None = None,
+) -> tuple[bytes, x509.Certificate]:
+    """B-T, B-LT or B-LTA made with pyHanko and a test TSA (berigna's own TSA client is next)."""
+    key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
+    leaf = pki.leaf("FIRMANTE " + level, key=key, days=leaf_days)
+    issuer = tsa_pki or pki
+    tsa_cert, tsa_key = issuer.tsa()
+    registry = SimpleCertificateStore()  # type: ignore[no-untyped-call]
+    registry.register(_asn1(pki.ca))
+    tsa_registry = SimpleCertificateStore()  # type: ignore[no-untyped-call]
+    tsa_registry.register(_asn1(issuer.ca))
+    signer = signers.SimpleSigner(
+        signing_cert=_asn1(leaf), signing_key=_asn1_key(key), cert_registry=registry
+    )
+    timestamper = DummyTimeStamper(
+        tsa_cert=_asn1(tsa_cert), tsa_key=_asn1_key(tsa_key), certs_to_embed=tsa_registry
+    )
+    embed = level in ("B-LT", "B-LTA")
+    context = ValidationContext(
+        trust_roots=[_asn1(pki.root), _asn1(issuer.root)],
+        other_certs=[_asn1(pki.ca), _asn1(issuer.ca)],
+        ocsps=[
+            asn1_ocsp.OCSPResponse.load(pki.ocsp(leaf)),
+            asn1_ocsp.OCSPResponse.load(issuer.ocsp(tsa_cert)),
+        ],
+        crls=[asn1_crl.CertificateList.load(c) for c in {pki.arl(), issuer.arl()}],
+        allow_fetching=False,
+    )
+    metadata = signers.PdfSignatureMetadata(
+        field_name="Firma",
+        subfilter=SigSeedSubFilter.PADES,
+        embed_validation_info=embed,
+        use_pades_lta=level == "B-LTA",
+        validation_context=context if embed else None,
+    )
+    writer = IncrementalPdfFileWriter(io.BytesIO(minimal_pdf()))
+    signed = signers.sign_pdf(writer, metadata, signer=signer, timestamper=timestamper)
+    return signed.getvalue(), tsa_cert
+
+
+def test_b_lt_signature_reports_its_timestamp(pki: Pki) -> None:
+    result = verify_pdf(_pades(pki, "B-LT")[0], pki.store, online=False)
+    [report] = result.signatures
+    assert report.indication is Indication.TOTAL_PASSED
+    assert report.timestamp is not None
+    assert report.timestamp.indication is Indication.TOTAL_PASSED
+    assert report.timestamp.time is not None
+    assert report.timestamp.tsa is not None
+    assert report.timestamp.tsa.subject.rfc4514_string() == "CN=TEST TSA,C=PE"
+    assert result.document_timestamps == ()
+
+
+def test_b_lta_document_timestamp_is_verified(pki: Pki) -> None:
+    result = verify_pdf(_pades(pki, "B-LTA")[0], pki.store, online=False)
+    [report] = result.signatures
+    [stamp] = result.document_timestamps
+    assert report.indication is Indication.TOTAL_PASSED
+    assert report.document_unchanged_since_signing
+    assert stamp.indication is Indication.TOTAL_PASSED
+    assert stamp.field_name is not None
+    assert stamp.time is not None
+
+
+def test_expired_certificate_passes_with_proof_of_existence(pki: Pki) -> None:
+    """RF-056: the time-stamps prove the signature existed while the certificate was valid.
+
+    The last document time-stamp is validated at the verification moment, so its TSA needs
+    revocation data from then: supplied here, fetched online in real use.
+    """
+    data, tsa_cert = _pades(pki, "B-LTA", leaf_days=(-10, 1))
+    moment = NOW + dt.timedelta(days=3)
+    result = verify_pdf(
+        data,
+        pki.store,
+        moment=moment,
+        online=False,
+        ocsp_responses=[pki.ocsp(tsa_cert, at=moment)],
+        crls=[pki.arl()],
+    )
+    assert result.signatures[0].indication is Indication.TOTAL_PASSED
+    assert result.document_timestamps[0].indication is Indication.TOTAL_PASSED
+
+
+def test_expired_certificate_without_timestamp_is_indeterminate(pki: Pki) -> None:
     data, _ = _signed_with_revinfo(pki)
-    tsa_cert, tsa_key = pki.tsa()
-    timestamper = DummyTimeStamper(tsa_cert=_asn1(tsa_cert), tsa_key=_asn1_key(tsa_key))
-    stamped = asyncio.run(
-        signers.PdfTimeStamper(timestamper, field_name="SelloDeDocumento").async_timestamp_pdf(
-            IncrementalPdfFileWriter(io.BytesIO(data)), "sha256"
-        )
-    ).getvalue()
-    result = verify_pdf(stamped, pki.store, online=False)
-    assert result.pending == ("SelloDeDocumento",)
-    assert [r.field_name for r in result.signatures] == ["FirmaBerigna1"]
+    moment = NOW + dt.timedelta(days=400)  # the test leaf is valid for 365 days
+    [report] = verify_pdf(data, pki.store, moment=moment, online=False).signatures
+    assert report.indication is Indication.INDETERMINATE
+
+
+def test_timestamp_from_an_untrusted_tsa_is_reported(pki: Pki) -> None:
+    other = build_pki()
+    result = verify_pdf(_pades(pki, "B-LT", tsa_pki=other)[0], pki.store, online=False)
+    [report] = result.signatures
+    assert report.timestamp is not None
+    assert report.timestamp.indication is Indication.INDETERMINATE
+    assert report.indication is not Indication.TOTAL_PASSED
+
+
+def test_unprocessable_document_timestamp_is_a_format_failure(
+    pki: Pki, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    data, _ = _pades(pki, "B-LTA")
+
+    def broken(self: EmbeddedPdfSignature) -> bytes:
+        raise ValueError("bad byte range")
+
+    monkeypatch.setattr(EmbeddedPdfSignature, "compute_digest", broken)
+    [stamp] = verify_pdf(data, pki.store, online=False).document_timestamps
+    assert stamp.indication is Indication.TOTAL_FAILED
+    assert stamp.subindication == "FORMAT_FAILURE"
 
 
 def test_unsigned_pdf_gives_an_empty_report(pki: Pki) -> None:
     result = verify_pdf(minimal_pdf(), pki.store, online=False)
     assert result.signatures == ()
-    assert result.pending == ()
+    assert result.document_timestamps == ()
 
 
 def test_unreadable_file_is_an_error(pki: Pki) -> None:
