@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- SPDX-FileCopyrightText: 2026 Calú -->
+<!-- Preferences of berigna (BRG-ARQ configuración y datos §2). -->
+<schemalist>
+  <enum id="pe.berigna.Berigna.Level">
+    <value nick="B-B" value="0"/>
+    <value nick="B-T" value="1"/>
+    <value nick="B-LT" value="2"/>
+    <value nick="B-LTA" value="3"/>
+  </enum>
+  <enum id="pe.berigna.Berigna.PdfFormat">
+    <value nick="pades" value="0"/>
+  </enum>
+  <enum id="pe.berigna.Berigna.XmlFormat">
+    <value nick="xades-enveloped" value="0"/>
+    <value nick="xades-detached" value="1"/>
+  </enum>
+  <enum id="pe.berigna.Berigna.OtherFormat">
+    <value nick="cades-detached" value="0"/>
+    <value nick="cades-attached" value="1"/>
+  </enum>
+  <enum id="pe.berigna.Berigna.Digest">
+    <value nick="sha256" value="0"/>
+    <value nick="sha384" value="1"/>
+    <value nick="sha512" value="2"/>
+  </enum>
+  <enum id="pe.berigna.Berigna.TsaAuth">
+    <value nick="none" value="0"/>
+    <value nick="basic" value="1"/>
+    <value nick="client-cert" value="2"/>
+  </enum>
+  <enum id="pe.berigna.Berigna.ProxyMode">
+    <value nick="system" value="0"/>
+    <value nick="manual" value="1"/>
+    <value nick="none" value="2"/>
+  </enum>
+  <enum id="pe.berigna.Berigna.TokenBackend">
+    <value nick="auto" value="0"/>
+    <value nick="dnie-v2" value="1"/>
+    <value nick="pkcs11" value="2"/>
+  </enum>
+  <enum id="pe.berigna.Berigna.UiLanguage">
+    <value nick="system" value="0"/>
+    <value nick="es_PE" value="1"/>
+    <value nick="quz_PE" value="2"/>
+  </enum>
+  <enum id="pe.berigna.Berigna.ReportLanguage">
+    <value nick="ui" value="0"/>
+    <value nick="es_PE" value="1"/>
+    <value nick="quz_PE" value="2"/>
+  </enum>
+
+  <schema id="pe.berigna.Berigna" path="/pe/berigna/Berigna/">
+    <key name="default-level" enum="pe.berigna.Berigna.Level">
+      <default>'B-LT'</default>
+      <summary>Signature level selected by default (DP-04)</summary>
+    </key>
+    <key name="pdf-format" enum="pe.berigna.Berigna.PdfFormat">
+      <default>'pades'</default>
+      <summary>Signature format for PDF documents</summary>
+    </key>
+    <key name="xml-format" enum="pe.berigna.Berigna.XmlFormat">
+      <default>'xades-enveloped'</default>
+      <summary>Signature format for XML documents</summary>
+    </key>
+    <key name="other-format" enum="pe.berigna.Berigna.OtherFormat">
+      <default>'cades-detached'</default>
+      <summary>Signature format for other files</summary>
+    </key>
+    <key name="output-suffix" type="s">
+      <default>'-firmado'</default>
+      <summary>Suffix of the signed file name</summary>
+    </key>
+    <key name="output-directory" type="s">
+      <default>''</default>
+      <summary>Folder for signed files; empty means the folder of the original</summary>
+    </key>
+    <key name="digest-algorithm" enum="pe.berigna.Berigna.Digest">
+      <default>'sha256'</default>
+      <summary>Hash algorithm of new signatures</summary>
+    </key>
+    <key name="tsa-url" type="s">
+      <default>''</default>
+      <summary>URL of the time-stamping authority (DP-02)</summary>
+    </key>
+    <key name="tsa-auth" enum="pe.berigna.Berigna.TsaAuth">
+      <default>'none'</default>
+      <summary>Authentication with the time-stamping authority</summary>
+    </key>
+    <key name="network-timeout" type="u">
+      <range min="1" max="300"/>
+      <default>10</default>
+      <summary>Seconds to wait for a network response</summary>
+      <description>Read timeout. Connecting always waits at least 20 seconds, to cover the SYN retransmissions seen on the RENIEC network (R-17).</description>
+    </key>
+    <key name="proxy-mode" enum="pe.berigna.Berigna.ProxyMode">
+      <default>'system'</default>
+      <summary>Proxy configuration</summary>
+    </key>
+    <key name="proxy-url" type="s">
+      <default>''</default>
+      <summary>Proxy URL in manual mode</summary>
+    </key>
+    <key name="visible-signature" type="b">
+      <default>false</default>
+      <summary>Make signatures visible by default</summary>
+    </key>
+    <key name="appearance-profile" type="s">
+      <default>''</default>
+      <summary>Default appearance profile of visible signatures</summary>
+    </key>
+    <key name="signature-reason" type="s">
+      <default>''</default>
+      <summary>Last signature reason used</summary>
+    </key>
+    <key name="signature-location" type="s">
+      <default>''</default>
+      <summary>Last signature location used</summary>
+    </key>
+    <key name="history-enabled" type="b">
+      <default>true</default>
+      <summary>Keep a history of operations</summary>
+    </key>
+    <key name="history-full-path" type="b">
+      <default>false</default>
+      <summary>Store the full path of files in the history, not only their names (AM-12)</summary>
+    </key>
+    <key name="pkcs11-module" type="s">
+      <default>''</default>
+      <summary>PKCS#11 module; empty means automatic detection</summary>
+    </key>
+    <key name="token-backend" enum="pe.berigna.Berigna.TokenBackend">
+      <default>'auto'</default>
+      <summary>How to talk to the card: by its ATR, the DNIe v2 driver or PKCS#11</summary>
+    </key>
+    <key name="crl-fallback" type="b">
+      <default>false</default>
+      <summary>Download CRLs when OCSP fails during verification</summary>
+      <description>The CRL of the CA that issues DNIe certificates is about 109 MB.</description>
+    </key>
+    <key name="ui-language" enum="pe.berigna.Berigna.UiLanguage">
+      <default>'system'</default>
+      <summary>Language of the interface (ADR-0015)</summary>
+    </key>
+    <key name="report-language" enum="pe.berigna.Berigna.ReportLanguage">
+      <default>'ui'</default>
+      <summary>Language of exported PDF reports</summary>
+    </key>
+  </schema>
+</schemalist>

@@ -64,6 +64,20 @@ def test_spanish_catalogue_is_complete() -> None:
     assert missing == []
 
 
+def test_spanish_po_has_no_pending_entries() -> None:
+    """Every entry of the template, the interface included, is translated into es_PE."""
+    result = subprocess.run(
+        ["msgfmt", "--statistics", "--output-file=/dev/null", "po/es_PE.po"],  # noqa: S607
+        cwd=REPOSITORY,
+        env={"LC_ALL": "C", "PATH": "/usr/bin:/bin"},
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    assert "untranslated" not in result.stderr
+    assert "fuzzy" not in result.stderr
+
+
 def test_placeholders_survive_translation() -> None:
     catalogue = translations(Language.ES_PE)
     for message in _all_messages():
@@ -75,19 +89,30 @@ def test_template_is_up_to_date(tmp_path: Path) -> None:
     if shutil.which("xgettext") is None:
         pytest.fail("GNU gettext is needed: apt install gettext")
     fresh = tmp_path / "fresh.pot"
-    subprocess.run(  # noqa: S603 - fixed arguments
-        [  # noqa: S607 - the system's xgettext
-            "xgettext",
-            "--language=Python",
-            "--from-code=UTF-8",
-            "--keyword=N_",
-            "--keyword=_",
-            f"--output={fresh}",
-            "src/berigna/core/report/messages.py",
-        ],
-        cwd=REPOSITORY,
-        check=True,
-    )
+    sources = [
+        line
+        for line in (REPOSITORY / "po" / "POTFILES").read_text(encoding="utf-8").splitlines()
+        if line and not line.startswith("#")
+    ]
+    python = [s for s in sources if s.endswith(".py")]
+    views = [s for s in sources if s.endswith(".blp")]
+    for language, keywords, files, extra in (
+        ("Python", ["--keyword=N_", "--keyword=_"], python, []),
+        ("C", ["--keyword=_", "--keyword=C_:1c,2"], views, ["--join-existing"]),
+    ):
+        subprocess.run(  # noqa: S603 - fixed arguments
+            [  # noqa: S607 - the system's xgettext
+                "xgettext",
+                f"--language={language}",
+                "--from-code=UTF-8",
+                *keywords,
+                *extra,
+                f"--output={fresh}",
+                *files,
+            ],
+            cwd=REPOSITORY,
+            check=True,
+        )
 
     def msgids(path: Path) -> set[str]:
         found, current, inside = set(), "", False
