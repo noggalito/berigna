@@ -96,11 +96,11 @@ flowchart TB
 | Módulo | Responsabilidad | Bibliotecas (estado al 2026-10-27) |
 |---|---|---|
 | `core.token` | Detección de lectores y tarjetas, y selección del *backend* según el ATR. Dos *backends* con la misma interfaz `TokenSigner`: `dnie_v2`, driver APDU para el DNIe v2 (*applet* PKI, lectura de certificados, VERIFY, MSE:SET y PSO:CDS, con lista blanca de instrucciones), y `pkcs11`, el genérico (*slots*, login y logout, `C_Sign`) | pyscard (ADR-0012), implementado para el DNIe v2, con monitor en caliente; python-pkcs11 (ADR-0003), aplazado a la versión 1.1 |
-| `core.formats.pades` | Firma y validación PAdES, DSS/VRI, sellos de documento, DocMDP. Firma mediante un `Signer` personalizado de pyHanko que delega en `TokenSigner` | pyHanko 0.25.1 (ADR-0004, ADR-0013); implementada la firma B-B |
+| `core.formats.pades` | Firma y validación PAdES, DSS/VRI, sellos de documento, DocMDP. Firma mediante un `Signer` personalizado de pyHanko que delega en `TokenSigner` | pyHanko 0.25.1 (ADR-0004, ADR-0013); implementada la firma B-B, B-T, B-LT y B-LTA |
 | `core.formats.cades` | Firma y validación CMS/CAdES separada y envuelta | pyHanko (API CMS genérica), asn1crypto (ADR-0008) |
 | `core.formats.xades` | Firma y validación XAdES | Según SPK-03 (ADR-0008) |
 | `core.trust` | Almacén de confianza de la IOFE incluido (anclas como recurso del paquete con manifiesto de huellas) y anclas añadidas por el usuario | cryptography; implementado |
-| `core.net` | Clientes HTTP para TSA, OCSP, CRL y AIA, con caché, tiempos de espera y proxy | requests. Hoy OCSP y CRL los obtiene pyhanko-certvalidator con sus *fetchers* de `requests` (10 s de tiempo de espera); el módulo propio llega con la TSA (Fase 2) |
+| `core.net` | Clientes HTTP para TSA, OCSP, CRL y AIA, con caché, tiempos de espera y proxy | requests. Implementados `fetchers` (OCSP y CRL para validación previa, firma B-LT y verificación) y `tsa` (cliente RFC 3161 sobre el de pyHanko). Caché y proxy, pendientes |
 | `core.appearance` | Composición del sello visible a partir de una plantilla de texto y una imagen | pyHanko stamp + Pillow |
 | `core.signing` | Orquestación: comprobar que el archivo no cambió, validar el certificado antes del PIN, firmar y escribir de forma atómica | Implementado para PDF (B-B) |
 | `core.validation` | Validación previa del firmante (`preflight`, RF-006) y verificación de firmas PDF con indicaciones ETSI (`pdf`, RF-050, RF-053, RF-055) | pyhanko-certvalidator 0.26.3 y la validación AdES de pyHanko 0.25.1; `preflight` implementado; `pdf` con sellos de tiempo y validación en el pasado |
@@ -129,7 +129,10 @@ Decisiones de implementación de `core.token.dnie_v2` (ADR-0012), documentadas p
 | `verify_pdf` elige el proceso de ETSI según la firma: el básico (`ades_basic_validation`) si no tiene sello de tiempo y el de material de validación a largo plazo (`ades_lta_validation`) si lo tiene. La integridad del PDF (cobertura, diferencias) se calcula por separado | `ades_lta_validation` exige un sello de tiempo y da INDETERMINATE a toda firma B-B; y `ades_basic_validation` de pyHanko 0.25.1 falla si se le pide el estado propio de PDF |
 | Cada sello (de firma y de documento) se informa con su propia indicación (§5.4). Si pyHanko no devuelve el estado del sello de la firma, porque el proceso se detuvo antes, el sello se valida aparte | RF-053: un sello inválido se muestra aunque la firma sea válida, y al revés |
 | Al verificar, la indicación ETSI y las modificaciones posteriores se informan por separado; una cobertura que no abarca una revisión completa es TOTAL-FAILED/FORMAT_FAILURE | La firma puede ser íntegra aunque el documento cambiara después (RF-055); un rango de bytes parcial es la huella de un ataque de envoltura (AM-05) |
-| Al verificar en línea, nunca se descarga la CRL de un certificado final (solo OCSP); las CRL se descargan para las CA | La CRL de la CA emisora del DNIe pesa ~109 MB (RF-063) |
+| En línea (validación previa, firma B-LT y verificación), nunca se descarga la CRL de un certificado final (solo OCSP); las CRL se descargan para las CA. Cada consulta OCSP o CRL fallida se reintenta una vez tras 0,5 s (`core.net.fetchers`) | La CRL de la CA emisora del DNIe pesa ~109 MB (RF-063). RENIEC ha fallado la primera consulta tras un rato sin uso y respondido la siguiente en ≈1 s (R-17) |
+| Un nivel por encima de B-B exige, antes de pedir el PIN, revocación comprobada y una TSA que acabe de emitir un sello de prueba | Ninguno de esos fallos le cuesta al usuario teclear el PIN (RF-006) |
+| B-LT y B-LTA se añaden después de que la tarjeta firmó, como actualizaciones incrementales. Si falla un servicio en ese punto, se conserva la firma y el resultado indica el nivel alcanzado y el motivo | No se pierde una firma ya hecha; la interfaz debe avisar del nivel real. Un fallo de la TSA al sellar la firma misma sí anula la operación (no se escribe nada) |
+| La comprobación de la TSA tiene un plazo total (30 s por defecto) y su petición HTTP es síncrona, en un hilo *daemon* propio | El tiempo de espera de `requests` es por operación: con IPv6 roto, urllib3 espera ese tiempo por cada dirección IPv6 de la TSA (visto con freetsa.org). El cliente de pyHanko usa `asyncio.to_thread`, cuyos hilos no son *daemon* y bloquearían el cierre de la aplicación |
 
 ## 4. Interfaces clave del núcleo
 
@@ -153,8 +156,13 @@ def verify_pdf(data, store, *, moment=None, online=True, ocsp_responses=(), crls
 # cobertura, modificaciones posteriores, longitud de la revisión firmada y sello de tiempo de
 # la firma) y document_timestamps (TimestampReport de cada sello de documento)
 
-def sign_pdf_file(source, output, *, expected_sha256, token, store, ask_pin,
-                  options=None, online=True, ocsp_responses=(), crls=()) -> SignResult  # core.signing
+def sign_pdf_file(source, output, *, expected_sha256, token, store, ask_pin, options=None,
+                  level=SignatureLevel.B_B, timestamper=None, online=True,
+                  ocsp_responses=(), crls=()) -> SignResult                     # core.signing
+# SignResult.level es el nivel alcanzado; level_note explica por qué es inferior al pedido
+
+def http_timestamper(TsaSettings(url, timeout, username, password)) -> TimeStamper  # core.net.tsa
+def probe(timestamper, md_algorithm="sha256", deadline=30.0) -> None              # core.net.tsa
 ```
 
 Diseño previsto para las fases siguientes (no es código final):

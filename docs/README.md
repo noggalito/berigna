@@ -101,19 +101,20 @@ Algunos documentos públicos citan identificadores cuyo detalle está en la docu
 | `core.token.dnie_v2` y `core.token.transport` | Implementado | RF-002, RF-003, RF-004, RF-005 (sin PIN pad) | Simulador, 100 % de cobertura; HIL con los lectores "Hyperion" e "innovatech", con PIN real |
 | `core.trust` | Implementado | RF-060, RF-061 | ROOT 3 y ROOT 5 verificadas; manifiesto de huellas |
 | `core.validation.preflight` | Implementado | RF-006 | PKI de pruebas; HIL en línea contra el OCSP y las ARL de RENIEC |
-| `core.formats.pades` (nivel B-B) | Implementado | RF-010 (B-B), RF-013, RF-014 | Válido en Firma Perú y TOTAL_PASSED en DSS 6.2 con el DNIe real |
-| `core.signing` | Implementado (PDF, B-B) | RF-018, RF-045 | Pruebas del orden de seguridad (TOCTOU, cancelación, no sobrescritura) |
+| `core.formats.pades` | Implementado: B-B, B-T, B-LT y B-LTA | RF-010, RF-013, RF-014 | B-B válido en Firma Perú y TOTAL_PASSED en DSS 6.2 con el DNIe real; B-T a B-LTA con tarjeta simulada y TSA de pruebas, y sello real de DigiCert verificado; falta la prueba con PIN |
+| `core.signing` | Implementado (PDF, B-B a B-LTA) | RF-018, RF-045, RF-006 | Pruebas del orden de seguridad (TOCTOU, cancelación, no sobrescritura, nivel y TSA comprobados antes del PIN) |
+| `core.net` (`fetchers`, `tsa`) | Implementado: cliente RFC 3161 con comprobación previa y plazo total; OCSP y CRL con reintento y sin CRL de certificados finales | RF-062 (sin interfaz), RF-063 | TSA HTTP local en las pruebas; DigiCert real |
 | `core.token.monitor` | Implementado | RF-001, RF-002 | Sin conectarse a la tarjeta (`SCardGetStatusChange`); HIL: no interfiere con una sesión exclusiva |
 | PIN pad (PC/SC parte 10) | Aplazado a la versión 1.1 (decisión del 2026-10-27; requiere un lector de clase 2) | RF-005, P-08 | — |
 | *Backend* PKCS#11 + SoftHSM | Aplazado a la versión 1.1 (decisión del 2026-10-27; el DNIe v2 no lo necesita) | ADR-0003 | — |
 | `core.validation.pdf` (verificador PAdES) | Implementado: procesos de ETSI EN 319 102-1 básico (§5.3) y de validación a largo plazo (§5.6.3), sellos de firma y de documento (§5.4), validación en el pasado, datos de revocación embebidos (DSS y `revocationInfoArchival` de Adobe), cobertura y modificaciones posteriores | RF-050, RF-053 (indicaciones), RF-055, RF-056 | PKI y TSA de pruebas (B-B, B-LT, B-LTA, certificado vencido con prueba de existencia); documentos reales: misma indicación principal que DSS 6.2 |
 | Subindicaciones alineadas con DSS, explicaciones e informes | Fase 2 (siguientes incrementos) | RF-053, RF-054 | — |
-| B-T, B-LT, B-LTA y cliente TSA | Fase 2 | RF-010, RF-062 a RF-065 | — |
+| TSA de producción, proxy y caché de red | Fase 2 (DP-02 abierta: aún no hay TSA peruana contratada) | RF-062, RF-064, RF-065 | — |
 | CAdES y XAdES | Fase 4 (viabilidad probada en SPK-03) | RF-020 a RF-033 | — |
 | DNIe 1.0 y DNIe 3.0 | Versión 1.1 (decisión del 2026-10-27); identificación pendiente en SPK-06 | RNF-COM-05 | — |
 | Interfaz gráfica, i18n, firma visible, lotes, Nautilus | Fases 3 y 5 | — | — |
 | Extensión de LibreOffice "Firmar con berigna" | Versión 1.2 (decisión del 2026-10-27) | RF-074 | — |
 | Empaquetado `.deb` | Fase 5 | ADR-0006, ADR-0013 | — |
 
-Verificación local: `scripts/verificar.sh` (ruff, mypy estricto, pytest con cobertura mínima del 80 %; hoy 100 % del núcleo con 129 pruebas). Pruebas con hardware: `BERIGNA_HIL=1 pytest -m hil` (sin PIN) y los *scripts* manuales de `tests/hil/` (con PIN, según el protocolo).
+Verificación local: `scripts/verificar.sh` (ruff, mypy estricto, pytest con cobertura mínima del 80 %; hoy 100 % del núcleo con 152 pruebas). Pruebas con hardware: `BERIGNA_HIL=1 pytest -m hil` (sin PIN) y los *scripts* manuales de `tests/hil/` (con PIN, según el protocolo).
 
