@@ -41,6 +41,7 @@ from berigna.core.token.pin import Pin  # noqa: E402
 from berigna.core.trust import TrustStore  # noqa: E402
 from berigna.core.validation import SignerCheck  # noqa: E402
 from berigna.ui import presentation  # noqa: E402
+from berigna.ui.help import HelpTopic, help_button  # noqa: E402
 from berigna.ui.i18n import _, catalogue, current_language  # noqa: E402
 from berigna.ui.preview import PdfPreview  # noqa: E402
 
@@ -218,7 +219,9 @@ class SigningPage:
                 group.add(row)
             panel.add(group)
 
-        levels = Adw.PreferencesGroup(title=_("Signature Level"))
+        levels = Adw.PreferencesGroup(
+            title=_("Signature Level"), header_suffix=help_button(HelpTopic.SIGNATURE_LEVELS)
+        )
         has_tsa = self._services.timestamper() is not None
         preferred = self._preferred_level()
         self.level_buttons: dict[SignatureLevel, Gtk.CheckButton] = {}
