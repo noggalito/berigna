@@ -15,11 +15,13 @@ Estado al 2026-10-28. Lo marcado con *(previsto)* todavía no existe.
 ```
 berigna/
 ├── pyproject.toml                # metadatos del núcleo; ruff, mypy, pytest, coverage
-├── meson.build                   # (previsto, Fase 3: aplicación GTK, ADR-0010)
+├── meson.build                   # aplicación GTK (ADR-0010): vistas, esquema, catálogos, lanzador
+├── bin/berigna.in                # lanzador instalado
 ├── LICENSE, README.md, SECURITY.md, CHANGELOG.md
 ├── .github/workflows/verificar.yml  # CI: scripts/verificar.sh en Debian 13
 ├── scripts/verificar.sh          # verificación local (y hook de pre-push opcional)
 ├── scripts/traducciones.sh       # plantilla, catálogos y compilación a build/locale (gettext)
+├── scripts/ejecutar.sh           # lanza la interfaz desde el árbol de trabajo
 ├── src/berigna/
 │   ├── core/
 │   │   ├── errors.py             # jerarquía de errores ERR-xxx
@@ -31,11 +33,15 @@ berigna/
 │   │   ├── report/               # messages, explanations (RF-053), json_report y pdf_report (RF-054)
 │   │   ├── i18n.py               # idiomas es_PE y quechua, catálogos gettext (ADR-0015)
 │   │   ├── signing.py            # orquestación de la firma de PDF
+│   │   ├── documents.py          # tipo de documento abierto, páginas, firmas y SHA-256
 │   │   └── appearance/, history.py, config.py, batch.py   # (previstos)
-│   ├── main.py, ui/              # (previsto, Fase 3)
+│   ├── main.py, __main__.py      # punto de entrada de la interfaz
+│   ├── ui/                       # GTK 4 + libadwaita: application, window, presentation, i18n
 ├── data/
 │   ├── brand/                    # logotipos SVG (GPL-3.0-or-later)
-│   └── *.desktop.in, *.metainfo.xml.in, *.gschema.xml, icons/   # (previstos)
+│   ├── ui/*.blp, berigna.gresource.xml   # vistas en Blueprint y recursos
+│   ├── pe.berigna.Berigna.gschema.xml    # preferencias (GSettings)
+│   └── *.desktop.in, *.metainfo.xml.in, icons/   # (previstos, Fases 3 y 5)
 ├── po/                           # LINGUAS, POTFILES, berigna.pot, es_PE.po, quz.po
 ├── help/                         # (previsto: manual Mallard)
 ├── tests/
@@ -86,6 +92,8 @@ python3 -m venv --system-site-packages .venv
 
 pyscard no tiene un *wheel* para Python 3.13 en PyPI y compilarlo requiere `libpcsclite-dev` y `swig`. Se usa `python3-pyscard` de Debian (`sudo apt install python3-pyscard`), que el entorno virtual ve gracias a `--system-site-packages`.
 
+La interfaz necesita además `meson ninja-build blueprint-compiler libglib2.0-bin libglib2.0-dev-bin gir1.2-gtk-4.0 gir1.2-adw-1 gir1.2-poppler-0.18 python3-gi` y, para sus pruebas sin escritorio, `xvfb`. Para lanzarla desde el árbol de trabajo: `scripts/ejecutar.sh [archivo.pdf]`, que compila las vistas en `build/meson` y guarda las preferencias en dconf como el programa instalado. Al añadir un archivo al paquete `berigna` hay que reconfigurar Meson (`meson setup --reconfigure build/meson`), porque la lista se lee al configurar.
+
 Comprobaciones antes de cada commit:
 
 ```bash
@@ -119,7 +127,7 @@ El script `scripts/verificar.sh` ejecuta exactamente esas comprobaciones (nunca 
 
 ## 5. Integración continua
 
-Estado (2026-10-28): GitHub Actions ejecuta `scripts/verificar.sh` (`.github/workflows/verificar.yml`) en cada PR y en cada *push* a `main`, dentro de un contenedor `debian:trixie` con los paquetes Python de Debian; de PyPI solo vienen pyHanko 0.25.1 (sin dependencias) y las herramientas de desarrollo, con las mismas versiones que el entorno local (§2.1). Cubre el paso 1 y las pruebas unitarias del paso 2; faltan SoftHSM (aplazado con el *backend* PKCS#11 a la versión 1.1), DSS (hoy con los *scripts* de `tests/interop/`) y el *fuzzing*.
+Estado (2026-10-28): GitHub Actions ejecuta `scripts/verificar.sh` (`.github/workflows/verificar.yml`) en cada PR y en cada *push* a `main`, dentro de un contenedor `debian:trixie` con los paquetes Python de Debian; de PyPI solo vienen pyHanko 0.25.1 (sin dependencias) y las herramientas de desarrollo, con las mismas versiones que el entorno local (§2.1). Desde la Fase 3 también compila las vistas con Meson y prueba la aplicación real con Xvfb. Cubre el paso 1 y las pruebas unitarias del paso 2; faltan SoftHSM (aplazado con el *backend* PKCS#11 a la versión 1.1), DSS (hoy con los *scripts* de `tests/interop/`) y el *fuzzing*.
 
 Pasos mínimos del *pipeline*:
 1. `ruff` (incluidas las reglas `S` de flake8-bandit, que sustituyen a ejecutar bandit por separado) y `mypy --strict`.

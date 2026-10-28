@@ -23,7 +23,9 @@
 
 Los permisos de los archivos del usuario son `0600` y los de los directorios `0700`.
 
-## 2. Esquema de GSettings (borrador)
+## 2. Esquema de GSettings
+
+Implementado en `data/pe.berigna.Berigna.gschema.xml` (Fase 3, incremento 1). Por ahora la interfaz solo usa `ui-language`; el resto de claves las incorporan los incrementos siguientes.
 
 | Clave | Tipo | Defecto | Descripción |
 |---|---|---|---|
@@ -48,7 +50,7 @@ Los permisos de los archivos del usuario son `0600` y los de los directorios `07
 | `pkcs11-module` | s | `''` | Vacío: detección automática. Solo se usa con el *backend* PKCS#11 (ADR-0012) |
 | `token-backend` | enum | `'auto'` | auto (según el ATR) / dnie-v2 / pkcs11 |
 | `crl-fallback` | b | `false` | Permite descargar CRL como respaldo de OCSP al verificar (la de la CA del DNIe pesa unos 109 MB) |
-| `ui-language` | enum | `'system'` | system / es_PE / quz_PE; se aplica al reiniciar (ADR-0011, ADR-0015). en_US se añade en la 1.1 |
+| `ui-language` | enum | `'system'` | system / es_PE / quz_PE; se aplica al momento (ADR-0011, ADR-0015). en_US se añade en la 1.1 |
 | `report-language` | enum | `'ui'` | ui / es_PE / quz_PE: idioma del informe PDF exportado |
 
 Los perfiles de apariencia (JSON) incluyen el campo `"language": "es_PE" | "quz_PE"`, que define el idioma de los textos fijos y del formato de fecha del sello visible (RF-092).
