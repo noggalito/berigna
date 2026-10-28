@@ -350,8 +350,13 @@ def _crl_urls(signer: x509.Certificate) -> Sequence[str]:
     ]
 
 
-def fetch_tsl(*, url: str = TSL_URL, timeout: float = 30.0) -> TrustedList:
-    """Download, verify and read the current trusted list, with the signer's CRL."""
+def fetch_tsl(
+    *, url: str = TSL_URL, timeout: float = 30.0, minimum_sequence: int | None = None
+) -> tuple[TrustedList, bytes]:
+    """Download, verify and read the current trusted list, with the signer's CRL.
+
+    Returns the list and its bytes, which :mod:`berigna.core.trust.cache` keeps.
+    """
     data = _download(url, timeout, MAX_TSL_SIZE)
     signer = _signer_certificate(_signature(_parse(data)))
     urls = _crl_urls(signer)
@@ -366,7 +371,7 @@ def fetch_tsl(*, url: str = TSL_URL, timeout: float = 30.0) -> TrustedList:
             failures.append(exc)
     else:
         raise failures[-1]
-    return load_tsl(data, signer_crl=crl)
+    return load_tsl(data, signer_crl=crl, minimum_sequence=minimum_sequence), data
 
 
 def describe(trusted_list: TrustedList) -> str:

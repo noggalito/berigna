@@ -16,7 +16,7 @@ La TSL está publicada en el dominio de INDECOPI (`https://iofe.indecopi.gob.pe/
 2. Antes de usar la TSL, berigna comprueba: tamaño y XML sin entidades ni red; que el firmante lo emite la raíz fijada, ambos vigentes, con uso de firma y no revocado (CRL de INDECOPI); la firma XML (signxml) con ese firmante y una referencia SHA-256 o superior que cubre la lista entera; que la lista está vigente (`NextUpdate`) y que no es más antigua que la última aceptada. Solo se lee el elemento firmado, nunca el documento descargado.
 3. Las CA de los servicios en estado aceptado ("undersupervision" o los estados ETSI equivalentes) se añaden en tiempo de ejecución al almacén base de ADR-0009, con origen "TSL": las autoemitidas como raíces y las demás como intermedias.
 4. El almacén base del paquete sigue siendo el respaldo: si la TSL no se puede descargar, no verifica o está vencida, berigna sigue con el almacén base y lo indica (ERR-203, ERR-204).
-5. La descarga periódica, la caché de la última TSL aceptada y la persistencia de su número de secuencia corresponden a la capa de configuración (Fase 3).
+5. La descarga periódica, la caché de la última TSL aceptada y la persistencia de su número de secuencia corresponden a la capa de configuración (Fase 3). Implementado en la Fase 3, incremento 4 (2026-10-28): `core.trust.cache` y Preferencias → Confianza (configuración y datos §3).
 
 ## Notas de implementación
 

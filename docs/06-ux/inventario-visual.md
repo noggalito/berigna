@@ -3,7 +3,7 @@
 | Campo | Valor |
 |---|---|
 | Documento | BRG-UX-002 |
-| Versión | 0.1.0 |
+| Versión | 0.2.0 |
 | Estado | Borrador |
 | Fecha | 2026-10-28 |
 | Responsable | `{{TITULAR}}` |
@@ -18,17 +18,19 @@ Iconos, ilustraciones y demás piezas gráficas que necesita berigna, para adela
 - Las capturas de pantalla, los ejemplos y las ilustraciones nunca muestran datos reales: se usa el firmante ficticio de las pruebas (por ejemplo, "QUISPE MAMANI ROSA FIR ****4321 hard"), nunca un DNI real.
 - Prueba de aceptación: `tests/ui/test_application.py::test_every_icon_exists_in_the_theme` comprueba que todo icono usado existe. Al añadir un icono propio se añade a esa lista.
 
-## 2. Prioridad 1: icono de la aplicación
+## 2. Icono de la aplicación (hecho el 2026-10-28)
 
-Hoy no existe: el diálogo "Acerca de" muestra un icono roto y GNOME no puede mostrar berigna en la vista de actividades ni en el lanzador.
+Se hizo a partir del isotipo de la marca, sin el nombre (decisión del titular), sobre un disco crema para que la onda conserve el contraste en paneles oscuros. Está en `data/icons/`; se instala en `hicolor` y va también en los recursos, de modo que funciona desde el árbol de trabajo.
 
-| Archivo | Tamaño | Uso | Notas |
+| Archivo | Tamaño | Origen | Uso |
 |---|---|---|---|
-| `pe.berigna.Berigna.svg` | 128×128 px, escalable | Lanzador, "Acerca de", GNOME Software, Flathub, notificaciones | Derivado del símbolo de la marca (`berigna-simbolo-color.svg`) con la forma y la perspectiva de los iconos de GNOME. Debe leerse a 32 px |
-| `pe.berigna.Berigna-symbolic.svg` | 16×16 px | Barra superior de GNOME, menú contextual de Nautilus (RF-070), ajustes del sistema | Silueta del símbolo en un solo color |
-| `pe.berigna.Berigna.Devel.svg` | 128×128 px | Versiones de desarrollo (`scripts/ejecutar.sh`) | Opcional: el mismo icono con la franja diagonal de las aplicaciones de desarrollo de GNOME, para no confundirlo con la versión instalada |
+| `pe.berigna.Berigna.svg` | Escalable (lienzo de 128×128 px) | Símbolo completo (`berigna-simbolo-color.svg`) | Lanzador, "Acerca de", GNOME Software, Flathub, notificaciones |
+| `pe.berigna.Berigna-small.svg` | Se instala para 16, 24 y 32 px | Símbolo reducido (`berigna-reducido-color.svg`) | Listas y tamaños pequeños, donde las colas del símbolo completo no se leen |
+| `pe.berigna.Berigna-symbolic.svg` | 16×16 px | Símbolo reducido en negro | Barra superior de GNOME, menú contextual de Nautilus (RF-070) |
 
-Herramientas recomendadas: App Icon Preview, para ver el icono junto a otros a todos los tamaños, y Symbolic Preview, para exportar los simbólicos.
+Pendiente en la fuente de la marca: el símbolo deja una separación mínima entre el círculo y las colas doradas, que en fondo oscuro se ve como una línea muy fina en la unión de la onda con la cola izquierda. Conviene cerrarla en `berigna-simbolo-*.svg`; el icono se regenera a partir de ahí.
+
+Opcional, más adelante: una variante `pe.berigna.Berigna.Devel` con la franja de las aplicaciones de desarrollo de GNOME.
 
 ## 3. Prioridad 2: iconos simbólicos propios
 
@@ -45,7 +47,7 @@ Solo los conceptos que Adwaita no cubre o cubre mal. Todos de 16×16 px y monoco
 | `berigna-signature-area-symbolic` | Recuadro de firma visible | Activar la firma visible y colocarla sobre la vista previa (incremento 5) | Nada |
 | `berigna-seal-symbolic` | Sello institucional | Perfil de apariencia "Sello institucional" (RF-081) | Nada (opcional) |
 
-Los tres primeros son los más visibles; si hay que recortar, el resto puede esperar a la Fase 5.
+Decisión del 2026-10-28: estos iconos se preparan según se vayan necesitando. Mientras tanto se usan los de §4 o solo texto.
 
 ## 4. Iconos de Adwaita que ya sirven (no hay que diseñarlos)
 
@@ -102,12 +104,9 @@ Es la pieza gráfica que más ven terceros, porque queda impresa en los document
 - Cabecera con el logotipo horizontal (`berigna-horizontal-color.svg`). ReportLab no dibuja SVG sin otra biblioteca, así que hace falta una exportación PNG a 300 ppp, o convertir el logotipo a trazos que ReportLab dibuje.
 - Colores de los resultados: hoy son los de la paleta de GNOME (verde `#26a269`, rojo `#c01c28`, naranja `#c64600`). Hay que decidir si se mantienen o se armonizan con la marca, sin perder la lectura de "válido / no válido / indeterminado" en blanco y negro.
 
-## 8. Color de acento de la interfaz (decisión pendiente)
+## 8. Color de acento de la interfaz (decidido)
 
-BRG-UX-001 §1.1 dice "burdeos como color de acento", pero en las capturas del 2026-10-28 los botones salen en rojo: libadwaita usa el acento que el usuario eligió en GNOME. Hay dos opciones:
-
-- **Respetar el acento del sistema** (recomendado): es lo que esperan los usuarios de GNOME y evita problemas de contraste. La marca vive en el icono, el informe, la web y la firma visible.
-- **Forzar el burdeos** por CSS: el burdeos `#6B2232` tiene poco contraste sobre el fondo oscuro, así que hace falta una variante clara para el modo oscuro, y conviene comprobar el contraste del texto blanco sobre ella (RNF de accesibilidad).
+Decisión del 2026-10-28: la interfaz usa el color de acento que el usuario eligió en GNOME, como esperan los usuarios del escritorio, y no fuerza el burdeos de la marca. La marca vive en el icono, el informe, la web y la firma visible. El burdeos `#6B2232` tampoco tendría contraste suficiente sobre el fondo oscuro.
 
 ## 9. Ayuda integrada y manuales (RF-091; evidencia ACR-22)
 
@@ -127,12 +126,12 @@ BRG-UX-001 §1.1 dice "burdeos como color de acento", pero en las capturas del 2
 
 ## 11. Orden sugerido
 
+Los iconos y las ilustraciones se preparan según se vayan necesitando (decisión del 2026-10-28). Orden orientativo:
+
 | Orden | Pieza | Lo necesita |
 |---|---|---|
-| 1 | Icono de la aplicación (§2) | Ya: "Acerca de" y lanzador. Imprescindible en la Fase 5 |
-| 2 | Decisión del color de acento (§8) | Antes de seguir afinando la interfaz |
-| 3 | Plantillas de la firma visible (§6) | Incremento 5 de la Fase 3 |
-| 4 | `berigna-sign`, `berigna-verify`, `berigna-certificate` (§3) | Incrementos 5 y 6; menú de Nautilus en la Fase 5 |
-| 5 | Ilustración "Inserta tu DNIe" (§5) | Revisión de usabilidad (criterio de salida de la Fase 3) y ayuda |
-| 6 | Resto de §3, §5 y §7 | Fase 3, según dé tiempo |
-| 7 | §9 y §10 | Fases 5 y 6; Flathub en la 1.1 |
+| 1 | Plantillas de la firma visible (§6) | Incremento 5 de la Fase 3 |
+| 2 | Ilustración "Inserta tu DNIe" (§5) | Revisión de usabilidad (criterio de salida de la Fase 3) y ayuda |
+| 3 | Iconos de §3, cuando una pantalla los pida | Incrementos 5 y 6; menú de Nautilus en la Fase 5 |
+| 4 | Logotipo y colores del informe (§7) | Fase 3, según dé tiempo |
+| 5 | §9 y §10 | Fases 5 y 6; Flathub en la 1.1 |

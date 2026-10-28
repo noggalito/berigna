@@ -171,7 +171,9 @@ def test_every_icon_exists_in_the_theme() -> None:
     names = set(presentation.ICONS)
     names |= {icon for icon, _style in presentation._INDICATION_ICONS.values()}
     names |= {icon for icon, _message in presentation._DEVICE.values()}
-    names.add("open-menu-symbolic")
+    names |= {"open-menu-symbolic", "pe.berigna.Berigna", "pe.berigna.Berigna-symbolic"}
+    # The application icons come from the resources, as GtkApplication registers them.
+    theme.add_resource_path("/pe/berigna/Berigna/icons")
     assert [name for name in sorted(names) if not theme.has_icon(name)] == []
 
 

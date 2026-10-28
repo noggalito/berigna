@@ -15,8 +15,6 @@ Order of the steps is part of the security design:
 """
 
 import hashlib
-import os
-import tempfile
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass
 from pathlib import Path
@@ -29,6 +27,7 @@ from berigna.core.errors import (
     SigningCancelledError,
     SourceChangedError,
 )
+from berigna.core.files import write_atomically
 from berigna.core.formats.pades import (
     PadesOptions,
     SignatureLevel,
@@ -70,31 +69,6 @@ def output_path(source: Path, suffix: str, directory: Path | None = None) -> Pat
         candidate = folder / f"{source.stem}{suffix}-{number}{source.suffix}"
         number += 1
     return candidate
-
-
-def write_atomically(path: Path, data: bytes, *, replace: bool = False) -> None:
-    """Write ``data`` to ``path`` with fsync, all or nothing (RNF-FIA-01).
-
-    Never replaces an existing file unless ``replace`` is given, which is for files the user
-    chose to overwrite in a save dialog (reports), never for signed documents.
-    """
-    if not replace and path.exists():
-        raise OutputExistsError(f"{path.name} already exists")
-    fd, temporary = tempfile.mkstemp(prefix=f".{path.name}.", suffix=".tmp", dir=path.parent)
-    try:
-        with os.fdopen(fd, "wb") as handle:
-            handle.write(data)
-            handle.flush()
-            os.fsync(handle.fileno())
-        if replace:
-            os.replace(temporary, path)
-            return
-        os.link(temporary, path)  # fails if path appeared meanwhile: no silent overwrite
-    except FileExistsError as exc:
-        raise OutputExistsError(f"{path.name} already exists") from exc
-    finally:
-        if os.path.exists(temporary):
-            os.unlink(temporary)
 
 
 def sign_pdf_file(
