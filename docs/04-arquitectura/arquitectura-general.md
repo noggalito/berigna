@@ -108,7 +108,7 @@ flowchart TB
 | `core.i18n` | Idiomas es_PE y quechua sureño, elección según la configuración del usuario con es_PE de respaldo (ADR-0015) y carga de los catálogos; el quechua cae en es_PE, nunca en el texto fuente inglés | gettext de la biblioteca estándar; implementado |
 | `core.history` | Historial local en SQLite | sqlite3 (biblioteca estándar) |
 | `core.config` | Acceso tipado a la configuración (GSettings vía una interfaz, para no acoplar el núcleo a GTK) | — |
-| `ui` | Vistas, diálogos, previsualización de PDF y manejo de hilos | PyGObject, GTK4, libadwaita, Poppler-GLib o pypdfium2 |
+| `ui` | Vistas, diálogos, previsualización de PDF y manejo de hilos | PyGObject, GTK4, libadwaita, Poppler-GLib (ADR-0016) |
 | `berigna-nautilus` | Entradas del menú contextual; solo lanza berigna con las rutas | nautilus-python |
 
 ### 3.2 Límites deliberados del driver del DNIe v2
@@ -140,6 +140,8 @@ Decisiones de implementación de `core.token.dnie_v2` (ADR-0012), documentadas p
 | Abrir un documento lo lee una vez y calcula su SHA-256 (`core.documents.inspect_document`), en un hilo de trabajo | La firma comprueba después que el archivo sigue siendo el mostrado (RF-018); un PDF grande no bloquea la interfaz |
 | Al validar en el momento actual, la tolerancia de tiempo para los datos de revocación es de 5 minutos (`CURRENT_TIME_TOLERANCE`); en una fecha pasada, 1 s | El momento se fija antes de consultar los servicios, y su respuesta lleva la hora en que se produjo: con 1 s, una respuesta de RENIEC que tardó 2,6 s era "demasiado reciente" y la firma salía INDETERMINATE (2026-10-28). Los servicios pueden tardar hasta un minuto (R-17) |
 | La verificación corre en un hilo de trabajo y su resultado se descarta si el usuario ya abrió otro documento (`ui.verification`) | Puede tardar segundos por la red; la interfaz no se bloquea y nunca muestra el resultado de un documento que ya no está a la vista |
+| El diálogo del PIN se muestra desde el *callback* `ask_pin` del núcleo, que corre en el hilo de firma y espera la respuesta del bucle principal (`ui.signing`) | El núcleo decide el orden de seguridad (certificado y TSA antes del PIN, archivo comprobado antes y después) y la interfaz no puede alterarlo; la ventana no se bloquea mientras se consulta a RENIEC |
+| Un documento certificado "sin cambios" (DocMDP P=1) se rechaza en `check_pdf_signable`, antes del PIN (ERR-307) | pyHanko también lo rechaza, pero dentro de la firma, después de enviar el PIN, y con el error genérico de PDF dañado |
 
 ## 4. Interfaces clave del núcleo
 
@@ -240,5 +242,5 @@ Ver [adr/README.md](adr/README.md).
 
 - Driver de OpenSC para el DNIe v2 (línea paralela de ADR-0012): repositorio, mantenedor y plan de envío *upstream*.
 
-- Previsualización de PDF: Poppler-GLib (vía GObject Introspection, ya integrada en Debian) frente a pypdfium2 (mejor fidelidad, pero no empaquetada en Debian). Se decide en la Fase 3 con un ADR.
+- Previsualización de PDF: decidida el 2026-10-28, Poppler-GLib (ADR-0016); pypdfium2 u otro motor pueden sustituirlo más adelante.
 - Si el núcleo se publica como una biblioteca separada (`python3-berigna-core`) o solo como un paquete interno.
