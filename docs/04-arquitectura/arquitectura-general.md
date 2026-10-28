@@ -142,6 +142,8 @@ Decisiones de implementación de `core.token.dnie_v2` (ADR-0012), documentadas p
 | La verificación corre en un hilo de trabajo y su resultado se descarta si el usuario ya abrió otro documento (`ui.verification`) | Puede tardar segundos por la red; la interfaz no se bloquea y nunca muestra el resultado de un documento que ya no está a la vista |
 | El diálogo del PIN se muestra desde el *callback* `ask_pin` del núcleo, que corre en el hilo de firma y espera la respuesta del bucle principal (`ui.signing`) | El núcleo decide el orden de seguridad (certificado y TSA antes del PIN, archivo comprobado antes y después) y la interfaz no puede alterarlo; la ventana no se bloquea mientras se consulta a RENIEC |
 | Un documento certificado "sin cambios" (DocMDP P=1) se rechaza en `check_pdf_signable`, antes del PIN (ERR-307) | pyHanko también lo rechaza, pero dentro de la firma, después de enviar el PIN, y con el error genérico de PDF dañado |
+| El proxy se aplica a las variables de entorno del proceso, no como parámetro de cada petición (`core.net.proxy`) | pyhanko-certvalidator llama a `requests` sin parámetros de proxy; las variables de entorno las lee `requests` en todas las peticiones, propias y de las bibliotecas |
+| La caché de la TSL guarda la lista, no la CRL de su firmante | La revocación del firmante se comprueba con una CRL vigente al aceptar la lista; volver a comprobarla con una copia caducada solo haría inservible sin conexión una lista que sigue vigente |
 
 ## 4. Interfaces clave del núcleo
 

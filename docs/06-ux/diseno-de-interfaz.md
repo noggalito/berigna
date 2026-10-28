@@ -25,8 +25,8 @@ La identidad de berigna está en [`data/brand/`](../../data/brand/README.md), ba
 
 - Paleta: burdeos `#6B2232`, dorado `#C2A878`, crema `#F5ECE3`, carbón `#231C1E`. Contraste del burdeos sobre crema: 9,5:1.
 - El nombre se escribe siempre en minúsculas: berigna.
-- La interfaz usa la tipografía y los colores del sistema (HIG de GNOME, libadwaita), con el burdeos como color de acento. Las tipografías de la marca (Arvo y Source Sans 3) se reservan para el logotipo y las piezas de comunicación, no para la interfaz.
-- El icono de la aplicación (`pe.berigna.Berigna`, versiones a color y simbólica) se derivará del símbolo en la Fase 3, siguiendo la guía de iconos de GNOME.
+- La interfaz usa la tipografía y los colores del sistema (HIG de GNOME, libadwaita), con el color de acento que el usuario eligió en GNOME (decisión del 2026-10-28): la marca no fuerza el burdeos en la interfaz, y vive en el icono, el informe, la web y la firma visible. Las tipografías de la marca (Arvo y Source Sans 3) se reservan para el logotipo y las piezas de comunicación, no para la interfaz.
+- El icono de la aplicación (`pe.berigna.Berigna`, a color, reducido para tamaños pequeños y simbólico) se hizo el 2026-10-28 a partir del isotipo, sin el nombre (BRG-UX-002 §2).
 
 ## 2. Mapa de navegación
 
@@ -182,10 +182,20 @@ Hasta que la traducción al quechua tenga corrección humana (versión 1.1, DP-1
 - El informe PDF en quechua añade la misma advertencia junto a la nota de prevalencia del español (ADR-0015, punto 7).
 - El aviso desaparece en la versión que incorpore la corrección por personas.
 
+## 4.3 Preferencias
+
+Implementado en la Fase 3, incremento 4 (CU-08), como `AdwPreferencesDialog` con tres páginas:
+
+- General: idioma de la interfaz; nivel por defecto, algoritmo de *hash*, sufijo y carpeta de los archivos firmados.
+- Red: dirección de la TSA con el botón "Probar"; tiempo de espera; proxy del sistema, manual o ninguno.
+- Confianza: estado de la TSL de INDECOPI (secuencia, fechas y número de CA acreditadas) y "Actualizar ahora".
+
+Cambiar el idioma reconstruye la ventana y vuelve a abrir las Preferencias en el nuevo idioma. Pendiente: ver el contenido del almacén de confianza (RF-060) y la autenticación con la TSA (RF-062).
+
 ## 5. Pendientes
 
 - [ ] Prototipo de alta fidelidad (Figma o Penpot) de las cinco vistas.
-- [ ] Icono de la aplicación según la guía de iconos de GNOME.
+- [x] Icono de la aplicación según la guía de iconos de GNOME (BRG-UX-002 §2).
 - [ ] Prueba de usabilidad (RNF-USA-06) en la Fase 3.
 - [ ] Microcopia completa de errores (catálogo `ERR-xxx`, con su mensaje, su causa y la acción sugerida) en es_PE y en quechua.
 - [x] Aviso de traducción sin revisar en la ventana principal, en el informe PDF en quechua y "Ver en español" en el diálogo del PIN (§4.2). Falta "Ver en español" en el resultado de la verificación.

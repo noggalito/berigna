@@ -25,7 +25,9 @@ Los permisos de los archivos del usuario son `0600` y los de los directorios `07
 
 ## 2. Esquema de GSettings
 
-Implementado en `data/pe.berigna.Berigna.gschema.xml` (Fase 3, incremento 1). Por ahora la interfaz solo usa `ui-language`; el resto de claves las incorporan los incrementos siguientes.
+Implementado en `data/pe.berigna.Berigna.gschema.xml` (Fase 3, incremento 1). Desde el incremento 4 la interfaz usa además `default-level`, `digest-algorithm`, `output-suffix`, `output-directory`, `tsa-url`, `network-timeout`, `proxy-mode`, `proxy-url`, `signature-reason` y `signature-location`, y las Preferencias muestran casi todas. `tsa-auth` (usuario y contraseña en libsecret, o certificado de cliente) queda para cuando haya una TSA contratada que lo exija (DP-02).
+
+Proxy (RF-064): el valor se aplica a las variables de entorno estándar del proceso (`https_proxy`, `no_proxy`), que `requests` lee en cada petición, también dentro de pyhanko-certvalidator (`core.net.proxy`). Con `system`, la interfaz pregunta a GIO por el proxy del escritorio.
 
 | Clave | Tipo | Defecto | Descripción |
 |---|---|---|---|
@@ -81,7 +83,8 @@ Despliegue en organizaciones: un administrador puede definir valores por defecto
 - Fuente preferente: la TSL de INDECOPI (ETSI TS 102 231, firmada por INDECOPI; guía v4.0 §3.3 y ACR-24). URL pendiente (Q8).
 - Manifiesto: `trust/manifest.json`, con la huella SHA-256, el origen (URL oficial), la fecha de obtención y el propósito (firma o TSA) de cada certificado.
 - Integridad: el manifiesto se publica dentro del paquete `.deb` firmado. La aplicación comprueba al arrancar que las huellas coinciden con el manifiesto.
-- Actualización: con nuevas versiones del paquete (RF-061). No hay actualizaciones automáticas por red en la v1.
+- Actualización: el almacén base, con nuevas versiones del paquete (RF-061). Las CA de la TSL de INDECOPI se añaden en tiempo de ejecución: la lista se comprueba al arrancar si la guardada tiene más de un día, y desde Preferencias → Confianza → "Actualizar ahora" (ADR-0014).
+- Caché de la TSL: `$XDG_DATA_HOME/berigna/tsl/` (normalmente `~/.local/share/berigna/tsl/`), con la lista tal como se descargó (`tsl-pe.xml`) y `estado.json` (número de secuencia aceptado y fecha de descarga). La lista guardada se vuelve a verificar cada vez que se lee; una lista con un número de secuencia menor que el aceptado se rechaza (vuelta atrás). La CRL del firmante no se guarda: la revocación se comprobó al aceptar la lista (`core.trust.cache`).
 
 ## 4. Historial (SQLite)
 
