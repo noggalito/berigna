@@ -28,6 +28,7 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/); v
 - Firma PAdES B-T, B-LT y B-LTA (`sign_pdf_file(level=..., timestamper=...)`): antes del PIN se exige revocación comprobada y una TSA que responda. Si tras la firma falla la incorporación de datos de validación o el sello de documento, se conserva la firma y el resultado indica el nivel alcanzado y el motivo. Errores ERR-305 (TSA) y ERR-306 (nivel no disponible).
 - Cliente de sellado de tiempo RFC 3161 (`berigna.core.net.tsa`) con comprobación previa y plazo total, también con IPv6 roto.
 - Consultas OCSP y CRL comunes (`berigna.core.net.fetchers`): un reintento ante fallo (R-17) y nunca la CRL de un certificado final.
+- Subindicaciones de ETSI precisas en la verificación: la falta de datos de revocación (`TRY_LATER`) y un certificado vencido en la cadena (`OUT_OF_BOUNDS_NO_POE`) ya no se informan con la subindicación genérica de pyHanko.
 - Plan de compatibilidad: DNIe 1.0 y DNIe 3.0 previstos para la versión 1.1 (investigación SPK-06).
 - Requisito RF-074: extensión de LibreOffice "Firmar con berigna", prevista para la versión 1.2.
 - Verificador de firmas PDF (`berigna.core.validation.verify_pdf`, primer incremento de la Fase 2): indicación y subindicación de ETSI EN 319 102-1 con el proceso básico, datos de revocación embebidos (DSS y `revocationInfoArchival` de las firmas heredadas `adbe.pkcs7.detached`), revisión firmada y clasificación de los cambios posteriores (RF-055). Errores ERR-400 y ERR-401.
