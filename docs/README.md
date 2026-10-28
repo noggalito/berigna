@@ -70,7 +70,7 @@ Algunos documentos públicos citan identificadores cuyo detalle está en la docu
 | 00-gestion | Borrador | — |
 | 02-marco-normativo | Borrador | — |
 | 03-requisitos | Borrador | Línea base para la v1.0 |
-| 04-arquitectura | Borrador | ADR-0001 a ADR-0013 aceptados; ADR-0014 (TSL) propuesto |
+| 04-arquitectura | Borrador | ADR-0001 a ADR-0013 y ADR-0015 aceptados; ADR-0014 (TSL) propuesto |
 | 05-seguridad | Borrador | — |
 | 06-ux | Borrador | Bocetos de baja fidelidad |
 | 07-calidad | Borrador | El protocolo de PIN está Vigente |
@@ -90,7 +90,7 @@ Algunos documentos públicos citan identificadores cuyo detalle está en la docu
 | Nivel por defecto | B-LT si hay TSA y OCSP; si no, B-B con un aviso |
 | Dependencias | Las de Debian 13 más pyHanko 0.25.1 empaquetado (ADR-0013) |
 | Arquitecturas | Paquetes `Architecture: all`; amd64 con soporte oficial, arm64 sin soporte oficial |
-| Idiomas | es_PE y en_US completos (ADR-0011) |
+| Idiomas | es_PE y quechua sureño completos (ADR-0011, ADR-0015); en_US en la versión 1.1 |
 | Distribución | Paquete `.deb` para Debian 13 (ADR-0006) |
 | Licencia | GPL-3.0-or-later (ADR-0005) |
 
@@ -108,7 +108,7 @@ Algunos documentos públicos citan identificadores cuyo detalle está en la docu
 | PIN pad (PC/SC parte 10) | Aplazado a la versión 1.1 (decisión del 2026-10-27; requiere un lector de clase 2) | RF-005, P-08 | — |
 | *Backend* PKCS#11 + SoftHSM | Aplazado a la versión 1.1 (decisión del 2026-10-27; el DNIe v2 no lo necesita) | ADR-0003 | — |
 | `core.validation.pdf` (verificador PAdES) | Implementado: procesos de ETSI EN 319 102-1 básico (§5.3) y de validación a largo plazo (§5.6.3), sellos de firma y de documento (§5.4), validación en el pasado, datos de revocación embebidos (DSS y `revocationInfoArchival` de Adobe), cobertura y modificaciones posteriores | RF-050, RF-053 (indicaciones), RF-055, RF-056 | PKI y TSA de pruebas (B-B, B-LT, B-LTA, certificado vencido con prueba de existencia); documentos reales: misma indicación principal que DSS 6.2, y subindicaciones de ETSI precisas en lugar de la genérica de pyHanko |
-| Explicaciones en es_PE y en_US e informes JSON y PDF | Fase 2 (siguiente incremento; requiere GNU gettext) | RF-053, RF-054 | — |
+| Explicaciones en es_PE y quechua e informes JSON y PDF | Fase 2 (siguiente incremento; requiere GNU gettext) | RF-053, RF-054 | — |
 | TSA de producción, proxy y caché de red | Fase 2 (DP-02 abierta: aún no hay TSA peruana contratada) | RF-062, RF-064, RF-065 | — |
 | CAdES y XAdES | Fase 4 (viabilidad probada en SPK-03) | RF-020 a RF-033 | — |
 | DNIe 1.0 y DNIe 3.0 | Versión 1.1 (decisión del 2026-10-27); identificación pendiente en SPK-06 | RNF-COM-05 | — |

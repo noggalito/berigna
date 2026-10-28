@@ -35,7 +35,8 @@ Los tres paquetes son `Architecture: all` (DP-08).
 | `/usr/share/icons/hicolor/…` | Iconos |
 | `/usr/share/locale/es_PE/LC_MESSAGES/berigna.mo` | Traducción es_PE |
 | `/usr/share/locale/es/LC_MESSAGES/berigna.mo` | El mismo catálogo es_PE, como respaldo para cualquier variante del español (ADR-0011) |
-| `/usr/share/help/C/berigna/` | Manual en en_US (fuente) |
+| `/usr/share/help/C/berigna/` | Manual en es_PE (respaldo, ADR-0015) |
+| `/usr/share/help/quz/berigna/` | Manual en quechua sureño |
 | `/usr/share/help/es_PE/berigna/` y `/usr/share/help/es/berigna/` | Manual en es_PE |
 | `/usr/share/nautilus-python/extensions/berigna_nautilus.py` | Extensión (paquete `berigna-nautilus`) |
 
@@ -44,7 +45,7 @@ Los tres paquetes son `Architecture: all` (DP-08).
 - `pcscd` se activa por *socket* en Debian (`pcscd.socket`). El paquete no debe forzar su habilitación, pero el diagnóstico (RF-007) comprueba su estado.
 - No hacen falta *scripts* de mantenimiento (`postinst`) más allá de los que genera debhelper (iconos, esquemas, MIME y escritorio se gestionan con *triggers*).
 - No se crean usuarios ni grupos, y no hay servicios propios.
-- El `.desktop` y la metainfo de AppStream llevan su nombre, su descripción y sus palabras clave en en_US (por defecto) y en es_PE (`Name[es_PE]=`, `xml:lang="es-PE"`), generados con gettext desde `po/`.
+- El `.desktop` y la metainfo de AppStream llevan su nombre, su descripción y sus palabras clave en es_PE y en quechua (`Name[quz]=`, `xml:lang="quz-PE"`), generados con gettext desde `po/`. El valor sin etiqueta de idioma, que es el de respaldo, se genera desde el catálogo es_PE (ADR-0015).
 - `lintian` y `appstreamcli validate` deben pasar con ambos idiomas.
 
 ## 4. Repositorio APT

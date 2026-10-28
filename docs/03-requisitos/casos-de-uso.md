@@ -112,7 +112,7 @@ Requisitos: RF-050 a RF-056.
 1. El usuario abre un archivo firmado (o un `.p7s` junto con su original).
 2. El sistema detecta las firmas y valida cada una.
 3. El sistema muestra un resumen global (por ejemplo: "2 firmas válidas" o "1 firma con problemas") y el detalle de cada firma: firmante, DNI enmascarado, fecha (declarada o certificada), nivel, indicación ETSI y explicación.
-4. El usuario puede exportar el informe (PDF en es_PE o en_US, o JSON) o abrir la revisión firmada del PDF.
+4. El usuario puede exportar el informe (PDF en es_PE o en quechua, o JSON) o abrir la revisión firmada del PDF.
 
 ### CU-07: Diagnosticar el lector y el DNIe
 
@@ -128,5 +128,5 @@ Requisitos: RF-062 a RF-064, RF-080.
 
 1. El usuario o el administrador abre las preferencias.
 2. Configura la TSA y la prueba con el botón "Probar".
-3. Ajusta el nivel por defecto, la salida, el proxy y, si lo desea, el idioma de la interfaz (sistema, es_PE o en_US).
+3. Ajusta el nivel por defecto, la salida, el proxy y, si lo desea, el idioma de la interfaz (sistema, es_PE o quechua).
 4. Un administrador puede fijar valores para toda la organización mediante los valores por defecto de GSettings en el sistema (ver 04-arquitectura/configuracion-y-datos.md).
