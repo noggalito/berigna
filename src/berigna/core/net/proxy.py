@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# SPDX-FileCopyrightText: 2026 Calú
+# SPDX-FileCopyrightText: 2026 noggalito
 """The proxy of every HTTP request berigna makes: OCSP, CRL, TSA and TSL (RF-064).
 
 ``requests`` reads the standard environment variables on every request, also inside

@@ -6,7 +6,7 @@
 | Versión | 0.4.0 |
 | Estado | Cerrado (2026-10-27): firma con PIN verificada (§8.6); PAdES B-B del DNIe real válido en DSS y en el validador oficial Firma Perú (SPK-03 §7) |
 | Fecha | 2026-10-27 |
-| Responsable | `{{TITULAR}}` |
+| Responsable | noggalito |
 
 ## 1. Pregunta
 

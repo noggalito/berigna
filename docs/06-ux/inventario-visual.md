@@ -6,7 +6,7 @@
 | Versión | 0.2.0 |
 | Estado | Borrador |
 | Fecha | 2026-10-28 |
-| Responsable | `{{TITULAR}}` |
+| Responsable | noggalito |
 
 Iconos, ilustraciones y demás piezas gráficas que necesita berigna, para adelantar su diseño. Complementa el diseño de interfaz (BRG-UX-001) y la identidad visual (`data/brand/`).
 
@@ -24,13 +24,13 @@ Se hizo a partir del isotipo de la marca, sin el nombre (decisión del titular),
 
 | Archivo | Tamaño | Origen | Uso |
 |---|---|---|---|
-| `pe.berigna.Berigna.svg` | Escalable (lienzo de 128×128 px) | Símbolo completo (`berigna-simbolo-color.svg`) | Lanzador, "Acerca de", GNOME Software, Flathub, notificaciones |
-| `pe.berigna.Berigna-small.svg` | Se instala para 16, 24 y 32 px | Símbolo reducido (`berigna-reducido-color.svg`) | Listas y tamaños pequeños, donde las colas del símbolo completo no se leen |
-| `pe.berigna.Berigna-symbolic.svg` | 16×16 px | Símbolo reducido en negro | Barra superior de GNOME, menú contextual de Nautilus (RF-070) |
+| `com.noggalito.Berigna.svg` | Escalable (lienzo de 128×128 px) | Símbolo completo (`berigna-simbolo-color.svg`) | Lanzador, "Acerca de", GNOME Software, Flathub, notificaciones |
+| `com.noggalito.Berigna-small.svg` | Se instala para 16, 24 y 32 px | Símbolo reducido (`berigna-reducido-color.svg`) | Listas y tamaños pequeños, donde las colas del símbolo completo no se leen |
+| `com.noggalito.Berigna-symbolic.svg` | 16×16 px | Símbolo reducido en negro | Barra superior de GNOME, menú contextual de Nautilus (RF-070) |
 
 Pendiente en la fuente de la marca: el símbolo deja una separación mínima entre el círculo y las colas doradas, que en fondo oscuro se ve como una línea muy fina en la unión de la onda con la cola izquierda. Conviene cerrarla en `berigna-simbolo-*.svg`; el icono se regenera a partir de ahí.
 
-Opcional, más adelante: una variante `pe.berigna.Berigna.Devel` con la franja de las aplicaciones de desarrollo de GNOME.
+Opcional, más adelante: una variante `com.noggalito.Berigna.Devel` con la franja de las aplicaciones de desarrollo de GNOME.
 
 ## 3. Prioridad 2: iconos simbólicos propios
 

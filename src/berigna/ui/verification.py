@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# SPDX-FileCopyrightText: 2026 Calú
+# SPDX-FileCopyrightText: 2026 noggalito
 """Verification of a signed PDF (CU-06, BRG-UX-001 §3.4): result, details and reports.
 
 The verification runs in a worker thread: it may query OCSP and CRL services for seconds

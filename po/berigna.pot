@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-28 20:11-0500\n"
+"POT-Creation-Date: 2026-10-28 21:01-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,19 +18,19 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
 
-#: data/pe.berigna.Berigna.desktop.in:2
+#: data/com.noggalito.Berigna.desktop.in:2
 msgid "berigna"
 msgstr ""
 
-#: data/pe.berigna.Berigna.desktop.in:3
+#: data/com.noggalito.Berigna.desktop.in:3
 msgid "PDF Signer"
 msgstr ""
 
-#: data/pe.berigna.Berigna.desktop.in:4
+#: data/com.noggalito.Berigna.desktop.in:4
 msgid "Sign and verify PDF documents with the Peruvian DNIe"
 msgstr ""
 
-#: data/pe.berigna.Berigna.desktop.in:5
+#: data/com.noggalito.Berigna.desktop.in:5
 msgid "sign;signature;verify;PDF;DNIe;RENIEC;"
 msgstr ""
 
@@ -566,7 +566,7 @@ msgstr ""
 msgid "The file is not a document that berigna can read, or it is damaged."
 msgstr ""
 
-#: src/berigna/ui/application.py:268
+#: src/berigna/ui/application.py:269
 msgid "Sign and verify documents with your Peruvian DNIe."
 msgstr ""
 
@@ -1028,16 +1028,16 @@ msgstr ""
 msgid "Next Page"
 msgstr ""
 
-#: src/berigna/ui/preview.py:121 src/berigna/ui/preview.py:122
+#: src/berigna/ui/preview.py:124 src/berigna/ui/preview.py:126
 msgid "Page Number"
 msgstr ""
 
-#: src/berigna/ui/preview.py:124
+#: src/berigna/ui/preview.py:128
 #, python-brace-format
 msgid "of {total}"
 msgstr ""
 
-#: src/berigna/ui/preview.py:163
+#: src/berigna/ui/preview.py:169
 msgid "Fit"
 msgstr ""
 

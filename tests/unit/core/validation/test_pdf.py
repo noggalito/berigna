@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# SPDX-FileCopyrightText: 2026 Calú
+# SPDX-FileCopyrightText: 2026 noggalito
 """PAdES verification (RF-050, RF-053, RF-055): ETSI indications and later modifications."""
 
 import datetime as dt

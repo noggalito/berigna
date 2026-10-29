@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# SPDX-FileCopyrightText: 2026 Calú
+# SPDX-FileCopyrightText: 2026 noggalito
 """Signing orchestration: order of the security steps (RF-006, RF-018, RF-045, P-01)."""
 
 import hashlib

@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# SPDX-FileCopyrightText: 2026 Calú
+# SPDX-FileCopyrightText: 2026 noggalito
 """Plain-language explanations (RF-053) in es_PE, and nothing mixed in for Quechua."""
 
 import datetime as dt

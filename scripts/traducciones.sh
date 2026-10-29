@@ -1,6 +1,6 @@
 #!/bin/sh
 # SPDX-License-Identifier: GPL-3.0-or-later
-# SPDX-FileCopyrightText: 2026 Calú
+# SPDX-FileCopyrightText: 2026 noggalito
 # Translation catalogues (ADR-0011, ADR-0015). Needs GNU gettext (Debian package "gettext").
 #
 #   scripts/traducciones.sh actualizar   regenerate po/berigna.pot and merge it into po/*.po
@@ -15,7 +15,7 @@ update() {
     grep -v '^#' po/POTFILES | grep '\.py$' | xgettext --files-from=- --language=Python \
         --from-code=UTF-8 --keyword=N_ --keyword=_ --add-comments=Translators: --sort-by-file \
         --package-name=berigna --msgid-bugs-address=https://github.com/noggalito/berigna/issues \
-        --copyright-holder="Calú" --output=po/$DOMAIN.pot
+        --copyright-holder="noggalito" --output=po/$DOMAIN.pot
     # Blueprint views: _("…") and C_("context", "…") read as C.
     grep -v '^#' po/POTFILES | grep '\.blp$' | xgettext --files-from=- --language=C \
         --from-code=UTF-8 --keyword=_ --keyword=C_:1c,2 --add-comments=Translators: \

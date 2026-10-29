@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# SPDX-FileCopyrightText: 2026 Calú
+# SPDX-FileCopyrightText: 2026 noggalito
 """PAdES B-T, B-LT and B-LTA with the card simulator and a test TSA (RF-010, RF-062)."""
 
 from dataclasses import dataclass

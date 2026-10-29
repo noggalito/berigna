@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# SPDX-FileCopyrightText: 2026 Calú
+# SPDX-FileCopyrightText: 2026 noggalito
 """Manual HIL check of the production DNIe v2 driver WITH the holder's PIN.
 
 Follows docs/07-calidad/protocolo-pruebas-con-pin.md: run it in your own terminal, the PIN is

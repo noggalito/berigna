@@ -38,7 +38,7 @@ Verificación e informes:
 
 Interfaz (Fase 3):
 
-- Aplicación GTK 4 y libadwaita `pe.berigna.Berigna` construida con Meson (ADR-0010): vistas en Blueprint, recursos, esquema de GSettings, catálogos con alias `quy` y `qu`, y lanzador. `scripts/ejecutar.sh` la lanza desde el árbol de trabajo.
+- Aplicación GTK 4 y libadwaita `com.noggalito.Berigna` construida con Meson (ADR-0010): vistas en Blueprint, recursos, esquema de GSettings, catálogos con alias `quy` y `qu`, y lanzador. `scripts/ejecutar.sh` la lanza desde el árbol de trabajo.
 - Ventana principal: abrir un documento con el botón, arrastrándolo o como argumento; estado del lector y del DNIe en la barra inferior.
 - `berigna.core.documents`: tipo de documento, páginas, firmas y SHA-256 al abrirlo.
 - Las vistas se traducen con `core.i18n` y no con el gettext de C, que mostraba el inglés con la configuración regional C; el idioma cambia sin reiniciar.
@@ -54,10 +54,13 @@ Interfaz (Fase 3):
 - `core.signing.output_path`: el nombre del archivo firmado se numera si ya existe, sin sobrescribir nunca (RF-045).
 - ERR-307: un documento certificado por su autor sin cambios permitidos (DocMDP) se rechaza antes del PIN; `inspect_document` lo indica (`locked`).
 - Plan de mantenimiento (`docs/11-mantenimiento/plan-de-mantenimiento.md`, BRG-MAN-001): versiones y ramas, hechos externos que obligan a publicar, vigilancia automática, proceso de cada versión, seguridad, incidencias y continuidad.
-- Entrada de escritorio `pe.berigna.Berigna.desktop` (nombre, descripción y palabras clave traducidas; abre PDF), validada con `desktop-file-validate` en `meson test`. `scripts/escritorio.sh` la instala con los iconos en `~/.local/share` para el árbol de desarrollo, de modo que GNOME muestra el icono de berigna en el Dock.
+- Entrada de escritorio `com.noggalito.Berigna.desktop` (nombre, descripción y palabras clave traducidas; abre PDF), validada con `desktop-file-validate` en `meson test`. `scripts/escritorio.sh` la instala con los iconos en `~/.local/share` para el árbol de desarrollo, de modo que GNOME muestra el icono de berigna en el Dock.
 
 ### Cambiado
 
+- Titular del proyecto: noggalito (DP-05). Cabeceras de licencia, metadatos del paquete, catálogos y "Acerca de" pasan de "Calú" a "noggalito"; el sitio de "Acerca de" es <https://berigna.noggalito.com> y las incidencias siguen en GitHub. Contacto único: `berigna@noggalito.com` (también en `SECURITY.md`, junto con los avisos privados de GitHub).
+- Identificador de la aplicación: `com.noggalito.Berigna` en lugar de `pe.berigna.Berigna` (ADR-0019), con su ruta de GSettings `/com/noggalito/Berigna/`. La configuración guardada con el identificador anterior no se migra; `scripts/escritorio.sh` borra la integración anterior.
+- Debian oficial desde la v1.0 (ADR-0020, modifica ADR-0006).
 - Vista previa de la firma: número de página que se escribe para saltar a ella y zoom (botones, Ctrl + rueda, "Ajustar") del 50 % al 400 %; con zoom, la vista lleva al recuadro de la firma. Sigue abriéndose en la primera página; al activar la firma visible pasa a la última.
 - La firma visible se elige en una sola lista que empieza por "No visible", en el panel de firma y en Preferencias, en lugar de un interruptor y una lista. En un recuadro más alto que ancho, la imagen o el QR van encima del texto (orientación vertical automática).
 - Motivo "Por encargo" en la lista.

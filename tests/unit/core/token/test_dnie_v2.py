@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# SPDX-FileCopyrightText: 2026 Calú
+# SPDX-FileCopyrightText: 2026 noggalito
 """DnieV2Token against the applet simulator (PR-TOK-02 to PR-TOK-06, PR-SEG-05)."""
 
 import hashlib

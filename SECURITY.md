@@ -4,11 +4,11 @@ berigna firma documentos con valor legal. Tomamos en serio cualquier fallo que p
 
 ## Versiones con soporte
 
-El proyecto está en desarrollo (Fases 1 y 2). Todavía no hay versiones publicadas. Cuando las haya, esta sección indicará cuáles reciben correcciones de seguridad.
+El proyecto está en desarrollo (Fase 3). Todavía no hay versiones publicadas. Cuando las haya, reciben correcciones de seguridad la última versión menor y, durante 3 meses, la anterior ([plan de mantenimiento](docs/11-mantenimiento/plan-de-mantenimiento.md) §3 y §7).
 
 ## Cómo reportar una vulnerabilidad
 
-- **No abras una incidencia pública.** Escribe a `{{CONTACTO_SEGURIDAD}}` con una descripción, los pasos para reproducirla y el impacto que estimas.
+- **No abras una incidencia pública.** Usa el aviso privado de GitHub (pestaña *Security* → *Report a vulnerability*) o escribe a `berigna@noggalito.com` con una descripción, los pasos para reproducirla y el impacto que estimas.
 - Si la prueba requiere un DNIe, **no envíes nunca un PIN, certificados personales ni documentos firmados con datos reales.** Usa la PKI de pruebas del repositorio (`spikes/spk03/spk03_pki.py`) o el simulador (`tests/sim/`).
 - Acusaremos recibo en un plazo de 5 días hábiles y acordaremos contigo una fecha de divulgación coordinada (90 días por defecto).
 

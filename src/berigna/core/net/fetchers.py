@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# SPDX-FileCopyrightText: 2026 Calú
+# SPDX-FileCopyrightText: 2026 noggalito
 """Fetchers of revocation data shared by the signer check, signing and verification.
 
 Two rules apply everywhere berigna goes online for OCSP or CRLs:

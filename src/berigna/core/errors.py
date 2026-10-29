@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# SPDX-FileCopyrightText: 2026 Calú
+# SPDX-FileCopyrightText: 2026 noggalito
 """Error hierarchy of the core.
 
 Every error carries a stable ``code`` (ERR-xxx) that the UI maps to a translated message

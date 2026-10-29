@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# SPDX-FileCopyrightText: 2026 Calú
+# SPDX-FileCopyrightText: 2026 noggalito
 """Reasons for signing offered in a list, plus "Other" (decision of 2026-10-28).
 
 The reason goes in the signature dictionary (/Reason) and in the visible stamp, and validators

@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# SPDX-FileCopyrightText: 2026 Calú
+# SPDX-FileCopyrightText: 2026 noggalito
 """Signed PDFs for the tests: berigna's own PAdES B-B made with the simulated DNIe."""
 
 import io

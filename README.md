@@ -16,10 +16,11 @@ Aplicación de escritorio para GNU/Linux (Debian) que permite firmar digitalment
 | Niveles de firma | B-B, B-T, B-LT y B-LTA, seleccionables por el usuario |
 | Funciones adicionales | Verificación de firmas, firma visible, firma por lotes, integración con Nautilus |
 | Objetivo normativo | Acreditación como software de firma digital ante INDECOPI (IOFE) |
-| Distribución | Paquete `.deb` (Fedora y otras distribuciones en la hoja de ruta) |
+| Distribución | Paquete `.deb` en un repositorio propio y en el archivo oficial de Debian (desde la v1.0); Flatpak en la 1.1 |
 | Idiomas | Español del Perú (es_PE) y quechua sureño, ambos completos; inglés (en_US) en la versión 1.1 |
 | Licencia | GPL-3.0-or-later |
-| Titular | `{{TITULAR}}` (pendiente) |
+| Titular | noggalito (persona jurídica) |
+| Sitio y contacto | <https://berigna.noggalito.com> · `berigna@noggalito.com` |
 
 ## Por dónde empezar
 

@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# SPDX-FileCopyrightText: 2026 Calú
+# SPDX-FileCopyrightText: 2026 noggalito
 """Every result and every error has its text, translated into es_PE (RF-053, PR-I18N-07)."""
 
 import ast

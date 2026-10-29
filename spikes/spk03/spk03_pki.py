@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# SPDX-FileCopyrightText: 2026 Calú
+# SPDX-FileCopyrightText: 2026 noggalito
 # Prototipo de investigación (spike). No es código de producción.
 """SPK-03: test PKI imitating the IOFE hierarchy (root -> intermediate -> signer, root -> TSA).
 
