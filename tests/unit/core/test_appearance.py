@@ -19,6 +19,7 @@ from reportlab.pdfgen import canvas
 from berigna.core.appearance import (
     VERIFY_URL,
     AppearanceKind,
+    DniDisplay,
     StampData,
     VisibleSignature,
     qr_payload,
@@ -72,6 +73,9 @@ def test_signer_name_drops_the_dnie_suffix() -> None:
     assert signer_name(_certificate("EMPRESA SAC FAU 20123456789 soft", None)) == "EMPRESA SAC"
     data = stamp_data(_certificate("ROSA FIR 87654321 hard", "PNOPE-87654321"), reason="R")
     assert (data.signer, data.dni, data.reason) == ("ROSA", "****4321", "R")
+    certificate = _certificate("ROSA FIR 87654321 hard", "PNOPE-87654321")
+    assert stamp_data(certificate, dni=DniDisplay.FULL).dni == "87654321"
+    assert stamp_data(certificate, dni=DniDisplay.HIDDEN).dni is None
 
 
 def test_stamp_lines_in_spanish_and_quechua() -> None:

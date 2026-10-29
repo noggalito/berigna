@@ -35,7 +35,7 @@ from reportlab.pdfgen import canvas
 from berigna.core.errors import AppearanceError
 from berigna.core.files import write_atomically
 from berigna.core.i18n import Language, translations
-from berigna.core.report.explanations import format_time, masked_id
+from berigna.core.report.explanations import format_time, identity_number, masked_id
 
 FONTS = Path(__file__).parent / "fonts"
 VERIFY_URL = "https://berigna.noggalito.com/verificar"
@@ -62,6 +62,15 @@ LOCATION = N_("Location: {location}")
 HOW_TO_VERIFY = N_("How to verify: {url}")
 
 
+class DniDisplay(enum.Enum):
+    """How the stamp and the QR code show the DNI (decision of 2026-10-28). The certificate
+    in the PDF carries it in full anyway: this only concerns what is printed."""
+
+    LAST_FOUR = "last-four"  # ****5678, as in the reports
+    FULL = "full"
+    HIDDEN = "hidden"
+
+
 class AppearanceKind(enum.Enum):
     TEXT = "text"
     RUBRIC = "rubric"
@@ -80,12 +89,13 @@ class VisibleSignature:
     kind: AppearanceKind = AppearanceKind.TEXT
     image: Path | None = None  # rubric or logo
     language: Language = Language.ES_PE  # fixed texts and date (RF-092)
+    dni: DniDisplay = DniDisplay.LAST_FOUR
 
 
 @dataclass(frozen=True)
 class StampData:
     signer: str
-    dni: str | None  # masked: ****1234
+    dni: str | None  # as shown: ****1234, 12341234 or None
     moment: dt.datetime
     reason: str | None = None
     location: str | None = None
@@ -101,13 +111,19 @@ def signer_name(certificate: x509.Certificate) -> str:
 def stamp_data(
     certificate: x509.Certificate,
     *,
+    dni: DniDisplay = DniDisplay.LAST_FOUR,
     moment: dt.datetime | None = None,
     reason: str | None = None,
     location: str | None = None,
 ) -> StampData:
+    shown = None
+    if dni is DniDisplay.LAST_FOUR:
+        shown = masked_id(certificate)
+    elif dni is DniDisplay.FULL:
+        shown = identity_number(certificate)
     return StampData(
         signer=signer_name(certificate),
-        dni=masked_id(certificate),
+        dni=shown,
         moment=moment or dt.datetime.now().astimezone(),
         reason=reason,
         location=location,

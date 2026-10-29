@@ -90,7 +90,9 @@ def _visible_stamp(
     geometry = page_geometry(pdf, visible.page)
     if geometry.rotation:
         raise AppearanceError(f"page {visible.page + 1} is rotated {geometry.rotation} degrees")
-    data = stamp_data(check.chain[-1], reason=options.reason, location=options.location)
+    data = stamp_data(
+        check.chain[-1], dni=visible.dni, reason=options.reason, location=options.location
+    )
     # The box is relative to what the preview shows, the crop box; the field is placed in
     # the coordinates of the page.
     x, y, width, height = visible.box

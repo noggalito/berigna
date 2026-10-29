@@ -75,11 +75,17 @@ def common_name(certificate: x509.Certificate) -> str:
     return display_name(certificate.subject)
 
 
-def masked_id(certificate: x509.Certificate) -> str | None:
-    """The identity number of the subject (serialNumber), all but its last four digits hidden."""
+def identity_number(certificate: x509.Certificate) -> str | None:
+    """The identity number of the subject (the digits of serialNumber, "PNOPE-12345678")."""
     serials = certificate.subject.get_attributes_for_oid(NameOID.SERIAL_NUMBER)
     digits = re.sub(r"\D", "", str(serials[0].value)) if serials else ""
-    return f"****{digits[-4:]}" if len(digits) >= 4 else None
+    return digits if len(digits) >= 4 else None
+
+
+def masked_id(certificate: x509.Certificate) -> str | None:
+    """The identity number of the subject, all but its last four digits hidden."""
+    digits = identity_number(certificate)
+    return f"****{digits[-4:]}" if digits else None
 
 
 def subindication_key(indication: Indication, subindication: str | None) -> str | None:
