@@ -20,14 +20,17 @@ concurrency:
 
 jobs:
   verificar:
-    runs-on: ubuntu-latest
+    # Pinned: the container is what matters, but ubuntu-latest moves to Ubuntu 26.
+    runs-on: ubuntu-24.04
     container: debian:trixie
     timeout-minutes: 20
     steps:
       # Before the checkout: without git, actions/checkout downloads a tarball with no .git,
       # and verificar.sh needs `git rev-parse`.
+      # Retries: run 40812048365 failed because deb.debian.org timed out, not because of the code.
       - name: Paquetes de Debian 13
         run: |
+          echo 'Acquire::Retries "5";' > /etc/apt/apt.conf.d/80-retries
           apt-get update
           DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
             ca-certificates git gettext poppler-utils fonts-dejavu-core libpcsclite1 \
