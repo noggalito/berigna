@@ -373,8 +373,8 @@ class SigningPage:
         group = Adw.PreferencesGroup(
             title=_("Visible Signature"),
             description=_(
-                "Drag on the page to place it; drag the box to move it. In a box taller than "
-                "wide, the image goes above the text."
+                "Drag the box to move it and its corner to resize it; drag the page to scroll "
+                "it. In a box taller than wide, the image goes above the text."
             ),
         )
         labels = [_(label) for _kind, label in APPEARANCES]
