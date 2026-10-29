@@ -78,7 +78,7 @@ Nota: el tiempo de la operación criptográfica dentro del chip (medido: unos 0,
 
 | ID | Requisito | Prioridad |
 |---|---|---|
-| RNF-INT-01 | Las firmas que genera berigna se validan correctamente en ReFirma (RENIEC) y en el validador web de la Plataforma Nacional de Firma Digital – Firma Perú (PCM-SGTD). Evidencia actual: PAdES B-B válido en Firma Perú (SPK-03 §7); ReFirma pendiente (PR-INT-01) | Debe |
+| RNF-INT-01 | Las firmas que genera berigna se validan correctamente en el validador web de la Plataforma Nacional de Firma Digital – Firma Perú (PCM-SGTD), referencia oficial desde que RENIEC dejó de distribuir ReFirma a terceros (respuesta del 2026-10-28), y en ReFirma cuando se disponga de él. Evidencia actual: PAdES B-B válido en Firma Perú (SPK-03 §7) y en ReFirma (2026-10-28) | Debe |
 | RNF-INT-02 | Las firmas que genera berigna se validan correctamente en un validador conforme a ETSI EN 319 102-1 (por ejemplo, DSS) | Debe |
 | RNF-INT-03 | Las firmas PAdES se muestran como válidas en Adobe Acrobat Reader cuando la raíz de la IOFE está en su almacén de confianza | Debe |
 | RNF-INT-04 | berigna valida correctamente las firmas que generan ReFirma y otros programas acreditados | Debe |

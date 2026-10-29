@@ -67,13 +67,14 @@ Despliegue en organizaciones: un administrador puede definir valores por defecto
 ## 3. Almacén de confianza
 
 - Contenido: las raíces e intermedias de la IOFE necesarias para los certificados del DNIe y para las TSA acreditadas. La lista exacta sale de SPK-04 y de SPK-02.
-- Cadena del DNIe v2, identificada en SPK-01 y SPK-02 (huellas pendientes de confirmar con una fuente oficial):
+- Cadena del DNIe v2, identificada en SPK-01 y SPK-02. Huellas contrastadas el 2026-10-28 con los certificados del repositorio oficial de RENIEC (`https://pki.reniec.gob.pe/repositorio/`, indicado por RENIEC en su respuesta a CE-07); la página es HTTPS, pero los enlaces de descarga son HTTP, y RENIEC no publica las huellas aparte:
 
   | Certificado | SHA-256 |
   |---|---|
   | ECERNEP PERU CA ROOT 3 (raíz) | `9650 8217 C36F 3BBC 556E 2E07 D7AB 50C4 0DA8 027C 3882 3581 3322 E41B 87A5 68BE` |
   | ECEP-RENIEC | `9152 0E1F 381A 4640 2B94 90C0 6749 B2D8 1DDA D4B5 3E7F 252A 1DD7 9B55 DFCB 340B` |
   | ECEP-RENIEC CA Class 2 II | `EC94 327A 45C4 5A92 8104 D389 B352 5769 18B8 C072 3272 04E1 5E1F 8854 7D86 0A42` |
+  | ECEP-RENIEC CA Class 3 (de ROOT 3, 2024-2032; añadida el 2026-10-28: el repositorio la publica y la TSL de INDECOPI no la incluye) | `1901 5493 A1CC 0041 1643 FCE4 F48D 8D17 CBA8 D50F 685E 9174 9103 E601 FA61 A9EC` |
 
 - Cadena ROOT 5 (personas jurídicas), obtenida el 2026-10-27. La raíz se descargó por HTTPS desde `cdn.www.gob.pe`; las intermedias, por HTTP desde los dos espejos de RENIEC, que dieron archivos idénticos. La cadena se verificó con un certificado real de SUNARP:
 

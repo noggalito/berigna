@@ -58,6 +58,8 @@ Interfaz (Fase 3):
 
 ### Cambiado
 
+- Respuesta de RENIEC (2026-10-28): el PIN bloqueado se desbloquea en Ciudadano Digital o en una agencia (ERR-111); los certificados del DNIe duran cuatro años, aunque el DNI siga vigente, y se renuevan en Ciudadano Digital (ERR-211). El validador de referencia es Firma Perú, porque RENIEC ya no distribuye ReFirma a terceros.
+- Almacén de confianza: las huellas de las seis anclas coinciden con el repositorio oficial de RENIEC; se añade la "ECEP-RENIEC CA Class 3" de la jerarquía ROOT 3 (2024), que el repositorio publica y la TSL de INDECOPI no incluye, para que se puedan verificar los certificados que emite aunque el PDF no traiga esa intermedia.
 - Titular del proyecto: noggalito (DP-05). Cabeceras de licencia, metadatos del paquete, catálogos y "Acerca de" pasan de "Calú" a "noggalito"; el sitio de "Acerca de" es <https://berigna.noggalito.com> y las incidencias siguen en GitHub. Contacto único: `berigna@noggalito.com` (también en `SECURITY.md`, junto con los avisos privados de GitHub).
 - Identificador de la aplicación: `com.noggalito.Berigna` en lugar de `pe.berigna.Berigna` (ADR-0019), con su ruta de GSettings `/com/noggalito/Berigna/`. La configuración guardada con el identificador anterior no se migra; `scripts/escritorio.sh` borra la integración anterior.
 - Debian oficial desde la v1.0 (ADR-0020, modifica ADR-0006).
