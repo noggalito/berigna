@@ -79,8 +79,10 @@ class SigningServices:
     appearance_dir: Path | None = None  # preloaded rubric and logo (None: none available)
 
 
-# Kinds of visible signature, in the order of the list (decision of 2026-10-28).
-APPEARANCES = (
+# Kinds of visible signature, in the order of the list, after "Not visible" (decisions of
+# 2026-10-28: one list, as other signing programs have, instead of a switch and a list).
+APPEARANCES: tuple[tuple[AppearanceKind | None, str], ...] = (
+    (None, N_("Not visible")),
     (AppearanceKind.TEXT, N_("Text only")),
     (AppearanceKind.RUBRIC, N_("Handwritten signature (image)")),
     (AppearanceKind.LOGO, N_("Logo")),
@@ -98,7 +100,13 @@ DNI_SAMPLES = {
     DniDisplay.HIDDEN: None,
 }
 # Reasons in the list, after "No reason" and before "Other…".
-REASONS = (Reason.AUTHORSHIP, Reason.AGREEMENT, Reason.ENDORSEMENT, Reason.APPROVAL)
+REASONS = (
+    Reason.AUTHORSHIP,
+    Reason.AGREEMENT,
+    Reason.ENDORSEMENT,
+    Reason.APPROVAL,
+    Reason.ON_BEHALF,
+)
 RECENT_LOCATIONS = 5
 
 
@@ -360,13 +368,14 @@ class SigningPage:
         return layout
 
     def _visible_group(self) -> Adw.PreferencesGroup:
-        """Visible signature (CU-02): on or off, its appearance, and the box on the preview."""
+        """Visible signature (CU-02): not visible or its appearance, and the box on the preview."""
         settings = self._services.settings
-        group = Adw.PreferencesGroup(title=_("Visible Signature"))
-        self.visible = Adw.SwitchRow(
-            title=_("Show the Signature on the Page"),
-            subtitle=_("Drag on the page to place it; drag the box to move it."),
-            subtitle_lines=0,
+        group = Adw.PreferencesGroup(
+            title=_("Visible Signature"),
+            description=_(
+                "Drag on the page to place it; drag the box to move it. In a box taller than "
+                "wide, the image goes above the text."
+            ),
         )
         labels = [_(label) for _kind, label in APPEARANCES]
         # The value goes in the subtitle, in full (see berigna.ui.preferences._combo).
@@ -377,16 +386,14 @@ class SigningPage:
             list_factory=label_factory(visible=True),
             subtitle_lines=0,
         )
-        kind = settings.get_string("appearance-kind") if settings else "text"
-        kinds = [k.value for k, _label in APPEARANCES]
-        self.appearance.set_selected(kinds.index(kind) if kind in kinds else 0)
-        self.appearance.connect("notify::selected", lambda *_a: self.update_appearance())
-        self.visible.connect("notify::active", lambda *_a: self._on_visible())
+        if settings is not None and settings.get_boolean("visible-signature"):
+            kind = settings.get_string("appearance-kind")
+            kinds = [k.value if k else None for k, _label in APPEARANCES]
+            self.appearance.set_selected(kinds.index(kind) if kind in kinds else 1)
+        self.appearance.connect("notify::selected", lambda *_a: self._on_visible())
         self.reason.connect(self.update_appearance)
         self.location.connect(self.update_appearance)
-        group.add(self.visible)
         group.add(self.appearance)
-        self.visible.set_active(settings.get_boolean("visible-signature") if settings else False)
         self._on_visible()
         return group
 
@@ -423,7 +430,8 @@ class SigningPage:
         settings = self._services.settings
         return DniDisplay(settings.get_string("appearance-dni") if settings else "last-four")
 
-    def appearance_kind(self) -> AppearanceKind:
+    def appearance_kind(self) -> AppearanceKind | None:
+        """The chosen appearance; None: not visible."""
         return APPEARANCES[self.appearance.get_selected()][0]
 
     def _image(self, kind: AppearanceKind) -> Path | None:
@@ -431,16 +439,15 @@ class SigningPage:
         return stored_image(directory, kind) if directory is not None else None
 
     def _on_visible(self) -> None:
-        active = self.visible.get_active()
-        self.appearance.set_sensitive(active)
+        active = self.appearance_kind() is not None
         self.preview.set_box(self.preview.box or self.preview.default_box() if active else None)
         self.update_appearance()
 
     def visible_signature(self) -> VisibleSignature | None:
         box = self.preview.box
-        if box is None or not self.visible.get_active():
-            return None
         kind = self.appearance_kind()
+        if box is None or kind is None:
+            return None
         return VisibleSignature(
             box.page,
             (box.x, box.y, box.width, box.height),
@@ -455,7 +462,11 @@ class SigningPage:
         the card when signing."""
         visible = self.visible_signature()
         kind = self.appearance_kind()
-        missing = kind in (AppearanceKind.RUBRIC, AppearanceKind.LOGO) and not self._image(kind)
+        missing = (
+            kind in (AppearanceKind.RUBRIC, AppearanceKind.LOGO)
+            and kind is not None
+            and not self._image(kind)
+        )
         label = _(APPEARANCES[self.appearance.get_selected()][1])
         warning = _("Load the image in Preferences → Visible Signature.")
         self.appearance.set_subtitle(f"{label}\n{warning}" if missing else label)

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-28 19:36-0500\n"
+"POT-Creation-Date: 2026-10-28 20:11-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -38,7 +38,7 @@ msgstr ""
 msgid "Main Menu"
 msgstr ""
 
-#: data/ui/window.blp:37 src/berigna/ui/signing.py:183
+#: data/ui/window.blp:37 src/berigna/ui/signing.py:195
 #: src/berigna/ui/window.py:71
 msgid "Show in Spanish"
 msgstr ""
@@ -88,20 +88,24 @@ msgstr ""
 msgid "How to verify: {url}"
 msgstr ""
 
-#: src/berigna/core/reasons.py:30
+#: src/berigna/core/reasons.py:31
 msgid "Authorship of the document"
 msgstr ""
 
-#: src/berigna/core/reasons.py:31
+#: src/berigna/core/reasons.py:32
 msgid "In agreement"
 msgstr ""
 
-#: src/berigna/core/reasons.py:32
+#: src/berigna/core/reasons.py:33
 msgid "Endorsement (V° B°)"
 msgstr ""
 
-#: src/berigna/core/reasons.py:33
+#: src/berigna/core/reasons.py:34
 msgid "Approval of the document"
+msgstr ""
+
+#: src/berigna/core/reasons.py:36
+msgid "On behalf of another person"
 msgstr ""
 
 #: src/berigna/core/report/messages.py:19
@@ -570,219 +574,215 @@ msgstr ""
 msgid "More Information"
 msgstr ""
 
-#: src/berigna/ui/preferences.py:103
+#: src/berigna/ui/preferences.py:113
 msgid "General"
 msgstr ""
 
-#: src/berigna/ui/preferences.py:104
+#: src/berigna/ui/preferences.py:114
 msgid "Language"
 msgstr ""
 
-#: src/berigna/ui/preferences.py:106
+#: src/berigna/ui/preferences.py:116
 msgid "Interface Language"
 msgstr ""
 
-#: src/berigna/ui/preferences.py:108
+#: src/berigna/ui/preferences.py:118
 msgid "Use the System Language"
 msgstr ""
 
-#: src/berigna/ui/preferences.py:113
+#: src/berigna/ui/preferences.py:123
 msgid "Signatures"
 msgstr ""
 
-#: src/berigna/ui/preferences.py:115
+#: src/berigna/ui/preferences.py:125
 msgid "Default Level"
 msgstr ""
 
-#: src/berigna/ui/preferences.py:120
+#: src/berigna/ui/preferences.py:130
 msgid "Hash Algorithm"
 msgstr ""
 
-#: src/berigna/ui/preferences.py:122
+#: src/berigna/ui/preferences.py:132
 msgid "Suffix of Signed Files"
 msgstr ""
 
-#: src/berigna/ui/preferences.py:124 src/berigna/ui/preferences.py:165
+#: src/berigna/ui/preferences.py:134 src/berigna/ui/preferences.py:175
 msgid "Folder for Signed Files"
 msgstr ""
 
-#: src/berigna/ui/preferences.py:127
+#: src/berigna/ui/preferences.py:137
 msgid "Choose Folder"
 msgstr ""
 
-#: src/berigna/ui/preferences.py:134
+#: src/berigna/ui/preferences.py:144
 msgid "Use the Folder of the Original"
 msgstr ""
 
-#: src/berigna/ui/preferences.py:151
+#: src/berigna/ui/preferences.py:161
 msgid "The suffix cannot be empty or contain “/”."
 msgstr ""
 
-#: src/berigna/ui/preferences.py:157
+#: src/berigna/ui/preferences.py:167
 msgid "The same folder as the original"
 msgstr ""
 
-#: src/berigna/ui/preferences.py:180 src/berigna/ui/signing.py:361
+#: src/berigna/ui/preferences.py:190 src/berigna/ui/signing.py:374
 msgid "Visible Signature"
 msgstr ""
 
-#: src/berigna/ui/preferences.py:182
+#: src/berigna/ui/preferences.py:192
 msgid "Defaults"
 msgstr ""
 
-#: src/berigna/ui/preferences.py:184
+#: src/berigna/ui/preferences.py:194
 msgid ""
 "The signed PDF always carries the full DNI in its certificate; “DNI in the "
 "Signature” only changes what is printed."
 msgstr ""
 
-#: src/berigna/ui/preferences.py:188 src/berigna/ui/signing.py:363
-msgid "Show the Signature on the Page"
-msgstr ""
-
-#: src/berigna/ui/preferences.py:193 src/berigna/ui/signing.py:370
+#: src/berigna/ui/preferences.py:211 src/berigna/ui/signing.py:383
 msgid "Appearance"
 msgstr ""
 
-#: src/berigna/ui/preferences.py:196
+#: src/berigna/ui/preferences.py:218
 msgid "Language of the Signature"
 msgstr ""
 
-#: src/berigna/ui/preferences.py:201
+#: src/berigna/ui/preferences.py:223
 msgid "DNI in the Signature"
 msgstr ""
 
-#: src/berigna/ui/preferences.py:210 src/berigna/ui/preferences.py:264
+#: src/berigna/ui/preferences.py:232 src/berigna/ui/preferences.py:286
 msgid "Images"
 msgstr ""
 
-#: src/berigna/ui/preferences.py:212
+#: src/berigna/ui/preferences.py:234
 msgid ""
 "Loaded once and kept by berigna, without the metadata of the original file."
 msgstr ""
 
-#: src/berigna/ui/preferences.py:217
+#: src/berigna/ui/preferences.py:239
 msgid "Handwritten Signature"
 msgstr ""
 
-#: src/berigna/ui/preferences.py:218 src/berigna/ui/signing.py:86
+#: src/berigna/ui/preferences.py:240 src/berigna/ui/signing.py:88
 msgid "Logo"
 msgstr ""
 
-#: src/berigna/ui/preferences.py:223 src/berigna/ui/preferences.py:269
+#: src/berigna/ui/preferences.py:245 src/berigna/ui/preferences.py:291
 msgid "Choose Image"
 msgstr ""
 
-#: src/berigna/ui/preferences.py:230
+#: src/berigna/ui/preferences.py:252
 msgid "Remove Image"
 msgstr ""
 
-#: src/berigna/ui/preferences.py:246
+#: src/berigna/ui/preferences.py:268
 msgid "Loaded"
 msgstr ""
 
-#: src/berigna/ui/preferences.py:246
+#: src/berigna/ui/preferences.py:268
 msgid "No image"
 msgstr ""
 
-#: src/berigna/ui/preferences.py:255 src/berigna/ui/verification.py:244
+#: src/berigna/ui/preferences.py:277 src/berigna/ui/verification.py:244
 #, python-brace-format
 msgid "{name} could not be saved."
 msgstr ""
 
-#: src/berigna/ui/preferences.py:284
+#: src/berigna/ui/preferences.py:306
 msgid "Network"
 msgstr ""
 
-#: src/berigna/ui/preferences.py:287
+#: src/berigna/ui/preferences.py:309
 msgid "Timestamping Authority"
 msgstr ""
 
-#: src/berigna/ui/preferences.py:289
+#: src/berigna/ui/preferences.py:311
 msgid ""
 "Needed for the levels with a timestamp. Use a timestamping authority "
 "accredited by INDECOPI."
 msgstr ""
 
-#: src/berigna/ui/preferences.py:293
+#: src/berigna/ui/preferences.py:315
 msgid "Address of the Timestamping Authority"
 msgstr ""
 
-#: src/berigna/ui/preferences.py:295
+#: src/berigna/ui/preferences.py:317
 msgid "_Test"
 msgstr ""
 
-#: src/berigna/ui/preferences.py:301
+#: src/berigna/ui/preferences.py:323
 msgid "Connection"
 msgstr ""
 
-#: src/berigna/ui/preferences.py:303
+#: src/berigna/ui/preferences.py:325
 msgid "Network Timeout"
 msgstr ""
 
-#: src/berigna/ui/preferences.py:304
+#: src/berigna/ui/preferences.py:326
 msgid "Seconds to wait for each answer"
 msgstr ""
 
-#: src/berigna/ui/preferences.py:308
+#: src/berigna/ui/preferences.py:330
 msgid "Proxy"
 msgstr ""
 
-#: src/berigna/ui/preferences.py:311
+#: src/berigna/ui/preferences.py:333
 msgid "The Proxy of the System"
 msgstr ""
 
-#: src/berigna/ui/preferences.py:312
+#: src/berigna/ui/preferences.py:334
 msgid "Manual"
 msgstr ""
 
-#: src/berigna/ui/preferences.py:313
+#: src/berigna/ui/preferences.py:335
 msgid "No Proxy"
 msgstr ""
 
-#: src/berigna/ui/preferences.py:317
+#: src/berigna/ui/preferences.py:339
 msgid "Proxy Address"
 msgstr ""
 
-#: src/berigna/ui/preferences.py:330
+#: src/berigna/ui/preferences.py:352
 msgid "The address must start with http:// or https://."
 msgstr ""
 
-#: src/berigna/ui/preferences.py:338
+#: src/berigna/ui/preferences.py:360
 msgid "There is no timestamping authority configured."
 msgstr ""
 
-#: src/berigna/ui/preferences.py:346
+#: src/berigna/ui/preferences.py:368
 msgid "The timestamping authority answered with a valid time-stamp."
 msgstr ""
 
-#: src/berigna/ui/preferences.py:367
+#: src/berigna/ui/preferences.py:389
 msgid "The proxy address must start with http:// or https://."
 msgstr ""
 
-#: src/berigna/ui/preferences.py:374
+#: src/berigna/ui/preferences.py:396
 msgid "Trust"
 msgstr ""
 
-#: src/berigna/ui/preferences.py:377
+#: src/berigna/ui/preferences.py:399
 msgid "INDECOPI Trusted List"
 msgstr ""
 
-#: src/berigna/ui/preferences.py:380
+#: src/berigna/ui/preferences.py:402
 msgid ""
 "berigna adds the certification authorities accredited by INDECOPI to its own "
 "root certificates. The list is checked once a day."
 msgstr ""
 
-#: src/berigna/ui/preferences.py:387
+#: src/berigna/ui/preferences.py:409
 msgid "_Update Now"
 msgstr ""
 
-#: src/berigna/ui/preferences.py:409
+#: src/berigna/ui/preferences.py:431
 msgid "The trusted list could not be updated."
 msgstr ""
 
-#: src/berigna/ui/preferences.py:411
+#: src/berigna/ui/preferences.py:433
 msgid "The trusted list is up to date."
 msgstr ""
 
@@ -1000,173 +1000,199 @@ msgid_plural "Valid until {date}. {n} accredited certification authorities."
 msgstr[0] ""
 msgstr[1] ""
 
-#: src/berigna/ui/preview.py:73
+#: src/berigna/ui/preview.py:80
 msgid "No preview"
 msgstr ""
 
-#: src/berigna/ui/preview.py:74
+#: src/berigna/ui/preview.py:81
 msgid "This PDF cannot be shown, but it can still be signed."
 msgstr ""
 
-#: src/berigna/ui/preview.py:92
+#: src/berigna/ui/preview.py:102
+msgid "Zoom Out"
+msgstr ""
+
+#: src/berigna/ui/preview.py:103
+msgid "Fit the Page"
+msgstr ""
+
+#: src/berigna/ui/preview.py:105
+msgid "Zoom In"
+msgstr ""
+
+#: src/berigna/ui/preview.py:115
 msgid "Previous Page"
 msgstr ""
 
-#: src/berigna/ui/preview.py:94
+#: src/berigna/ui/preview.py:117
 msgid "Next Page"
 msgstr ""
 
-#: src/berigna/ui/preview.py:114
-#, python-brace-format
-msgid "Page {page} of {total}"
+#: src/berigna/ui/preview.py:121 src/berigna/ui/preview.py:122
+msgid "Page Number"
 msgstr ""
 
-#: src/berigna/ui/signing.py:84
-msgid "Text only"
+#: src/berigna/ui/preview.py:124
+#, python-brace-format
+msgid "of {total}"
+msgstr ""
+
+#: src/berigna/ui/preview.py:163
+msgid "Fit"
 msgstr ""
 
 #: src/berigna/ui/signing.py:85
-msgid "Handwritten signature (image)"
+msgid "Not visible"
+msgstr ""
+
+#: src/berigna/ui/signing.py:86
+msgid "Text only"
 msgstr ""
 
 #: src/berigna/ui/signing.py:87
+msgid "Handwritten signature (image)"
+msgstr ""
+
+#: src/berigna/ui/signing.py:89
 msgid "QR code"
 msgstr ""
 
-#: src/berigna/ui/signing.py:91
+#: src/berigna/ui/signing.py:93
 msgid "Last four digits (****5678)"
 msgstr ""
 
-#: src/berigna/ui/signing.py:92
+#: src/berigna/ui/signing.py:94
 msgid "Full (12345678)"
 msgstr ""
 
-#: src/berigna/ui/signing.py:93
+#: src/berigna/ui/signing.py:95
 msgid "Do not show"
 msgstr ""
 
-#: src/berigna/ui/signing.py:152 src/berigna/ui/signing.py:227
+#: src/berigna/ui/signing.py:164 src/berigna/ui/signing.py:239
 msgid "Confirm Signature"
 msgstr ""
 
-#: src/berigna/ui/signing.py:174 src/berigna/ui/signing.py:177
+#: src/berigna/ui/signing.py:186 src/berigna/ui/signing.py:189
 msgid "DNIe PIN"
 msgstr ""
 
-#: src/berigna/ui/signing.py:189
+#: src/berigna/ui/signing.py:201
 msgid "_Cancel"
 msgstr ""
 
-#: src/berigna/ui/signing.py:190 src/berigna/ui/signing.py:263
+#: src/berigna/ui/signing.py:202 src/berigna/ui/signing.py:275
 #: src/berigna/ui/verification.py:71
 msgid "_Sign"
 msgstr ""
 
-#: src/berigna/ui/signing.py:230
+#: src/berigna/ui/signing.py:242
 msgid "_Close"
 msgstr ""
 
-#: src/berigna/ui/signing.py:283
+#: src/berigna/ui/signing.py:295
 msgid ""
 "Some of the signatures already in this document are not valid. Your "
 "signature will be added anyway."
 msgstr ""
 
-#: src/berigna/ui/signing.py:296
+#: src/berigna/ui/signing.py:308
 msgid "Signature Level"
 msgstr ""
 
-#: src/berigna/ui/signing.py:324
+#: src/berigna/ui/signing.py:336
 msgid "Signature Data"
 msgstr ""
 
-#: src/berigna/ui/signing.py:326
+#: src/berigna/ui/signing.py:338
 msgid ""
 "Signature validators such as ReFirma show them. The reasons of the list are "
 "written in the language of the signature."
 msgstr ""
 
-#: src/berigna/ui/signing.py:332
+#: src/berigna/ui/signing.py:344
 msgid "Reason"
 msgstr ""
 
-#: src/berigna/ui/signing.py:333
+#: src/berigna/ui/signing.py:345
 msgid "Other Reason"
 msgstr ""
 
-#: src/berigna/ui/signing.py:333
+#: src/berigna/ui/signing.py:345
 msgid "Other reason…"
 msgstr ""
 
-#: src/berigna/ui/signing.py:334
+#: src/berigna/ui/signing.py:346
 msgid "No reason"
 msgstr ""
 
-#: src/berigna/ui/signing.py:338
+#: src/berigna/ui/signing.py:350
 msgid "Location"
 msgstr ""
 
-#: src/berigna/ui/signing.py:339
+#: src/berigna/ui/signing.py:351
 msgid "Other Location"
 msgstr ""
 
-#: src/berigna/ui/signing.py:339
+#: src/berigna/ui/signing.py:351
 msgid "Other location…"
 msgstr ""
 
-#: src/berigna/ui/signing.py:340
+#: src/berigna/ui/signing.py:352
 msgid "No location"
 msgstr ""
 
-#: src/berigna/ui/signing.py:364
-msgid "Drag on the page to place it; drag the box to move it."
+#: src/berigna/ui/signing.py:376
+msgid ""
+"Drag on the page to place it; drag the box to move it. In a box taller than "
+"wide, the image goes above the text."
 msgstr ""
 
-#: src/berigna/ui/signing.py:456
+#: src/berigna/ui/signing.py:471
 msgid "Load the image in Preferences → Visible Signature."
 msgstr ""
 
-#: src/berigna/ui/signing.py:462
+#: src/berigna/ui/signing.py:477
 msgid "NAMES AND SURNAMES"
 msgstr ""
 
-#: src/berigna/ui/signing.py:534
+#: src/berigna/ui/signing.py:549
 msgid "Checking your certificate…"
 msgstr ""
 
-#: src/berigna/ui/signing.py:573
+#: src/berigna/ui/signing.py:588
 msgid "Signing with your DNIe…"
 msgstr ""
 
-#: src/berigna/ui/signing.py:590
+#: src/berigna/ui/signing.py:605
 msgid "Document signed"
 msgstr ""
 
-#: src/berigna/ui/signing.py:596
+#: src/berigna/ui/signing.py:611
 msgid "_Open"
 msgstr ""
 
-#: src/berigna/ui/signing.py:597
+#: src/berigna/ui/signing.py:612
 msgid "Show in _Folder"
 msgstr ""
 
-#: src/berigna/ui/signing.py:598
+#: src/berigna/ui/signing.py:613
 msgid "_Verify"
 msgstr ""
 
-#: src/berigna/ui/signing.py:611
+#: src/berigna/ui/signing.py:626
 msgid "Signature cancelled. The PIN was not sent."
 msgstr ""
 
-#: src/berigna/ui/signing.py:624
+#: src/berigna/ui/signing.py:639
 msgid "The document was not signed"
 msgstr ""
 
-#: src/berigna/ui/signing.py:628
+#: src/berigna/ui/signing.py:643
 msgid "_Back"
 msgstr ""
 
-#: src/berigna/ui/signing.py:633
+#: src/berigna/ui/signing.py:648
 msgid "Sign Without _Timestamp (B-B)"
 msgstr ""
 
