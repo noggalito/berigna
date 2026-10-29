@@ -32,7 +32,7 @@ from berigna.core.trust import TrustStore  # noqa: E402
 from berigna.core.validation import Indication, PdfVerification  # noqa: E402
 from berigna.ui import presentation  # noqa: E402
 from berigna.ui.i18n import N_, _, catalogue, current_language  # noqa: E402
-from berigna.ui.widgets import brand_markup, named  # noqa: E402
+from berigna.ui.widgets import brand_markup, named, show_in_spanish, spanish_button  # noqa: E402
 
 if TYPE_CHECKING:
     from berigna.ui.window import MainWindow
@@ -61,6 +61,7 @@ class VerificationPage:
         self._data = b""
         self._sha256 = ""
         self._existing_problems = False
+        self.spanish_dialog: Adw.AlertDialog | None = None
 
         menu = Gio.Menu()
         menu.append(_("PDF Report in Spanish"), "verification.export::pdf-es")
@@ -193,10 +194,7 @@ class VerificationPage:
         self.summary_row = Adw.ActionRow(title=view.summary, title_lines=0, use_markup=False)
         self.summary_row.add_prefix(_icon(view.icon, view.style))
         if current_language() is Language.QUZ_PE:
-            spanish = Gtk.Button(label=_("Show in Spanish"), valign=Gtk.Align.CENTER)
-            spanish.add_css_class("flat")
-            spanish.connect("clicked", lambda _b: self.show_spanish())
-            self.summary_row.add_suffix(spanish)
+            self.summary_row.add_suffix(spanish_button(self.show_spanish, valign=Gtk.Align.CENTER))
         summary.add(self.summary_row)
         result.add(summary)
         for number, signature in enumerate(view.signatures, start=1):
@@ -222,12 +220,9 @@ class VerificationPage:
             raise RuntimeError("no verification result yet")
         spanish = translations(Language.ES_PE)
         view = presentation.verification_view(self.verification, self._store, spanish)
-        results = (*view.signatures, *view.timestamps)
-        body = "\n\n".join([view.summary, *(f"{r.title}: {r.explanation}" for r in results)])
-        dialog = Adw.AlertDialog(heading=self.document.path.name, body=body)
-        dialog.add_response("close", spanish.gettext("_Close"))
-        dialog.present(self._window.window)
-        return dialog
+        body = presentation.verification_text(view, spanish)
+        self.spanish_dialog = show_in_spanish(self._window.window, self.document.path.name, body)
+        return self.spanish_dialog
 
     def _result_group(self, view: presentation.ResultView, number: int) -> Adw.PreferencesGroup:
         group = Adw.PreferencesGroup(title=view.title, description=brand_markup(view.explanation))
