@@ -3,9 +3,9 @@
 | Campo | Valor |
 |---|---|
 | Documento | BRG-CAL-001 |
-| Versión | 0.2.0 |
+| Versión | 0.3.0 |
 | Estado | Borrador |
-| Fecha | 2026-10-27 |
+| Fecha | 2026-10-29 |
 | Responsable | noggalito |
 
 ## 1. Objetivos
@@ -21,7 +21,7 @@
 |---|---|---|---|
 | Unitarias | Funciones y clases de `berigna.core` | pytest, hypothesis | Sí |
 | Integración con un *token* simulado | Firma y validación de punta a punta con SoftHSM2 y una PKI de pruebas | pytest, softhsm2, una TSA y un OCSP locales de prueba | Sí |
-| Interoperabilidad | Validar las salidas de berigna con validadores externos y validar con berigna las firmas producidas por otros. Una firma solo pasa si la indicación global es TOTAL_PASSED **y** cada sello de tiempo, en el informe detallado, da PASSED (SPK-03 §5) | DSS 6.2 (JAR oficiales de Maven Central con un arnés Java mínimo, sin Docker), ReFirma (manual), Adobe Reader (manual) | Parcial (DSS en CI) |
+| Interoperabilidad | Validar las salidas de berigna con validadores externos y validar con berigna las firmas producidas por otros. Una firma solo pasa si la indicación global es TOTAL_PASSED **y** cada sello de tiempo, en el informe detallado, da PASSED (SPK-03 §5) | DSS 6.2 (JAR oficiales de Maven Central con un arnés Java mínimo, sin Docker), Firma Perú (manual; validador de referencia desde la respuesta de RENIEC del 2026-10-28), validador web de ReFirma (manual, interoperabilidad), Adobe Reader (manual) | Parcial (DSS en CI) |
 | Hardware real (HIL) | DNIe y lectores reales | Lista de comprobación manual con un registro de evidencias, siguiendo el [protocolo de pruebas con PIN](protocolo-pruebas-con-pin.md) | No |
 | Interfaz | Flujos de la GUI | Pruebas manuales guiadas; automatización con dogtail o AT-SPI, si es viable | Parcial |
 | Seguridad | *Fuzzing*, análisis estático, dependencias, corpus de ataques | atheris, bandit, pip-audit, corpus de ataques PDF y XML | Sí |
@@ -74,7 +74,7 @@ Los perfiles de los certificados (extensiones, políticas, uso de clave, algorit
 | XAdES envolvente | PR-XAD-05 | PR-XAD-06 | PR-XAD-07 | PR-XAD-08 |
 | XAdES separada | PR-XAD-09 | PR-XAD-10 | PR-XAD-11 | PR-XAD-12 |
 
-Cada celda se ejecuta en tres entornos: (a) SoftHSM en CI, (b) validación con DSS en CI y (c) DNIe real con validación en ReFirma (HIL, antes de cada versión).
+Cada celda se ejecuta en tres entornos: (a) SoftHSM en CI, (b) validación con DSS en CI y (c) DNIe real con validación en Firma Perú y en el validador web de ReFirma (HIL, antes de cada versión).
 
 ## 5. Casos de prueba de dispositivo, validación y sello de tiempo
 
@@ -117,11 +117,11 @@ Cada celda se ejecuta en tres entornos: (a) SoftHSM en CI, (b) validación con D
 
 | ID | Prueba | Resultado esperado |
 |---|---|---|
-| PR-INT-01 | Matriz completa de §4 firmada con el DNIe real y validada en ReFirma | Todas válidas |
+| PR-INT-01 | Matriz completa de §4 firmada con el DNIe real y validada en Firma Perú y en el validador web de ReFirma | Todas válidas en los dos |
 | PR-INT-02 | La misma matriz validada en DSS | TOTAL-PASSED con el nivel correcto |
 | PR-INT-03 | PAdES abiertos en Adobe Acrobat Reader (con la raíz de la IOFE como confiable) | "Firma válida" |
 | PR-INT-04 | PAdES abiertos en Evince/Papers y Okular | Se muestra la firma; la apariencia es correcta |
-| PR-INT-05 | Firmas generadas por ReFirma, validadas en berigna | Mismo resultado que en ReFirma |
+| PR-INT-05 | Firmas generadas por Firma Perú y por ReFirma, validadas en berigna | Mismo resultado que en Firma Perú |
 | PR-INT-06 | Firmas generadas por DSS, validadas en berigna | Mismo resultado que en DSS |
 | PR-INT-07 | Matriz completa validada en el validador oficial Firma Perú (https://apps.firmaperu.gob.pe/web/validador.xhtml; usa DSS y la TSL peruana) | "Resultado válido" con el formato y nivel correctos. Primera evidencia: PAdES B-B del DNIe real, 2026-10-27 |
 
@@ -141,7 +141,7 @@ Cada celda se ejecuta en tres entornos: (a) SoftHSM en CI, (b) validación con D
 | PR-I18N-02 | Detección de cadenas visibles sin marcar con `_()` (análisis estático y `xgettext` comparado con el código) | Ninguna | Sí |
 | PR-I18N-03 | Pseudolocalización (textos alargados un 40 % y con acentos) y recorrido de todas las vistas | Sin truncados ni solapamientos | Parcial |
 | PR-I18N-04 | Respaldo de idioma: `LANGUAGE=quz_PE`, `quy_PE`, `es_MX`, `fr_FR`, `en_US`, `C` | quechua, quechua y es_PE en los demás casos (ADR-0015) | Sí |
-| PR-I18N-05 | Selector de idioma en las preferencias (`ui-language`) | El idioma forzado se aplica tras reiniciar | Manual |
+| PR-I18N-05 | Selector de idioma en las preferencias (`ui-language`) | El idioma forzado se aplica al momento, sin reiniciar (RF-090) | Automática (`test_preferences.py`) |
 | PR-I18N-06 | Formato de fechas y horas en el resultado de verificación y en el sello visible, en ambos idiomas | Formato regional correcto; zona horaria indicada | Sí |
 | PR-I18N-07 | Explicaciones de verificación: cada código ETSI y cada `ERR-xxx` tienen su texto en es_PE y en quechua | Cobertura completa | Sí |
 | PR-I18N-08 | Revisión de los textos críticos por personas nativas (RNF-USA-09; en quechua, desde la versión 1.1) | Acta de revisión archivada en las evidencias | No |

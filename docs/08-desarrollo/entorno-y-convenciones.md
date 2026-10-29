@@ -3,9 +3,9 @@
 | Campo | Valor |
 |---|---|
 | Documento | BRG-DES-001 |
-| Versión | 0.2.0 |
+| Versión | 0.3.0 |
 | Estado | Borrador |
-| Fecha | 2026-10-27 |
+| Fecha | 2026-10-29 |
 | Responsable | noggalito |
 
 ## 1. Estructura del repositorio
@@ -116,6 +116,8 @@ El script `scripts/verificar.sh` ejecuta exactamente esas comprobaciones (nunca 
 | Comentarios y *docstrings* | En inglés. La documentación de producto, en español |
 | Cabeceras | `# SPDX-License-Identifier: GPL-3.0-or-later` y `# SPDX-FileCopyrightText: <año> noggalito` |
 | Errores | Jerarquía `BerignaError` con un código (`ERR-xxx`) vinculado al catálogo de mensajes de UX |
+| Fronteras con bibliotecas | Toda llamada a pyHanko, pyhanko-certvalidator, asn1crypto, pyscard, lxml o signxml que procese datos de fuera (un PDF, un CMS, una respuesta de red, la tarjeta) traduce sus excepciones a `BerignaError` o a un resultado ETSI, y tiene una prueba con una entrada hostil o una excepción inesperada simulada. Un documento malformado da TOTAL-FAILED/FORMAT_FAILURE o ERR-304, nunca "error inesperado"; en un lote, ni siquiera un error desconocido detiene a los demás documentos (ERR-000 en ese archivo) |
+| Prototipos | `spikes/` se conserva como se escribió en la Fase 0 y queda fuera de `ruff` (`extend-exclude`); no se importa desde `src/` ni desde `tests/` |
 | Registros | El módulo `logging`, con un filtro que elimina los tipos sensibles (`Pin`, `bytes` del documento) |
 
 ## 4. Flujo de trabajo con git

@@ -3,9 +3,9 @@
 | Campo | Valor |
 |---|---|
 | Documento | BRG-NOR-002 |
-| Versión | 0.1.1 |
+| Versión | 0.1.2 |
 | Estado | Borrador |
-| Fecha | 2026-10-27 |
+| Fecha | 2026-10-28 |
 | Responsable | noggalito |
 
 ## 1. Estándares de firma

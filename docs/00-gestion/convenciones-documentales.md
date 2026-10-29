@@ -3,9 +3,9 @@
 | Campo | Valor |
 |---|---|
 | Documento | BRG-GES-001 |
-| Versión | 0.2.0 |
+| Versión | 0.3.0 |
 | Estado | Borrador |
-| Fecha | 2026-10-27 |
+| Fecha | 2026-10-29 |
 | Responsable | noggalito |
 
 ## 1. Idioma y formato
@@ -19,6 +19,8 @@
 ## 2. Cabecera obligatoria
 
 Cada documento empieza con una tabla de control con estos campos: Documento (código), Versión, Estado, Fecha y Responsable.
+
+Fecha es la del último cambio de contenido, y cambia con él en el mismo PR. Versión: el segundo número sube con cada cambio de contenido (requisitos, decisiones, criterios); el tercero, con correcciones que no cambian el sentido (erratas, enlaces, cifras al día). Las ADR no llevan versión: se modifican con otra ADR.
 
 Códigos de documento: `BRG-<ÁREA>-<NNN>`.
 

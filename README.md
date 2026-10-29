@@ -2,7 +2,7 @@
 
 Aplicación de escritorio para GNU/Linux (Debian) que permite firmar digitalmente documentos —especialmente PDF— con los certificados digitales que trae por defecto el DNI electrónico (DNIe) peruano, y verificar documentos firmados.
 
-> Estado: en desarrollo, Fase 3 (interfaz gráfica) terminada salvo la prueba de usabilidad con usuarios. berigna firma PDF en PAdES, de B-B a B-LTA, con el DNIe v2, también por lotes y con firma visible (las firmas son válidas en los validadores oficiales Firma Perú y ReFirma), verifica firmas PAdES con indicaciones ETSI, genera informes en JSON y PDF, y está en español y en quechua. Todavía no hay versiones publicadas. Estado detallado en [`docs/README.md`](docs/README.md) §7. Los prototipos de investigación de la Fase 0 están en [`spikes/`](spikes/README.md).
+> Estado: en desarrollo, Fase 3 (interfaz gráfica) funcionalmente completa; su cierre formal depende de la prueba de usabilidad con usuarios. berigna firma PDF en PAdES, de B-B a B-LTA, con el DNIe v2, también por lotes y con firma visible (las firmas son válidas en Firma Perú, el validador de referencia, y en el validador web de ReFirma), verifica firmas PAdES con indicaciones ETSI, genera informes en JSON y PDF, y está en español y en quechua. Todavía no hay versiones publicadas. Estado detallado en [`docs/README.md`](docs/README.md) §7. Los prototipos de investigación de la Fase 0 están en [`spikes/`](spikes/README.md).
 
 ## Resumen del producto
 
