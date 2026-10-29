@@ -12,6 +12,7 @@ as its last four digits.
 
 import datetime as dt
 import enum
+import logging
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass, field
 
@@ -25,6 +26,8 @@ from berigna.core.token.monitor import DeviceState, DeviceStatus
 from berigna.core.trust import TrustStore
 from berigna.core.validation import check_signer
 from berigna.core.validation.preflight import EXPIRY_WARNING
+
+log = logging.getLogger(__name__)
 
 
 class Status(enum.Enum):
@@ -62,7 +65,12 @@ def diagnose(
     ocsp_responses: Sequence[bytes] = (),
     crls: Sequence[bytes] = (),
 ) -> list[Result]:
-    """One :class:`Result` per :class:`Step`, in order. Never asks for the PIN."""
+    """One :class:`Result` per :class:`Step`, in order. Never asks for the PIN.
+
+    ``moment`` is for the tests: without it, the certificate is validated "now", which allows
+    RENIEC's OCSP answers a few minutes of clock difference (CURRENT_TIME_TOLERANCE); a fixed
+    moment allows one second, and a real answer then looked "too recent" (2026-10-29)."""
+    validate_at = moment
     moment = moment or dt.datetime.now(dt.UTC)
     state = status.state if status is not None else DeviceState.PCSC_UNAVAILABLE
     results = [
@@ -86,13 +94,24 @@ def diagnose(
         results.append(Result(Step.CARD, Status.SKIPPED))
 
     if results[-1].status is Status.OK:
-        results += _certificate(open_token, store, online, moment, ocsp_responses, crls)
+        results += _certificate(
+            open_token, store, online, moment, validate_at, ocsp_responses, crls
+        )
     else:
         results += [
             Result(Step.CERTIFICATE, Status.SKIPPED),
             Result(Step.VALIDATION, Status.SKIPPED),
         ]
     results.append(_tsa(timestamper, online))
+    for result in results:
+        if result.status is not Status.OK:
+            log.info(
+                "diagnosis %s: %s %s %s",
+                result.step.value,
+                result.status.value,
+                result.code or "",
+                result.facts,
+            )
     return results
 
 
@@ -101,6 +120,7 @@ def _certificate(
     store: TrustStore,
     online: bool,
     moment: dt.datetime,
+    validate_at: dt.datetime | None,
     ocsp_responses: Sequence[bytes],
     crls: Sequence[bytes],
 ) -> list[Result]:
@@ -132,7 +152,7 @@ def _certificate(
         check = check_signer(
             certificate,
             store,
-            moment=moment,
+            moment=validate_at,
             online=online,
             ocsp_responses=ocsp_responses,
             crls=crls,
