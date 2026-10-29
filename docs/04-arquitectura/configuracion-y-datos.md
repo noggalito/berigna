@@ -46,9 +46,12 @@ Proxy (RF-064): el valor se aplica a las variables de entorno estándar del proc
 | `visible-signature` | b | `false` | Activar la firma visible por defecto |
 | `appearance-kind` | enum | `'text'` | text / rubric / logo / qr: apariencia de la firma visible (ADR-0018) |
 | `appearance-language` | enum | `'es_PE'` | es_PE / quz_PE: idioma de los textos fijos y de la fecha del sello (RF-092) |
+| `appearance-dni` | enum | `'last-four'` | last-four / full / hidden: cómo muestran el DNI el sello y su QR (decisión del 2026-10-28). El certificado incrustado lleva siempre el DNI completo |
 | `appearance-profile` | s | `''` | Perfil por defecto (perfiles con nombre, RF-081: pendiente) |
-| `signature-reason` | s | `''` | Último motivo usado |
+| `signature-reason-kind` | enum | `'none'` | none / authorship / agreement / endorsement / approval / other: último motivo elegido de la lista (`core.reasons`) |
+| `signature-reason` | s | `''` | Texto del último motivo "Otro" |
 | `signature-location` | s | `''` | Última ubicación usada |
+| `recent-locations` | as | `[]` | Hasta cinco ubicaciones usadas, la más reciente primero; se ofrecen en la lista |
 | `history-enabled` | b | `true` | — |
 | `history-full-path` | b | `false` | Guardar la ruta completa del archivo en el historial; por defecto solo el nombre (AM-12) |
 | `pkcs11-module` | s | `''` | Vacío: detección automática. Solo se usa con el *backend* PKCS#11 (ADR-0012) |
