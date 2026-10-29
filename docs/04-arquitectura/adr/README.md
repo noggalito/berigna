@@ -3,9 +3,9 @@
 | Campo | Valor |
 |---|---|
 | Documento | BRG-ARQ-ADR |
-| Versión | 0.1.1 |
+| Versión | 0.2.0 |
 | Estado | Vivo |
-| Fecha | 2026-10-28 |
+| Fecha | 2026-10-29 |
 | Responsable | noggalito |
 
 Formato: Contexto → Decisión → Alternativas consideradas → Consecuencias. Estados posibles: Propuesto, Aceptado, Reemplazado por ADR-XXXX, Rechazado.
@@ -18,7 +18,7 @@ Un ADR aceptado no se edita. Si la decisión cambia, se escribe un ADR nuevo que
 | [ADR-0002](ADR-0002-gui-gtk4-libadwaita.md) | Solo GUI con GTK4 + libadwaita, y un núcleo separado | Aceptado |
 | [ADR-0003](ADR-0003-acceso-dnie-pkcs11.md) | Acceso al DNIe con un lector USB de contacto mediante PKCS#11 | Aceptado; modificado por ADR-0012 |
 | [ADR-0004](ADR-0004-pyhanko-para-pades.md) | pyHanko como motor PAdES | Aceptado |
-| [ADR-0005](ADR-0005-licencia-gpl3.md) | Licencia GPL-3.0-or-later | Aceptado |
+| [ADR-0005](ADR-0005-licencia-gpl3.md) | Licencia GPL-3.0-or-later | Aceptado; complementado por ADR-0021 |
 | [ADR-0006](ADR-0006-distribucion-deb.md) | Distribución como paquete `.deb` para Debian 13 | Aceptado |
 | [ADR-0007](ADR-0007-niveles-seleccionables.md) | Niveles de firma seleccionables por el usuario | Aceptado |
 | [ADR-0008](ADR-0008-bibliotecas-cades-xades.md) | Bibliotecas para CAdES y XAdES | Aceptado |
@@ -34,6 +34,7 @@ Un ADR aceptado no se edita. Si la decisión cambia, se escribe un ADR nuevo que
 | [ADR-0018](ADR-0018-apariencia-de-la-firma-visible.md) | Apariencia de la firma visible | Aceptado |
 | [ADR-0019](ADR-0019-identificador-com-noggalito-berigna.md) | Identificador de la aplicación `com.noggalito.Berigna` | Aceptado |
 | [ADR-0020](ADR-0020-debian-oficial-en-la-v1.md) | berigna en el archivo oficial de Debian desde la v1.0 | Aceptado |
+| [ADR-0021](ADR-0021-permiso-adicional-tiendas.md) | Permiso adicional de la GPL para distribuir por tiendas de aplicaciones | Aceptado |
 
 ## Fe de erratas
 
