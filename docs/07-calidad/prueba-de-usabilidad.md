@@ -3,7 +3,7 @@
 | Campo | Valor |
 |---|---|
 | Documento | BRG-CAL-005 |
-| Versión | 0.2.0 |
+| Versión | 0.3.0 |
 | Estado | Borrador |
 | Fecha | 2026-10-29 |
 | Responsable | noggalito |
@@ -95,9 +95,27 @@ Situación provocada (con la tarjeta simulada, nunca con el DNIe real): en T1 se
 
 ## 6. Consentimiento
 
-Texto para leer y firmar antes de empezar (se ofrece también en quechua):
+Texto para leer y firmar antes de empezar. Se ofrece también en quechua; en caso de duda, prevalece el texto en español. Cumple la Ley N.° 29733 de Protección de Datos Personales y su reglamento.
 
-> Participo voluntariamente en una prueba del programa berigna. Se prueba el programa, no a mí. Puedo dejarla en cualquier momento. Nadie verá ni anotará mi PIN. Se tomarán notas y, si lo acepto, se grabará la pantalla, nunca mientras escribo el PIN. Mis datos (nombre, DNI) no aparecerán en los resultados, que solo usarán un código (P1, P2…). Los archivos que firme durante la prueba se borrarán al terminar.
+> **La prueba.** Participo voluntariamente en una prueba del programa berigna. Se prueba el programa, no a mí. Puedo dejarla en cualquier momento, sin dar explicaciones. Nadie verá ni anotará mi PIN. Los archivos que firme durante la prueba se borrarán al terminar.
+>
+> **Mis datos.** Responsable: noggalito (`berigna@noggalito.com`). Se usarán solo para mejorar berigna:
+>
+> - mi nombre y mi firma en este formulario, que se guarda en papel o en un archivo privado, nunca en el repositorio público;
+> - las notas de la sesión y mis respuestas al cuestionario, identificadas solo con un código (P1, P2…);
+> - si lo acepto abajo, la grabación de la pantalla y la voz, nunca mientras escribo el PIN.
+>
+> Mi nombre y mi DNI no aparecerán en los resultados. No se comparten con nadie fuera de noggalito.
+>
+> **Plazos.** La grabación se borra cuando termine el análisis, como máximo tres meses después de la sesión. Este formulario se conserva hasta el cierre de la Fase 3 y, después, un año como prueba del consentimiento. Las notas con código se conservan sin plazo, porque no me identifican.
+>
+> **Mis derechos.** Puedo pedir el acceso, la rectificación, la cancelación de mis datos u oponerme a su uso, y retirar este consentimiento, escribiendo a `berigna@noggalito.com`. Si no me atienden, puedo reclamar ante la Autoridad Nacional de Protección de Datos Personales.
+>
+> ☐ Acepto que se grabe la pantalla y la voz.  ☐ No acepto la grabación.
+>
+> Nombre: ____________________  Fecha: __________  Firma: ____________________
+
+Antes de la primera sesión, el banco de datos de participantes debe estar inscrito ante la Autoridad Nacional de Protección de Datos Personales (documentación interna, BRG-NOR-001 §2.5). Los formularios firmados no entran en ningún repositorio.
 
 ## 7. Cuestionario SUS
 
