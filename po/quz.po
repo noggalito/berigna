@@ -12,7 +12,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: berigna\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-29 12:42-0500\n"
+"POT-Creation-Date: 2026-10-29 14:00-0500\n"
 "PO-Revision-Date: 2026-10-27 23:37-0500\n"
 "Last-Translator: noggalito <berigna@noggalito.com>\n"
 "Language-Team: none\n"
@@ -726,7 +726,7 @@ msgstr "Huñupi firma"
 msgid "Verification"
 msgstr "Chiqaqchay"
 
-#: src/berigna/ui/application.py:308
+#: src/berigna/ui/application.py:335
 msgid "Sign and verify documents with your Peruvian DNIe."
 msgstr "DNIeykiwan qillqakunata firmay, chiqaqchaypas."
 
@@ -842,36 +842,56 @@ msgstr "Manan atikurqanchu willakuyta waqaychayta."
 msgid "Report saved."
 msgstr "Willakuyqa waqaychasqa."
 
+#: src/berigna/ui/diagnostics.py:51
+msgid "Report copied. It has no PIN, and the DNI only masked."
+msgstr "Willakuyqa kikinchasqa. Manan PINniyuqchu, DNIpas pakasqa."
+
 #: src/berigna/ui/diagnostics.py:62
+msgid "berigna Failed Unexpectedly Last Time"
+msgstr "Ñawpaq kutipi berignaqa mana suyasqata pantarqan"
+
+#: src/berigna/ui/diagnostics.py:64
+#, python-brace-format
+msgid ""
+"You can copy the report and send it as an issue at {url}. It has no PIN, and "
+"the DNI only masked; check it before sending, as it may name your files and "
+"folders. Nothing is sent on its own."
+msgstr ""
+"Willakuyta kikinchaspa {url} nisqapi incidencia hina apachiyta atinki. Manan "
+"PINniyuqchu, DNIpas pakasqa; manaraq apachispa qhawariy, archivoykikunaq "
+"carpetaykikunaq sutinkunatapas rikuchinmanmi. Manan imapas kikillanmanta "
+"apachikunchu."
+
+#: src/berigna/ui/diagnostics.py:69 src/berigna/ui/widgets.py:16
+msgid "_Close"
+msgstr "_Wichqay"
+
+#: src/berigna/ui/diagnostics.py:70 src/berigna/ui/diagnostics.py:119
+msgid "_Copy Report"
+msgstr "Willakuyta _kikinchay"
+
+#: src/berigna/ui/diagnostics.py:97
 msgid "Check Again"
 msgstr "Wakmanta qhawariy"
 
-#: src/berigna/ui/diagnostics.py:69 src/berigna/ui/diagnostics.py:94
+#: src/berigna/ui/diagnostics.py:104 src/berigna/ui/diagnostics.py:129
 msgid "Diagnosis"
 msgstr "T'aqwiy"
 
-#: src/berigna/ui/diagnostics.py:71
+#: src/berigna/ui/diagnostics.py:106
 msgid ""
 "Checks the reader, the DNIe and the services, in order. The PIN is not asked."
 msgstr ""
 "Lectorta, DNIeta, servicioskunatapas siqinpi qhawarin. Manan PINta "
 "mañakunchu."
 
-#: src/berigna/ui/diagnostics.py:84
-msgid "_Copy Report"
-msgstr "Willakuyta _kikinchay"
-
-#: src/berigna/ui/diagnostics.py:86
+#: src/berigna/ui/diagnostics.py:121
 msgid "Open the _Log Folder"
 msgstr "_Registro carpetata kichay"
 
-#: src/berigna/ui/diagnostics.py:101
+#: src/berigna/ui/diagnostics.py:136
 msgid "Checking…"
 msgstr "Qhawarishan…"
-
-#: src/berigna/ui/diagnostics.py:139
-msgid "Report copied. It has no PIN, and the DNI only masked."
-msgstr "Willakuyqa kikinchasqa. Manan PINniyuqchu, DNIpas pakasqa."
 
 #: src/berigna/ui/help.py:42 src/berigna/ui/help.py:46
 msgid "More Information"
@@ -1583,27 +1603,32 @@ msgstr "Manan qhawarisqachu: berignaqa mana llikayuq llamk'ashan."
 msgid "berigna {version} diagnosis, {moment}"
 msgstr "berigna {version} t'aqwiy, {moment}"
 
-#: src/berigna/ui/presentation.py:530
+#: src/berigna/ui/presentation.py:531
+#, python-brace-format
+msgid "berigna {version} failure report, {moment}"
+msgstr "berigna {version} pantay willakuy, {moment}"
+
+#: src/berigna/ui/presentation.py:544
 msgid "Included in berigna"
 msgstr "berignawan hamuqkuna"
 
-#: src/berigna/ui/presentation.py:531
+#: src/berigna/ui/presentation.py:545
 msgid "From the INDECOPI trusted list"
 msgstr "INDECOPIpa iñisqa listanmanta"
 
-#: src/berigna/ui/presentation.py:532
+#: src/berigna/ui/presentation.py:546
 msgid "Added by you"
 msgstr "Qampa yapasqaykikuna"
 
-#: src/berigna/ui/presentation.py:553
+#: src/berigna/ui/presentation.py:567
 msgid "Intermediate"
 msgstr "Chawpi"
 
-#: src/berigna/ui/presentation.py:553
+#: src/berigna/ui/presentation.py:567
 msgid "Root"
 msgstr "Saphi"
 
-#: src/berigna/ui/presentation.py:558
+#: src/berigna/ui/presentation.py:572
 #, python-brace-format
 msgid "{role} · valid until {date}"
 msgstr "{role} · {date} p'unchawkama allin"
@@ -1868,10 +1893,6 @@ msgstr "Kay firmawan qillqa imayna kasqan"
 #, python-brace-format
 msgid "Saved {name}"
 msgstr "{name} waqaychasqa"
-
-#: src/berigna/ui/widgets.py:16
-msgid "_Close"
-msgstr "_Wichqay"
 
 #: src/berigna/ui/widgets.py:50
 msgid "Read in Spanish"

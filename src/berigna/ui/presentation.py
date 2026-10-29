@@ -524,6 +524,20 @@ def diagnosis_report(results: list[DiagnosisResult], version: str, system: str) 
     return mask_numbers("\n".join(lines)) + "\n"
 
 
+def failure_report(failure: str, version: str, system: str) -> str:
+    """The report of an unexpected failure to copy for support (R-DES-11): no PIN, the DNI
+    only masked. ``failure`` is the pending report of :mod:`berigna.core.crashes`."""
+    lines = [
+        _("berigna {version} failure report, {moment}").format(
+            version=version, moment=format_time(dt.datetime.now(dt.UTC), _)
+        ),
+        system,
+        "",
+        failure,
+    ]
+    return mask_numbers("\n".join(lines)) + "\n"
+
+
 # -- Trust store (RF-060) --------------------------------------------------------------------------
 
 TRUST_SOURCES = (
