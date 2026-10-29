@@ -189,8 +189,71 @@ def _fit(
         size -= 0.25
 
 
+def _image(visible: VisibleSignature) -> ImageReader:
+    if visible.image is None:
+        raise AppearanceError(f"no image for a {visible.kind.value} appearance")
+    try:
+        image = ImageReader(str(visible.image))
+        image.getSize()
+    except (OSError, ValueError) as exc:
+        raise AppearanceError(f"cannot read {visible.image.name}: {exc}") from exc
+    return image
+
+
+def _draw_graphic(
+    pdf: canvas.Canvas,
+    visible: VisibleSignature,
+    data: StampData,
+    area: tuple[float, float, float, float],
+    centred: bool,
+) -> tuple[float, float]:
+    """Draw the QR code or the image in ``area`` (x, y, width, height), at its left or centred;
+    return the width and height it took."""
+    x, y, max_width, max_height = area
+    if visible.kind is AppearanceKind.QR:
+        side = min(max_width, max_height)
+        widget = QrCodeWidget(qr_segments(qr_payload(data, visible.language)), barLevel="M")
+        x1, y1, x2, y2 = widget.getBounds()
+        drawing = Drawing(side, side)
+        widget.barFillColor = INK
+        drawing.add(widget)
+        drawing.scale(side / (x2 - x1), side / (y2 - y1))
+        left = x + (max_width - side) / 2 if centred else x
+        renderPDF.draw(drawing, pdf, left, y + (max_height - side) / 2)
+        return side, side
+    image = _image(visible)
+    image_width, image_height = image.getSize()
+    ratio = image_width / image_height
+    width = min(max_width, max_height * ratio)
+    height = width / ratio
+    left = x + (max_width - width) / 2 if centred else x
+    pdf.drawImage(image, left, y + (max_height - height) / 2, width, height, mask="auto")
+    return width, height
+
+
+def _draw_text(
+    pdf: canvas.Canvas,
+    lines: list[tuple[str, str]],
+    area: tuple[float, float, float, float],
+) -> None:
+    """The lines, as large as fits (up to 10 pt), centred vertically in ``area``."""
+    x, y, width, height = area
+    _size, wrapped = _fit(lines, width, height)
+    total = sum(points * 1.2 for _font, points, _part in wrapped)
+    top = y + height - (height - total) / 2
+    pdf.setFillColor(INK)
+    for font, points, part in wrapped:
+        top -= points * 1.2
+        pdf.setFont(font, points)
+        pdf.drawString(x, top + points * 0.25, part)
+
+
 def render_appearance(visible: VisibleSignature, data: StampData) -> bytes:
-    """The appearance as a one-page PDF the size of ``visible.box``; transparent background."""
+    """The appearance as a one-page PDF the size of ``visible.box``; transparent background.
+
+    A box wider than tall puts the QR code or the image on the left of the text; a taller one,
+    above it (vertical, as other signing programs offer).
+    """
     _register_fonts()
     _x, _y, width, height = visible.box
     if width < 20 or height < 10:
@@ -198,47 +261,30 @@ def render_appearance(visible: VisibleSignature, data: StampData) -> bytes:
     out = io.BytesIO()
     pdf = canvas.Canvas(out, pagesize=(width, height), invariant=True)
     pad = max(2.0, min(width, height) * 0.06)
-    left = pad
-
-    if visible.kind is not AppearanceKind.TEXT:
-        side = height - 2 * pad
-        if visible.kind is AppearanceKind.QR:
-            widget = QrCodeWidget(qr_segments(qr_payload(data, visible.language)), barLevel="M")
-            x1, y1, x2, y2 = widget.getBounds()
-            drawing = Drawing(side, side)
-            widget.barFillColor = INK
-            drawing.add(widget)
-            drawing.scale(side / (x2 - x1), side / (y2 - y1))
-            renderPDF.draw(drawing, pdf, pad, pad)
-            left += side + pad
-        else:
-            if visible.image is None:
-                raise AppearanceError(f"no image for a {visible.kind.value} appearance")
-            try:
-                image = ImageReader(str(visible.image))
-                image_width, image_height = image.getSize()
-            except (OSError, ValueError) as exc:
-                raise AppearanceError(f"cannot read {visible.image.name}: {exc}") from exc
-            ratio = image_width / image_height
-            box_width = min(width * 0.4, side * ratio)
-            box_height = box_width / ratio
-            pdf.drawImage(image, pad, (height - box_height) / 2, box_width, box_height, mask="auto")
-            left += box_width + pad
-
+    lines = stamp_lines(data, visible.language)
     pdf.setStrokeColor(ACCENT)
     pdf.setLineWidth(0.8)
-    pdf.line(left, pad, left, height - pad)
-    text_left = left + pad
-    _size, wrapped = _fit(
-        stamp_lines(data, visible.language), width - text_left - pad, height - 2 * pad
-    )
-    total = sum(points * 1.2 for _font, points, _part in wrapped)
-    y = height - (height - total) / 2
-    pdf.setFillColor(INK)
-    for font, points, part in wrapped:
-        y -= points * 1.2
-        pdf.setFont(font, points)
-        pdf.drawString(text_left, y + points * 0.25, part)
+
+    if visible.kind is AppearanceKind.TEXT:
+        pdf.line(pad, pad, pad, height - pad)
+        _draw_text(pdf, lines, (2 * pad, pad, width - 3 * pad, height - 2 * pad))
+    elif height > width:  # vertical: graphic on top, rule, text below
+        graphic_height = (height - 3 * pad) * 0.45
+        top = height - pad - graphic_height
+        _width, used = _draw_graphic(
+            pdf, visible, data, (pad, top, width - 2 * pad, graphic_height), centred=True
+        )
+        rule = top + (graphic_height - used) / 2 - pad / 2
+        pdf.line(pad, rule, width - pad, rule)
+        _draw_text(pdf, lines, (pad, pad, width - 2 * pad, rule - 1.5 * pad))
+    else:  # horizontal: graphic on the left, rule, text on the right
+        side = height - 2 * pad
+        used, _height = _draw_graphic(
+            pdf, visible, data, (pad, pad, min(width * 0.4, side * 4), side), centred=False
+        )
+        left = pad + used + pad
+        pdf.line(left, pad, left, height - pad)
+        _draw_text(pdf, lines, (left + pad, pad, width - left - 2 * pad, height - 2 * pad))
     pdf.showPage()
     pdf.save()
     return out.getvalue()

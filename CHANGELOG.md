@@ -58,6 +58,9 @@ Interfaz (Fase 3):
 
 ### Cambiado
 
+- Vista previa de la firma: número de página que se escribe para saltar a ella y zoom (botones, Ctrl + rueda, "Ajustar") del 50 % al 400 %; con zoom, la vista lleva al recuadro de la firma. Sigue abriéndose en la primera página; al activar la firma visible pasa a la última.
+- La firma visible se elige en una sola lista que empieza por "No visible", en el panel de firma y en Preferencias, en lugar de un interruptor y una lista. En un recuadro más alto que ancho, la imagen o el QR van encima del texto (orientación vertical automática).
+- Motivo "Por encargo" en la lista.
 - El motivo se elige de una lista (autoría, conformidad, visto bueno, aprobación) con "Otro motivo…", y se escribe en el idioma de la firma (`core.reasons`); la ubicación, de las cinco últimas usadas o "Otra ubicación…". Claves nuevas: `signature-reason-kind` y `recent-locations`.
 - Preferencias → Firma visible → "DNI en la firma": últimos cuatro dígitos (por defecto), completo o no mostrar, para el sello y su QR (clave `appearance-dni`).
 - "berigna" va en negrita en todos los mensajes de la interfaz y en el pie del informe PDF. Los mensajes con formato se escapan, así que un nombre de archivo o de firmante con `&` o `<` ya no rompe el texto.

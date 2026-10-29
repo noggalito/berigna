@@ -67,6 +67,7 @@
     <value nick="endorsement" value="3"/>
     <value nick="approval" value="4"/>
     <value nick="other" value="5"/>
+    <value nick="on-behalf" value="6"/>
   </enum>
   <enum id="pe.berigna.Berigna.ReportLanguage">
     <value nick="ui" value="0"/>

@@ -43,12 +43,12 @@ Proxy (RF-064): el valor se aplica a las variables de entorno estándar del proc
 | `network-timeout` | u | `10` | Segundos de espera de la respuesta (lectura). La conexión espera al menos 20 s, para cubrir los reenvíos de SYN de la red de RENIEC (R-17, `core.net.fetchers`) |
 | `proxy-mode` | enum | `'system'` | system / manual / none |
 | `proxy-url` | s | `''` | — |
-| `visible-signature` | b | `false` | Activar la firma visible por defecto |
+| `visible-signature` | b | `false` | Activar la firma visible por defecto; con `false`, la lista de apariencias muestra "No visible" |
 | `appearance-kind` | enum | `'text'` | text / rubric / logo / qr: apariencia de la firma visible (ADR-0018) |
 | `appearance-language` | enum | `'es_PE'` | es_PE / quz_PE: idioma de los textos fijos y de la fecha del sello (RF-092) |
 | `appearance-dni` | enum | `'last-four'` | last-four / full / hidden: cómo muestran el DNI el sello y su QR (decisión del 2026-10-28). El certificado incrustado lleva siempre el DNI completo |
 | `appearance-profile` | s | `''` | Perfil por defecto (perfiles con nombre, RF-081: pendiente) |
-| `signature-reason-kind` | enum | `'none'` | none / authorship / agreement / endorsement / approval / other: último motivo elegido de la lista (`core.reasons`) |
+| `signature-reason-kind` | enum | `'none'` | none / authorship / agreement / endorsement / approval / on-behalf / other: último motivo elegido de la lista (`core.reasons`) |
 | `signature-reason` | s | `''` | Texto del último motivo "Otro" |
 | `signature-location` | s | `''` | Última ubicación usada |
 | `recent-locations` | as | `[]` | Hasta cinco ubicaciones usadas, la más reciente primero; se ofrecen en la lista |

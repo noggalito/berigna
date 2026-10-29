@@ -264,7 +264,8 @@ def test_preview_pages_and_unreadable_pdf() -> None:
     assert preview.page_count == 2
     preview.show_page(5)
     assert preview.page == 1
-    assert preview._label.get_label() == "Página 2 de 2"
+    assert preview.page_entry.get_text() == "2"
+    assert preview._label.get_label() == "de 2"
     preview.show_page(-1)
     assert preview.page == 0
     assert not preview._previous.get_sensitive()
