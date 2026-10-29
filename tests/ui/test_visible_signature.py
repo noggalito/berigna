@@ -11,6 +11,7 @@ from pyhanko.pdf_utils.reader import PdfFileReader
 
 from berigna.core.appearance import AppearanceKind, DniDisplay
 from berigna.ui.application import BerignaApplication
+from berigna.ui.i18n import _
 from berigna.ui.preview import EDGE, PdfPreview, SignatureBox
 from berigna.ui.signing import SigningPage
 from conftest import drive, wait_until
@@ -40,15 +41,16 @@ def test_sign_with_a_qr_code(app: BerignaApplication, tmp_path: Path) -> None:
     def script(app: BerignaApplication) -> Generator[None, None, None]:
         yield from wait_until(lambda: _signing(app))
         page = _page(app)
-        assert not page.visible.get_active()
+        assert page.appearance.get_selected() == 0  # "No visible"
+        assert page.appearance.get_subtitle() == "No visible"
         assert page.preview.box is None
-        page.visible.set_active(True)
+        assert page.preview.page == 0  # it opens on the first page
+        page.appearance.set_selected(4)  # QR code
         box = page.preview.box
         assert box is not None
         assert box.page == 1  # the last page, bottom right
         assert box.y == EDGE
         assert page.preview.page == 1
-        page.appearance.set_selected(3)  # QR code
         assert page.appearance_kind() is AppearanceKind.QR
         assert page.appearance.get_subtitle() == "Código QR"
         assert page.preview._appearance is not None  # drawn with sample data
@@ -79,8 +81,7 @@ def test_rubric_without_an_image_is_refused_before_the_pin(
     def script(app: BerignaApplication) -> Generator[None, None, None]:
         yield from wait_until(lambda: _signing(app))
         page = _page(app)
-        page.visible.set_active(True)
-        page.appearance.set_selected(1)  # rubric, none loaded
+        page.appearance.set_selected(2)  # rubric, none loaded
         assert page.appearance.get_subtitle().endswith("Preferencias → Firma visible.")
         assert page.preview._appearance is None
         page._sign.emit("clicked")
@@ -88,7 +89,7 @@ def test_rubric_without_an_image_is_refused_before_the_pin(
         assert page.pin_dialog is None
         error = page._stack.get_child_by_name("error")
         assert error.get_description().startswith("No se puede dibujar la firma visible")
-        page.visible.set_active(False)
+        page.appearance.set_selected(0)
         assert page.visible_signature() is None
         assert page.preview.box is None
 
@@ -116,9 +117,14 @@ def test_images_in_the_preferences(app: BerignaApplication, tmp_path: Path) -> N
         dialog.set_image(AppearanceKind.RUBRIC, bad)
         dialog.remove_image(AppearanceKind.LOGO)
         assert row.get_subtitle() == "Sin imagen"
-        dialog.appearance.set_selected(2)
         assert app.settings is not None
+        assert dialog.appearance.get_subtitle() == "No visible"
+        dialog.appearance.set_selected(3)
         assert app.settings.get_string("appearance-kind") == "logo"
+        assert app.settings.get_boolean("visible-signature")
+        dialog.appearance.set_selected(0)
+        assert not app.settings.get_boolean("visible-signature")
+        assert app.settings.get_string("appearance-kind") == "logo"  # kept for next time
         app.settings.reset("appearance-kind")
         dialog.dni.set_selected(1)
         assert app.settings.get_string("appearance-dni") == "full"
@@ -161,6 +167,36 @@ def test_drawing_and_moving_the_box() -> None:
     preview._on_drag_end(None, 0, 0)
     assert len(changes) == 2
     preview._on_drag_update(FakeDrag(0, 0), 1, 1)  # after the end: ignored
+
+
+def test_page_number_and_zoom() -> None:
+    preview = PdfPreview(two_page_pdf())
+    assert (preview.page, preview.zoom) == (0, None)
+    assert preview._zoom_label.get_label() == _("Fit")
+    assert not preview._zoom_label.get_sensitive()
+    preview.page_entry.set_text("2")  # typed page number
+    preview.page_entry.emit("activate")
+    assert preview.page == 1
+    assert not preview._next.get_sensitive()
+    preview.show_page(9)  # clamped
+    assert preview.page_entry.get_text() == "2"
+    preview.go_to("abc")  # not a number: the current page stays
+    assert preview.page_entry.get_text() == "2"
+    preview._fit_zoom = 0.6
+    preview.zoom_in()  # from the fitted size, the next step
+    assert preview.zoom == 0.75
+    assert preview._zoom_label.get_label() == "75 %"
+    width, _height = preview.page_size(1)
+    assert preview._area.get_content_width() == round(width * 0.75 * 96 / 72) + 24
+    preview.set_zoom(10)
+    assert preview.zoom == 4.0
+    assert not preview._zoom_in.get_sensitive()
+    preview.zoom_out()
+    assert preview.zoom == 3.0
+    preview.set_zoom(None)
+    assert preview._area.get_content_width() == 1
+    preview.zoom_out()
+    assert preview.zoom == 0.5
 
 
 def test_the_name_goes_in_bold() -> None:

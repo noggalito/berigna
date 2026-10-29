@@ -7,7 +7,7 @@ and lock keys for a whole organisation with dconf (configuracion-y-datos §2).
 """
 
 import threading
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -61,8 +61,18 @@ class PreferencesDialog(Adw.PreferencesDialog):
 
     # -- Helpers -------------------------------------------------------------------------------
 
-    def _combo(self, title: str, key: str, options: Sequence[tuple[str, str]]) -> Adw.ComboRow:
-        """A combo row bound to a string or enum key: ``options`` are (value, label) pairs."""
+    def _combo(
+        self,
+        title: str,
+        key: str,
+        options: Sequence[tuple[str, str]],
+        get: Callable[[], str] | None = None,
+        put: Callable[[str], None] | None = None,
+    ) -> Adw.ComboRow:
+        """A combo row bound to a string or enum key: ``options`` are (value, label) pairs.
+        ``get`` and ``put`` replace reading and writing the key, for a row over two keys."""
+        get = get or (lambda: self._settings.get_string(key))
+        put = put or (lambda value: self._settings.set_string(key, value))
         values = [value for value, _label in options]
         labels = [label for _value, label in options]
         # The chosen value goes under the title, where it has the whole width: on the right it
@@ -76,15 +86,15 @@ class PreferencesDialog(Adw.PreferencesDialog):
             list_factory=label_factory(visible=True),
             subtitle_lines=0,
         )
-        current = self._settings.get_string(key)
+        current = get()
         row.set_selected(values.index(current) if current in values else 0)
         row.set_subtitle(labels[row.get_selected()])
 
         def changed(row: Adw.ComboRow, _param: object) -> None:
             row.set_subtitle(labels[row.get_selected()])
             value = values[row.get_selected()]
-            if self._settings.get_string(key) != value:
-                self._settings.set_string(key, value)
+            if get() != value:
+                put(value)
 
         row.connect("notify::selected", changed)
         return row
@@ -185,12 +195,24 @@ class PreferencesDialog(Adw.PreferencesDialog):
                 "“DNI in the Signature” only changes what is printed."
             ),
         )
-        self.visible_default = Adw.SwitchRow(title=_("Show the Signature on the Page"))
-        self._settings.bind(
-            "visible-signature", self.visible_default, "active", Gio.SettingsBindFlags.DEFAULT
-        )
+
+        # One list over two keys: "Not visible" is visible-signature off.
+        def get_appearance() -> str:
+            if not self._settings.get_boolean("visible-signature"):
+                return "none"
+            return self._settings.get_string("appearance-kind")
+
+        def put_appearance(value: str) -> None:
+            self._settings.set_boolean("visible-signature", value != "none")
+            if value != "none":
+                self._settings.set_string("appearance-kind", value)
+
         self.appearance = self._combo(
-            _("Appearance"), "appearance-kind", [(k.value, _(label)) for k, label in APPEARANCES]
+            _("Appearance"),
+            "appearance-kind",
+            [(k.value if k else "none", _(label)) for k, label in APPEARANCES],
+            get_appearance,
+            put_appearance,
         )
         self.stamp_language = self._combo(
             _("Language of the Signature"),
@@ -202,7 +224,7 @@ class PreferencesDialog(Adw.PreferencesDialog):
             "appearance-dni",
             [(display.value, _(label)) for display, label in DNI_OPTIONS],
         )
-        for row in (self.visible_default, self.appearance, self.stamp_language, self.dni):
+        for row in (self.appearance, self.stamp_language, self.dni):
             defaults.add(row)
         page.add(defaults)
 

@@ -79,7 +79,7 @@ Prioridades según MoSCoW (ver convenciones). Cada requisito tiene criterios de 
 - Aceptación: la apariencia se ve igual en Evince/Papers, Okular y Adobe Acrobat Reader.
 
 ### RF-013: Metadatos de la firma
-- Prioridad: Debe. Descripción: campos opcionales de motivo, ubicación y contacto. Se recuerdan los últimos valores usados. El motivo se elige de una lista (autoría, conformidad, visto bueno, aprobación) con la opción "Otro", y se escribe en el idioma de la firma; la ubicación, de las cinco últimas usadas o "Otra" (decisión del 2026-10-28).
+- Prioridad: Debe. Descripción: campos opcionales de motivo, ubicación y contacto. Se recuerdan los últimos valores usados. El motivo se elige de una lista (autoría, conformidad, visto bueno, aprobación, por encargo) con la opción "Otro", y se escribe en el idioma de la firma; la ubicación, de las cinco últimas usadas o "Otra" (decisión del 2026-10-28).
 
 ### RF-014: Firmas sucesivas
 - Prioridad: Debe. CU: CU-03.

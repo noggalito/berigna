@@ -7,6 +7,9 @@ before the PIN and right before signing (RF-018).
 
 The preview can also hold the box of a visible signature (CU-02): dragging on the page draws a
 new box, dragging from inside the box moves it, and the appearance is drawn inside it.
+
+It opens on the first page, fitted to the window. The page number can be typed, and the page
+zoomed in and out (buttons or Ctrl + wheel) to place the box precisely.
 """
 
 from collections.abc import Callable
@@ -18,11 +21,13 @@ import gi
 gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
 gi.require_version("Poppler", "0.18")
-from gi.repository import Adw, GLib, Gtk, Poppler  # noqa: E402
+from gi.repository import Adw, Gdk, GLib, Gtk, Poppler  # noqa: E402
 
 from berigna.ui.i18n import _  # noqa: E402
 
 _MARGIN = 12
+ZOOMS = (0.5, 0.75, 1.0, 1.25, 1.5, 2.0, 3.0, 4.0)  # 1.0: the page at its printed size
+_PIXELS_PER_POINT = 96 / 72
 DEFAULT_BOX = (200.0, 60.0)  # width, height in points
 MIN_BOX = (40.0, 15.0)
 EDGE = 36.0  # points from the page edges of the default box
@@ -65,6 +70,8 @@ class PdfPreview(Gtk.Box):
         self.on_box_changed: Callable[[SignatureBox], None] | None = None
         self._appearance: Poppler.Document | None = None
         self._transform = (0.0, 0.0, 1.0, 0.0)  # x, y offset, scale, page height
+        self.zoom: float | None = None  # None: the whole page fits
+        self._fit_zoom = 1.0  # the zoom that fitting gave on the last draw
         self._drag: tuple[str, float, float, SignatureBox | None] | None = None
         if self._document is None or self.page_count == 0:
             self.append(
@@ -84,22 +91,51 @@ class PdfPreview(Gtk.Box):
         drag.connect("drag-update", self._on_drag_update)
         drag.connect("drag-end", self._on_drag_end)
         self._area.add_controller(drag)
-        self.append(self._area)
+        wheel = Gtk.EventControllerScroll(flags=Gtk.EventControllerScrollFlags.VERTICAL)
+        wheel.connect("scroll", self._on_scroll)
+        self._area.add_controller(wheel)
+        self._scrolled = Gtk.ScrolledWindow(child=self._area, hexpand=True, vexpand=True)
+        self.append(self._scrolled)
 
-        bar = Gtk.CenterBox(margin_top=6, margin_bottom=6)
+        bar = Gtk.CenterBox(margin_top=6, margin_bottom=6, margin_start=6, margin_end=6)
+        zoom = Gtk.Box(spacing=6)
+        self._zoom_out = Gtk.Button(icon_name="zoom-out-symbolic", tooltip_text=_("Zoom Out"))
+        self._zoom_label = Gtk.Button(tooltip_text=_("Fit the Page"))
+        self._zoom_label.add_css_class("flat")
+        self._zoom_in = Gtk.Button(icon_name="zoom-in-symbolic", tooltip_text=_("Zoom In"))
+        self._zoom_out.connect("clicked", lambda _b: self.zoom_out())
+        self._zoom_label.connect("clicked", lambda _b: self.set_zoom(None))
+        self._zoom_in.connect("clicked", lambda _b: self.zoom_in())
+        for widget in (self._zoom_out, self._zoom_label, self._zoom_in):
+            zoom.append(widget)
+        bar.set_start_widget(zoom)
+
         controls = Gtk.Box(spacing=6)
         self._previous = Gtk.Button(
             icon_name="go-previous-symbolic", tooltip_text=_("Previous Page")
         )
         self._next = Gtk.Button(icon_name="go-next-symbolic", tooltip_text=_("Next Page"))
-        self._label = Gtk.Label()
+        # A plain entry: a spin button adds its own minus and plus buttons next to the arrows.
+        self.page_entry = Gtk.Entry(
+            input_purpose=Gtk.InputPurpose.DIGITS,
+            width_chars=len(str(self.page_count)) + 1,
+            max_width_chars=len(str(self.page_count)) + 1,
+            xalign=0.5,
+            tooltip_text=_("Page Number"),
+        )
+        self.page_entry.update_property([Gtk.AccessibleProperty.LABEL], [_("Page Number")])
+        self._label = Gtk.Label(
+            label=_("of {total}").format(total=self.page_count), css_classes=["dimmed"]
+        )
         self._previous.connect("clicked", lambda _b: self.show_page(self.page - 1))
         self._next.connect("clicked", lambda _b: self.show_page(self.page + 1))
-        for widget in (self._previous, self._label, self._next):
+        self.page_entry.connect("activate", lambda _e: self.go_to(self.page_entry.get_text()))
+        for widget in (self._previous, self.page_entry, self._label, self._next):
             controls.append(widget)
         bar.set_center_widget(controls)
         self.append(bar)
         self.show_page(0)
+        self.set_zoom(None)
 
     def page_size(self, number: int) -> tuple[float, float]:
         if self._document is None:
@@ -108,13 +144,63 @@ class PdfPreview(Gtk.Box):
         return float(width), float(height)
 
     def show_page(self, number: int) -> None:
-        """Show page ``number`` (from 0), clamped to the document."""
-        self.page = max(0, min(number, self.page_count - 1))
-        self._label.set_label(
-            _("Page {page} of {total}").format(page=self.page + 1, total=self.page_count)
-        )
-        self._previous.set_sensitive(self.page > 0)
-        self._next.set_sensitive(self.page < self.page_count - 1)
+        """Show page ``number`` (from 0), clamped to the document, from its top."""
+        page = max(0, min(number, self.page_count - 1))
+        changed = page != self.page
+        self.page = page
+        self.page_entry.set_text(str(page + 1))
+        self._previous.set_sensitive(page > 0)
+        self._next.set_sensitive(page < self.page_count - 1)
+        if changed:
+            self._scrolled.get_vadjustment().set_value(0)
+        self._resize()
+
+    def go_to(self, typed: str) -> None:
+        """The page typed by the user; anything else shows the current one again."""
+        number = typed.strip()
+        self.show_page(int(number) - 1 if number.isdigit() else self.page)
+
+    # -- Zoom ------------------------------------------------------------------------------
+
+    def set_zoom(self, zoom: float | None) -> None:
+        """``zoom`` times the printed size (clamped to :data:`ZOOMS`), or None to fit."""
+        self.zoom = None if zoom is None else max(ZOOMS[0], min(zoom, ZOOMS[-1]))
+        fitted = self.zoom is None
+        self._zoom_label.set_label(_("Fit") if self.zoom is None else f"{round(self.zoom * 100)} %")
+        self._zoom_label.set_sensitive(not fitted)
+        self._zoom_out.set_sensitive(fitted or self.zoom != ZOOMS[0])
+        self._zoom_in.set_sensitive(fitted or self.zoom != ZOOMS[-1])
+        self._resize()
+
+    def zoom_in(self) -> None:
+        current = self.zoom if self.zoom is not None else self._fit_zoom
+        self.set_zoom(next((z for z in ZOOMS if z > current + 1e-6), ZOOMS[-1]))
+
+    def zoom_out(self) -> None:
+        current = self.zoom if self.zoom is not None else self._fit_zoom
+        self.set_zoom(next((z for z in reversed(ZOOMS) if z < current - 1e-6), ZOOMS[0]))
+
+    def _on_scroll(self, controller: Gtk.EventControllerScroll, _dx: float, dy: float) -> bool:
+        """Ctrl + wheel zooms; the wheel alone scrolls."""
+        if not controller.get_current_event_state() & Gdk.ModifierType.CONTROL_MASK:
+            return False
+        if dy < 0:
+            self.zoom_in()
+        elif dy > 0:
+            self.zoom_out()
+        return True
+
+    def _resize(self) -> None:
+        """Fitting, the area takes the space it is given; zoomed, the size of the page, and
+        the scrolled window scrolls it."""
+        if self.zoom is None:
+            self._area.set_content_width(1)
+            self._area.set_content_height(1)
+        else:
+            width, height = self.page_size(self.page)
+            scale = self.zoom * _PIXELS_PER_POINT
+            self._area.set_content_width(round(width * scale) + 2 * _MARGIN)
+            self._area.set_content_height(round(height * scale) + 2 * _MARGIN)
         self._area.queue_draw()
 
     # -- Visible signature box -------------------------------------------------------------
@@ -131,8 +217,23 @@ class PdfPreview(Gtk.Box):
         self.box = box
         if box is not None and self.page_count:
             self.show_page(box.page)
+            if self.zoom is not None:
+                GLib.idle_add(self._scroll_to_box)
         elif self.page_count:
             self._area.queue_draw()
+
+    def _scroll_to_box(self) -> bool:
+        """Zoomed in, bring the box into view."""
+        if self.box is not None:
+            left, top, scale, page_height = self._transform
+            x = left + self.box.x * scale
+            y = top + (page_height - self.box.y - self.box.height) * scale
+            for adjustment, value in (
+                (self._scrolled.get_hadjustment(), x),
+                (self._scrolled.get_vadjustment(), y),
+            ):
+                adjustment.set_value(value - adjustment.get_page_size() / 3)
+        return GLib.SOURCE_REMOVE
 
     def set_appearance(self, pdf: bytes | None) -> None:
         """The rendered appearance to draw inside the box."""
@@ -184,11 +285,15 @@ class PdfPreview(Gtk.Box):
             return
         page = self._document.get_page(self.page)
         page_width, page_height = page.get_size()
-        scale = min((width - 2 * _MARGIN) / page_width, (height - 2 * _MARGIN) / page_height)
-        if scale <= 0:
-            return
-        x = (width - page_width * scale) / 2
-        y = (height - page_height * scale) / 2
+        if self.zoom is None:
+            scale = min((width - 2 * _MARGIN) / page_width, (height - 2 * _MARGIN) / page_height)
+            if scale <= 0:
+                return
+            self._fit_zoom = scale / _PIXELS_PER_POINT
+        else:
+            scale = self.zoom * _PIXELS_PER_POINT
+        x = max(_MARGIN, (width - page_width * scale) / 2)
+        y = max(_MARGIN, (height - page_height * scale) / 2)
         self._transform = (x, y, scale, page_height)
         cr.translate(x, y)
         cr.scale(scale, scale)
