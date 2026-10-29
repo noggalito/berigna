@@ -3,9 +3,9 @@
 | Campo | Valor |
 |---|---|
 | Documento | BRG-INV-001 |
-| Versión | 0.4.0 |
+| Versión | 0.4.1 |
 | Estado | Cerrado (2026-10-27): firma con PIN verificada (§8.6); PAdES B-B del DNIe real válido en DSS y en el validador oficial Firma Perú (SPK-03 §7) |
-| Fecha | 2026-10-27 |
+| Fecha | 2026-10-28 |
 | Responsable | noggalito |
 
 ## 1. Pregunta

@@ -80,7 +80,7 @@ def probe(timestamper: TimeStamper, md_algorithm: str = "sha256", deadline: floa
         try:
             asyncio.run(timestamper.async_dummy_response(md_algorithm))
             outcome.append(None)
-        except (TimestampRequestError, ValueError) as exc:
+        except Exception as exc:  # reported below as what it is, not as a timeout
             outcome.append(exc)
 
     worker = threading.Thread(target=request, name="berigna-tsa-probe", daemon=True)

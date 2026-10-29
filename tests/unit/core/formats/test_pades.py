@@ -144,3 +144,18 @@ def test_pdf_whose_metadata_was_freed_can_be_signed(pki: Pki) -> None:
     status = validate_pdf_signature(reader.embedded_signatures[0], _validation_context(pki))
     assert status.bottom_line
     assert "/ModDate" in reader.trailer["/Info"]
+
+
+@pytest.mark.parametrize("error", [TypeError("unhashable"), AttributeError("no /Root")])
+def test_unexpected_structures_are_rejected_before_the_pin(
+    monkeypatch: pytest.MonkeyPatch, error: Exception
+) -> None:
+    """pyHanko meeting a structure it does not expect while opening: ERR-304 before the PIN."""
+    from berigna.core.formats.pades import check_pdf_signable
+
+    def failing(*args: object, **kwargs: object) -> None:
+        raise error
+
+    monkeypatch.setattr("berigna.core.formats.pades.IncrementalPdfFileWriter", failing)
+    with pytest.raises(PdfFormatError, match=type(error).__name__):
+        check_pdf_signable(minimal_pdf())

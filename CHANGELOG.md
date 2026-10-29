@@ -54,7 +54,7 @@ Interfaz (Fase 3):
 - `core.signing.output_path`: el nombre del archivo firmado se numera si ya existe, sin sobrescribir nunca (RF-045).
 - ERR-307: un documento certificado por su autor sin cambios permitidos (DocMDP) se rechaza antes del PIN; `inspect_document` lo indica (`locked`).
 - Plan de mantenimiento (`docs/11-mantenimiento/plan-de-mantenimiento.md`, BRG-MAN-001): versiones y ramas, hechos externos que obligan a publicar, vigilancia automática, proceso de cada versión, seguridad, incidencias y continuidad.
-- Traducción completa al quechua sureño (Cusco-Collao): 387 mensajes de la interfaz, del sello y de los informes, hecha con IA y el glosario `docs/06-ux/glosario-quechua.md` (BRG-UX-003), sin revisar por hablantes (DP-14); el aviso de traducción sin revisar y "Ver en español" se mantienen. Una sola forma plural (`nplurals=1`). "berigna" va en negrita también con sufijos quechuas ("berignaqa").
+- Traducción completa al quechua sureño (Cusco-Collao): 388 mensajes de la interfaz, del sello y de los informes, hecha con IA y el glosario `docs/06-ux/glosario-quechua.md` (BRG-UX-003), sin revisar por hablantes (DP-14); el aviso de traducción sin revisar y "Ver en español" se mantienen. Una sola forma plural (`nplurals=1`). "berigna" va en negrita también con sufijos quechuas ("berignaqa").
 - Protocolo de la prueba de usabilidad (`docs/07-calidad/prueba-de-usabilidad.md`, BRG-CAL-005): participantes, tareas, seguridad del PIN, consentimiento, cuestionario SUS en español y en quechua, registro y criterio de aceptación.
 - Historial de operaciones (RF-082; `core.history`): firmas, firmas de lote y verificaciones con fecha, nombre, SHA-256 del original y del firmado, nivel, firmante (DNI enmascarado) y resultado; búsqueda, exportación a CSV y borrado; SQLite con permisos 0600. Se desactiva o se le pide la ruta completa en Preferencias → General.
 - Preferencias → Confianza → Certificados de confianza (RF-060): los certificados con que se comprueban las firmas, por origen, con su vigencia y su SHA-256.
@@ -82,9 +82,21 @@ Interfaz (Fase 3):
 - Fechas y horas con la fecha ISO 8601, la hora con el símbolo h del SI y el desfase respecto de UTC, en la hora local: "2026-10-28 a las 18h47 UTC-5". Se aplica al sello visible, al QR, a la verificación y al informe PDF; el informe JSON sigue en ISO 8601 y UTC.
 - "Versión firmada" empieza con mayúscula ("Primeros … bytes del archivo"); en Preferencias → Firma visible, "berigna" va en negrita.
 - El historial indica "revocación no comprobada" en las firmas hechas sin poder consultar la revocación del certificado (RF-006).
+- El historial anota también los documentos de un lote que quedaron sin firmar al cancelarlo o detenerse (ERR-309).
+- Al añadir documentos a un lote, se leen y se calcula su SHA-256 en segundo plano: una carpeta con muchos PDF grandes ya no congela la ventana. "Firmar" espera a que la lista esté completa.
+- Volver a abrir el historial o el diagnóstico desde el menú lleva a la página ya abierta, en lugar de apilar otra igual.
 
 ### Corregido
 
+- Un PDF con una firma cuyo CMS rompe pyHanko o asn1crypto después del resumen (datos de revocación de Adobe, sello de la firma o diagnóstico de la cadena) daba "error inesperado"; ahora es TOTAL-FAILED/FORMAT_FAILURE, como el resto de firmas malformadas. Lo mismo con los sellos de documento.
+- Cambiar el idioma con el diálogo del PIN abierto destruía la ventana y podía dejar el hilo de firma esperando para siempre con la tarjeta reservada. Ahora el diálogo se cancela antes (no se envía el PIN).
+- En un lote, un error que berigna no conoce detenía todos los documentos y el informe no llegaba a crearse; ahora falla solo ese documento (ERR-000) y los demás siguen (RF-043).
+- Más errores de pyHanko al abrir un PDF malformado se muestran como ERR-304 antes del PIN; una tarjeta retirada justo al conectar da ERR-105, y un fallo de la TSA distinto de los habituales se muestra con su causa y no como "no respondió en 30 s".
+- El historial no cerraba su conexión con la base de datos si una operación fallaba.
+- Abrir Preferencias con el diálogo ya abierto ponía otro encima; ahora se muestra el mismo. La prueba de la TSA y "Actualizar ahora" ya no tocan el diálogo si se cerró mientras esperaban, y dos actualizaciones de la TSL (la del arranque y la manual) ya no escriben a la vez en la caché.
+- Un PDF cuya cabecera empieza en los últimos bytes del primer kilobyte se trataba como "otro tipo de archivo".
+- Soltar varios archivos que no están en el equipo no avisaba de nada; ahora da el mismo aviso que con uno.
+- Si faltan las vistas compiladas (`BERIGNA_RESOURCES` apunta a un archivo que no existe), berigna lo dice en una línea en lugar de una traza.
 - La rúbrica y el logotipo precargados se guardaban con los permisos de cualquier archivo nuevo; ahora solo los puede leer su dueño (0600, y su carpeta 0700), como el historial.
 - Los botones que solo tienen icono (exportar, borrar, zoom, volver…) no tenían nombre para los lectores de pantalla; ahora lo toman de su descripción emergente (RNF-USA-03).
 - Las pruebas de la interfaz heredaban el idioma de la anterior: una que cambiaba a quechua dejaba el quechua a las siguientes (no se notaba mientras el catálogo estaba vacío). Cada prueba empieza ahora en es_PE.
@@ -110,3 +122,4 @@ Proyecto:
 - Cabeceras SPDX en los logotipos, la entrada de escritorio y el `pom.xml` de SPK-03; una prueba exige que los catálogos es_PE y quechua estén completos.
 - Protocolo de la prueba de usabilidad: pasos para instalar berigna desde el código fuente en el equipo de la prueba.
 - Revisión general de la documentación: módulos del núcleo en la arquitectura, glosario, requisitos RF-002, RF-053 y RF-090, dependencias del empaquetado y estado del proyecto.
+- Segunda revisión: Firma Perú como validador de referencia en la estrategia de pruebas (PR-INT-01, PR-INT-05) y en el README; PR-I18N-05 con el cambio de idioma al momento; ubicaciones de datos reales (`apariencia/`, `tsl/`) y las previstas marcadas como tales; CU-02 y CU-04 según la interfaz actual; política de fronteras con las bibliotecas en BRG-DES; regla de Fecha y Versión en las convenciones y cabeceras sincronizadas. `spikes/` queda fuera de `ruff`.

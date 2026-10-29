@@ -137,8 +137,9 @@ def _open(pdf: bytes) -> tuple[IncrementalPdfFileWriter, set[str]]:
     try:
         writer = IncrementalPdfFileWriter(io.BytesIO(pdf), strict=False)
         existing = {name for name, _, _ in enumerate_sig_fields(writer)}
-    except (PdfError, KeyError, ValueError) as exc:
-        raise PdfFormatError(f"cannot read this PDF: {exc}") from exc
+    except (PdfError, KeyError, ValueError, TypeError, AttributeError) as exc:
+        # The last two: pyHanko meeting a structure it does not expect, as in _sign.
+        raise PdfFormatError(f"cannot read this PDF: {type(exc).__name__}: {exc}") from exc
     _repair_info(writer)
     return writer, existing
 

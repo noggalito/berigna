@@ -3,9 +3,9 @@
 | Campo | Valor |
 |---|---|
 | Documento | BRG-REQ-003 |
-| Versión | 0.1.1 |
+| Versión | 0.2.0 |
 | Estado | Borrador |
-| Fecha | 2026-10-27 |
+| Fecha | 2026-10-29 |
 | Responsable | noggalito |
 
 ## 1. Diagrama general
@@ -67,9 +67,9 @@ Postcondición: existe un PDF firmado válido y el original no ha cambiado. Si e
 
 Extiende CU-01. Requisitos: RF-012, RF-081.
 
-1. En el paso 2 de CU-01, el usuario activa "Firma visible".
-2. El sistema propone el último perfil de apariencia usado y una posición por defecto en la última página.
-3. El usuario arrastra o redimensiona el recuadro sobre la previsualización, o cambia de página.
+1. En el paso 2 de CU-01, el usuario elige una apariencia en la lista "Firma visible", que empieza por "No visible": solo texto, rúbrica, logotipo o código QR (ADR-0018).
+2. El sistema propone la apariencia de las preferencias y un recuadro en la última página. Los perfiles con nombre (RF-081) quedan para después de la Fase 3.
+3. El usuario arrastra o redimensiona el recuadro sobre la previsualización (con zoom), o cambia de página. Un recuadro más alto que ancho pone la imagen o el QR encima del texto.
 4. El sistema muestra una vista previa en vivo de la apariencia con los datos reales del certificado.
 5. Continúa en el paso 3 de CU-01.
 
@@ -89,12 +89,12 @@ Requisitos: RF-040 a RF-043, RF-045.
 
 1. El usuario selecciona varios archivos (en Nautilus o en berigna) o una carpeta.
 2. El sistema muestra la lista con el formato que se aplicará a cada archivo y permite quitar elementos.
-3. El usuario elige el nivel y la apariencia (que se aplica a todos los PDF) y pulsa "Firmar N archivos".
+3. El usuario elige el nivel, el motivo y la ubicación (comunes a todos los PDF) y pulsa "Firmar N documentos". En la versión 1.0 las firmas de un lote no son visibles.
 4. El sistema valida el certificado y pide el PIN una vez, mostrando el número de archivos.
 5. El sistema firma secuencialmente y muestra el progreso (archivo actual, correctos y errores).
 6. Al terminar, el sistema muestra el informe del lote, exportable a CSV.
 
-Alternativo: 5a. El usuario cancela; se termina el archivo en curso, se cierra la sesión y el informe marca los archivos restantes como "omitido".
+Alternativo: 5a. El usuario cancela; se termina el archivo en curso, se cierra la sesión y el informe y el historial marcan los archivos restantes como no firmados (ERR-309).
 
 ### CU-05: Firmar otro tipo de archivo (CAdES o XAdES)
 

@@ -88,7 +88,8 @@ class BerignaApplication(Adw.Application):
         self.tsl: TslRefresh | None = None
         self.preferences: PreferencesDialog | None = None
         self._open_token = open_token or _open_dnie
-        self._timestamper = timestamper or self._configured_timestamper
+        self.timestamper = timestamper or self._configured_timestamper
+        self._tsl_lock = threading.Lock()  # one refresh at a time on the same cache
         self._online = online
         self._monitor: DeviceMonitor | None = None
         self._device_status: DeviceStatus | None = None
@@ -141,7 +142,7 @@ class BerignaApplication(Adw.Application):
             services = SigningServices(
                 open_token=self._open_token,
                 trust_store=self._trust_store,
-                timestamper=self._timestamper,
+                timestamper=self.timestamper,
                 settings=self.settings,
                 online=self._online,
                 appearance_dir=self.appearance_dir(),
@@ -190,7 +191,8 @@ class BerignaApplication(Adw.Application):
         download = self._tsl_download
 
         def work() -> None:
-            result = refresh(cache, download=download, force=force)
+            with self._tsl_lock:  # the one at start-up and "Update now" may overlap
+                result = refresh(cache, download=download, force=force)
             if result.error is not None:
                 log.warning("trusted list not updated: %s", result.error)
 
@@ -275,15 +277,24 @@ class BerignaApplication(Adw.Application):
             window.open_file(Gio.File.new_for_path(str(old.document.path)))
         window.window.present()
         reopen = self.preferences is not None
+        old.cancel_pin()  # a worker waiting for a PIN would keep the card forever
         old.window.destroy()
+        self.preferences = None
         if reopen:  # the dialog went with the old window: show it again, in the new language
             self.show_preferences()
 
     def show_preferences(self) -> None:
         window = self._window()
+        if self.preferences is not None:  # already open: never a second one on top
+            self.preferences.present(window.window)
+            return
         self.preferences = PreferencesDialog(self)
-        self.preferences.connect("closed", lambda _d: setattr(self, "preferences", None))
+        self.preferences.connect("closed", self._on_preferences_closed)
         self.preferences.present(window.window)
+
+    def _on_preferences_closed(self, dialog: PreferencesDialog) -> None:
+        if self.preferences is dialog:
+            self.preferences = None
 
     def _show_in_spanish(self, *_args: Any) -> None:
         if self.settings is not None:
