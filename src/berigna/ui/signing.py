@@ -335,7 +335,7 @@ class SigningPage:
         data = Adw.PreferencesGroup(
             title=_("Signature Data"),
             description=_(
-                "Signature validators such as ReFirma show them. The reasons of the list are "
+                "Signature validators such as Firma Perú show them. The reasons of the list are "
                 "written in the language of the signature."
             ),
         )

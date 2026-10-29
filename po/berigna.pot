@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-28 21:01-0500\n"
+"POT-Creation-Date: 2026-10-28 21:58-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -455,114 +455,119 @@ msgid ""
 "failed attempts the DNIe is blocked."
 msgstr ""
 
-#: src/berigna/core/report/messages.py:177
-msgid "The PIN is blocked. Go to RENIEC to unblock it."
-msgstr ""
-
-#: src/berigna/core/report/messages.py:178
-msgid "The DNIe did not accept the operation because the PIN was not verified."
-msgstr ""
-
 #: src/berigna/core/report/messages.py:179
-msgid "berigna refused to send a command that is not allowed to the card."
-msgstr ""
-
-#: src/berigna/core/report/messages.py:180
-msgid "Problem with the trusted root certificates."
+msgid ""
+"The PIN is blocked. Unblock it on RENIEC's Ciudadano Digital platform or at "
+"a RENIEC office."
 msgstr ""
 
 #: src/berigna/core/report/messages.py:182
+msgid "The DNIe did not accept the operation because the PIN was not verified."
+msgstr ""
+
+#: src/berigna/core/report/messages.py:183
+msgid "berigna refused to send a command that is not allowed to the card."
+msgstr ""
+
+#: src/berigna/core/report/messages.py:184
+msgid "Problem with the trusted root certificates."
+msgstr ""
+
+#: src/berigna/core/report/messages.py:186
 msgid ""
 "The trusted root certificates installed with berigna have been altered. "
 "Reinstall berigna."
 msgstr ""
 
-#: src/berigna/core/report/messages.py:184
+#: src/berigna/core/report/messages.py:188
 msgid "A root certificate you added is not valid as a root."
 msgstr ""
 
-#: src/berigna/core/report/messages.py:186
+#: src/berigna/core/report/messages.py:190
 msgid ""
 "The INDECOPI trusted list could not be used: its signature or its content is "
 "not valid. The trusted root certificates installed with berigna are still "
 "used."
 msgstr ""
 
-#: src/berigna/core/report/messages.py:190
+#: src/berigna/core/report/messages.py:194
 msgid ""
 "The INDECOPI trusted list is out of date. The trusted root certificates "
 "installed with berigna are still used."
 msgstr ""
 
-#: src/berigna/core/report/messages.py:193
+#: src/berigna/core/report/messages.py:197
 msgid "Your certificate cannot be used to sign."
 msgstr ""
 
-#: src/berigna/core/report/messages.py:194
-msgid "Your certificate has expired or is not yet valid."
+#: src/berigna/core/report/messages.py:199
+msgid ""
+"Your certificate has expired or is not yet valid. DNIe certificates last "
+"four years, even if the DNI is still valid; renew them on RENIEC's Ciudadano "
+"Digital platform."
 msgstr ""
 
-#: src/berigna/core/report/messages.py:195
+#: src/berigna/core/report/messages.py:202
 msgid "Your certificate has been revoked. Go to RENIEC."
 msgstr ""
 
-#: src/berigna/core/report/messages.py:196
+#: src/berigna/core/report/messages.py:203
 msgid "Your certificate does not lead to a trusted root certificate."
 msgstr ""
 
-#: src/berigna/core/report/messages.py:197
+#: src/berigna/core/report/messages.py:204
 msgid "Your certificate could not be validated."
 msgstr ""
 
-#: src/berigna/core/report/messages.py:198
+#: src/berigna/core/report/messages.py:205
 msgid "The document could not be signed."
 msgstr ""
 
-#: src/berigna/core/report/messages.py:200
+#: src/berigna/core/report/messages.py:207
 msgid ""
 "The file changed after you opened it. Open it again and check it before "
 "signing."
 msgstr ""
 
-#: src/berigna/core/report/messages.py:202
+#: src/berigna/core/report/messages.py:209
 msgid "A file with that name already exists. Choose another name."
 msgstr ""
 
-#: src/berigna/core/report/messages.py:203
+#: src/berigna/core/report/messages.py:210
 msgid "Signing was cancelled. The PIN was not sent."
 msgstr ""
 
-#: src/berigna/core/report/messages.py:204
+#: src/berigna/core/report/messages.py:211
 msgid "This PDF cannot be signed: it is damaged or protected."
 msgstr ""
 
-#: src/berigna/core/report/messages.py:205
+#: src/berigna/core/report/messages.py:212
 msgid ""
 "The time-stamping authority did not answer. Check the connection or the TSA."
 msgstr ""
 
-#: src/berigna/core/report/messages.py:206
+#: src/berigna/core/report/messages.py:213
 msgid "That signature level is not available now. Choose a lower level."
 msgstr ""
 
-#: src/berigna/core/report/messages.py:208
+#: src/berigna/core/report/messages.py:215
 msgid ""
 "The visible signature cannot be drawn: the box is too small, the page is "
 "rotated or the image cannot be read. Make the box larger, use another page "
 "or choose another image in Preferences."
 msgstr ""
 
-#: src/berigna/core/report/messages.py:213
+#: src/berigna/core/report/messages.py:220
 msgid ""
 "The author certified this document so that it cannot be changed: it does not "
 "accept more signatures."
 msgstr ""
 
-#: src/berigna/core/report/messages.py:216
+#: src/berigna/core/report/messages.py:223
 msgid "The document could not be verified."
 msgstr ""
 
-#: src/berigna/core/report/messages.py:217
+#: src/berigna/core/report/messages.py:224
 msgid "The file is not a document that berigna can read, or it is damaged."
 msgstr ""
 
@@ -1106,8 +1111,8 @@ msgstr ""
 
 #: src/berigna/ui/signing.py:338
 msgid ""
-"Signature validators such as ReFirma show them. The reasons of the list are "
-"written in the language of the signature."
+"Signature validators such as Firma Perú show them. The reasons of the list "
+"are written in the language of the signature."
 msgstr ""
 
 #: src/berigna/ui/signing.py:344

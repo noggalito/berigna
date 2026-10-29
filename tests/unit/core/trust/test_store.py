@@ -160,3 +160,17 @@ def test_certificate_without_basic_constraints_is_not_a_ca(tmp_path: Path) -> No
     (user_dir / "sin-bc.pem").write_bytes(certificate.public_bytes(serialization.Encoding.PEM))
     with pytest.raises(InvalidAnchorError):
         TrustStore.load_bundled().with_user_anchors(user_dir)
+
+
+def test_both_class_3_authorities_are_bundled() -> None:
+    """RENIEC's repository has two "ECEP-RENIEC CA Class 3", under ROOT 5 and under ROOT 3
+    (2024); the INDECOPI trusted list of 2026-08-10 does not list the second (2026-10-28)."""
+    store = TrustStore.load_bundled()
+    class_3 = [c for c in store.intermediates if "CA Class 3" in c.subject.rfc4514_string()]
+    issuers = {str(c.issuer.get_attributes_for_oid(NameOID.COMMON_NAME)[0].value) for c in class_3}
+    assert issuers == {"ECEP-RENIEC CA ROOT 5", "ECEP-RENIEC"}
+    [ecep] = [
+        c for c in store.intermediates if c.subject.rfc4514_string().startswith("CN=ECEP-RENIEC,")
+    ]
+    [root_3_class_3] = [c for c in class_3 if c.issuer == ecep.subject]
+    root_3_class_3.verify_directly_issued_by(ecep)

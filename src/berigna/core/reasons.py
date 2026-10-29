@@ -3,7 +3,7 @@
 """Reasons for signing offered in a list, plus "Other" (decision of 2026-10-28).
 
 The reason goes in the signature dictionary (/Reason) and in the visible stamp, and validators
-such as ReFirma show it: it states why the signer signs. The usual reasons are worded as nouns,
+such as Firma Perú show it: it states why the signer signs. The usual reasons are worded as nouns,
 which read the same for any signer, and are written in the language of the signature (RF-092),
 not in that of the interface.
 """
@@ -32,7 +32,7 @@ TEXTS = {
     Reason.AGREEMENT: N_("In agreement"),
     Reason.ENDORSEMENT: N_("Endorsement (V° B°)"),
     Reason.APPROVAL: N_("Approval of the document"),
-    # Signing for someone else who asked for it, as ReFirma offers it ("Por encargo").
+    # Signing for someone else who asked for it, as other Peruvian signing programs offer it.
     Reason.ON_BEHALF: N_("On behalf of another person"),
 }
 
