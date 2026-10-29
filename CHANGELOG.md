@@ -54,6 +54,7 @@ Interfaz (Fase 3):
 - `core.signing.output_path`: el nombre del archivo firmado se numera si ya existe, sin sobrescribir nunca (RF-045).
 - ERR-307: un documento certificado por su autor sin cambios permitidos (DocMDP) se rechaza antes del PIN; `inspect_document` lo indica (`locked`).
 - Plan de mantenimiento (`docs/11-mantenimiento/plan-de-mantenimiento.md`, BRG-MAN-001): versiones y ramas, hechos externos que obligan a publicar, vigilancia automática, proceso de cada versión, seguridad, incidencias y continuidad.
+- Firma por lotes de PDF (CU-04, RF-040 a RF-043; `core.batch`): un solo PIN para todos los documentos, lista que se confirma antes del PIN, un error en un archivo no detiene los demás, cancelación entre archivos, nombres de salida que no chocan e informe CSV (`core.report.batch_report`). Se abre con "Firmar varios documentos…" o abriendo o arrastrando varios archivos o una carpeta. ERR-309 para los archivos que quedan sin firmar al cancelar.
 - Entrada de escritorio `com.noggalito.Berigna.desktop` (nombre, descripción y palabras clave traducidas; abre PDF), validada con `desktop-file-validate` en `meson test`. `scripts/escritorio.sh` la instala con los iconos en `~/.local/share` para el árbol de desarrollo, de modo que GNOME muestra el icono de berigna en el Dock.
 
 ### Cambiado

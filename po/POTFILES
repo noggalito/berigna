@@ -1,8 +1,10 @@
 # Source files with translatable strings (one per line; ADR-0011, ADR-0015).
 src/berigna/core/appearance.py
 src/berigna/core/reasons.py
+src/berigna/core/report/batch_report.py
 src/berigna/core/report/messages.py
 src/berigna/ui/application.py
+src/berigna/ui/batch.py
 src/berigna/ui/help.py
 src/berigna/ui/presentation.py
 src/berigna/ui/preferences.py
