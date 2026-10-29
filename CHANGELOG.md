@@ -36,6 +36,10 @@ Verificación e informes:
 - Infraestructura de traducción con GNU gettext (`po/`, `scripts/traducciones.sh`, `berigna.core.i18n`): catálogo es_PE completo y catálogo de quechua sureño a la espera de los traductores; el quechua pendiente se muestra en es_PE, nunca en el texto fuente inglés (ADR-0015).
 - Matriz de validación externa PAdES por niveles contra DSS 6.2 (`tests/interop/`, `docs/07-calidad/validacion-externa-fase2.md`).
 
+Registro local de fallos (Fase 4):
+
+- Las excepciones no capturadas, en el hilo principal o en cualquier otro, y los fallos de código nativo (`faulthandler`: GTK, Poppler) se guardan en el registro técnico y en un informe pendiente, con los números enmascarados (`berigna.core.crashes`, R-DES-11). Cada entrada lleva su fecha y su versión, y la carpeta personal se escribe como `~`. En el siguiente arranque, berigna lo dice y ofrece "Copiar el informe"; el informe se borra cuando la persona responde. Nada se envía solo.
+
 Interfaz (Fase 3):
 
 - Aplicación GTK 4 y libadwaita `com.noggalito.Berigna` construida con Meson (ADR-0010): vistas en Blueprint, recursos, esquema de GSettings, catálogos con alias `quy` y `qu`, y lanzador. `scripts/ejecutar.sh` la lanza desde el árbol de trabajo.

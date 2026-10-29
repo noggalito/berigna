@@ -3,7 +3,7 @@
 | Campo | Valor |
 |---|---|
 | Documento | BRG-GEN-000 |
-| Versión | 0.6.0 |
+| Versión | 0.7.0 |
 | Estado | Borrador |
 | Fecha | 2026-10-29 |
 | Responsable | noggalito |
@@ -109,6 +109,19 @@ Algunos documentos públicos citan identificadores cuyo detalle está en la docu
 
 Fases 0, 1 y 2 cerradas. Fase 3: funcionalmente completa (incrementos 1 a 7 hechos); su cierre formal depende de la prueba de usabilidad con al menos 5 personas (BRG-CAL-005), que no bloquea seguir con la Fase 4. Los problemas de gravedad 3 y 4 que salgan de ella se corrigen antes de cerrarla.
 
+Fase 4 (CAdES y XAdES), iniciada el 2026-10-29, en ocho incrementos:
+
+1. Registro local de fallos (R-DES-11). Hecho.
+2. Firma CAdES `.p7s` y `.p7m`, de B-B a B-LTA (`core.formats.cades`; RF-020 a RF-022).
+3. Verificación CAdES con indicaciones ETSI e informes (RF-051), con pruebas por propiedades sobre CMS (R-DES-07).
+4. Firma XAdES envuelta y envolvente, de B-B a B-LTA (`core.formats.xades`; RF-030, RF-031 y RF-033); la separada (RF-032), si cabe.
+5. Verificación XAdES (RF-052), también de las firmas de ReFirma y DSS (PR-INT-05, PR-INT-06), con pruebas por propiedades sobre XML.
+6. Interfaz: firmar otros archivos (CU-05, con nombre, tamaño, tipo, SHA-256 y vista de texto), verificar `.p7s`, `.p7m` y `.xml`, y lotes mixtos (RF-041).
+7. Práctica de desarrollo: vigilancia semanal, SBOM, comprobación de la documentación, gancho `pre-push`, CI contra la última pyHanko y medidas de rendimiento (R-DES-01 a R-DES-03, R-DES-05, R-DES-06, R-DES-08, R-DES-10).
+8. Matriz externa formato × nivel con DSS 6.2 y Firma Perú, y prueba con el DNIe real y PIN: el criterio de salida de la fase.
+
+La cofirma CAdES (RF-023, "Podría") queda para después de la v1.0.
+
 | Módulo | Estado | Requisitos | Evidencia |
 |---|---|---|---|
 | `core.token.dnie_v2` y `core.token.transport` | Implementado | RF-002, RF-003, RF-004, RF-005 (sin PIN pad) | Simulador, 100 % de cobertura; HIL con los lectores "Hyperion" e "innovatech", con PIN real |
@@ -125,6 +138,7 @@ Fases 0, 1 y 2 cerradas. Fase 3: funcionalmente completa (incrementos 1 a 7 hech
 | Proxy y caché de la TSL | Implementado (Fase 3, incremento 4): `core.net.proxy` y `core.trust.cache` | RF-061, RF-064 | Descarga real de la TSL de INDECOPI (secuencia 25, 68 CA) y lectura desde la caché |
 | `ui` (interfaz gráfica) | Fase 3, funcionalmente completa. Incremento 1: aplicación `com.noggalito.Berigna` con Meson, ventana principal, estado del DNIe, apertura de archivos (botón, arrastrar y argumentos), esquema de GSettings, cambio de idioma sin reiniciar y aviso de traducción sin revisar. Incremento 2: verificación de PDF (CU-06) con resumen, detalles técnicos, informes JSON y PDF y versión firmada. Incremento 3: firma de PDF (CU-01, CU-03) con vista previa (Poppler, ADR-0016), nivel, diálogo del PIN y documentos certificados (ERR-307). Incremento 4: Preferencias (CU-08), TSL de INDECOPI en uso con caché y proxy. Incremento 5: firma visible (CU-02) con texto, rúbrica, logotipo o QR, en horizontal o vertical. Incremento 6: lotes, diagnóstico, registro técnico, historial y certificados de confianza. Incremento 7: quechua completo | RF-001 a RF-007, RF-010 a RF-014, RF-018, RF-040 a RF-045, RF-050, RF-053 a RF-056, RF-060, RF-061, RF-064, RF-080, RF-082, RF-083, RF-090, RF-092 | Pruebas de la aplicación real con Xvfb, también en la CI; PDF real firmado con el DNIe verificado en línea (TOTAL-PASSED) |
 | `core.batch` y firma por lotes en la interfaz | Implementado (Fase 3, incremento 6): un PIN por lote, lista confirmada, tolerancia a fallos, cancelación entre archivos, informe CSV (`core.report.batch_report`) | RF-040 a RF-043 | Tarjeta simulada: un solo VERIFY para todo el lote; pruebas de la interfaz con Xvfb |
+| `core.crashes` (registro local de fallos) | Implementado (Fase 4, incremento 1): excepciones no capturadas en cualquier hilo y fallos de código nativo (`faulthandler`) al registro técnico y a un informe pendiente, con los números enmascarados; en el siguiente arranque, un aviso único con "Copiar el informe"; nada se envía solo | R-DES-11, RNF-SEG-07 | Pruebas del núcleo y de la interfaz con Xvfb |
 | `core.diagnostics` y `core.logs` | Implementado (Fase 3, incremento 6): diagnóstico en orden con acción sugerida e informe copiable; registro técnico rotativo con números enmascarados | RF-007, RF-083 | Tarjeta simulada y PKI de pruebas; pruebas de la interfaz con Xvfb |
 | `core.history`, historial y vista del almacén de confianza | Implementado (Fase 3, incremento 6): historial SQLite 0600 con búsqueda, CSV y borrado; certificados de confianza por origen en Preferencias | RF-060, RF-082 | Pruebas de la interfaz con firma y verificación reales (tarjeta simulada) |
 | CAdES y XAdES | Fase 4 (viabilidad probada en SPK-03) | RF-020 a RF-033 | — |
@@ -137,5 +151,5 @@ Fases 0, 1 y 2 cerradas. Fase 3: funcionalmente completa (incrementos 1 a 7 hech
 | Lectura del DNIe por NFC y teléfono (berigna en Android o el teléfono como puente) | Versión 1.1 (decisión del 2026-10-29); investigación en SPK-07 | ADR-0003, ADR-0012 | — |
 | Windows, macOS, Android e iOS | Versión 1.1 (decisión del 2026-10-29); el núcleo es independiente de la interfaz (ADR-0002) | ADR-0021 | — |
 
-Verificación local: `scripts/verificar.sh` (ruff, mypy estricto, pytest con cobertura mínima del 80 %; al 2026-10-29, 100 % del núcleo y 95 % del total con 479 pruebas, incluidas las de la interfaz con Xvfb; las 5 con hardware se omiten sin `BERIGNA_HIL=1`). Pruebas con hardware: `BERIGNA_HIL=1 pytest -m hil` (sin PIN) y los *scripts* manuales de `tests/hil/` (con PIN, según el protocolo).
+Verificación local: `scripts/verificar.sh` (ruff, mypy estricto, pytest con cobertura mínima del 80 %; al 2026-10-29, 100 % del núcleo y 95 % del total con 489 pruebas, incluidas las de la interfaz con Xvfb; las 5 con hardware se omiten sin `BERIGNA_HIL=1`). Pruebas con hardware: `BERIGNA_HIL=1 pytest -m hil` (sin PIN) y los *scripts* manuales de `tests/hil/` (con PIN, según el protocolo).
 

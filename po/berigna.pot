@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-29 12:42-0500\n"
+"POT-Creation-Date: 2026-10-29 14:00-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -660,7 +660,7 @@ msgstr ""
 msgid "Verification"
 msgstr ""
 
-#: src/berigna/ui/application.py:308
+#: src/berigna/ui/application.py:335
 msgid "Sign and verify documents with your Peruvian DNIe."
 msgstr ""
 
@@ -779,33 +779,49 @@ msgstr ""
 msgid "Report saved."
 msgstr ""
 
+#: src/berigna/ui/diagnostics.py:51
+msgid "Report copied. It has no PIN, and the DNI only masked."
+msgstr ""
+
 #: src/berigna/ui/diagnostics.py:62
+msgid "berigna Failed Unexpectedly Last Time"
+msgstr ""
+
+#: src/berigna/ui/diagnostics.py:64
+#, python-brace-format
+msgid ""
+"You can copy the report and send it as an issue at {url}. It has no PIN, and "
+"the DNI only masked; check it before sending, as it may name your files and "
+"folders. Nothing is sent on its own."
+msgstr ""
+
+#: src/berigna/ui/diagnostics.py:69 src/berigna/ui/widgets.py:16
+msgid "_Close"
+msgstr ""
+
+#: src/berigna/ui/diagnostics.py:70 src/berigna/ui/diagnostics.py:119
+msgid "_Copy Report"
+msgstr ""
+
+#: src/berigna/ui/diagnostics.py:97
 msgid "Check Again"
 msgstr ""
 
-#: src/berigna/ui/diagnostics.py:69 src/berigna/ui/diagnostics.py:94
+#: src/berigna/ui/diagnostics.py:104 src/berigna/ui/diagnostics.py:129
 msgid "Diagnosis"
 msgstr ""
 
-#: src/berigna/ui/diagnostics.py:71
+#: src/berigna/ui/diagnostics.py:106
 msgid ""
 "Checks the reader, the DNIe and the services, in order. The PIN is not asked."
 msgstr ""
 
-#: src/berigna/ui/diagnostics.py:84
-msgid "_Copy Report"
-msgstr ""
-
-#: src/berigna/ui/diagnostics.py:86
+#: src/berigna/ui/diagnostics.py:121
 msgid "Open the _Log Folder"
 msgstr ""
 
-#: src/berigna/ui/diagnostics.py:101
+#: src/berigna/ui/diagnostics.py:136
 msgid "Checking…"
-msgstr ""
-
-#: src/berigna/ui/diagnostics.py:139
-msgid "Report copied. It has no PIN, and the DNI only masked."
 msgstr ""
 
 #: src/berigna/ui/help.py:42 src/berigna/ui/help.py:46
@@ -1486,27 +1502,32 @@ msgstr ""
 msgid "berigna {version} diagnosis, {moment}"
 msgstr ""
 
-#: src/berigna/ui/presentation.py:530
+#: src/berigna/ui/presentation.py:531
+#, python-brace-format
+msgid "berigna {version} failure report, {moment}"
+msgstr ""
+
+#: src/berigna/ui/presentation.py:544
 msgid "Included in berigna"
 msgstr ""
 
-#: src/berigna/ui/presentation.py:531
+#: src/berigna/ui/presentation.py:545
 msgid "From the INDECOPI trusted list"
 msgstr ""
 
-#: src/berigna/ui/presentation.py:532
+#: src/berigna/ui/presentation.py:546
 msgid "Added by you"
 msgstr ""
 
-#: src/berigna/ui/presentation.py:553
+#: src/berigna/ui/presentation.py:567
 msgid "Intermediate"
 msgstr ""
 
-#: src/berigna/ui/presentation.py:553
+#: src/berigna/ui/presentation.py:567
 msgid "Root"
 msgstr ""
 
-#: src/berigna/ui/presentation.py:558
+#: src/berigna/ui/presentation.py:572
 #, python-brace-format
 msgid "{role} · valid until {date}"
 msgstr ""
@@ -1763,10 +1784,6 @@ msgstr ""
 #: src/berigna/ui/verification.py:290
 #, python-brace-format
 msgid "Saved {name}"
-msgstr ""
-
-#: src/berigna/ui/widgets.py:16
-msgid "_Close"
 msgstr ""
 
 #: src/berigna/ui/widgets.py:50

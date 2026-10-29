@@ -3,7 +3,7 @@
 | Campo | Valor |
 |---|---|
 | Documento | BRG-ARQ-001 |
-| Versión | 0.2.1 |
+| Versión | 0.3.0 |
 | Estado | Borrador |
 | Fecha | 2026-10-29 |
 | Responsable | noggalito |
@@ -108,6 +108,7 @@ flowchart TB
 | `core.diagnostics` | Comprobaciones en orden del diagnóstico, sin PIN (CU-07, RF-007) | Implementado |
 | `core.files` | Escritura atómica con permisos correctos, carpeta de datos y nombres con fecha | Implementado |
 | `core.logs` | Registro técnico rotativo con números enmascarados (RF-083) | `logging` de la biblioteca estándar; implementado |
+| `core.crashes` | Registro local de fallos: excepciones no capturadas en cualquier hilo y fallos de código nativo, ofrecidos una vez en el siguiente arranque (R-DES-11) | `sys.excepthook`, `threading.excepthook`, `faulthandler`; implementado |
 | `core.validation` | Validación previa del firmante (`preflight`, RF-006) y verificación de firmas PDF con indicaciones ETSI (`pdf`, RF-050, RF-053, RF-055) | pyhanko-certvalidator 0.26.3 y la validación AdES de pyHanko 0.25.1; `preflight` implementado; `pdf` con sellos de tiempo y validación en el pasado |
 | `core.report` | Explicaciones en lenguaje llano de cada indicación y subindicación ETSI y de cada `ERR-xxx` (`messages`, `explanations`); informe de verificación en JSON con explicaciones en ambos idiomas (`json_report`) y en PDF en es_PE o en quechua (`pdf_report`) | gettext, ReportLab; implementado |
 | `core.i18n` | Idiomas es_PE y quechua sureño, elección según la configuración del usuario con es_PE de respaldo (ADR-0015) y carga de los catálogos; el quechua cae en es_PE, nunca en el texto fuente inglés | gettext de la biblioteca estándar; implementado |
