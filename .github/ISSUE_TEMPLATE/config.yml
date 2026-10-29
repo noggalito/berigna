@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Vulnerabilidad de seguridad
+    url: https://github.com/noggalito/berigna/security/advisories/new
+    about: Nunca en una incidencia pública. Usa el aviso privado (ver SECURITY.md).
+  - name: Otras consultas
+    url: https://github.com/noggalito/berigna/blob/main/SUPPORT.md
+    about: Dónde pedir ayuda y qué no enviar nunca.
