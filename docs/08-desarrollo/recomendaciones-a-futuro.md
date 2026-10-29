@@ -3,7 +3,7 @@
 | Campo | Valor |
 |---|---|
 | Documento | BRG-DES-002 |
-| Versión | 0.1.0 |
+| Versión | 0.2.0 |
 | Estado | Borrador |
 | Fecha | 2026-10-29 |
 | Responsable | noggalito |
@@ -52,6 +52,8 @@ Sí vale la pena el **registro local de fallos** (R-DES-11):
 1. `sys.excepthook` y `threading.excepthook` escriben la traza en el registro técnico (`core.logs`, con los números ya enmascarados) y `faulthandler` cubre los fallos de C (GTK, Poppler) en un archivo junto al registro.
 2. Si el arranque anterior terminó con un fallo, berigna lo dice una vez: "berigna se cerró de forma inesperada la última vez", con "Copiar informe" (el mismo formato que el informe de diagnóstico: versión, sistema, lector, traza; sin PIN, sin contenido de documentos, con el DNI enmascarado) y el enlace a las incidencias.
 3. La persona decide si lo envía y por dónde. Nada sale solo.
+
+Implementado el 2026-10-29 (Fase 4, incremento 1) en `core.crashes`. Como las excepciones de las retrollamadas de GTK no cierran el programa, el aviso dice "berigna tuvo un fallo inesperado la última vez" en lugar de "se cerró". El informe lleva la versión, el sistema y la traza; no lleva el lector, que no forma parte de un fallo.
 
 ## 6. Versión candidata para la prueba de usabilidad
 

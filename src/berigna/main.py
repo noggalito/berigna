@@ -26,11 +26,13 @@ def main(argv: Sequence[str] | None = None) -> int:
         print(f"berigna: cannot load {resources}: {exc.message}", file=sys.stderr)
         return 1
 
+    from berigna.core import crashes
     from berigna.core.logs import setup_logging
     from berigna.ui.application import BerignaApplication
 
     try:
         setup_logging()  # RF-083
+        crashes.install()  # R-DES-11
     except OSError as exc:  # a read-only home must not stop the program
         print(f"berigna: no technical log: {exc}", file=sys.stderr)
 
