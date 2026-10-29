@@ -15,7 +15,7 @@ gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
 from gi.repository import Adw, Gio, GLib, Gtk  # noqa: E402
 
-from berigna.core.files import write_atomically  # noqa: E402
+from berigna.core.files import dated_name, write_atomically  # noqa: E402
 from berigna.core.history import Entry, History, Kind, history_csv  # noqa: E402
 from berigna.core.report.explanations import explain_error, format_time  # noqa: E402
 from berigna.ui.i18n import _, catalogue, current_language  # noqa: E402
@@ -128,7 +128,9 @@ class HistoryPage:
         return history_csv(history.entries() if history else [], current_language())
 
     def _choose_export(self) -> None:
-        dialog = Gtk.FileDialog(title=_("Export to CSV"), initial_name=_("berigna-history.csv"))
+        dialog = Gtk.FileDialog(
+            title=_("Export to CSV"), initial_name=dated_name(_("berigna-history.csv"))
+        )
 
         def chosen(dialog: Gtk.FileDialog, result: Gio.AsyncResult) -> None:
             try:
