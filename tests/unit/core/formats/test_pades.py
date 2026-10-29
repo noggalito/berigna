@@ -9,6 +9,7 @@ from asn1crypto import x509 as asn1_x509
 from cryptography import x509
 from cryptography.hazmat.primitives import serialization
 from pyhanko.pdf_utils.reader import PdfFileReader
+from pyhanko.sign.general import SigningError
 from pyhanko.sign.validation import validate_pdf_signature
 from pyhanko_certvalidator import ValidationContext
 
@@ -18,6 +19,7 @@ from berigna.core.token.dnie_v2 import INS_PSO, DnieV2Token
 from berigna.core.token.pin import Pin
 from sim.dnie_v2 import DnieV2Simulator
 from support.cards import make_card
+from support.pdfs import pdf_with_freed_info
 from support.pki import Pki, build_pki, minimal_pdf
 
 
@@ -112,13 +114,33 @@ def test_signer_refuses_a_digest_other_than_the_agreed_one(pki: Pki) -> None:
     assert INS_PSO not in card.instructions()
 
 
-def test_pyhanko_signing_errors_are_translated(pki: Pki, monkeypatch: pytest.MonkeyPatch) -> None:
-    from pyhanko.sign.general import SigningError
+@pytest.mark.parametrize(
+    "error",
+    [
+        SigningError("document certified with no changes allowed"),
+        TypeError("'NullObject' object does not support item assignment"),
+    ],
+)
+def test_pyhanko_signing_errors_are_translated(
+    pki: Pki, monkeypatch: pytest.MonkeyPatch, error: Exception
+) -> None:
+    """Also pyHanko's own errors on malformed PDFs: ERR-304, not an unexpected error."""
 
     def failing_sign_pdf(*args: object, **kwargs: object) -> None:
-        raise SigningError("document certified with no changes allowed")
+        raise error
 
-    monkeypatch.setattr("berigna.core.formats.pades.signers.sign_pdf", failing_sign_pdf)
+    monkeypatch.setattr("berigna.core.formats.pades.signers.PdfSigner.sign_pdf", failing_sign_pdf)
     card, leaf = make_card(pki, "FIRMANTE")
     with DnieV2Token(card) as token, pytest.raises(PdfFormatError, match="cannot sign"):
         sign_pdf_basic(minimal_pdf(), token, [pki.root, pki.ca, leaf])
+
+
+def test_pdf_whose_metadata_was_freed_can_be_signed(pki: Pki) -> None:
+    """ExifTool deletes /Info by freeing its object and leaves the reference: pyHanko failed
+    writing the modification date ('NullObject' object does not support item assignment),
+    after the PIN (real document, 2026-10-28). The signature revision gets a new /Info."""
+    signed, _card = _sign(pki, pdf_with_freed_info(), "FIRMANTE SIN INFO")
+    reader = PdfFileReader(io.BytesIO(signed))
+    status = validate_pdf_signature(reader.embedded_signatures[0], _validation_context(pki))
+    assert status.bottom_line
+    assert "/ModDate" in reader.trailer["/Info"]
