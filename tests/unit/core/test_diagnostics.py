@@ -153,3 +153,24 @@ def test_tsa_that_does_not_answer(pki: Pki) -> None:
         ocsp_responses=[ocsp],
     )
     assert (results[5].status, results[5].code) == (Status.ERROR, "ERR-305")
+
+
+def test_validates_now_with_its_tolerance(pki: Pki, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Without a moment the certificate is validated "now" (moment None), which gives RENIEC's
+    OCSP answers the clock tolerance of CURRENT_TIME_TOLERANCE; a fixed moment made a real
+    answer look too recent and the revocation "unavailable" (2026-10-29)."""
+    import berigna.core.diagnostics as diagnostics
+
+    card, _ocsp = _token(pki)
+    seen: list[object] = []
+    real = diagnostics.check_signer
+
+    def spy(*args: object, **kwargs: object) -> object:
+        seen.append(kwargs["moment"])
+        return real(*args, **kwargs)  # type: ignore[arg-type]
+
+    monkeypatch.setattr(diagnostics, "check_signer", spy)
+    diagnose(
+        READY, open_token=lambda: DnieV2Token(card), store=pki.store, timestamper=None, online=False
+    )
+    assert seen == [None]
