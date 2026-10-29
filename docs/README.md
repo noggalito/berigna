@@ -46,7 +46,8 @@ docs/
 │   ├── validacion-externa-fase2.md    ← matriz PAdES contrastada con DSS 6.2
 │   └── prueba-de-usabilidad.md        ← protocolo de la prueba con al menos 5 personas
 ├── 08-desarrollo/
-│   └── entorno-y-convenciones.md
+│   ├── entorno-y-convenciones.md
+│   └── recomendaciones-a-futuro.md    ← mejoras de la práctica de desarrollo, por fase
 ├── 09-despliegue/
 │   └── empaquetado-debian.md
 ├── 10-investigacion/                  ← spikes SPK-01, SPK-03, SPK-05 y SPK-06
@@ -80,7 +81,7 @@ Algunos documentos públicos citan identificadores cuyo detalle está en la docu
 | 05-seguridad | Borrador | — |
 | 06-ux | Borrador | Interfaz implementada (Fase 3); glosario del quechua (BRG-UX-003) |
 | 07-calidad | Borrador | El protocolo de PIN está Vigente; protocolo de la prueba de usabilidad (BRG-CAL-005) pendiente de aplicar |
-| 08-desarrollo | Borrador | — |
+| 08-desarrollo | Borrador | Recomendaciones a futuro (BRG-DES-002) |
 | 09-despliegue | Borrador | — |
 | 10-investigacion | En curso | SPK-01, SPK-03 y SPK-05 cerrados; SPK-06 (DNIe 1.0 y 3.0) pendiente |
 | 11-mantenimiento | Borrador | Se aplica desde la v1.0 |
