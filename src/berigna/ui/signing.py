@@ -150,12 +150,208 @@ class ChoiceWithOther:
         group.add(self.entry)
 
 
+def preferred_level(settings: Gio.Settings | None) -> SignatureLevel:
+    if settings is None:
+        return SignatureLevel.B_LT
+    return SignatureLevel(settings.get_string("default-level"))
+
+
+def output_settings(settings: Gio.Settings | None) -> tuple[str, Path | None]:
+    """Suffix and folder of signed files; a folder that no longer exists (removed, unmounted)
+    falls back to the original's."""
+    suffix = settings.get_string("output-suffix") if settings else "-firmado"
+    folder = settings.get_string("output-directory") if settings else ""
+    return suffix, Path(folder) if folder and Path(folder).is_dir() else None
+
+
+class LevelChoice:
+    """The signature levels, recommended first; those that need a TSA are disabled without
+    one (DP-02). Shared by the signing page and the batch page."""
+
+    def __init__(self, services: "SigningServices") -> None:
+        self.group = Adw.PreferencesGroup(
+            title=_("Signature Level"), header_suffix=help_button(HelpTopic.SIGNATURE_LEVELS)
+        )
+        has_tsa = services.timestamper() is not None
+        preferred = preferred_level(services.settings)
+        self.level = SignatureLevel.B_B
+        self.buttons: dict[SignatureLevel, Gtk.CheckButton] = {}
+        first: Gtk.CheckButton | None = None
+        for level in LEVEL_ORDER:
+            _title, description = presentation.LEVELS[level]
+            available = has_tsa or level is SignatureLevel.B_B
+            button = Gtk.CheckButton(group=first, sensitive=available, valign=Gtk.Align.CENTER)
+            first = first or button
+            button.connect("toggled", self._on_level, level)
+            row = Adw.ActionRow(
+                title=presentation.level_title(level),
+                subtitle=_(description) if available else _(presentation.NEEDS_TSA),
+                activatable_widget=button,
+                sensitive=available,
+                use_markup=False,
+            )
+            row.set_subtitle_lines(0)
+            row.add_prefix(button)
+            self.group.add(row)
+            self.buttons[level] = button
+        chosen = preferred if has_tsa or preferred is SignatureLevel.B_B else SignatureLevel.B_B
+        self.buttons[chosen].set_active(True)
+
+    def _on_level(self, button: Gtk.CheckButton, level: SignatureLevel) -> None:
+        if button.get_active():
+            self.level = level
+
+
+class SignatureData:
+    """Reason and location, in lists with "Other" (2026-10-28), remembered between uses."""
+
+    def __init__(self, settings: Gio.Settings | None) -> None:
+        self._settings = settings
+        self.group = Adw.PreferencesGroup(
+            title=_("Signature Data"),
+            description=_(
+                "Signature validators such as Firma Perú show them. The reasons of the list are "
+                "written in the language of the signature."
+            ),
+        )
+        self.reason = ChoiceWithOther(
+            _("Reason"),
+            (_("Other reason…"), _("Other Reason")),
+            [_("No reason"), *(_(REASON_TEXTS[reason]) for reason in REASONS)],
+        )
+        self.recent_locations = list(settings.get_strv("recent-locations")) if settings else []
+        self.location = ChoiceWithOther(
+            _("Location"),
+            (_("Other location…"), _("Other Location")),
+            [_("No location"), *self.recent_locations],
+        )
+        if settings is not None:
+            self._restore(settings)
+        self.reason.add_to(self.group)
+        self.location.add_to(self.group)
+
+    def _restore(self, settings: Gio.Settings) -> None:
+        """The last reason and location used."""
+        kinds = [Reason.NONE, *REASONS, Reason.OTHER]
+        kind = Reason(settings.get_string("signature-reason-kind"))
+        self.reason.select(kinds.index(kind), settings.get_string("signature-reason"))
+        last = settings.get_string("signature-location")
+        if last in self.recent_locations:
+            self.location.select(self.recent_locations.index(last) + 1)
+        elif last:
+            self.location.select(len(self.location.labels) - 1, last)
+
+    def language(self) -> Language:
+        """The language of the signature (RF-092), also for the reasons of the list."""
+        settings = self._settings
+        return Language(settings.get_string("appearance-language") if settings else "es_PE")
+
+    def reason_kind(self) -> Reason:
+        kinds = [Reason.NONE, *REASONS, Reason.OTHER]
+        return kinds[self.reason.combo.get_selected()]
+
+    def reason_value(self) -> str | None:
+        """The reason as written in the signature: in the language of the signature (RF-092)."""
+        return reason_text(self.reason_kind(), self.reason.entry.get_text(), self.language())
+
+    def location_value(self) -> str | None:
+        if self.location.other:
+            return self.location.entry.get_text().strip() or None
+        index = self.location.combo.get_selected()
+        return self.recent_locations[index - 1] if index > 0 else None
+
+    def remember(self) -> None:
+        settings, location = self._settings, self.location_value()
+        if settings is None:
+            return
+        settings.set_string("signature-reason-kind", self.reason_kind().value)
+        settings.set_string("signature-reason", self.reason.entry.get_text().strip())
+        settings.set_string("signature-location", location or "")
+        if location:
+            recent = [location, *(old for old in self.recent_locations if old != location)]
+            settings.set_strv("recent-locations", recent[:RECENT_LOCATIONS])
+
+    def options(self) -> PadesOptions:
+        digest = self._settings.get_string("digest-algorithm") if self._settings else "sha256"
+        return PadesOptions(
+            reason=self.reason_value(),
+            location=self.location_value(),
+            digest=cast(HashAlgorithmName, digest),
+        )
+
+
+def failure_page(
+    window: "MainWindow",
+    error: BerignaError | None,
+    level: SignatureLevel,
+    *,
+    title: str,
+    back: Callable[[], None],
+    retry: Callable[[SignatureLevel], None],
+) -> Adw.StatusPage | None:
+    """What a failed signing shows, for one document or a batch; None when the flow goes on
+    by itself (cancelled before the PIN, or a wrong PIN with tries left)."""
+    if isinstance(error, SigningCancelledError):
+        back()
+        window.toast(_("Signature cancelled. The PIN was not sent."))
+        return None
+    if isinstance(error, PinIncorrectError) and error.remaining_tries != 0:
+        # CU-01 6a: back to the PIN dialog, which shows the tries left (P-07). Sending the PIN
+        # again still needs the user to type it and confirm (P-06).
+        retry(level)
+        return None
+    if isinstance(error, PinIncorrectError):  # no tries left: the card is now blocked
+        error = PinBlockedError("no tries left")
+    message = explain_error(error.code if error else "ERR-000", catalogue()) or ""
+    page = Adw.StatusPage(
+        icon_name="dialog-error-symbolic", title=title, description=brand_markup(message)
+    )
+    buttons = Gtk.Box(spacing=12, halign=Gtk.Align.CENTER)
+    back_button = Gtk.Button(label=_("_Back"), use_underline=True)
+    back_button.add_css_class("pill")
+    back_button.connect("clicked", lambda _b: back())
+    buttons.append(back_button)
+    if isinstance(error, LevelNotAvailableError) and level is not SignatureLevel.B_B:
+        basic = Gtk.Button(label=_("Sign Without _Timestamp (B-B)"), use_underline=True)
+        basic.add_css_class("pill")
+        basic.add_css_class("suggested-action")
+        basic.connect("clicked", lambda _b: retry(SignatureLevel.B_B))
+        buttons.append(basic)
+    page.set_child(buttons)
+    return page
+
+
+def ask_pin_in_main_loop(
+    window: "MainWindow",
+    make_dialog: Callable[[Callable[[Pin | None], None]], "PinDialog"],
+    on_pin: Callable[[], object],
+) -> Pin | None:
+    """Called by the core in a worker thread: shows the PIN dialog in the main loop and waits
+    for the user. ``on_pin`` runs when a PIN is given."""
+    answered = threading.Event()
+    answer: list[Pin | None] = [None]
+
+    def reply(pin: Pin | None) -> None:
+        answer[0] = pin
+        if pin is not None:
+            on_pin()
+        answered.set()
+
+    def show() -> bool:
+        make_dialog(reply).present(window.window)
+        return GLib.SOURCE_REMOVE
+
+    GLib.idle_add(show)
+    answered.wait()
+    return answer[0]
+
+
 class PinDialog(Adw.Dialog):
     """Summary of what is going to be signed and the PIN entry (P-01, P-05, P-07)."""
 
     def __init__(
         self,
-        document: DocumentInfo,
+        document: DocumentInfo | int,
         check: SignerCheck,
         level: SignatureLevel,
         remaining_tries: int | None,
@@ -268,7 +464,6 @@ class SigningPage:
             document.locked,
         )
         self._remaining_tries: int | None = None
-        self._level = SignatureLevel.B_B
         self.result: SignResult | None = None
         self.pin_dialog: PinDialog | None = None
 
@@ -304,57 +499,13 @@ class SigningPage:
                 group.add(row)
             panel.add(group)
 
-        levels = Adw.PreferencesGroup(
-            title=_("Signature Level"), header_suffix=help_button(HelpTopic.SIGNATURE_LEVELS)
-        )
-        has_tsa = self._services.timestamper() is not None
-        preferred = self._preferred_level()
-        self.level_buttons: dict[SignatureLevel, Gtk.CheckButton] = {}
-        first: Gtk.CheckButton | None = None
-        for level in LEVEL_ORDER:
-            _title, description = presentation.LEVELS[level]
-            available = has_tsa or level is SignatureLevel.B_B
-            button = Gtk.CheckButton(group=first, sensitive=available, valign=Gtk.Align.CENTER)
-            first = first or button
-            button.connect("toggled", self._on_level, level)
-            row = Adw.ActionRow(
-                title=presentation.level_title(level),
-                subtitle=_(description) if available else _(presentation.NEEDS_TSA),
-                activatable_widget=button,
-                sensitive=available,
-                use_markup=False,
-            )
-            row.set_subtitle_lines(0)
-            row.add_prefix(button)
-            levels.add(row)
-            self.level_buttons[level] = button
-        chosen = preferred if has_tsa or preferred is SignatureLevel.B_B else SignatureLevel.B_B
-        self.level_buttons[chosen].set_active(True)
-        panel.add(levels)
-
-        data = Adw.PreferencesGroup(
-            title=_("Signature Data"),
-            description=_(
-                "Signature validators such as Firma Perú show them. The reasons of the list are "
-                "written in the language of the signature."
-            ),
-        )
-        settings = self._services.settings
-        self.reason = ChoiceWithOther(
-            _("Reason"),
-            (_("Other reason…"), _("Other Reason")),
-            [_("No reason"), *(_(REASON_TEXTS[reason]) for reason in REASONS)],
-        )
-        self.recent_locations = list(settings.get_strv("recent-locations")) if settings else []
-        self.location = ChoiceWithOther(
-            _("Location"),
-            (_("Other location…"), _("Other Location")),
-            [_("No location"), *self.recent_locations],
-        )
-        if settings is not None:
-            self._restore_data(settings)
-        self.reason.add_to(data)
-        self.location.add_to(data)
+        self.levels = LevelChoice(self._services)
+        self.level_buttons = self.levels.buttons
+        panel.add(self.levels.group)
+        self.signature_data = SignatureData(self._services.settings)
+        self.reason = self.signature_data.reason
+        self.location = self.signature_data.location
+        data = self.signature_data.group
 
         self.preview = PdfPreview(self.data)
         self.preview.on_box_changed = lambda _box: self.update_appearance()
@@ -397,34 +548,14 @@ class SigningPage:
         self._on_visible()
         return group
 
-    def _restore_data(self, settings: Gio.Settings) -> None:
-        """The last reason and location used."""
-        kinds = [Reason.NONE, *REASONS, Reason.OTHER]
-        kind = Reason(settings.get_string("signature-reason-kind"))
-        self.reason.select(kinds.index(kind), settings.get_string("signature-reason"))
-        last = settings.get_string("signature-location")
-        if last in self.recent_locations:
-            self.location.select(self.recent_locations.index(last) + 1)
-        elif last:
-            self.location.select(len(self.location.labels) - 1, last)
-
-    def reason_kind(self) -> Reason:
-        kinds = [Reason.NONE, *REASONS, Reason.OTHER]
-        return kinds[self.reason.combo.get_selected()]
-
     def reason_value(self) -> str | None:
-        """The reason as written in the signature: in the language of the signature (RF-092)."""
-        return reason_text(self.reason_kind(), self.reason.entry.get_text(), self._language())
+        return self.signature_data.reason_value()
 
     def location_value(self) -> str | None:
-        if self.location.other:
-            return self.location.entry.get_text().strip() or None
-        index = self.location.combo.get_selected()
-        return self.recent_locations[index - 1] if index > 0 else None
+        return self.signature_data.location_value()
 
     def _language(self) -> Language:
-        settings = self._services.settings
-        return Language(settings.get_string("appearance-language") if settings else "es_PE")
+        return self.signature_data.language()
 
     def _dni(self) -> DniDisplay:
         settings = self._services.settings
@@ -485,24 +616,6 @@ class SigningPage:
         except AppearanceError:
             self.preview.set_appearance(None)
 
-    def _remember_data(self, settings: Gio.Settings, location: str | None) -> None:
-        settings.set_string("signature-reason-kind", self.reason_kind().value)
-        settings.set_string("signature-reason", self.reason.entry.get_text().strip())
-        settings.set_string("signature-location", location or "")
-        if location:
-            recent = [location, *(old for old in self.recent_locations if old != location)]
-            settings.set_strv("recent-locations", recent[:RECENT_LOCATIONS])
-
-    def _preferred_level(self) -> SignatureLevel:
-        settings = self._services.settings
-        if settings is None:
-            return SignatureLevel.B_LT
-        return SignatureLevel(settings.get_string("default-level"))
-
-    def _on_level(self, button: Gtk.CheckButton, level: SignatureLevel) -> None:
-        if button.get_active():
-            self._level = level
-
     def _busy(self) -> Gtk.Widget:
         self._busy_page = Adw.StatusPage(paintable=Adw.SpinnerPaintable())
         self._busy_page.get_paintable().set_widget(self._busy_page)
@@ -529,21 +642,10 @@ class SigningPage:
 
     def start(self, level: SignatureLevel | None = None) -> None:
         """Sign at ``level`` (the chosen one by default) in a worker thread."""
-        level = level or self._level
-        settings = self._services.settings
-        reason, location = self.reason_value(), self.location_value()
-        if settings is not None:
-            self._remember_data(settings, location)
-        suffix = settings.get_string("output-suffix") if settings else "-firmado"
-        folder = settings.get_string("output-directory") if settings else ""
-        digest = settings.get_string("digest-algorithm") if settings else "sha256"
-        options = PadesOptions(
-            reason=reason,
-            location=location,
-            digest=cast(HashAlgorithmName, digest),
-        )
-        # A folder that no longer exists (removed, unmounted) falls back to the original's.
-        directory = Path(folder) if folder and Path(folder).is_dir() else None
+        level = level or self.levels.level
+        self.signature_data.remember()
+        options = self.signature_data.options()
+        suffix, directory = output_settings(self._services.settings)
         output = output_path(self.document.path, suffix, directory)
         visible = self.visible_signature() if self.preview.page_count else None
         self._set_busy(_("Checking your certificate…"))
@@ -578,24 +680,13 @@ class SigningPage:
         threading.Thread(target=work, name="berigna-sign", daemon=True).start()
 
     def _ask_pin(self, check: SignerCheck, level: SignatureLevel) -> Pin | None:
-        """Called by the core in the worker thread; waits for the dialog in the main loop."""
-        answered = threading.Event()
-        answer: list[Pin | None] = [None]
-
-        def reply(pin: Pin | None) -> None:
-            answer[0] = pin
-            if pin is not None:
-                self._set_busy(_("Signing with your DNIe…"))
-            answered.set()
-
-        def show() -> bool:
+        def dialog(reply: Callable[[Pin | None], None]) -> PinDialog:
             self.pin_dialog = PinDialog(self.document, check, level, self._remaining_tries, reply)
-            self.pin_dialog.present(self._window.window)
-            return GLib.SOURCE_REMOVE
+            return self.pin_dialog
 
-        GLib.idle_add(show)
-        answered.wait()
-        return answer[0]
+        return ask_pin_in_main_loop(
+            self._window, dialog, lambda: self._set_busy(_("Signing with your DNIe…"))
+        )
 
     def _done(self, result: SignResult, requested: SignatureLevel) -> bool:
         self.result = result
@@ -621,37 +712,18 @@ class SigningPage:
         return GLib.SOURCE_REMOVE
 
     def _failed(self, error: BerignaError | None, level: SignatureLevel) -> bool:
-        if isinstance(error, SigningCancelledError):
-            self._back_to_form()
-            self._window.toast(_("Signature cancelled. The PIN was not sent."))
-            return GLib.SOURCE_REMOVE
         if isinstance(error, PinIncorrectError) and error.remaining_tries != 0:
-            # CU-01 6a: back to the PIN dialog, which shows the tries left (P-07). Sending the
-            # PIN again still needs the user to type it and confirm (P-06).
             self._remaining_tries = error.remaining_tries
-            self.start(level)
-            return GLib.SOURCE_REMOVE
-        if isinstance(error, PinIncorrectError):  # no tries left: the card is now blocked
-            error = PinBlockedError("no tries left")
-        message = explain_error(error.code if error else "ERR-000", catalogue()) or ""
-        page = Adw.StatusPage(
-            icon_name="dialog-error-symbolic",
+        page = failure_page(
+            self._window,
+            error,
+            level,
             title=_("The document was not signed"),
-            description=brand_markup(message),
+            back=self._back_to_form,
+            retry=self.start,
         )
-        buttons = Gtk.Box(spacing=12, halign=Gtk.Align.CENTER)
-        back = Gtk.Button(label=_("_Back"), use_underline=True)
-        back.add_css_class("pill")
-        back.connect("clicked", lambda _b: self._back_to_form())
-        buttons.append(back)
-        if isinstance(error, LevelNotAvailableError) and level is not SignatureLevel.B_B:
-            basic = Gtk.Button(label=_("Sign Without _Timestamp (B-B)"), use_underline=True)
-            basic.add_css_class("pill")
-            basic.add_css_class("suggested-action")
-            basic.connect("clicked", lambda _b: self.start(SignatureLevel.B_B))
-            buttons.append(basic)
-        page.set_child(buttons)
-        self._show("error", page)
+        if page is not None:
+            self._show("error", page)
         return GLib.SOURCE_REMOVE
 
     # -- After signing -------------------------------------------------------------------------

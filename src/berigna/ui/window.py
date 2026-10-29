@@ -19,6 +19,7 @@ from berigna.core.report import messages  # noqa: E402
 from berigna.core.report.explanations import explain_error  # noqa: E402
 from berigna.core.token.monitor import DeviceStatus  # noqa: E402
 from berigna.ui import presentation  # noqa: E402
+from berigna.ui.batch import BatchPage, is_pdf  # noqa: E402
 from berigna.ui.i18n import _, catalogue, current_language, translate_view  # noqa: E402
 from berigna.ui.signing import SigningPage, SigningServices  # noqa: E402
 from berigna.ui.verification import VerificationPage, Verify  # noqa: E402
@@ -49,10 +50,14 @@ class MainWindow:
         self.document: DocumentInfo | None = None
         self.verification: VerificationPage | None = None
         self.signing: SigningPage | None = None
+        self.batch: BatchPage | None = None
 
         open_action = Gio.SimpleAction.new("open", None)
         open_action.connect("activate", lambda *_args: self._choose_file())
         self.window.add_action(open_action)
+        batch_action = Gio.SimpleAction.new("open-batch", None)
+        batch_action.connect("activate", lambda *_args: self.sign_batch([]))
+        self.window.add_action(batch_action)
 
         drop = Gtk.DropTarget.new(Gdk.FileList, Gdk.DragAction.COPY)
         drop.connect("drop", self._on_drop)
@@ -104,6 +109,21 @@ class MainWindow:
         else:
             self.show_page(self.signing.page)
 
+    def sign_batch(self, paths: Sequence[Path]) -> None:
+        """Open the batch page with ``paths`` (files and folders); empty to build the list."""
+        self.document = None
+        self.verification = self.signing = None
+        self.batch = BatchPage(self, self._signing, paths)
+        self.show_page(self.batch.page)
+
+    def open_files(self, files: Sequence[Gio.File]) -> None:
+        """One document opens on its own; several, or a folder, make a batch (CU-04)."""
+        paths = [Path(path) for file in files if (path := file.get_path()) is not None]
+        if len(files) == 1 and not (paths and paths[0].is_dir()):
+            self.open_file(files[0])
+        elif paths:
+            self.sign_batch([p for p in paths if p.is_dir() or is_pdf(p)] or paths)
+
     def show_device_status(self, status: DeviceStatus | None) -> None:
         view = presentation.device_status(status)
         self._status_icon.set_from_icon_name(view.icon)
@@ -131,7 +151,7 @@ class MainWindow:
     def _on_drop(self, _target: Gtk.DropTarget, files: Gdk.FileList, _x: float, _y: float) -> bool:
         dropped = files.get_files()
         if dropped:
-            self.open_file(dropped[0])
+            self.open_files(dropped)
         return bool(dropped)
 
     def open_file(self, file: Gio.File, on_done: Callable[[], None] | None = None) -> None:
@@ -159,7 +179,7 @@ class MainWindow:
     ) -> bool:
         if isinstance(outcome, DocumentInfo):
             self.document = outcome
-            self.verification = self.signing = None
+            self.verification = self.signing = self.batch = None
             if outcome.kind is DocumentKind.PDF and outcome.signed:
                 self.verification = VerificationPage(self, outcome, self._verify)
                 self.show_page(self.verification.page)
