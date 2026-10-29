@@ -120,6 +120,7 @@ Proyecto:
 - Plan de compatibilidad: DNIe 1.0 y DNIe 3.0 previstos para la versión 1.1 (investigación SPK-06).
 - Requisito RF-074: extensión de LibreOffice "Firmar con berigna", prevista para la versión 1.2.
 - Cabeceras SPDX en los logotipos, la entrada de escritorio y el `pom.xml` de SPK-03; una prueba exige que los catálogos es_PE y quechua estén completos.
-- Protocolo de la prueba de usabilidad: pasos para instalar berigna desde el código fuente en el equipo de la prueba.
+- Protocolo de la prueba de usabilidad: pasos para instalar berigna desde el código fuente en el equipo de la prueba, fijados a la versión candidata `v0.3.0-rc.1`.
+- Recomendaciones a futuro sobre la práctica de desarrollo (`docs/08-desarrollo/recomendaciones-a-futuro.md`, BRG-DES-002): vigilancia, SBOM, pruebas por propiedades, proceso de versión, rendimiento, paquete reproducible y registro local de fallos; sin informes de fallos remotos.
 - Revisión general de la documentación: módulos del núcleo en la arquitectura, glosario, requisitos RF-002, RF-053 y RF-090, dependencias del empaquetado y estado del proyecto.
 - Segunda revisión: Firma Perú como validador de referencia en la estrategia de pruebas (PR-INT-01, PR-INT-05) y en el README; PR-I18N-05 con el cambio de idioma al momento; ubicaciones de datos reales (`apariencia/`, `tsl/`) y las previstas marcadas como tales; CU-02 y CU-04 según la interfaz actual; política de fronteras con las bibliotecas en BRG-DES; regla de Fecha y Versión en las convenciones y cabeceras sincronizadas. `spikes/` queda fuera de `ruff`.
