@@ -79,6 +79,8 @@ Interfaz (Fase 3):
 
 ### Corregido
 
+- El diagnóstico daba "No se pudo consultar a RENIEC si tu certificado está revocado" con la red funcionando: validaba con la hora fijada, y la tolerancia de 1 s rechazaba la respuesta OCSP de RENIEC por "demasiado reciente"; ahora valida "ahora", con la tolerancia de 5 minutos. El motivo de una revocación no comprobada queda en el registro técnico, igual que cada paso del diagnóstico que no sale bien.
+- Las pruebas que arrancan berigna escribían el registro técnico en `~/.local/state` del usuario; ahora usan una carpeta temporal.
 - Los archivos firmados, los informes exportados y el CSV del lote se creaban con permisos `rw-------` (los de un archivo temporal); ahora tienen los de cualquier archivo nuevo según la máscara del usuario, y al reemplazar uno existente se conservan los suyos.
 - No se podía firmar un PDF cuyos metadatos había borrado ExifTool: el tráiler seguía apuntando a un `/Info` liberado y pyHanko fallaba al escribir la fecha de modificación, después del PIN, con "Error inesperado". La revisión de la firma lleva ahora un `/Info` nuevo. Los errores internos de pyHanko con PDF malformados se muestran como ERR-304.
 - Mover el sello de la firma visible era lento con el QR: la página y el sello se dibujan ahora una vez por tamaño y se guardan como imagen.

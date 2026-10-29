@@ -19,6 +19,7 @@ inside a running loop (arquitectura-general §5).
 import asyncio
 import datetime as dt
 import enum
+import logging
 from collections.abc import Sequence
 from dataclasses import dataclass
 from typing import cast
@@ -62,6 +63,8 @@ _SIGNING_POLICY = RevocationCheckingPolicy(
 # are dated when they are produced: with pyhanko-certvalidator's default tolerance (1 s) a
 # response that took two seconds was "too recent" and the signer was left unchecked. The
 # services can take up to a minute (R-17: 20 s to connect, a retry, mirrors).
+log = logging.getLogger(__name__)
+
 CURRENT_TIME_TOLERANCE = dt.timedelta(minutes=5)
 # Validation at a given moment in the past keeps the strict default.
 POINT_IN_TIME_TOLERANCE = dt.timedelta(seconds=1)
@@ -196,8 +199,10 @@ def check_signer(
     try:
         try:
             path = run(_SIGNING_POLICY)
-        except InsufficientRevinfoError:
+        except InsufficientRevinfoError as exc:
             note = RevocationNote.UNAVAILABLE if online else RevocationNote.OFFLINE
+            if online:  # the reason is only in pyhanko-certvalidator's message (RF-083)
+                log.warning("revocation of the signer certificate not established: %s", exc)
             path = run(_OFFLINE_POLICY)
     except RevokedError as exc:
         raise CertificateRevokedError(str(exc)) from exc
