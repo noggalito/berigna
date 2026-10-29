@@ -3,7 +3,7 @@
 | Campo | Valor |
 |---|---|
 | Documento | BRG-UX-001 |
-| Versión | 0.3.1 |
+| Versión | 0.3.2 |
 | Estado | Borrador (bocetos de baja fidelidad) |
 | Fecha | 2026-10-29 |
 | Responsable | noggalito |
@@ -204,10 +204,10 @@ Implementados en la Fase 3, incremento 6. Historial (RF-082; menú principal →
 
 ## 5. Pendientes
 
-- [ ] Prototipo de alta fidelidad (Figma o Penpot) de las cinco vistas.
+- [x] ~~Prototipo de alta fidelidad (Figma o Penpot) de las cinco vistas.~~ Descartado (2026-10-29): la interfaz ya está implementada; la aplicación real sustituye al prototipo.
 - [x] Icono de la aplicación según la guía de iconos de GNOME (BRG-UX-002 §2).
 - [ ] Prueba de usabilidad (RNF-USA-06) en la Fase 3.
-- [ ] Microcopia completa de errores (catálogo `ERR-xxx`, con su mensaje, su causa y la acción sugerida) en es_PE y en quechua.
-- [x] Aviso de traducción sin revisar en la ventana principal, en el informe PDF en quechua y "Ver en español" en el diálogo del PIN (§4.2). Falta "Ver en español" en el resultado de la verificación.
-- [ ] Glosario terminológico bilingüe para traductores (por ejemplo: sello de tiempo / timestamp, firmante / signer, revocado / revoked), para mantener la coherencia.
-- [ ] Revisión de los bocetos en quechua para detectar textos que se desborden (las palabras aglutinantes suelen ser largas).
+- [x] Microcopia completa de errores (catálogo `ERR-xxx`, con su mensaje, su causa y la acción sugerida) en es_PE y en quechua (`core.report.explanations`; una prueba exige un mensaje por código y los catálogos completos).
+- [x] Aviso de traducción sin revisar en la ventana principal, en el informe PDF en quechua y "Ver en español" en el diálogo del PIN y en el resultado de la verificación (§4.2).
+- [x] Glosario terminológico para traductores: el del quechua es BRG-UX-003; el del inglés se hace con la traducción de la versión 1.1.
+- [ ] Revisión de las pantallas en quechua para detectar textos que se desborden (las palabras aglutinantes suelen ser largas), durante la prueba de usabilidad (BRG-CAL-005, participantes en quechua).

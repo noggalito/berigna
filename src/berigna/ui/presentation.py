@@ -127,96 +127,115 @@ def etsi_code(indication: Indication, subindication: str | None) -> str:
     return indication.value + (f" / {subindication}" if subindication else "")
 
 
-def _timestamp_text(stamp: TimestampReport | None) -> str:
+def _timestamp_text(stamp: TimestampReport | None, t: gettext.NullTranslations) -> str:
     if stamp is None:
-        return _(messages.REPORT_NONE)
-    parts = [format_time(stamp.time, _)] if stamp.time is not None else []
+        return t.gettext(messages.REPORT_NONE)
+    parts = [format_time(stamp.time, t.gettext)] if stamp.time is not None else []
     if stamp.tsa is not None:
         parts.append(common_name(stamp.tsa))
     parts.append(etsi_code(stamp.indication, stamp.subindication))
     return " · ".join(parts)
 
 
-def _signature_view(report: PdfSignatureReport, user_anchor: bool) -> ResultView:
+def _signature_view(
+    report: PdfSignatureReport, user_anchor: bool, t: gettext.NullTranslations
+) -> ResultView:
     icon, style = _INDICATION_ICONS[report.indication]
     signer = report.signer
     details = [
-        Detail(_(messages.REPORT_ETSI), etsi_code(report.indication, report.subindication)),
-        Detail(_("Format"), f"PAdES · {report.subfilter}"),
-        Detail(_("Signature field"), report.field_name),
+        Detail(t.gettext(messages.REPORT_ETSI), etsi_code(report.indication, report.subindication)),
+        Detail(t.gettext("Format"), f"PAdES · {report.subfilter}"),
+        Detail(t.gettext("Signature field"), report.field_name),
     ]
     if signer is not None:
         details += [
-            Detail(_(messages.REPORT_SIGNER), common_name(signer)),
-            Detail(_(messages.REPORT_ISSUER), display_name(signer.issuer)),
+            Detail(t.gettext(messages.REPORT_SIGNER), common_name(signer)),
+            Detail(t.gettext(messages.REPORT_ISSUER), display_name(signer.issuer)),
         ]
     claimed = report.claimed_signing_time
     details += [
         Detail(
-            _(messages.REPORT_CLAIMED_TIME),
-            format_time(claimed, _) if claimed is not None else _(messages.REPORT_NONE),
+            t.gettext(messages.REPORT_CLAIMED_TIME),
+            format_time(claimed, t.gettext)
+            if claimed is not None
+            else t.gettext(messages.REPORT_NONE),
         ),
-        Detail(_(messages.REPORT_TIMESTAMP), _timestamp_text(report.timestamp)),
-        Detail(_(messages.REPORT_CHANGES), _(messages.MODIFICATIONS[report.modifications])),
+        Detail(t.gettext(messages.REPORT_TIMESTAMP), _timestamp_text(report.timestamp, t)),
         Detail(
-            _(messages.REPORT_SIGNED_REVISION),
-            _(messages.REPORT_SIGNED_BYTES).format(length=report.signed_revision_length),
+            t.gettext(messages.REPORT_CHANGES),
+            t.gettext(messages.MODIFICATIONS[report.modifications]),
+        ),
+        Detail(
+            t.gettext(messages.REPORT_SIGNED_REVISION),
+            t.gettext(messages.REPORT_SIGNED_BYTES).format(length=report.signed_revision_length),
         ),
     ]
     return ResultView(
-        title=common_name(signer) if signer is not None else _("Unknown signer"),
+        title=common_name(signer) if signer is not None else t.gettext("Unknown signer"),
         icon=icon,
         style=style,
-        explanation=explain_signature(report, catalogue(), user_anchor=user_anchor) or "",
+        explanation=explain_signature(report, t, user_anchor=user_anchor) or "",
         details=tuple(details),
         signed_revision_length=report.signed_revision_length,
     )
 
 
-def _timestamp_view(stamp: TimestampReport) -> ResultView:
+def _timestamp_view(stamp: TimestampReport, t: gettext.NullTranslations) -> ResultView:
     icon, style = _INDICATION_ICONS[stamp.indication]
-    details = [Detail(_(messages.REPORT_ETSI), etsi_code(stamp.indication, stamp.subindication))]
+    details = [
+        Detail(t.gettext(messages.REPORT_ETSI), etsi_code(stamp.indication, stamp.subindication))
+    ]
     if stamp.tsa is not None:
-        details.append(Detail(_("Time-stamping authority"), common_name(stamp.tsa)))
+        details.append(Detail(t.gettext("Time-stamping authority"), common_name(stamp.tsa)))
     if stamp.field_name is not None:
-        details.append(Detail(_("Signature field"), stamp.field_name))
+        details.append(Detail(t.gettext("Signature field"), stamp.field_name))
     return ResultView(
-        title=format_time(stamp.time, _) if stamp.time is not None else _("Unreadable time"),
+        title=format_time(stamp.time, t.gettext)
+        if stamp.time is not None
+        else t.gettext("Unreadable time"),
         icon=icon,
         style=style,
-        explanation=explain_timestamp(stamp, catalogue()) or "",
+        explanation=explain_timestamp(stamp, t) or "",
         details=tuple(details),
     )
 
 
-def _summary(verification: PdfVerification) -> str:
+def _summary(verification: PdfVerification, t: gettext.NullTranslations) -> str:
     reports = verification.signatures
     if not reports:
-        return _(messages.REPORT_NO_SIGNATURES)
+        return t.gettext(messages.REPORT_NO_SIGNATURES)
     count = Counter(report.indication for report in reports)
     parts = []
     if n := count[Indication.TOTAL_PASSED]:
-        parts.append(ngettext("{n} valid signature", "{n} valid signatures", n).format(n=n))
+        parts.append(t.ngettext("{n} valid signature", "{n} valid signatures", n).format(n=n))
     if n := count[Indication.TOTAL_FAILED]:
         parts.append(
-            ngettext("{n} signature is not valid", "{n} signatures are not valid", n).format(n=n)
+            t.ngettext("{n} signature is not valid", "{n} signatures are not valid", n).format(n=n)
         )
     if n := count[Indication.INDETERMINATE]:
         parts.append(
-            ngettext(
+            t.ngettext(
                 "{n} signature could not be verified", "{n} signatures could not be verified", n
             ).format(n=n)
         )
     last = max(reports, key=lambda report: report.signed_revision_length)
     if last.document_unchanged_since_signing:
-        parts.append(_("The document was not changed after the last signature."))
+        parts.append(t.gettext("The document was not changed after the last signature."))
     else:
-        parts.append(_("The document was changed after the last signature."))
+        parts.append(t.gettext("The document was changed after the last signature."))
     return " · ".join(parts)
 
 
-def verification_view(verification: PdfVerification, store: TrustStore) -> VerificationView:
-    """Everything the result page shows, in the current language (RF-053)."""
+def verification_view(
+    verification: PdfVerification,
+    store: TrustStore,
+    translations: gettext.NullTranslations | None = None,
+) -> VerificationView:
+    """Everything the result page shows, in the current language (RF-053).
+
+    ``translations`` gives it in another language: Quechua users can read it in Spanish.
+    """
+    t = translations or catalogue()
     user_anchor = any(entry.user_added for entry in store.entries)
     indications = [r.indication for r in verification.signatures] + [
         t.indication for t in verification.document_timestamps
@@ -230,9 +249,9 @@ def verification_view(verification: PdfVerification, store: TrustStore) -> Verif
     return VerificationView(
         icon=icon,
         style=style,
-        summary=_summary(verification),
-        signatures=tuple(_signature_view(r, user_anchor) for r in verification.signatures),
-        timestamps=tuple(_timestamp_view(t) for t in verification.document_timestamps),
+        summary=_summary(verification, t),
+        signatures=tuple(_signature_view(r, user_anchor, t) for r in verification.signatures),
+        timestamps=tuple(_timestamp_view(stamp, t) for stamp in verification.document_timestamps),
         retry=Indication.INDETERMINATE in indications,
     )
 

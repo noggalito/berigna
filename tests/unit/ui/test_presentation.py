@@ -94,6 +94,19 @@ def test_valid_signature(pki: Pki) -> None:
     assert signature.signed_revision_length is not None
 
 
+def test_verification_view_in_another_language(pki: Pki) -> None:
+    """Quechua users can read the result in Spanish (BRG-UX-001 §4.2)."""
+    result = verify_pdf(signed_with_revinfo(pki), pki.store, online=False)
+    spanish = verification_view(result, pki.store, translations(Language.ES_PE))
+    quechua = verification_view(result, pki.store, translations(Language.QUZ_PE))
+    assert spanish.summary == (
+        "1 firma válida · El documento no fue modificado después de la última firma."
+    )
+    assert quechua.summary != spanish.summary
+    assert quechua.signatures[0].explanation != spanish.signatures[0].explanation
+    assert spanish.signatures[0].explanation.startswith("La firma es válida.")
+
+
 def test_signature_without_revocation_data_can_be_retried(pki: Pki) -> None:
     signed, _leaf = sign(pki, minimal_pdf())
     view = _verify(pki, signed)
