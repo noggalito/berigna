@@ -30,6 +30,7 @@ from berigna.core.validation import Indication, SignerCheck, verify_pdf
 from support.cards import make_card
 from support.certified import certified_pdf
 from support.pki import Pki, build_pki, minimal_pdf
+from support.prompts import PinPrompt
 from support.tsa import make_timestamper
 
 
@@ -44,23 +45,6 @@ def document(tmp_path: Path) -> tuple[Path, str]:
     data = minimal_pdf()
     path.write_bytes(data)
     return path, hashlib.sha256(data).hexdigest()
-
-
-class PinPrompt:
-    """Stands in for the UI dialog; records what it was shown."""
-
-    def __init__(self, answer: str | None = "123456") -> None:
-        self.answer = answer
-        self.shown: list[SignerCheck] = []
-        self.pins: list[Pin] = []
-
-    def __call__(self, check: SignerCheck) -> Pin | None:
-        self.shown.append(check)
-        if self.answer is None:
-            return None
-        pin = Pin(self.answer)
-        self.pins.append(pin)
-        return pin
 
 
 def test_signs_and_writes_a_new_file(pki: Pki, document: tuple[Path, str]) -> None:

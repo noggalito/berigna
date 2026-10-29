@@ -125,13 +125,8 @@ def sign_pdf_file(
     Raises :class:`~berigna.core.errors.LevelNotAvailableError` (before the PIN) when the level
     needs a TSA and none is given, or revocation could not be checked (RF-006: B-B only).
     """
-    check_pdf_signable(_read_unchanged(source, expected_sha256))
-    if output.exists():
-        raise OutputExistsError(f"{output.name} already exists")
-    stamper = timestamper if level is not SignatureLevel.B_B else None
-    if level is not SignatureLevel.B_B and stamper is None:
-        raise LevelNotAvailableError(f"{level.value} needs a TSA")
-
+    check_source(source, output, expected_sha256)
+    stamper = time_stamper(level, timestamper)
     check = check_signer(
         token.signing_certificate(),
         store,
@@ -139,19 +134,82 @@ def sign_pdf_file(
         ocsp_responses=ocsp_responses,
         crls=crls,
     )
+    check_level(check, level, stamper)
+    opts = options or PadesOptions()
+    if visible is not None:
+        opts = replace(opts, visible=_visible_stamp(visible, check, opts, source, expected_sha256))
+    send_pin(token, ask_pin, check)
+    return sign_checked(
+        SigningJob(source, output, expected_sha256),
+        token=token,
+        store=store,
+        check=check,
+        options=opts,
+        level=level,
+        timestamper=stamper,
+        online=online,
+        ocsp_responses=ocsp_responses,
+        crls=crls,
+    )
+
+
+# -- Steps, shared with batch signing (berigna.core.batch) ----------------------------------------
+
+
+@dataclass(frozen=True)
+class SigningJob:
+    """One file to sign: the bytes shown to the user (by their SHA-256) go to ``output``."""
+
+    source: Path
+    output: Path
+    expected_sha256: str
+
+
+def check_source(source: Path, output: Path, expected_sha256: str) -> None:
+    """Step 1: still the file the user saw, a PDF that can be signed, and a free output."""
+    check_pdf_signable(_read_unchanged(source, expected_sha256))
+    if output.exists():
+        raise OutputExistsError(f"{output.name} already exists")
+
+
+def time_stamper(level: SignatureLevel, timestamper: TimeStamper | None) -> TimeStamper | None:
+    stamper = timestamper if level is not SignatureLevel.B_B else None
+    if level is not SignatureLevel.B_B and stamper is None:
+        raise LevelNotAvailableError(f"{level.value} needs a TSA")
+    return stamper
+
+
+def check_level(check: SignerCheck, level: SignatureLevel, stamper: TimeStamper | None) -> None:
+    """Step 2: a level above B-B needs revocation checked and a TSA that answers."""
     if stamper is not None:
         if check.only_basic_level:
             raise LevelNotAvailableError(f"revocation not checked: B-B only, not {level.value}")
         probe(stamper)
-    opts = options or PadesOptions()
-    if visible is not None:
-        opts = replace(opts, visible=_visible_stamp(visible, check, opts, source, expected_sha256))
+
+
+def send_pin(token: TokenSigner, ask_pin: AskPin, check: SignerCheck) -> None:
+    """Step 3: the PIN, through the UI, which may cancel; sent once (P-06)."""
     pin = ask_pin(check)
     if pin is None:
         raise SigningCancelledError("signature cancelled before sending the PIN")
     token.verify_pin(pin)
 
-    data = _read_unchanged(source, expected_sha256)
+
+def sign_checked(
+    job: SigningJob,
+    *,
+    token: TokenSigner,
+    store: TrustStore,
+    check: SignerCheck,
+    options: PadesOptions,
+    level: SignatureLevel,
+    timestamper: TimeStamper | None,
+    online: bool,
+    ocsp_responses: Sequence[bytes] = (),
+    crls: Sequence[bytes] = (),
+) -> SignResult:
+    """Steps 4 and 5, with the PIN already verified: sign the unchanged bytes and write them."""
+    data = _read_unchanged(job.source, job.expected_sha256)
     context = (
         signing_validation_context(store, online=online, ocsp_responses=ocsp_responses, crls=crls)
         if level in (SignatureLevel.B_LT, SignatureLevel.B_LTA)
@@ -161,14 +219,14 @@ def sign_pdf_file(
         data,
         token,
         check.chain,
-        opts,
+        options,
         level=level,
-        timestamper=stamper,
+        timestamper=timestamper,
         validation_context=context,
     )
-    write_atomically(output, result.data)
+    write_atomically(job.output, result.data)
     return SignResult(
-        output=output,
+        output=job.output,
         sha256=hashlib.sha256(result.data).hexdigest(),
         level=result.level,
         revocation_checked=check.revocation_checked,
