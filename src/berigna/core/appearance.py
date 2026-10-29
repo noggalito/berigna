@@ -24,6 +24,7 @@ from cryptography import x509
 from cryptography.x509.oid import NameOID
 from reportlab.graphics import renderPDF
 from reportlab.graphics.barcode.qr import QrCodeWidget
+from reportlab.graphics.barcode.qrencoder import QRECI, QR8bitByte
 from reportlab.graphics.shapes import Drawing
 from reportlab.lib.colors import HexColor
 from reportlab.lib.utils import ImageReader, simpleSplit
@@ -34,7 +35,7 @@ from reportlab.pdfgen import canvas
 from berigna.core.errors import AppearanceError
 from berigna.core.files import write_atomically
 from berigna.core.i18n import Language, translations
-from berigna.core.report.explanations import masked_id
+from berigna.core.report.explanations import format_time, masked_id
 
 FONTS = Path(__file__).parent / "fonts"
 VERIFY_URL = "https://berigna.noggalito.com/verificar"
@@ -113,20 +114,13 @@ def stamp_data(
     )
 
 
-def _date(moment: dt.datetime) -> str:
-    """Local time with its offset, so that it means the same anywhere: 28/10/2026 15:53 -05:00."""
-    local = moment.astimezone()
-    offset = local.strftime("%z")
-    return f"{local.strftime('%d/%m/%Y %H:%M')} {offset[:3]}:{offset[3:]}"
-
-
 def stamp_lines(data: StampData, language: Language) -> list[tuple[str, str]]:
     """(typeface, text) of every line of the stamp, in ``language``."""
     t = translations(language).gettext
     lines = [("berigna-text", t(SIGNED_BY)), ("berigna-name", data.signer)]
     if data.dni:
         lines.append(("berigna-text-semibold", t(DNI).format(dni=data.dni)))
-    lines.append(("berigna-text", t(DATE).format(date=_date(data.moment))))
+    lines.append(("berigna-text", t(DATE).format(date=format_time(data.moment, t))))
     if data.reason:
         lines.append(("berigna-text", t(REASON).format(reason=data.reason)))
     if data.location:
@@ -141,10 +135,19 @@ def qr_payload(data: StampData, language: Language) -> str:
     lines = [f"{t(SIGNED_BY)} {data.signer}"]
     if data.dni:
         lines.append(t(DNI).format(dni=data.dni))
-    lines.append(t(DATE).format(date=_date(data.moment)))
+    lines.append(t(DATE).format(date=format_time(data.moment, t)))
     # No signature level: the stamp is drawn before signing, and B-LT may end as B-T.
     lines.append(t(HOW_TO_VERIFY).format(url=VERIFY_URL))
     return "\n".join(lines)
+
+
+UTF8_ECI = 26
+
+
+def qr_segments(text: str) -> list[QRECI | QR8bitByte]:
+    """``text`` as UTF-8 bytes preceded by the ECI that says so. Without it, readers guess the
+    encoding, and some phones read "Cómo" as "C髇o" (test of 2026-10-28)."""
+    return [QRECI(UTF8_ECI), QR8bitByte(text.encode("utf-8"))]
 
 
 def _register_fonts() -> None:
@@ -184,7 +187,7 @@ def render_appearance(visible: VisibleSignature, data: StampData) -> bytes:
     if visible.kind is not AppearanceKind.TEXT:
         side = height - 2 * pad
         if visible.kind is AppearanceKind.QR:
-            widget = QrCodeWidget(qr_payload(data, visible.language), barLevel="M")
+            widget = QrCodeWidget(qr_segments(qr_payload(data, visible.language)), barLevel="M")
             x1, y1, x2, y2 = widget.getBounds()
             drawing = Drawing(side, side)
             widget.barFillColor = INK

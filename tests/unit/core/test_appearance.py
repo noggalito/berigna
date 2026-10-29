@@ -5,6 +5,7 @@
 import datetime as dt
 import hashlib
 import io
+import re
 from pathlib import Path
 
 import pytest
@@ -21,6 +22,7 @@ from berigna.core.appearance import (
     StampData,
     VisibleSignature,
     qr_payload,
+    qr_segments,
     render_appearance,
     signer_name,
     stamp_data,
@@ -75,8 +77,7 @@ def test_signer_name_drops_the_dnie_suffix() -> None:
 def test_stamp_lines_in_spanish_and_quechua() -> None:
     lines = [text for _font, text in stamp_lines(DATA, Language.ES_PE)]
     assert lines[:3] == ["Firmado digitalmente por", "QUISPE MAMANI ROSA", "DNI ****4321"]
-    assert lines[3].startswith("Fecha: ")
-    assert lines[3][-6:-3] in ("+", "-") or lines[3].endswith(":00")
+    assert re.fullmatch(r"Fecha: 2026-10-2\d a las \d\dh\d\d UTC([+-]\d+(:\d\d)?)?", lines[3])
     assert lines[4:] == ["Motivo: Conformidad", "Lugar: Cusco"]
     # Pending Quechua strings fall back to Spanish (RF-092, ADR-0015), never to English.
     assert stamp_lines(DATA, Language.QUZ_PE)[0][1] == "Firmado digitalmente por"
@@ -91,6 +92,18 @@ def test_qr_carries_the_signature_and_how_to_verify_it() -> None:
     assert payload[-1] == f"Cómo verificar: {VERIFY_URL}"
     assert "Conformidad" not in "\n".join(payload)  # nothing about the document
     assert "DNI" not in qr_payload(StampData("ROSA", None, MOMENT), Language.ES_PE)
+
+
+def test_qr_declares_utf8() -> None:
+    """ECI 26 before the bytes: without it, a phone read "Cómo" as "C髇o"."""
+    from reportlab.graphics.barcode import qrencoder
+
+    code = qrencoder.QRCode(None, qrencoder.QRErrorCorrectLevel.M)
+    for segment in qr_segments("Cómo verificar"):
+        code.addData(segment)
+    code.make()
+    # 0111 (ECI) 00011010 (26, UTF-8) 0100 (bytes): 0x71 0xA4.
+    assert code.dataCache[:2] == [0x71, 0xA4]
 
 
 @pytest.mark.parametrize("kind", list(AppearanceKind))

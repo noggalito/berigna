@@ -96,7 +96,7 @@ def test_spanish_report_contents(pki: Pki, tmp_path: Path) -> None:
         "La firma es válida. Firmado por PEREZ QUISPE JUAN.",
         "TOTAL-PASSED",
         "TEST ECEP CA Class 2",
-        "primeros 4321 bytes del archivo",
+        "Primeros 4321 bytes del archivo",
         "Firma 2 de 2: Firma2",
         "TOTAL-FAILED / FORMAT_FAILURE",
         "Ninguno",
