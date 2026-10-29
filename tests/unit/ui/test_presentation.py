@@ -6,6 +6,8 @@ from pathlib import Path
 import pytest
 
 from berigna.core.documents import DocumentInfo, DocumentKind
+from berigna.core.i18n import Language, translations
+from berigna.core.report.explanations import format_time
 from berigna.core.token.monitor import DeviceState, DeviceStatus
 from berigna.core.trust import TrustStore
 from berigna.core.validation import Indication, Modifications, PdfVerification, verify_pdf
@@ -163,8 +165,10 @@ def test_timestamps_in_the_details(pki: Pki) -> None:
     document_stamp = TimestampReport(Indication.TOTAL_PASSED, None, when, pki.ca, "Sello1")
     view = verification_view(PdfVerification((signature,), (document_stamp,), when), pki.store)
     details = {d.label: d.value for d in view.signatures[0].details}
-    assert details["Sello de tiempo de la firma"].startswith("27/10/2026 15:30 UTC · ")
+    shown = format_time(when, translations(Language.ES_PE).gettext)  # local time, as on screen
+    assert shown.startswith("2026-10-27 a las ")
+    assert details["Sello de tiempo de la firma"].startswith(f"{shown} · ")
     assert details["Sello de tiempo de la firma"].endswith(" · TOTAL-PASSED")
     [timestamp] = view.timestamps
-    assert timestamp.title == "27/10/2026 15:30 UTC"
+    assert timestamp.title == shown
     assert "Autoridad de sellado de tiempo" in {d.label for d in timestamp.details}

@@ -17,7 +17,7 @@ El titular decidió que la v1.0 se publique en español del Perú (es_PE) y en i
 5. Reglas de respaldo:
    - Cualquier variante del español (es_ES, es_MX, etc.) muestra es_PE. Para eso el catálogo se instala también como `es`.
    - Cualquier otro idioma muestra en_US, que es el texto fuente.
-6. Formatos regionales: las fechas, las horas y los números se formatean según la configuración regional activa. Las horas de firma se muestran en la zona horaria local del usuario e indican su desfase respecto de UTC. Los informes JSON siempre usan ISO 8601 en UTC.
+6. Formatos regionales: las fechas, las horas y los números se formatean según la configuración regional activa. Las horas de firma se muestran en la zona horaria local del usuario e indican su desfase respecto de UTC. Los informes JSON siempre usan ISO 8601 en UTC. Precisión del 2026-10-28: las fechas y horas se escriben igual en todos los idiomas, con la fecha ISO 8601, la hora con el símbolo h del SI y el desfase: "2026-10-28 a las 18h47 UTC-5". Solo el conector ("a las") se traduce.
 7. Separación entre núcleo y presentación: `berigna.core` devuelve resultados estructurados con códigos (`ERR-xxx`, indicaciones ETSI, códigos de explicación) y no frases ya traducidas. La traducción se hace en `ui` y en `core.report`. El núcleo usa gettext solo para los textos que van dentro de documentos generados, como el texto de la firma visible o el informe PDF.
 8. Texto de la firma visible: el idioma de la plantilla del sello visible es independiente del idioma de la interfaz y se elige en el perfil de apariencia, con es_PE por defecto. Un documento firmado en Perú normalmente debe llevar el sello en español aunque la interfaz esté en inglés.
 

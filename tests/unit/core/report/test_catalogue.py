@@ -96,9 +96,11 @@ def test_template_is_up_to_date(tmp_path: Path) -> None:
     ]
     python = [s for s in sources if s.endswith(".py")]
     views = [s for s in sources if s.endswith(".blp")]
+    desktop = [s for s in sources if s.endswith(".desktop.in")]
     for language, keywords, files, extra in (
         ("Python", ["--keyword=N_", "--keyword=_"], python, []),
         ("C", ["--keyword=_", "--keyword=C_:1c,2"], views, ["--join-existing"]),
+        ("Desktop", [], desktop, ["--join-existing"]),
     ):
         subprocess.run(  # noqa: S603 - fixed arguments
             [  # noqa: S607 - the system's xgettext
