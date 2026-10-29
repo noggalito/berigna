@@ -111,12 +111,16 @@ def test_qr_declares_utf8() -> None:
 
 
 @pytest.mark.parametrize("kind", list(AppearanceKind))
-def test_every_kind_embeds_the_brand_typefaces(kind: AppearanceKind, tmp_path: Path) -> None:
+@pytest.mark.parametrize("box", [(0, 0, 220, 70), (0, 0, 110, 150)], ids=["horizontal", "vertical"])
+def test_every_kind_embeds_the_brand_typefaces(
+    kind: AppearanceKind, box: tuple[float, float, float, float], tmp_path: Path
+) -> None:
+    """Wider than tall, the graphic goes on the left; taller than wide, above the text."""
     image = None
     if kind in (AppearanceKind.RUBRIC, AppearanceKind.LOGO):
         image = tmp_path / "imagen.png"
         _png(image)
-    pdf = render_appearance(VisibleSignature(0, (0, 0, 220, 70), kind, image), DATA)
+    pdf = render_appearance(VisibleSignature(0, box, kind, image), DATA)
     assert pdf.startswith(b"%PDF")
     assert b"SourceSans3-Regular" in pdf
     assert b"Arvo-Bold" in pdf
