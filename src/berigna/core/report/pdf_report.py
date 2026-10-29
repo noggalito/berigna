@@ -106,7 +106,7 @@ def _etsi(indication: Indication, subindication: str | None) -> str:
 def _timestamp_text(w: _Writer, stamp: TimestampReport | None) -> str:
     if stamp is None:
         return w.t(messages.REPORT_NONE)
-    parts = [format_time(stamp.time)] if stamp.time is not None else []
+    parts = [format_time(stamp.time, w.t)] if stamp.time is not None else []
     if stamp.tsa is not None:
         parts.append(common_name(stamp.tsa))
     parts.append(_etsi(stamp.indication, stamp.subindication))
@@ -125,7 +125,7 @@ def _signature_section(
             (messages.REPORT_ISSUER, display_name(report.signer.issuer)),
         ]
     if report.claimed_signing_time is not None:
-        rows.append((messages.REPORT_CLAIMED_TIME, format_time(report.claimed_signing_time)))
+        rows.append((messages.REPORT_CLAIMED_TIME, format_time(report.claimed_signing_time, w.t)))
     rows += [
         (messages.REPORT_TIMESTAMP, _timestamp_text(w, report.timestamp)),
         (messages.REPORT_CHANGES, w.t(messages.MODIFICATIONS[report.modifications])),
@@ -171,7 +171,7 @@ def pdf_report(
             [
                 (messages.REPORT_FILE, file_name),
                 (messages.REPORT_SHA256, _grouped(file_sha256)),
-                (messages.REPORT_VERIFIED_AT, format_time(verification.moment)),
+                (messages.REPORT_VERIFIED_AT, format_time(verification.moment, w.t)),
                 (messages.REPORT_TRUST, trust),
             ]
         ),
