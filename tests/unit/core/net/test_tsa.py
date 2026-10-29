@@ -78,6 +78,21 @@ class SilentTimeStamper:
         await asyncio.to_thread(self.release.wait, 5)
 
 
+class BrokenTimeStamper:
+    """A TSA client failing in a way pyHanko does not wrap."""
+
+    async def async_dummy_response(self, md_algorithm: str) -> None:
+        raise OSError("certificate verify failed")
+
+
+def test_an_unusual_failure_is_reported_as_it_is() -> None:
+    """Not as "did not answer within 30 s": the cause goes to the error and the log."""
+    started = time.monotonic()
+    with pytest.raises(TsaError, match="certificate verify failed"):
+        probe(BrokenTimeStamper())  # type: ignore[arg-type]
+    assert time.monotonic() - started < 2
+
+
 def test_probe_gives_up_at_its_deadline() -> None:
     stamper = SilentTimeStamper()
     started = time.monotonic()

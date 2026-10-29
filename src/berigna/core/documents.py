@@ -21,7 +21,7 @@ from berigna.core.formats.pades import no_changes_allowed
 
 # ISO 32000 allows bytes before the header; readers accept it within the first kilobyte.
 _PDF_HEADER = b"%PDF-"
-_HEADER_WINDOW = 1024
+_HEADER_WINDOW = 1024  # where the header may start; it may end a few bytes later
 
 
 class DocumentKind(enum.Enum):
@@ -51,7 +51,7 @@ def inspect_document(path: Path) -> DocumentInfo:
     """
     data = path.read_bytes()
     digest = hashlib.sha256(data).hexdigest()
-    if _PDF_HEADER not in data[:_HEADER_WINDOW]:
+    if _PDF_HEADER not in data[: _HEADER_WINDOW + len(_PDF_HEADER) - 1]:
         return DocumentInfo(path, DocumentKind.OTHER, len(data), digest)
     try:
         reader = PdfFileReader(io.BytesIO(data), strict=False)

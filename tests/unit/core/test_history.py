@@ -5,8 +5,11 @@
 import csv
 import datetime as dt
 import io
+import sqlite3
 import stat
 from pathlib import Path
+
+import pytest
 
 from berigna.core.history import Entry, History, Kind, history_csv
 
@@ -78,3 +81,25 @@ def test_csv(tmp_path: Path) -> None:
     assert rows[1][4:9] == ["", "", "", "", ""]
     assert rows[2][1] == "Firma"
     assert rows[2][7] == "QUISPE MAMANI ROSA FIR ****4321 hard"
+
+
+def test_a_failing_statement_closes_its_connection(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Signing threads and the interface share the file: no connection is left open."""
+    closed: list[bool] = []
+
+    class Tracked(sqlite3.Connection):
+        def close(self) -> None:
+            closed.append(True)
+            super().close()
+
+    real = sqlite3.connect
+    monkeypatch.setattr(sqlite3, "connect", lambda path: real(path, factory=Tracked))
+    history = History(tmp_path / "history.sqlite3")
+    entry = Entry(MOMENT, Kind.SIGN, "contrato.pdf", "aa" * 32, "ok", level=object())  # type: ignore[arg-type]
+    with pytest.raises(sqlite3.Error):
+        history.record(entry)
+    assert closed == [True]
+    assert history.entries() == []
+    assert len(closed) == 2

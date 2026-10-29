@@ -272,6 +272,8 @@ def _validate_timestamp(
 
 
 _GENERIC_CHAIN_FAILURE = "CERTIFICATE_CHAIN_GENERAL_FAILURE"
+# What pyHanko and asn1crypto raise on a signature they cannot process (AM-05).
+_MALFORMED = (PdfError, SignatureValidationError, ValueError, KeyError, TypeError)
 
 
 def _diagnose_chain(
@@ -305,21 +307,11 @@ def _diagnose_chain(
     return "TRY_LATER"
 
 
-def _verify_signature(sig: EmbeddedPdfSignature, context: _Context) -> PdfSignatureReport:
-    subfilter = str(sig.sig_object.get("/SubFilter", ""))
-    try:
-        sig.compute_integrity_info()  # type: ignore[no-untyped-call]
-        integrity = sig.summarise_integrity_info()
-        digest = sig.compute_digest()
-        *_, start2, len2 = (int(n) for n in sig.byte_range)
-    except (PdfError, SignatureValidationError, ValueError, KeyError, TypeError):
-        return _failed_format(sig, subfilter)
-
-    coverage = integrity.get("coverage", SignatureCoverageLevel.UNCLEAR)
-    if coverage < SignatureCoverageLevel.ENTIRE_REVISION:
-        # The byte range does not span a whole revision: signature wrapping (AM-05).
-        return _failed_format(sig, subfilter)
-
+def _validate_signature(
+    sig: EmbeddedPdfSignature, digest: bytes, context: _Context
+) -> tuple[ades.AdESBasicValidationResult[Any], TimestampReport | None, SignatureValidationSpec]:
+    """The ETSI validation proper: basic process, or the LTA one when the signature has a
+    time-stamp."""
     spec = _spec(context, _adobe_revinfo(sig.signed_data))
     timestamp: TimestampReport | None = None
     tst = sig.attached_timestamp_data
@@ -341,10 +333,33 @@ def _verify_signature(sig: EmbeddedPdfSignature, context: _Context) -> PdfSignat
             tst, tst_imprint, spec, context
         )
         result, timestamp = lta, _timestamp_report(ts_result)
-    indication, subindication = _indication(result.ades_subindic)
-    if subindication == _GENERIC_CHAIN_FAILURE and tst is None:
-        # Basic process only: under the LTA process the cause may be in the past validation.
-        subindication = _diagnose_chain(sig, spec, context)
+    return result, timestamp, spec
+
+
+def _verify_signature(sig: EmbeddedPdfSignature, context: _Context) -> PdfSignatureReport:
+    subfilter = str(sig.sig_object.get("/SubFilter", ""))
+    try:
+        sig.compute_integrity_info()  # type: ignore[no-untyped-call]
+        integrity = sig.summarise_integrity_info()
+        digest = sig.compute_digest()
+        *_, start2, len2 = (int(n) for n in sig.byte_range)
+    except _MALFORMED:
+        return _failed_format(sig, subfilter)
+
+    coverage = integrity.get("coverage", SignatureCoverageLevel.UNCLEAR)
+    if coverage < SignatureCoverageLevel.ENTIRE_REVISION:
+        # The byte range does not span a whole revision: signature wrapping (AM-05).
+        return _failed_format(sig, subfilter)
+
+    try:
+        result, timestamp, spec = _validate_signature(sig, digest, context)
+        indication, subindication = _indication(result.ades_subindic)
+        if subindication == _GENERIC_CHAIN_FAILURE and sig.attached_timestamp_data is None:
+            # Basic process only: under the LTA process the cause may be in the past validation.
+            subindication = _diagnose_chain(sig, spec, context)
+    except _MALFORMED:
+        # A hostile or broken CMS that pyHanko or asn1crypto cannot process past the digest.
+        return _failed_format(sig, subfilter)
     return PdfSignatureReport(
         field_name=sig.field_name,
         indication=indication,
@@ -362,11 +377,11 @@ def _verify_signature(sig: EmbeddedPdfSignature, context: _Context) -> PdfSignat
 def _verify_document_timestamp(sig: EmbeddedPdfSignature, context: _Context) -> TimestampReport:
     try:
         imprint = sig.compute_digest()
-    except (PdfError, SignatureValidationError, ValueError, KeyError, TypeError):
+        result = _validate_timestamp(sig.signed_data, imprint, _spec(context, ([], [])), context)
+    except _MALFORMED:
         return TimestampReport(
             Indication.TOTAL_FAILED, "FORMAT_FAILURE", None, None, sig.field_name
         )
-    result = _validate_timestamp(sig.signed_data, imprint, _spec(context, ([], [])), context)
     return _timestamp_report(result, sig.field_name)
 
 

@@ -61,6 +61,14 @@ def test_header_after_leading_bytes_is_treated_as_a_pdf(tmp_path: Path) -> None:
         inspect_document(path)
 
 
+def test_header_starting_at_the_end_of_the_first_kilobyte(tmp_path: Path) -> None:
+    """The header may start at byte 1023 and end after the kilobyte: still a PDF."""
+    path = tmp_path / "cabecera-tardia.pdf"
+    path.write_bytes(b" " * 1020 + b"%PDF-1.7\n")
+    with pytest.raises(UnreadableDocumentError):
+        inspect_document(path)
+
+
 def test_other_files_are_not_parsed(tmp_path: Path) -> None:
     path = tmp_path / "datos.xml"
     path.write_bytes(b"<a>%PDF- only later</a>".rjust(2000))

@@ -12,6 +12,7 @@ switched off (``history-enabled``) and cleared.
 Each call opens its own connection, so the worker threads of signing can record safely.
 """
 
+import contextlib
 import csv
 import datetime as dt
 import enum
@@ -83,8 +84,13 @@ class History:
     def name(self, path: Path) -> str:
         return str(path) if self.full_path else path.name
 
+    def _session(self) -> contextlib.closing[sqlite3.Connection]:
+        """A connection closed also when a statement fails (``with`` on a connection only
+        commits or rolls back)."""
+        return contextlib.closing(self._connect())
+
     def record(self, entry: Entry) -> None:
-        with self._connect() as connection:
+        with self._session() as connection, connection:
             connection.execute(
                 "INSERT INTO operation (ts_utc, kind, file_name, file_sha256, signed_name, "
                 "signed_sha256, format, level, signer_cn, signer_serial, result, detail) "
@@ -104,14 +110,13 @@ class History:
                     entry.detail,
                 ),
             )
-        connection.close()
 
     def entries(self, search: str = "") -> list[Entry]:
         """Newest first; ``search`` matches the file names, the signer and the SHA-256."""
         if not self.path.exists():
             return []
         pattern = f"%{search.strip()}%"
-        with self._connect() as connection:
+        with self._session() as connection:
             rows = connection.execute(
                 "SELECT ts_utc, kind, file_name, file_sha256, result, signed_name, "
                 "signed_sha256, level, signer_cn, signer_serial, detail, format "
@@ -120,7 +125,6 @@ class History:
                 "ORDER BY id DESC",
                 (pattern,),
             ).fetchall()
-        connection.close()
         return [
             Entry(
                 moment=dt.datetime.fromisoformat(row[0]),
@@ -141,12 +145,10 @@ class History:
 
     def clear(self) -> None:
         if self.path.exists():
-            with self._connect() as connection:
-                connection.execute("DELETE FROM operation")
-            connection.close()
-            with sqlite3.connect(self.path) as connection:
+            with self._session() as connection:
+                with connection:
+                    connection.execute("DELETE FROM operation")
                 connection.execute("VACUUM")  # leave no deleted rows in the file
-            connection.close()
 
 
 def history_csv(entries: Sequence[Entry], language: Language = Language.ES_PE) -> str:
