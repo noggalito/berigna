@@ -32,7 +32,7 @@ from berigna.core.trust import TrustStore  # noqa: E402
 from berigna.core.validation import Indication, PdfVerification  # noqa: E402
 from berigna.ui import presentation  # noqa: E402
 from berigna.ui.i18n import N_, _, catalogue  # noqa: E402
-from berigna.ui.widgets import brand_markup  # noqa: E402
+from berigna.ui.widgets import brand_markup, named  # noqa: E402
 
 if TYPE_CHECKING:
     from berigna.ui.window import MainWindow
@@ -77,11 +77,13 @@ class VerificationPage:
         )
         self._sign.add_css_class("suggested-action")
         self._sign.connect("clicked", lambda _b: self._add_signature())
-        self._retry = Gtk.Button(
-            icon_name="view-refresh-symbolic",
-            tooltip_text=_("Verify Again"),
-            action_name="verification.verify-again",
-            visible=False,
+        self._retry = named(
+            Gtk.Button(
+                icon_name="view-refresh-symbolic",
+                tooltip_text=_("Verify Again"),
+                action_name="verification.verify-again",
+                visible=False,
+            )
         )
         self._stack = Gtk.Stack()
         spinner = Adw.StatusPage(
@@ -213,12 +215,14 @@ class VerificationPage:
         group = Adw.PreferencesGroup(title=view.title, description=brand_markup(view.explanation))
         group.set_header_suffix(_icon(view.icon, view.style))
         expander = _details(view, title=_("Technical Details"))
-        save = Gtk.Button(
-            icon_name="document-save-symbolic",
-            tooltip_text=_("Save the Signed Version"),
-            valign=Gtk.Align.CENTER,
-            action_name="verification.save-revision",
-            action_target=GLib.Variant.new_uint32(number),
+        save = named(
+            Gtk.Button(
+                icon_name="document-save-symbolic",
+                tooltip_text=_("Save the Signed Version"),
+                valign=Gtk.Align.CENTER,
+                action_name="verification.save-revision",
+                action_target=GLib.Variant.new_uint32(number),
+            )
         )
         save.add_css_class("flat")
         revision = Adw.ActionRow(

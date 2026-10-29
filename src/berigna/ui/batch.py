@@ -42,7 +42,7 @@ from berigna.ui.signing import (  # noqa: E402
     output_settings,
     signature_entry,
 )
-from berigna.ui.widgets import brand_markup  # noqa: E402
+from berigna.ui.widgets import brand_markup, named  # noqa: E402
 
 if TYPE_CHECKING:
     from berigna.ui.window import MainWindow
@@ -113,7 +113,9 @@ class BatchPage:
             ("list-add-symbolic", _("Add Documents"), self._choose_files),
             ("folder-open-symbolic", _("Add Folder"), self._choose_folder),
         ):
-            button = Gtk.Button(icon_name=icon, tooltip_text=tooltip, valign=Gtk.Align.CENTER)
+            button = named(
+                Gtk.Button(icon_name=icon, tooltip_text=tooltip, valign=Gtk.Align.CENTER)
+            )
             button.add_css_class("flat")
             button.connect("clicked", lambda _b, c=callback: c())
             buttons.append(button)
@@ -168,10 +170,12 @@ class BatchPage:
             row = Adw.ActionRow(
                 title=path.name, subtitle=display_folder(path.parent), use_markup=False
             )
-            remove = Gtk.Button(
-                icon_name="list-remove-symbolic",
-                tooltip_text=_("Remove from the List"),
-                valign=Gtk.Align.CENTER,
+            remove = named(
+                Gtk.Button(
+                    icon_name="list-remove-symbolic",
+                    tooltip_text=_("Remove from the List"),
+                    valign=Gtk.Align.CENTER,
+                )
             )
             remove.add_css_class("flat")
             remove.connect("clicked", lambda _b, p=path: self.remove(p))
