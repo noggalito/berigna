@@ -58,6 +58,8 @@ Interfaz (Fase 3):
 
 ### Cambiado
 
+- Antes de firmar, el diálogo del PIN avisa si el certificado de firma vence en menos de un mes, con la fecha y dónde renovarlo (Ciudadano Digital).
+- Vista previa: arrastrar la página la desplaza (con zoom); el recuadro de la firma se mueve arrastrándolo y cambia de tamaño con el tirador de su esquina inferior derecha, en lugar de dibujarse de nuevo.
 - Respuesta de RENIEC (2026-10-28): el PIN bloqueado se desbloquea en Ciudadano Digital o en una agencia (ERR-111); los certificados del DNIe duran cuatro años, aunque el DNI siga vigente, y se renuevan en Ciudadano Digital (ERR-211). El validador de referencia es Firma Perú, porque RENIEC ya no distribuye ReFirma a terceros.
 - Almacén de confianza: las huellas de las seis anclas coinciden con el repositorio oficial de RENIEC; se añade la "ECEP-RENIEC CA Class 3" de la jerarquía ROOT 3 (2024), que el repositorio publica y la TSL de INDECOPI no incluye, para que se puedan verificar los certificados que emite aunque el PDF no traiga esa intermedia.
 - Titular del proyecto: noggalito (DP-05). Cabeceras de licencia, metadatos del paquete, catálogos y "Acerca de" pasan de "Calú" a "noggalito"; el sitio de "Acerca de" es <https://berigna.noggalito.com> y las incidencias siguen en GitHub. Contacto único: `berigna@noggalito.com` (también en `SECURITY.md`, junto con los avisos privados de GitHub).
@@ -74,6 +76,8 @@ Interfaz (Fase 3):
 
 ### Corregido
 
+- No se podía firmar un PDF cuyos metadatos había borrado ExifTool: el tráiler seguía apuntando a un `/Info` liberado y pyHanko fallaba al escribir la fecha de modificación, después del PIN, con "Error inesperado". La revisión de la firma lleva ahora un `/Info` nuevo. Los errores internos de pyHanko con PDF malformados se muestran como ERR-304.
+- Mover el sello de la firma visible era lento con el QR: la página y el sello se dibujan ahora una vez por tamaño y se guardan como imagen.
 - El QR de la firma visible no declaraba su codificación y algunos lectores de teléfono mostraban "Cómo" como "C髇o". Ahora lleva el indicador ECI de UTF-8 antes de los datos.
 - En Preferencias, el valor de las listas desplegables se cortaba ("Validación a largo plazo (…"), también al desplegarlas; ahora va completo como subtítulo y las opciones se ajustan en varias líneas.
 - Una excepción inesperada en el hilo de verificación o de firma dejaba la interfaz esperando para siempre; ahora se muestra como error inesperado (ERR-000) y se registra.
