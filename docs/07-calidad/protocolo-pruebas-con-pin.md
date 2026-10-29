@@ -39,5 +39,5 @@ Cada envío de PIN con un DNIe real se registra, sin el PIN, en una bitácora in
 
 1. Detener todas las pruebas con ese DNIe.
 2. Registrar el incidente en la bitácora.
-3. El titular hace el trámite de desbloqueo ante RENIEC (`[VERIFICAR]` canal y requisitos: consulta CE-07).
+3. El titular desbloquea el PIN en la plataforma Ciudadano Digital de RENIEC o en una de sus agencias (respuesta de RENIEC del 2026-10-28).
 4. Analizar la causa. Si se debió a un *script* o a berigna, abrir una incidencia de severidad alta (riesgo R-08).

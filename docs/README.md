@@ -78,8 +78,8 @@ Algunos documentos públicos citan identificadores cuyo detalle está en la docu
 | 03-requisitos | Borrador | Línea base para la v1.0 |
 | 04-arquitectura | Borrador | ADR-0001 a ADR-0020 aceptados |
 | 05-seguridad | Borrador | — |
-| 06-ux | Borrador | Bocetos de baja fidelidad |
-| 07-calidad | Borrador | El protocolo de PIN está Vigente |
+| 06-ux | Borrador | Interfaz implementada (Fase 3); glosario del quechua (BRG-UX-003) |
+| 07-calidad | Borrador | El protocolo de PIN está Vigente; protocolo de la prueba de usabilidad (BRG-CAL-005) pendiente de aplicar |
 | 08-desarrollo | Borrador | — |
 | 09-despliegue | Borrador | — |
 | 10-investigacion | En curso | SPK-01, SPK-03 y SPK-05 cerrados; SPK-06 (DNIe 1.0 y 3.0) pendiente |
@@ -103,9 +103,9 @@ Algunos documentos públicos citan identificadores cuyo detalle está en la docu
 | Titular e identificador | noggalito; `com.noggalito.Berigna` (ADR-0019); contacto `berigna@noggalito.com` |
 | Licencia | GPL-3.0-or-later (ADR-0005) |
 
-## 7. Estado de implementación (2026-10-28)
+## 7. Estado de implementación (2026-10-29)
 
-Fases 0, 1 y 2 cerradas.
+Fases 0, 1 y 2 cerradas. Fase 3: incrementos 1 a 7 hechos; falta la prueba de usabilidad con al menos 5 personas (BRG-CAL-005), que no bloquea seguir con la Fase 4.
 
 | Módulo | Estado | Requisitos | Evidencia |
 |---|---|---|---|
@@ -118,10 +118,10 @@ Fases 0, 1 y 2 cerradas.
 | `core.signing` | Implementado (PDF, B-B a B-LTA) | RF-006, RF-018, RF-045 | Pruebas del orden de seguridad (TOCTOU, cancelación, no sobrescritura, nivel y TSA comprobados antes del PIN) |
 | `core.net` (`fetchers`, `tsa`) | Implementado: cliente RFC 3161 con comprobación previa y plazo total; OCSP y CRL con reintento, espejos escalonados y sin CRL de certificados finales | RF-062 (sin interfaz), RF-063 | TSA HTTP local en las pruebas; DigiCert real; RENIEC real |
 | `core.validation.pdf` (verificador PAdES) | Implementado: procesos de ETSI EN 319 102-1 básico (§5.3) y de validación a largo plazo (§5.6.3), sellos de firma y de documento (§5.4), validación en el pasado, datos de revocación embebidos (DSS y `revocationInfoArchival` de Adobe), cobertura y modificaciones posteriores | RF-050, RF-053, RF-055, RF-056 | Matriz B-B a B-LTA y documentos reales contrastados con DSS 6.2 (`07-calidad/validacion-externa-fase2.md`) |
-| `core.i18n` y `core.report` | Implementado: catálogos gettext es_PE (completo) y quechua (pendiente de los traductores, ADR-0015); explicación de cada indicación y subindicación ETSI y de cada `ERR-xxx`; informes JSON y PDF, con DNI y RUC enmascarados | RF-053, RF-054, PR-I18N-04, PR-I18N-07 | Pruebas de cobertura del catálogo; informe de un PDF real revisado |
+| `core.i18n` y `core.report` | Implementado: catálogos gettext es_PE y quechua, completos (el quechua, traducido con IA y sin revisar por hablantes hasta la 1.1, DP-14, ADR-0015); explicación de cada indicación y subindicación ETSI y de cada `ERR-xxx`; informes JSON y PDF, con DNI y RUC enmascarados | RF-053, RF-054, PR-I18N-04, PR-I18N-07 | Pruebas de cobertura del catálogo; informe de un PDF real revisado |
 | TSA de producción | Pendiente de DP-02 (aún no hay TSA acreditada contratada) | RF-062 | — |
 | Proxy y caché de la TSL | Implementado (Fase 3, incremento 4): `core.net.proxy` y `core.trust.cache` | RF-061, RF-064 | Descarga real de la TSL de INDECOPI (secuencia 25, 68 CA) y lectura desde la caché |
-| `ui` (interfaz gráfica) | En curso, Fase 3. Incremento 1: aplicación `com.noggalito.Berigna` con Meson, ventana principal, estado del DNIe, apertura de archivos (botón, arrastrar y argumentos), esquema de GSettings, cambio de idioma sin reiniciar y aviso de traducción sin revisar. Incremento 2: verificación de PDF (CU-06) con resumen, detalles técnicos, informes JSON y PDF y versión firmada. Incremento 3: firma de PDF (CU-01, CU-03) con vista previa (Poppler, ADR-0016), nivel, diálogo del PIN y documentos certificados (ERR-307). Incremento 4: Preferencias (CU-08), TSL de INDECOPI en uso con caché y proxy. Incremento 5: firma visible (CU-02) con texto, rúbrica, logotipo o QR | RF-001 a RF-006, RF-010, RF-013, RF-014, RF-018, RF-045, RF-050, RF-053 a RF-056 | Pruebas de la aplicación real con Xvfb, también en la CI; PDF real firmado con el DNIe verificado en línea (TOTAL-PASSED) |
+| `ui` (interfaz gráfica) | En curso, Fase 3. Incremento 1: aplicación `com.noggalito.Berigna` con Meson, ventana principal, estado del DNIe, apertura de archivos (botón, arrastrar y argumentos), esquema de GSettings, cambio de idioma sin reiniciar y aviso de traducción sin revisar. Incremento 2: verificación de PDF (CU-06) con resumen, detalles técnicos, informes JSON y PDF y versión firmada. Incremento 3: firma de PDF (CU-01, CU-03) con vista previa (Poppler, ADR-0016), nivel, diálogo del PIN y documentos certificados (ERR-307). Incremento 4: Preferencias (CU-08), TSL de INDECOPI en uso con caché y proxy. Incremento 5: firma visible (CU-02) con texto, rúbrica, logotipo o QR, en horizontal o vertical. Incremento 6: lotes, diagnóstico, registro técnico, historial y certificados de confianza. Incremento 7: quechua completo | RF-001 a RF-006, RF-010, RF-013, RF-014, RF-018, RF-045, RF-050, RF-053 a RF-056 | Pruebas de la aplicación real con Xvfb, también en la CI; PDF real firmado con el DNIe verificado en línea (TOTAL-PASSED) |
 | `core.batch` y firma por lotes en la interfaz | Implementado (Fase 3, incremento 6): un PIN por lote, lista confirmada, tolerancia a fallos, cancelación entre archivos, informe CSV (`core.report.batch_report`) | RF-040 a RF-043 | Tarjeta simulada: un solo VERIFY para todo el lote; pruebas de la interfaz con Xvfb |
 | `core.diagnostics` y `core.logs` | Implementado (Fase 3, incremento 6): diagnóstico en orden con acción sugerida e informe copiable; registro técnico rotativo con números enmascarados | RF-007, RF-083 | Tarjeta simulada y PKI de pruebas; pruebas de la interfaz con Xvfb |
 | `core.history`, historial y vista del almacén de confianza | Implementado (Fase 3, incremento 6): historial SQLite 0600 con búsqueda, CSV y borrado; certificados de confianza por origen en Preferencias | RF-060, RF-082 | Pruebas de la interfaz con firma y verificación reales (tarjeta simulada) |
@@ -132,5 +132,5 @@ Fases 0, 1 y 2 cerradas.
 | DNIe 1.0 y DNIe 3.0 | Versión 1.1 (decisión del 2026-10-27); identificación pendiente en SPK-06 | RNF-COM-05 | — |
 | Extensión de LibreOffice "Firmar con berigna" | Versión 1.2 (decisión del 2026-10-27) | RF-074 | — |
 
-Verificación local: `scripts/verificar.sh` (ruff, mypy estricto, pytest con cobertura mínima del 80 %; hoy 100 % del núcleo y 98 % del total con 297 pruebas, incluidas las de la interfaz con Xvfb). Pruebas con hardware: `BERIGNA_HIL=1 pytest -m hil` (sin PIN) y los *scripts* manuales de `tests/hil/` (con PIN, según el protocolo).
+Verificación local: `scripts/verificar.sh` (ruff, mypy estricto, pytest con cobertura mínima del 80 %; al 2026-10-29, 100 % del núcleo y 95 % del total con 462 pruebas, incluidas las de la interfaz con Xvfb; las 5 con hardware se omiten sin `BERIGNA_HIL=1`). Pruebas con hardware: `BERIGNA_HIL=1 pytest -m hil` (sin PIN) y los *scripts* manuales de `tests/hil/` (con PIN, según el protocolo).
 

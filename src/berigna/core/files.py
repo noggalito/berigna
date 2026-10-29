@@ -22,17 +22,25 @@ def _umask(status: Path = Path("/proc/self/status")) -> int:
     return 0o022
 
 
-def write_atomically(path: Path, data: bytes, *, replace: bool = False) -> None:
+def write_atomically(
+    path: Path, data: bytes, *, replace: bool = False, private: bool = False
+) -> None:
     """Write ``data`` to ``path`` with fsync, all or nothing (RNF-FIA-01).
 
     Never replaces an existing file unless ``replace`` is given, which is for files the user
-    chose to overwrite in a save dialog (reports), never for signed documents.
+    chose to overwrite in a save dialog (reports), never for signed documents. ``private``
+    files are readable only by their owner (0600), as personal data that berigna keeps.
     """
     if not replace and path.exists():
         raise OutputExistsError(f"{path.name} already exists")
     # mkstemp creates the file readable only by its owner; the result should have the
     # permissions any other new file would (or those of the file it replaces).
-    mode = path.stat().st_mode & 0o7777 if replace and path.exists() else 0o666 & ~_umask()
+    if private:
+        mode = 0o600
+    elif replace and path.exists():
+        mode = path.stat().st_mode & 0o7777
+    else:
+        mode = 0o666 & ~_umask()
     fd, temporary = tempfile.mkstemp(prefix=f".{path.name}.", suffix=".tmp", dir=path.parent)
     try:
         os.fchmod(fd, mode)

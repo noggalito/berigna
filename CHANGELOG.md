@@ -81,9 +81,12 @@ Interfaz (Fase 3):
 - "berigna" va en negrita en todos los mensajes de la interfaz y en el pie del informe PDF. Los mensajes con formato se escapan, así que un nombre de archivo o de firmante con `&` o `<` ya no rompe el texto.
 - Fechas y horas con la fecha ISO 8601, la hora con el símbolo h del SI y el desfase respecto de UTC, en la hora local: "2026-10-28 a las 18h47 UTC-5". Se aplica al sello visible, al QR, a la verificación y al informe PDF; el informe JSON sigue en ISO 8601 y UTC.
 - "Versión firmada" empieza con mayúscula ("Primeros … bytes del archivo"); en Preferencias → Firma visible, "berigna" va en negrita.
+- El historial indica "revocación no comprobada" en las firmas hechas sin poder consultar la revocación del certificado (RF-006).
 
 ### Corregido
 
+- La rúbrica y el logotipo precargados se guardaban con los permisos de cualquier archivo nuevo; ahora solo los puede leer su dueño (0600, y su carpeta 0700), como el historial.
+- Los botones que solo tienen icono (exportar, borrar, zoom, volver…) no tenían nombre para los lectores de pantalla; ahora lo toman de su descripción emergente (RNF-USA-03).
 - Las pruebas de la interfaz heredaban el idioma de la anterior: una que cambiaba a quechua dejaba el quechua a las siguientes (no se notaba mientras el catálogo estaba vacío). Cada prueba empieza ahora en es_PE.
 - Las pruebas que arrancan berigna sin rutas propias escribían en el historial real del usuario (`~/.local/share/berigna/`): GLib guarda la carpeta de datos la primera vez que se le pregunta. berigna la lee ahora del entorno (`core.files.data_directory`) y las pruebas usan una carpeta temporal.
 - El diagnóstico daba "No se pudo consultar a RENIEC si tu certificado está revocado" con la red funcionando: validaba con la hora fijada, y la tolerancia de 1 s rechazaba la respuesta OCSP de RENIEC por "demasiado reciente"; ahora valida "ahora", con la tolerancia de 5 minutos. El motivo de una revocación no comprobada queda en el registro técnico, igual que cada paso del diagnóstico que no sale bien.
@@ -104,3 +107,6 @@ Proyecto:
 - Idiomas de la versión 1.0: español del Perú y quechua sureño (ADR-0015); el inglés pasa a la versión 1.1.
 - Plan de compatibilidad: DNIe 1.0 y DNIe 3.0 previstos para la versión 1.1 (investigación SPK-06).
 - Requisito RF-074: extensión de LibreOffice "Firmar con berigna", prevista para la versión 1.2.
+- Cabeceras SPDX en los logotipos, la entrada de escritorio y el `pom.xml` de SPK-03; una prueba exige que los catálogos es_PE y quechua estén completos.
+- Protocolo de la prueba de usabilidad: pasos para instalar berigna desde el código fuente en el equipo de la prueba.
+- Revisión general de la documentación: módulos del núcleo en la arquitectura, glosario, requisitos RF-002, RF-053 y RF-090, dependencias del empaquetado y estado del proyecto.

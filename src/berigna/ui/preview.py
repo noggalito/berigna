@@ -29,6 +29,7 @@ gi.require_version("Poppler", "0.18")
 from gi.repository import Adw, Gdk, GLib, Gtk, Poppler  # noqa: E402
 
 from berigna.ui.i18n import _  # noqa: E402
+from berigna.ui.widgets import named  # noqa: E402
 
 _MARGIN = 12
 HANDLE = 10.0  # widget pixels around the bottom right corner of the box that resize it
@@ -112,10 +113,12 @@ class PdfPreview(Gtk.Box):
 
         bar = Gtk.CenterBox(margin_top=6, margin_bottom=6, margin_start=6, margin_end=6)
         zoom = Gtk.Box(spacing=6)
-        self._zoom_out = Gtk.Button(icon_name="zoom-out-symbolic", tooltip_text=_("Zoom Out"))
+        self._zoom_out = named(
+            Gtk.Button(icon_name="zoom-out-symbolic", tooltip_text=_("Zoom Out"))
+        )
         self._zoom_label = Gtk.Button(tooltip_text=_("Fit the Page"))
         self._zoom_label.add_css_class("flat")
-        self._zoom_in = Gtk.Button(icon_name="zoom-in-symbolic", tooltip_text=_("Zoom In"))
+        self._zoom_in = named(Gtk.Button(icon_name="zoom-in-symbolic", tooltip_text=_("Zoom In")))
         self._zoom_out.connect("clicked", lambda _b: self.zoom_out())
         self._zoom_label.connect("clicked", lambda _b: self.set_zoom(None))
         self._zoom_in.connect("clicked", lambda _b: self.zoom_in())
@@ -124,10 +127,10 @@ class PdfPreview(Gtk.Box):
         bar.set_start_widget(zoom)
 
         controls = Gtk.Box(spacing=6)
-        self._previous = Gtk.Button(
-            icon_name="go-previous-symbolic", tooltip_text=_("Previous Page")
+        self._previous = named(
+            Gtk.Button(icon_name="go-previous-symbolic", tooltip_text=_("Previous Page"))
         )
-        self._next = Gtk.Button(icon_name="go-next-symbolic", tooltip_text=_("Next Page"))
+        self._next = named(Gtk.Button(icon_name="go-next-symbolic", tooltip_text=_("Next Page")))
         # A plain entry: a spin button adds its own minus and plus buttons next to the arrows.
         self.page_entry = Gtk.Entry(
             input_purpose=Gtk.InputPurpose.DIGITS,
