@@ -38,4 +38,4 @@ Una entrada pendiente bloquea la publicación de una versión. Detalle en las co
 
 Cada commit lleva una línea `Signed-off-by: Nombre <correo>`, que añade `git commit -s`. Con ella certificas lo que dice el [Developer Certificate of Origin 1.1](https://developercertificate.org/): que tienes derecho a enviar el cambio bajo la licencia del proyecto.
 
-Tus contribuciones se publican bajo la misma licencia que el resto de berigna: GPL-3.0-or-later ([`LICENSE`](LICENSE)). Conservas los derechos de autor sobre tu código.
+Tus contribuciones se publican bajo la misma licencia que el resto de berigna: GPL-3.0-or-later ([`LICENSE`](LICENSE)) con el permiso adicional para tiendas de aplicaciones ([`LICENSE-EXCEPTION.md`](LICENSE-EXCEPTION.md), ADR-0021). Conservas los derechos de autor sobre tu código.
