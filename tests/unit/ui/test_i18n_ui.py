@@ -38,10 +38,19 @@ def test_set_language_also_steers_gtk() -> None:
     assert os.environ["LANGUAGE"] == "es_PE"
 
 
-def test_quechua_pending_strings_fall_back_to_spanish() -> None:
+def test_quechua() -> None:
+    i18n.set_language(Language.QUZ_PE)
+    assert i18n._("DNIe ready") == "DNIe wakichisqa"
+    # One plural form: the noun does not change after a number ("iskay firma").
+    assert i18n.ngettext("{n} signature", "{n} signatures", 2) == "{n} firma"
+    i18n.set_language(Language.ES_PE)
+
+
+def test_quechua_pending_strings_fall_back_to_spanish(pending_quechua: None) -> None:
     i18n.set_language(Language.QUZ_PE)
     assert i18n._("DNIe ready") == "DNIe listo"
     assert i18n.ngettext("{n} signature", "{n} signatures", 2) == "{n} firmas"
+    i18n.set_language(Language.ES_PE)
 
 
 def test_translate_view() -> None:

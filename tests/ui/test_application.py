@@ -127,8 +127,11 @@ def test_quechua_shows_the_notice_and_can_switch_to_spanish(
         app.settings.set_string("ui-language", "quz_PE")
         assert i18n.current_language() is Language.QUZ_PE
         assert _banner(app).get_revealed()
-        # Pending Quechua strings fall back to Spanish, so the notice is shown once.
-        assert _banner(app).get_title() == notice
+        # The notice in Quechua and in Spanish, which prevails (DP-14).
+        assert _banner(app).get_title() == (
+            "Rimaqkunaq mana qhawasqan t'ikrasqa. Iskayrayaspaqa kastilla simipi qillqasqan "
+            f"atipan. · {notice}"
+        )
         yield from wait_until(lambda: _visible_title(app) == "contrato.pdf")
         old = app.main_window
         app.activate_action("show-in-spanish", None)

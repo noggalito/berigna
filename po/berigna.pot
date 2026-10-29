@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-29 00:44-0500\n"
+"POT-Creation-Date: 2026-10-29 01:19-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -660,7 +660,7 @@ msgstr ""
 msgid "Verification"
 msgstr ""
 
-#: src/berigna/ui/application.py:298
+#: src/berigna/ui/application.py:297
 msgid "Sign and verify documents with your Peruvian DNIe."
 msgstr ""
 
@@ -722,7 +722,7 @@ msgstr[1] ""
 msgid "PDF documents"
 msgstr ""
 
-#: src/berigna/ui/batch.py:230 src/berigna/ui/history.py:159
+#: src/berigna/ui/batch.py:230 src/berigna/ui/history.py:161
 #: src/berigna/ui/signing.py:443
 msgid "_Cancel"
 msgstr ""
@@ -763,19 +763,19 @@ msgstr ""
 msgid "Sign _Other Documents"
 msgstr ""
 
-#: src/berigna/ui/batch.py:414 src/berigna/ui/verification.py:70
+#: src/berigna/ui/batch.py:415 src/berigna/ui/verification.py:70
 msgid "Export Report"
 msgstr ""
 
-#: src/berigna/ui/batch.py:414
+#: src/berigna/ui/batch.py:415
 msgid "batch-report.csv"
 msgstr ""
 
-#: src/berigna/ui/batch.py:427
+#: src/berigna/ui/batch.py:429
 msgid "The report could not be saved."
 msgstr ""
 
-#: src/berigna/ui/batch.py:429
+#: src/berigna/ui/batch.py:431
 msgid "Report saved."
 msgstr ""
 
@@ -831,7 +831,7 @@ msgstr ""
 msgid "Search by name, signer or SHA-256"
 msgstr ""
 
-#: src/berigna/ui/history.py:75 src/berigna/ui/history.py:131
+#: src/berigna/ui/history.py:75 src/berigna/ui/history.py:132
 msgid "Export to CSV"
 msgstr ""
 
@@ -865,33 +865,33 @@ msgstr ""
 msgid "Nothing signed or verified yet"
 msgstr ""
 
-#: src/berigna/ui/history.py:131
+#: src/berigna/ui/history.py:132
 msgid "berigna-history.csv"
 msgstr ""
 
-#: src/berigna/ui/history.py:148
+#: src/berigna/ui/history.py:150
 msgid "The history could not be saved."
 msgstr ""
 
-#: src/berigna/ui/history.py:150
+#: src/berigna/ui/history.py:152
 msgid "History exported."
 msgstr ""
 
-#: src/berigna/ui/history.py:154
+#: src/berigna/ui/history.py:156
 msgid "Clear the History?"
 msgstr ""
 
-#: src/berigna/ui/history.py:156
+#: src/berigna/ui/history.py:158
 msgid ""
 "Every row is deleted from this computer. The signed documents are not "
 "touched."
 msgstr ""
 
-#: src/berigna/ui/history.py:160
+#: src/berigna/ui/history.py:162
 msgid "C_lear"
 msgstr ""
 
-#: src/berigna/ui/history.py:174
+#: src/berigna/ui/history.py:176
 msgid "History cleared."
 msgstr ""
 
@@ -1127,11 +1127,11 @@ msgid ""
 "Compare the SHA-256 with the official source if in doubt."
 msgstr ""
 
-#: src/berigna/ui/preferences.py:484
+#: src/berigna/ui/preferences.py:482
 msgid "The trusted list could not be updated."
 msgstr ""
 
-#: src/berigna/ui/preferences.py:486
+#: src/berigna/ui/preferences.py:484
 msgid "The trusted list is up to date."
 msgstr ""
 

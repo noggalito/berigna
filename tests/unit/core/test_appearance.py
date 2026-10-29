@@ -83,8 +83,7 @@ def test_stamp_lines_in_spanish_and_quechua() -> None:
     assert lines[:3] == ["Firmado digitalmente por", "QUISPE MAMANI ROSA", "DNI ****4321"]
     assert re.fullmatch(r"Fecha: 2026-10-2\d a las \d\dh\d\d UTC([+-]\d+(:\d\d)?)?", lines[3])
     assert lines[4:] == ["Motivo: Conformidad", "Lugar: Cusco"]
-    # Pending Quechua strings fall back to Spanish (RF-092, ADR-0015), never to English.
-    assert stamp_lines(DATA, Language.QUZ_PE)[0][1] == "Firmado digitalmente por"
+    assert stamp_lines(DATA, Language.QUZ_PE)[0][1] == "Firma digitalwan firmarqan"
     bare = StampData("ROSA", None, MOMENT)
     assert len(stamp_lines(bare, Language.ES_PE)) == 3
 
@@ -265,3 +264,9 @@ def test_unusable_images_are_refused(tmp_path: Path, monkeypatch: pytest.MonkeyP
     monkeypatch.setattr(appearance, "MAX_IMAGE_BYTES", 2)
     with pytest.raises(AppearanceError, match="larger than"):
         store_image(tmp_path, AppearanceKind.LOGO, text)
+
+
+def test_pending_quechua_stamp_falls_back_to_spanish(pending_quechua: None) -> None:
+    """Strings still waiting for the translators come out in Spanish (RF-092, ADR-0015),
+    never in English."""
+    assert stamp_lines(DATA, Language.QUZ_PE)[0][1] == "Firmado digitalmente por"
