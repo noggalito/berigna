@@ -38,7 +38,7 @@ Verificación e informes:
 
 Registro local de fallos (Fase 4):
 
-- Las excepciones no capturadas, en el hilo principal o en cualquier otro, y los fallos de código nativo (`faulthandler`: GTK, Poppler) se guardan en el registro técnico y en un informe pendiente, con los números enmascarados (`berigna.core.crashes`, R-DES-11). En el siguiente arranque, berigna lo dice una sola vez y ofrece "Copiar el informe" con la versión, el sistema y la traza. Nada se envía solo.
+- Las excepciones no capturadas, en el hilo principal o en cualquier otro, y los fallos de código nativo (`faulthandler`: GTK, Poppler) se guardan en el registro técnico y en un informe pendiente, con los números enmascarados (`berigna.core.crashes`, R-DES-11). Cada entrada lleva su fecha y su versión, y la carpeta personal se escribe como `~`. En el siguiente arranque, berigna lo dice y ofrece "Copiar el informe"; el informe se borra cuando la persona responde. Nada se envía solo.
 
 Interfaz (Fase 3):
 

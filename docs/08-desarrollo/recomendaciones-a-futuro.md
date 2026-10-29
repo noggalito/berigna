@@ -53,7 +53,7 @@ Sí vale la pena el **registro local de fallos** (R-DES-11):
 2. Si el arranque anterior terminó con un fallo, berigna lo dice una vez: "berigna se cerró de forma inesperada la última vez", con "Copiar informe" (el mismo formato que el informe de diagnóstico: versión, sistema, lector, traza; sin PIN, sin contenido de documentos, con el DNI enmascarado) y el enlace a las incidencias.
 3. La persona decide si lo envía y por dónde. Nada sale solo.
 
-Implementado el 2026-10-29 (Fase 4, incremento 1) en `core.crashes`. Como las excepciones de las retrollamadas de GTK no cierran el programa, el aviso dice "berigna tuvo un fallo inesperado la última vez" en lugar de "se cerró". El informe lleva la versión, el sistema y la traza; no lleva el lector, que no forma parte de un fallo.
+Implementado el 2026-10-29 (Fase 4, incremento 1) en `core.crashes`. Como las excepciones de las retrollamadas de GTK no cierran el programa, el aviso dice "berigna tuvo un fallo inesperado la última vez" en lugar de "se cerró". Cada entrada lleva la fecha y la versión con la que ocurrió, y el informe añade el sistema; no lleva el lector, que no forma parte de un fallo. La carpeta personal se escribe como `~`, y el aviso pide revisar el informe antes de enviarlo, porque puede nombrar archivos y carpetas. Los ganchos siguen imprimiendo la traza en la terminal, como sin ellos.
 
 ## 6. Versión candidata para la prueba de usabilidad
 
