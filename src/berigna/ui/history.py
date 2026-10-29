@@ -19,8 +19,8 @@ from berigna.core.files import dated_name, write_atomically  # noqa: E402
 from berigna.core.history import Entry, History, Kind, history_csv  # noqa: E402
 from berigna.core.report.explanations import explain_error, format_time  # noqa: E402
 from berigna.ui.i18n import _, catalogue, current_language  # noqa: E402
-from berigna.ui.signing import SigningServices  # noqa: E402
-from berigna.ui.widgets import brand_markup  # noqa: E402
+from berigna.ui.signing import REVOCATION_UNCHECKED, SigningServices  # noqa: E402
+from berigna.ui.widgets import brand_markup, named  # noqa: E402
 
 if TYPE_CHECKING:
     from berigna.ui.window import MainWindow
@@ -40,6 +40,8 @@ def entry_subtitle(entry: Entry) -> str:
         what = _("Signed ({level}) as {name}").format(
             level=entry.level or "", name=entry.signed_name or ""
         )
+        if entry.detail == REVOCATION_UNCHECKED:
+            what += " · " + _("revocation not checked")
     else:
         reason = explain_error(entry.detail or "ERR-000", catalogue()) or ""
         what = _("Not signed: {reason}").format(reason=reason)
@@ -71,11 +73,13 @@ class HistoryPage:
         self._stack.add_named(self.empty, "empty")
         content.append(self._stack)
 
-        self._export = Gtk.Button(
-            icon_name="document-save-symbolic", tooltip_text=_("Export to CSV")
+        self._export = named(
+            Gtk.Button(icon_name="document-save-symbolic", tooltip_text=_("Export to CSV"))
         )
         self._export.connect("clicked", lambda _b: self._choose_export())
-        self._clear = Gtk.Button(icon_name="user-trash-symbolic", tooltip_text=_("Clear History"))
+        self._clear = named(
+            Gtk.Button(icon_name="user-trash-symbolic", tooltip_text=_("Clear History"))
+        )
         self._clear.connect("clicked", lambda _b: self._confirm_clear())
         self.page = window.page(_("History"), "history", content, [self._clear, self._export])
         self.refresh()

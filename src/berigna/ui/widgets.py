@@ -29,3 +29,10 @@ def brand_markup(text: str) -> str:
     """``text`` as Pango markup, with the program's name in bold (decision of 2026-10-28).
     Every message shown with markup goes through here, which also escapes file names."""
     return NAME.sub("<b>berigna</b>", GLib.markup_escape_text(text))
+
+
+def named(button: Gtk.Button) -> Gtk.Button:
+    """An icon-only button with its tooltip as accessible name, so that Orca reads what it does
+    (RNF-USA-03): GTK uses a tooltip only as the description."""
+    button.update_property([Gtk.AccessibleProperty.LABEL], [button.get_tooltip_text() or ""])
+    return button

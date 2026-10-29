@@ -33,7 +33,7 @@ from berigna.ui import presentation  # noqa: E402
 from berigna.ui.help import HelpTopic, help_button  # noqa: E402
 from berigna.ui.i18n import _, catalogue  # noqa: E402
 from berigna.ui.signing import APPEARANCES, DNI_OPTIONS, LEVEL_ORDER  # noqa: E402
-from berigna.ui.widgets import brand_markup, label_factory  # noqa: E402
+from berigna.ui.widgets import brand_markup, label_factory, named  # noqa: E402
 
 if TYPE_CHECKING:
     from berigna.ui.application import BerignaApplication
@@ -132,17 +132,21 @@ class PreferencesDialog(Adw.PreferencesDialog):
         self.suffix = self._entry(_("Suffix of Signed Files"), "output-suffix")
         self.suffix.connect("apply", self._on_suffix)
         self.folder = Adw.ActionRow(title=_("Folder for Signed Files"), use_markup=False)
-        choose = Gtk.Button(
-            icon_name="folder-open-symbolic",
-            tooltip_text=_("Choose Folder"),
-            valign=Gtk.Align.CENTER,
+        choose = named(
+            Gtk.Button(
+                icon_name="folder-open-symbolic",
+                tooltip_text=_("Choose Folder"),
+                valign=Gtk.Align.CENTER,
+            )
         )
         choose.add_css_class("flat")
         choose.connect("clicked", lambda _b: self._choose_folder())
-        self.folder_reset = Gtk.Button(
-            icon_name="edit-clear-symbolic",
-            tooltip_text=_("Use the Folder of the Original"),
-            valign=Gtk.Align.CENTER,
+        self.folder_reset = named(
+            Gtk.Button(
+                icon_name="edit-clear-symbolic",
+                tooltip_text=_("Use the Folder of the Original"),
+                valign=Gtk.Align.CENTER,
+            )
         )
         self.folder_reset.add_css_class("flat")
         self.folder_reset.connect("clicked", lambda _b: self.set_folder(""))
@@ -263,17 +267,21 @@ class PreferencesDialog(Adw.PreferencesDialog):
             (AppearanceKind.LOGO, _("Logo")),
         ):
             row = Adw.ActionRow(title=title, use_markup=False)
-            choose = Gtk.Button(
-                icon_name="document-open-symbolic",
-                tooltip_text=_("Choose Image"),
-                valign=Gtk.Align.CENTER,
+            choose = named(
+                Gtk.Button(
+                    icon_name="document-open-symbolic",
+                    tooltip_text=_("Choose Image"),
+                    valign=Gtk.Align.CENTER,
+                )
             )
             choose.add_css_class("flat")
             choose.connect("clicked", lambda _b, k=kind: self._choose_image(k))
-            remove = Gtk.Button(
-                icon_name="edit-clear-symbolic",
-                tooltip_text=_("Remove Image"),
-                valign=Gtk.Align.CENTER,
+            remove = named(
+                Gtk.Button(
+                    icon_name="edit-clear-symbolic",
+                    tooltip_text=_("Remove Image"),
+                    valign=Gtk.Align.CENTER,
+                )
             )
             remove.add_css_class("flat")
             remove.connect("clicked", lambda _b, k=kind: self.remove_image(k))

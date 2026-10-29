@@ -51,6 +51,7 @@ def test_signing_and_verifying_are_recorded(app: BerignaApplication, tmp_path: P
         assert kinds == [Kind.VERIFY, Kind.SIGN]
         verified, signed = page.entries
         assert (signed.file_name, signed.result, signed.level) == ("contrato.pdf", "ok", "B-B")
+        assert signed.detail == "revocation-unchecked"  # offline in the tests (RF-006)
         assert signed.signed_name == "contrato-firmado.pdf"
         assert signed.signer == "QUISPE MAMANI ROSA FIR ****4321 hard"
         assert verified.file_name == "contrato-firmado.pdf"
@@ -105,6 +106,18 @@ def test_subtitles() -> None:
     verified = Entry(moment, Kind.VERIFY, "a.pdf", "aa", "TOTAL-PASSED", detail="1/2")
     assert entry_subtitle(verified).endswith(" · Verificado: 1 de 2 firmas válidas")
     assert entry_subtitle(signed).startswith("2026-10-29 a las ")
+    unchecked = Entry(
+        moment,
+        Kind.SIGN,
+        "a.pdf",
+        "aa",
+        "ok",
+        "a-firmado.pdf",
+        "bb",
+        "B-B",
+        detail="revocation-unchecked",
+    )
+    assert entry_subtitle(unchecked).endswith(" · revocación no comprobada")
 
 
 def test_trusted_certificates(pki: Pki, tmp_path: Path) -> None:
