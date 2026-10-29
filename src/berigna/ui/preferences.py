@@ -32,7 +32,7 @@ from berigna.core.trust.cache import TslRefresh  # noqa: E402
 from berigna.ui import presentation  # noqa: E402
 from berigna.ui.help import HelpTopic, help_button  # noqa: E402
 from berigna.ui.i18n import _, catalogue  # noqa: E402
-from berigna.ui.signing import APPEARANCES, LEVEL_ORDER  # noqa: E402
+from berigna.ui.signing import APPEARANCES, DNI_OPTIONS, LEVEL_ORDER  # noqa: E402
 from berigna.ui.widgets import brand_markup, label_factory  # noqa: E402
 
 if TYPE_CHECKING:
@@ -95,7 +95,7 @@ class PreferencesDialog(Adw.PreferencesDialog):
         return row
 
     def toast(self, message: str) -> None:
-        self.add_toast(Adw.Toast.new(message))
+        self.add_toast(Adw.Toast.new(brand_markup(message)))
 
     # -- General -------------------------------------------------------------------------------
 
@@ -178,7 +178,13 @@ class PreferencesDialog(Adw.PreferencesDialog):
 
     def _visible(self) -> Adw.PreferencesPage:
         page = Adw.PreferencesPage(title=_("Visible Signature"), icon_name="document-edit-symbolic")
-        defaults = Adw.PreferencesGroup(title=_("Defaults"))
+        defaults = Adw.PreferencesGroup(
+            title=_("Defaults"),
+            description=_(
+                "The signed PDF always carries the full DNI in its certificate; "
+                "“DNI in the Signature” only changes what is printed."
+            ),
+        )
         self.visible_default = Adw.SwitchRow(title=_("Show the Signature on the Page"))
         self._settings.bind(
             "visible-signature", self.visible_default, "active", Gio.SettingsBindFlags.DEFAULT
@@ -191,7 +197,12 @@ class PreferencesDialog(Adw.PreferencesDialog):
             "appearance-language",
             [(value, label) for value, label in LANGUAGES if label is not None],
         )
-        for row in (self.visible_default, self.appearance, self.stamp_language):
+        self.dni = self._combo(
+            _("DNI in the Signature"),
+            "appearance-dni",
+            [(display.value, _(label)) for display, label in DNI_OPTIONS],
+        )
+        for row in (self.visible_default, self.appearance, self.stamp_language, self.dni):
             defaults.add(row)
         page.add(defaults)
 
@@ -364,12 +375,14 @@ class PreferencesDialog(Adw.PreferencesDialog):
         tsl = Adw.PreferencesGroup(
             header_suffix=help_button(HelpTopic.TRUSTED_LIST),
             title=_("INDECOPI Trusted List"),
-            description=_(
-                "berigna adds the certification authorities accredited by INDECOPI to its own "
-                "root certificates. The list is checked once a day."
+            description=brand_markup(
+                _(
+                    "berigna adds the certification authorities accredited by INDECOPI to its "
+                    "own root certificates. The list is checked once a day."
+                )
             ),
         )
-        self.tsl_row = Adw.ActionRow(use_markup=False, subtitle_lines=0)
+        self.tsl_row = Adw.ActionRow(subtitle_lines=0)
         self.tsl_update = Gtk.Button(
             label=_("_Update Now"), use_underline=True, valign=Gtk.Align.CENTER
         )
@@ -382,8 +395,8 @@ class PreferencesDialog(Adw.PreferencesDialog):
 
     def show_tsl(self, result: TslRefresh | None) -> None:
         title, subtitle = presentation.tsl_status(result)
-        self.tsl_row.set_title(title)
-        self.tsl_row.set_subtitle(subtitle)
+        self.tsl_row.set_title(brand_markup(title))
+        self.tsl_row.set_subtitle(brand_markup(subtitle))
 
     def update_tsl(self) -> None:
         self.tsl_update.set_sensitive(False)

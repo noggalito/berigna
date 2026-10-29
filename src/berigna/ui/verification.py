@@ -30,6 +30,7 @@ from berigna.core.trust import TrustStore  # noqa: E402
 from berigna.core.validation import PdfVerification  # noqa: E402
 from berigna.ui import presentation  # noqa: E402
 from berigna.ui.i18n import N_, _, catalogue  # noqa: E402
+from berigna.ui.widgets import brand_markup  # noqa: E402
 
 if TYPE_CHECKING:
     from berigna.ui.window import MainWindow
@@ -138,7 +139,7 @@ class VerificationPage:
             error = Adw.StatusPage(
                 icon_name="dialog-error-symbolic",
                 title=_("The document could not be verified"),
-                description=message,
+                description=brand_markup(message),
             )
             self._replace("error", error)
         return GLib.SOURCE_REMOVE
@@ -182,7 +183,7 @@ class VerificationPage:
         return GLib.SOURCE_REMOVE
 
     def _result_group(self, view: presentation.ResultView, number: int) -> Adw.PreferencesGroup:
-        group = Adw.PreferencesGroup(title=view.title, description=view.explanation)
+        group = Adw.PreferencesGroup(title=view.title, description=brand_markup(view.explanation))
         group.set_header_suffix(_icon(view.icon, view.style))
         expander = _details(view, title=_("Technical Details"))
         save = Gtk.Button(

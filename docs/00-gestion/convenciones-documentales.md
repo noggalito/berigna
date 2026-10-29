@@ -35,6 +35,7 @@ Códigos de documento: `BRG-<ÁREA>-<NNN>`.
 | Calidad | CAL |
 | Desarrollo | DES |
 | Despliegue | DSP |
+| Mantenimiento | MAN |
 | Investigación | INV |
 | Riesgos | RSG |
 

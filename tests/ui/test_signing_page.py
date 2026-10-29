@@ -5,7 +5,8 @@
 from collections.abc import Generator
 from pathlib import Path
 
-from gi.repository import Adw, Gtk
+from gi.repository import Adw, Gio, Gtk
+from pyhanko.pdf_utils.reader import PdfFileReader
 from pyhanko.sign.fields import MDPPerm
 
 from berigna.core.documents import inspect_document
@@ -70,8 +71,9 @@ def test_sign_a_pdf(app: BerignaApplication, tmp_path: Path) -> None:
         assert sensitive == {SignatureLevel.B_B}
         assert page.level_buttons[SignatureLevel.B_B].get_active()
         assert page.preview.page_count == 1
-        page.reason.set_text("Conformidad")
-        page.location.set_text("Cusco")
+        page.reason.select(2)  # "En señal de conformidad"
+        page.location.select(len(page.location.labels) - 1, "Cusco")  # "Otra ubicación…"
+        assert page.location.entry.get_visible()
         page._sign.emit("clicked")
         yield from _enter_pin(page, "123456")
         yield from wait_until(lambda: _shown(page) == "done", 10)
@@ -80,6 +82,8 @@ def test_sign_a_pdf(app: BerignaApplication, tmp_path: Path) -> None:
         assert not page._sign.get_visible()
         assert app.settings is not None
         assert app.settings.get_string("signature-location") == "Cusco"
+        assert app.settings.get_string("signature-reason-kind") == "agreement"
+        assert app.settings.get_strv("recent-locations")[0] == "Cusco"
         page._verify_result()  # the signed copy opens in the verification page
         yield from wait_until(
             lambda: app.main_window is not None and app.main_window.verification is not None
@@ -88,6 +92,12 @@ def test_sign_a_pdf(app: BerignaApplication, tmp_path: Path) -> None:
     drive(app, script, args=[str(path)])
     info = inspect_document(tmp_path / "contrato-firmado.pdf")
     assert info.signatures == 1
+    with (tmp_path / "contrato-firmado.pdf").open("rb") as signed:
+        signature = PdfFileReader(signed).embedded_signatures[0].sig_object
+        assert (signature["/Reason"], signature["/Location"]) == (
+            "En señal de conformidad",
+            "Cusco",
+        )
     assert path.read_bytes() == minimal_pdf()  # the original is untouched
 
 
@@ -306,3 +316,36 @@ def test_unexpected_errors_do_not_leave_the_page_waiting(
         assert page._stack.get_child_by_name("error").get_description() == "Error inesperado."
 
     drive(app, script, args=[str(path)])
+
+
+def test_reason_and_location_lists(app: BerignaApplication, tmp_path: Path) -> None:
+    """The last reason and location come back; recent locations are offered (2026-10-28)."""
+    path = _pdf(tmp_path)
+    settings = Gio.Settings.new("pe.berigna.Berigna")
+    keys = ("recent-locations", "signature-location", "signature-reason-kind", "signature-reason")
+    settings.set_strv("recent-locations", ["Sullana", "Cusco"])
+    settings.set_string("signature-location", "Cusco")
+    settings.set_string("signature-reason-kind", "other")
+    settings.set_string("signature-reason", "Por encargo")
+
+    def script(app: BerignaApplication) -> Generator[None, None, None]:
+        yield from wait_until(lambda: _signing(app))
+        page = _page(app)
+        assert page.location.labels == ["Sin ubicación", "Sullana", "Cusco", "Otra ubicación…"]
+        assert page.location_value() == "Cusco"
+        assert not page.location.entry.get_visible()
+        assert page.reason.other
+        assert page.reason.entry.get_visible()
+        assert page.reason_value() == "Por encargo"
+        page.reason.select(1)
+        assert page.reason_value() == "Autoría del documento"
+        assert not page.reason.entry.get_visible()
+        page.reason.select(0)
+        page.location.select(0)
+        assert (page.reason_value(), page.location_value()) == (None, None)
+
+    try:
+        drive(app, script, args=[str(path)])
+    finally:
+        for key in keys:
+            settings.reset(key)

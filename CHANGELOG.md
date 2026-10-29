@@ -53,10 +53,14 @@ Interfaz (Fase 3):
 - Firma de PDF (CU-01, CU-03): vista previa con Poppler (ADR-0016), nivel (los que necesitan una TSA, desactivados mientras no haya una), motivo y ubicación; diálogo del PIN con el resumen, el DNI enmascarado y los intentos restantes; resultado con "Abrir", "Mostrar en la carpeta" y "Verificar"; ofrece firmar en B-B si la revocación no se pudo comprobar. Firmar encima de un PDF ya firmado avisa si alguna firma existente no es válida.
 - `core.signing.output_path`: el nombre del archivo firmado se numera si ya existe, sin sobrescribir nunca (RF-045).
 - ERR-307: un documento certificado por su autor sin cambios permitidos (DocMDP) se rechaza antes del PIN; `inspect_document` lo indica (`locked`).
+- Plan de mantenimiento (`docs/11-mantenimiento/plan-de-mantenimiento.md`, BRG-MAN-001): versiones y ramas, hechos externos que obligan a publicar, vigilancia automática, proceso de cada versión, seguridad, incidencias y continuidad.
 - Entrada de escritorio `pe.berigna.Berigna.desktop` (nombre, descripción y palabras clave traducidas; abre PDF), validada con `desktop-file-validate` en `meson test`. `scripts/escritorio.sh` la instala con los iconos en `~/.local/share` para el árbol de desarrollo, de modo que GNOME muestra el icono de berigna en el Dock.
 
 ### Cambiado
 
+- El motivo se elige de una lista (autoría, conformidad, visto bueno, aprobación) con "Otro motivo…", y se escribe en el idioma de la firma (`core.reasons`); la ubicación, de las cinco últimas usadas o "Otra ubicación…". Claves nuevas: `signature-reason-kind` y `recent-locations`.
+- Preferencias → Firma visible → "DNI en la firma": últimos cuatro dígitos (por defecto), completo o no mostrar, para el sello y su QR (clave `appearance-dni`).
+- "berigna" va en negrita en todos los mensajes de la interfaz y en el pie del informe PDF. Los mensajes con formato se escapan, así que un nombre de archivo o de firmante con `&` o `<` ya no rompe el texto.
 - Fechas y horas con la fecha ISO 8601, la hora con el símbolo h del SI y el desfase respecto de UTC, en la hora local: "2026-10-28 a las 18h47 UTC-5". Se aplica al sello visible, al QR, a la verificación y al informe PDF; el informe JSON sigue en ISO 8601 y UTC.
 - "Versión firmada" empieza con mayúscula ("Primeros … bytes del archivo"); en Preferencias → Firma visible, "berigna" va en negrita.
 

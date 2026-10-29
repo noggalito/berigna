@@ -47,7 +47,9 @@ docs/
 │   └── entorno-y-convenciones.md
 ├── 09-despliegue/
 │   └── empaquetado-debian.md
-└── 10-investigacion/                  ← spikes SPK-01, SPK-03, SPK-05 y SPK-06
+├── 10-investigacion/                  ← spikes SPK-01, SPK-03, SPK-05 y SPK-06
+└── 11-mantenimiento/
+    └── plan-de-mantenimiento.md       ← versiones, vigilancia, seguridad y continuidad tras la v1.0
 ```
 
 Los prototipos de investigación están en [`../spikes/`](../spikes/README.md).
@@ -79,6 +81,7 @@ Algunos documentos públicos citan identificadores cuyo detalle está en la docu
 | 08-desarrollo | Borrador | — |
 | 09-despliegue | Borrador | — |
 | 10-investigacion | En curso | SPK-01, SPK-03 y SPK-05 cerrados; SPK-06 (DNIe 1.0 y 3.0) pendiente |
+| 11-mantenimiento | Borrador | Se aplica desde la v1.0 |
 
 ## 6. Decisiones técnicas principales
 

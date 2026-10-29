@@ -17,9 +17,13 @@ explanations detect and leave empty, so no language is mixed.
 import enum
 import gettext
 import os
+import re
 from collections.abc import Mapping, Sequence
 
 DOMAIN = "berigna"
+# The program's name as a word of a sentence, which the interface and the reports set in bold
+# (decision of 2026-10-28); not inside a file name such as "berigna-prueba.pdf".
+NAME = re.compile(r"(?<![\w./-])berigna(?![\w/-]|\.\w)")
 
 
 class Language(enum.Enum):
