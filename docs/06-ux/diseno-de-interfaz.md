@@ -194,6 +194,10 @@ Implementado en la Fase 3, incremento 4 (CU-08), como `AdwPreferencesDialog` con
 
 Cambiar el idioma reconstruye la ventana y vuelve a abrir las Preferencias en el nuevo idioma. En las listas desplegables el valor elegido va como subtítulo, completo, y las opciones de la lista se ajustan en varias líneas en vez de cortarse. Las opciones técnicas tienen un botón "Más información" que abre la ayuda en línea de esa versión (ADR-0017). Pendiente: ver el contenido del almacén de confianza (RF-060) y la autenticación con la TSA (RF-062).
 
+## 4.4 Diagnóstico
+
+Implementado en la Fase 3, incremento 6 (CU-07, RF-007). Se abre desde el menú principal ("Diagnóstico") y desde el botón "Diagnóstico" de los errores de lector, tarjeta o certificado; se apila sobre la página actual, de modo que "volver" regresa a ella. Comprueba en orden: servicio `pcscd`, lector, tarjeta, certificado de firma (sin PIN, con aviso si vence en menos de un mes), confianza y revocación en línea, y autoridad de sellado de tiempo. Cada paso muestra ✓, ⚠, ✗ u omitido, con una acción sugerida; los pasos que dependen de uno que falló se omiten. "Copiar el informe" copia el resultado con la versión de berigna y del sistema, sin PIN y con el DNI enmascarado; "Abrir la carpeta del registro" abre `~/.local/state/berigna/logs/` (RF-083).
+
 ## 5. Pendientes
 
 - [ ] Prototipo de alta fidelidad (Figma o Penpot) de las cinco vistas.

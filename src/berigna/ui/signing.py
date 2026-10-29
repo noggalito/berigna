@@ -40,7 +40,9 @@ from berigna.core.errors import (  # noqa: E402
     LevelNotAvailableError,
     PinBlockedError,
     PinIncorrectError,
+    SignerCertificateError,
     SigningCancelledError,
+    TokenError,
 )
 from berigna.core.formats.pades import PadesOptions, SignatureLevel  # noqa: E402
 from berigna.core.i18n import Language, translations  # noqa: E402
@@ -311,6 +313,11 @@ def failure_page(
     back_button.add_css_class("pill")
     back_button.connect("clicked", lambda _b: back())
     buttons.append(back_button)
+    if isinstance(error, (TokenError, SignerCertificateError)):
+        diagnosis = Gtk.Button(label=_("_Diagnosis"), use_underline=True)
+        diagnosis.add_css_class("pill")
+        diagnosis.connect("clicked", lambda _b: window.show_diagnostics())
+        buttons.append(diagnosis)
     if isinstance(error, LevelNotAvailableError) and level is not SignatureLevel.B_B:
         basic = Gtk.Button(label=_("Sign Without _Timestamp (B-B)"), use_underline=True)
         basic.add_css_class("pill")

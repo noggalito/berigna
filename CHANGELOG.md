@@ -54,6 +54,8 @@ Interfaz (Fase 3):
 - `core.signing.output_path`: el nombre del archivo firmado se numera si ya existe, sin sobrescribir nunca (RF-045).
 - ERR-307: un documento certificado por su autor sin cambios permitidos (DocMDP) se rechaza antes del PIN; `inspect_document` lo indica (`locked`).
 - Plan de mantenimiento (`docs/11-mantenimiento/plan-de-mantenimiento.md`, BRG-MAN-001): versiones y ramas, hechos externos que obligan a publicar, vigilancia automática, proceso de cada versión, seguridad, incidencias y continuidad.
+- Diagnóstico (CU-07, RF-007; `core.diagnostics`): servicio `pcscd`, lector, tarjeta, certificado de firma (con aviso de vencimiento), confianza y revocación en línea, y TSA, con una acción sugerida por paso e informe copiable sin PIN y con el DNI enmascarado. Desde el menú y desde los errores de lector, tarjeta o certificado.
+- Registro técnico rotativo (RF-083; `core.logs`): `~/.local/state/berigna/logs/berigna.log`, 5 archivos de 1 MB, con los números de cinco o más cifras enmascarados también en las trazas; DEBUG con `BERIGNA_DEBUG=1`.
 - Firma por lotes de PDF (CU-04, RF-040 a RF-043; `core.batch`): un solo PIN para todos los documentos, lista que se confirma antes del PIN, un error en un archivo no detiene los demás, cancelación entre archivos, nombres de salida que no chocan e informe CSV (`core.report.batch_report`). Se abre con "Firmar varios documentos…" o abriendo o arrastrando varios archivos o una carpeta. ERR-309 para los archivos que quedan sin firmar al cancelar.
 - Entrada de escritorio `com.noggalito.Berigna.desktop` (nombre, descripción y palabras clave traducidas; abre PDF), validada con `desktop-file-validate` en `meson test`. `scripts/escritorio.sh` la instala con los iconos en `~/.local/share` para el árbol de desarrollo, de modo que GNOME muestra el icono de berigna en el Dock.
 
@@ -77,6 +79,7 @@ Interfaz (Fase 3):
 
 ### Corregido
 
+- Los archivos firmados, los informes exportados y el CSV del lote se creaban con permisos `rw-------` (los de un archivo temporal); ahora tienen los de cualquier archivo nuevo según la máscara del usuario, y al reemplazar uno existente se conservan los suyos.
 - No se podía firmar un PDF cuyos metadatos había borrado ExifTool: el tráiler seguía apuntando a un `/Info` liberado y pyHanko fallaba al escribir la fecha de modificación, después del PIN, con "Error inesperado". La revisión de la firma lleva ahora un `/Info` nuevo. Los errores internos de pyHanko con PDF malformados se muestran como ERR-304.
 - Mover el sello de la firma visible era lento con el QR: la página y el sello se dibujan ahora una vez por tamaño y se guardan como imagen.
 - El QR de la firma visible no declaraba su codificación y algunos lectores de teléfono mostraban "Cómo" como "C髇o". Ahora lleva el indicador ECI de UTF-8 antes de los datos.
