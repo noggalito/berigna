@@ -22,8 +22,9 @@ from collections.abc import Mapping, Sequence
 
 DOMAIN = "berigna"
 # The program's name as a word of a sentence, which the interface and the reports set in bold
-# (decision of 2026-10-28); not inside a file name such as "berigna-prueba.pdf".
-NAME = re.compile(r"(?<![\w./-])berigna(?![\w/-]|\.\w)")
+# (decision of 2026-10-28); not inside a file name such as "berigna-prueba.pdf". Quechua adds
+# its suffixes to the name ("berignaqa", "berignawan"): only "berigna" is matched.
+NAME = re.compile(r"(?<![\w./-])berigna(?=[a-zñ']*(?![\w/-]|\.\w))")
 
 
 class Language(enum.Enum):

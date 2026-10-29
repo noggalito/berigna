@@ -126,13 +126,22 @@ def test_errors() -> None:
     assert explain_error("ERR-999", SPANISH) == "Error inesperado."
 
 
-def test_pending_quechua_gives_no_explanation_rather_than_a_mixed_one(pki: Pki) -> None:
-    assert explain_signature(_report(pki.leaf("FIRMANTE")), STRICT_QUECHUA) is None
+def test_quechua_explanations(pki: Pki) -> None:
+    text = explain_signature(_report(pki.leaf("FIRMANTE")), STRICT_QUECHUA)
+    assert text is not None
+    assert text.startswith("Firmaqa chiqaqmi. FIRMANTE firmarqan.")
+    assert explain_error("ERR-101", STRICT_QUECHUA) == "DNIeykita lectorman satiy."
+
+
+def test_pending_quechua_gives_no_explanation_rather_than_a_mixed_one(
+    pki: Pki, pending_quechua: None
+) -> None:
+    strict = translations(Language.QUZ_PE, strict=True)
+    assert explain_signature(_report(pki.leaf("FIRMANTE")), strict) is None
     assert (
-        explain_timestamp(TimestampReport(Indication.TOTAL_PASSED, None, NOW, None), STRICT_QUECHUA)
-        is None
+        explain_timestamp(TimestampReport(Indication.TOTAL_PASSED, None, NOW, None), strict) is None
     )
-    assert explain_error("ERR-101", STRICT_QUECHUA) is None
+    assert explain_error("ERR-101", strict) is None
 
 
 def test_identity_numbers_are_masked(pki: Pki) -> None:

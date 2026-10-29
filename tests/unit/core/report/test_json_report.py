@@ -82,7 +82,7 @@ def test_report_structure() -> None:
     assert signature["signed_revision_length"] == 1234
     assert signature["signing_time"]["timestamp"]["tsa"] == "PEREZ QUISPE JUAN"
     assert signature["explanation"]["es_PE"].startswith("La firma es válida.")
-    assert signature["explanation"]["quz_PE"] is None  # pending translators, never Spanish
+    assert signature["explanation"]["quz_PE"].startswith("Firmaqa chiqaqmi.")
     [stamp] = report["document_timestamps"]
     assert stamp["id"] == "SelloBerigna1"
     assert stamp["tsa"] is None
