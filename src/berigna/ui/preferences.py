@@ -152,6 +152,29 @@ class PreferencesDialog(Adw.PreferencesDialog):
         for row in (self.level, self.digest, self.suffix, self.folder):
             signing.add(row)
         page.add(signing)
+
+        history = Adw.PreferencesGroup(
+            title=_("History"),
+            description=_(
+                "A list of the documents you sign and verify, kept only on this computer "
+                "(Main Menu → History)."
+            ),
+        )
+        self.history_enabled = Adw.SwitchRow(title=_("Keep a History"))
+        self.history_full_path = Adw.SwitchRow(
+            title=_("Keep the Full Path of the Files"),
+            subtitle=_("Otherwise only their names."),
+        )
+        for key, row in (
+            ("history-enabled", self.history_enabled),
+            ("history-full-path", self.history_full_path),
+        ):
+            self._settings.bind(key, row, "active", Gio.SettingsBindFlags.DEFAULT)
+            history.add(row)
+        self._settings.bind(
+            "history-enabled", self.history_full_path, "sensitive", Gio.SettingsBindFlags.GET
+        )
+        page.add(history)
         return page
 
     def _on_suffix(self, row: Adw.EntryRow) -> None:
@@ -413,7 +436,34 @@ class PreferencesDialog(Adw.PreferencesDialog):
         tsl.add(self.tsl_row)
         self.show_tsl(self._app.tsl)
         page.add(tsl)
+
+        self.store_group = Adw.PreferencesGroup(
+            title=_("Trusted Certificates"),
+            description=_(
+                "The root and intermediate certificates against which signatures are checked. "
+                "Compare the SHA-256 with the official source if in doubt."
+            ),
+        )
+        self._store_rows: list[Adw.ExpanderRow] = []
+        self.show_store()
+        page.add(self.store_group)
         return page
+
+    def show_store(self) -> None:
+        """One expandable row per origin, with every certificate in it (RF-060)."""
+        for row in self._store_rows:
+            self.store_group.remove(row)
+        self._store_rows = []
+        for title, certificates in presentation.trust_store_view(self._app.trust_store()):
+            expander = Adw.ExpanderRow(title=brand_markup(title), subtitle=str(len(certificates)))
+            for name, details in certificates:
+                row = Adw.ActionRow(
+                    title=name, subtitle=details, subtitle_lines=0, use_markup=False
+                )
+                row.set_subtitle_selectable(True)
+                expander.add_row(row)
+            self.store_group.add(expander)
+            self._store_rows.append(expander)
 
     def show_tsl(self, result: TslRefresh | None) -> None:
         title, subtitle = presentation.tsl_status(result)
@@ -427,6 +477,7 @@ class PreferencesDialog(Adw.PreferencesDialog):
         def done(result: TslRefresh) -> None:
             self.tsl_update.set_sensitive(True)
             self.show_tsl(result)
+            self.show_store()
             if result.error is not None:
                 self.toast(_("The trusted list could not be updated."))
             elif result.downloaded:
