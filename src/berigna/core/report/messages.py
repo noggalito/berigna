@@ -174,7 +174,11 @@ ERRORS: dict[str, str] = {
         "The PIN is incorrect. Check it carefully before trying again: after several failed "
         "attempts the DNIe is blocked."
     ),
-    "ERR-111": N_("The PIN is blocked. Go to RENIEC to unblock it."),
+    # Channels confirmed by RENIEC on 2026-10-28 (CE-07).
+    "ERR-111": N_(
+        "The PIN is blocked. Unblock it on RENIEC's Ciudadano Digital platform or at a RENIEC "
+        "office."
+    ),
     "ERR-112": N_("The DNIe did not accept the operation because the PIN was not verified."),
     "ERR-120": N_("berigna refused to send a command that is not allowed to the card."),
     "ERR-200": N_("Problem with the trusted root certificates."),
@@ -191,7 +195,10 @@ ERRORS: dict[str, str] = {
         "with berigna are still used."
     ),
     "ERR-210": N_("Your certificate cannot be used to sign."),
-    "ERR-211": N_("Your certificate has expired or is not yet valid."),
+    "ERR-211": N_(
+        "Your certificate has expired or is not yet valid. DNIe certificates last four years, "
+        "even if the DNI is still valid; renew them on RENIEC's Ciudadano Digital platform."
+    ),
     "ERR-212": N_("Your certificate has been revoked. Go to RENIEC."),
     "ERR-213": N_("Your certificate does not lead to a trusted root certificate."),
     "ERR-214": N_("Your certificate could not be validated."),
