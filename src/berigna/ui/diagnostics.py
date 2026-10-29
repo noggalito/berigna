@@ -27,7 +27,7 @@ from berigna.core.token.monitor import DeviceStatus  # noqa: E402
 from berigna.ui import presentation  # noqa: E402
 from berigna.ui.i18n import _  # noqa: E402
 from berigna.ui.signing import SigningServices  # noqa: E402
-from berigna.ui.widgets import brand_markup  # noqa: E402
+from berigna.ui.widgets import brand_markup, named  # noqa: E402
 
 if TYPE_CHECKING:
     from berigna.ui.window import MainWindow
@@ -57,8 +57,10 @@ class DiagnosticsPage:
         self._device_status = device_status
         self.results: list[Result] | None = None
 
-        self._again = Gtk.Button(
-            icon_name="view-refresh-symbolic", tooltip_text=_("Check Again"), sensitive=False
+        self._again = named(
+            Gtk.Button(
+                icon_name="view-refresh-symbolic", tooltip_text=_("Check Again"), sensitive=False
+            )
         )
         self._again.connect("clicked", lambda _b: self.run())
 

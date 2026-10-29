@@ -323,9 +323,10 @@ def store_image(directory: Path, kind: AppearanceKind, source: Path) -> Path:
     picture.thumbnail((MAX_IMAGE_SIDE, MAX_IMAGE_SIDE))
     out = io.BytesIO()
     picture.save(out, format="PNG")
-    directory.mkdir(parents=True, exist_ok=True)
+    directory.mkdir(parents=True, exist_ok=True, mode=0o700)
     target = directory / name
-    write_atomically(target, out.getvalue(), replace=True)
+    # A handwritten signature is personal: only its owner may read it (2026-10-29 review).
+    write_atomically(target, out.getvalue(), replace=True, private=True)
     return target
 
 

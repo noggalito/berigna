@@ -248,6 +248,9 @@ def test_preloaded_images_are_normalised(tmp_path: Path) -> None:
         assert image.format == "PNG"
         assert max(image.size) == 1200
         assert not image.getexif()
+    # A handwritten signature is personal: only its owner may read it, also its folder.
+    assert kept.stat().st_mode & 0o777 == 0o600
+    assert folder.stat().st_mode & 0o777 == 0o700
     remove_image(folder, AppearanceKind.RUBRIC)
     remove_image(folder, AppearanceKind.RUBRIC)  # nothing left: no error
     assert stored_image(folder, AppearanceKind.RUBRIC) is None

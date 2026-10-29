@@ -225,3 +225,12 @@ def test_the_name_goes_in_bold() -> None:
     assert brand_markup("kept by berigna & co.") == "kept by <b>berigna</b> &amp; co."
     # Not inside file names.
     assert brand_markup("berigna-prueba.pdf: berigna.") == "berigna-prueba.pdf: <b>berigna</b>."
+
+
+def test_icon_buttons_are_named() -> None:
+    """RNF-USA-03: an icon-only button gets its tooltip as accessible name."""
+    from berigna.ui.widgets import named
+
+    button = Gtk.Button(icon_name="zoom-in-symbolic", tooltip_text="Acercar")
+    assert named(button) is button
+    assert button.get_tooltip_text() == "Acercar"

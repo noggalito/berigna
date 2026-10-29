@@ -35,7 +35,7 @@ stateDiagram-v2
 | P-08 | Si el lector tiene PIN pad, no se muestra el campo; se indica "Introduce tu PIN en el lector". Con PKCS#11: `CKF_PROTECTED_AUTHENTICATION_PATH` y `C_Login` con PIN nulo. Con el DNIe v2: `FEATURE_VERIFY_PIN_DIRECT` (PC/SC parte 10, `SCardControl`), y la tarjeta recibe el VERIFY desde el lector |
 | P-09 | La sesión autenticada se cierra al terminar la operación o el lote, al cancelar, al retirar la tarjeta o al cerrar la aplicación. Con PKCS#11: `C_Logout` y `C_CloseSession`. Con el DNIe v2: `SCardDisconnect(SCARD_UNPOWER_CARD)`, porque volver a seleccionar el *applet* no anula el VERIFY (SPK-01 §8.6). Durante la sesión, la conexión PC/SC es exclusiva |
 | P-10 | Se mitigan los volcados de memoria: `prctl(PR_SET_DUMPABLE, 0)` mientras dura la sesión de firma, y se valora `mlock` en el búfer del PIN. Su viabilidad desde Python se comprueba al implementar el driver en la Fase 1 (tarea de la hoja de ruta), no en SPK-01 |
-| P-11 | El cambio y el desbloqueo del PIN no forman parte de la v1: se remite a los canales de RENIEC. `[VERIFICAR]` si RENIEC permite cambiar el PIN con software de terceros (consulta CE-08) |
+| P-11 | El cambio y el desbloqueo del PIN no forman parte de la v1: se remite a los canales de RENIEC, que según su respuesta del 2026-10-28 son la plataforma Ciudadano Digital y sus agencias (ERR-111). RENIEC no dijo si un software de terceros puede cambiarlo; berigna no lo hace |
 
 ## 3. Otras credenciales
 

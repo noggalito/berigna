@@ -295,6 +295,9 @@ class SignatureData:
         )
 
 
+REVOCATION_UNCHECKED = "revocation-unchecked"  # history detail of RF-006
+
+
 def signature_entry(
     kind: Kind,
     name: str,
@@ -317,7 +320,8 @@ def signature_entry(
         level=(result.level if result else level).value,
         signer=common_name(certificate),
         signer_serial=format(certificate.serial_number, "x"),
-        detail=code,
+        # RF-006: a signature made without checking revocation is recorded as such.
+        detail=code or (REVOCATION_UNCHECKED if result and not result.revocation_checked else None),
     )
 
 
