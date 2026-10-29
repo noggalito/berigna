@@ -2,6 +2,7 @@
 # SPDX-FileCopyrightText: 2026 noggalito
 """Writing files safely (RNF-FIA-01, RF-045)."""
 
+import datetime as dt
 import os
 import stat
 from pathlib import Path
@@ -9,7 +10,7 @@ from pathlib import Path
 import pytest
 
 from berigna.core.errors import OutputExistsError
-from berigna.core.files import _umask, write_atomically
+from berigna.core.files import _umask, data_directory, dated_name, write_atomically
 
 
 def _mode(path: Path) -> int:
@@ -49,3 +50,19 @@ def test_umask(tmp_path: Path) -> None:
     assert _umask(tmp_path / "no-existe") == 0o022
     status.write_text("Name:\tberigna\n")
     assert _umask(status) == 0o022
+
+
+def test_data_directory_follows_xdg(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    monkeypatch.setenv("XDG_DATA_HOME", str(tmp_path))
+    assert data_directory() == tmp_path / "berigna"
+    monkeypatch.delenv("XDG_DATA_HOME")
+    assert data_directory() == Path.home() / ".local" / "share" / "berigna"
+
+
+def test_dated_name() -> None:
+    lima = dt.timezone(dt.timedelta(hours=-5))
+    moment = dt.datetime(2026, 10, 29, 5, 55, tzinfo=dt.UTC)
+    name = dated_name("historial-berigna.csv", moment)
+    assert name == f"{moment.astimezone():%Y-%m-%d_%Hh%M}_historial-berigna.csv"
+    assert dated_name("x.csv", dt.datetime(2026, 10, 29, 0, 55, tzinfo=lima)).endswith("_x.csv")
+    assert dated_name("x.csv")[:4].isdigit()

@@ -23,7 +23,7 @@ from gi.repository import Adw, Gio, GLib, Gtk  # noqa: E402
 
 from berigna.core.batch import BatchItem, Outcome, batch_outputs, sign_pdf_batch  # noqa: E402
 from berigna.core.errors import BerignaError, PinIncorrectError  # noqa: E402
-from berigna.core.files import write_atomically  # noqa: E402
+from berigna.core.files import dated_name, write_atomically  # noqa: E402
 from berigna.core.formats.pades import SignatureLevel  # noqa: E402
 from berigna.core.history import Kind  # noqa: E402
 from berigna.core.report.batch_report import batch_csv  # noqa: E402
@@ -411,7 +411,9 @@ class BatchPage:
         return batch_csv(self.items or [], current_language())
 
     def _export(self) -> None:
-        dialog = Gtk.FileDialog(title=_("Export Report"), initial_name=_("batch-report.csv"))
+        dialog = Gtk.FileDialog(
+            title=_("Export Report"), initial_name=dated_name(_("batch-report.csv"))
+        )
 
         def chosen(dialog: Gtk.FileDialog, result: Gio.AsyncResult) -> None:
             try:
