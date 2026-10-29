@@ -1,6 +1,6 @@
 {
   "format": 1,
-  "retrieved": "2026-10-27",
+  "retrieved": "2026-10-28",
   "note": "Anclas base de la IOFE incluidas en el paquete. En tiempo de ejecución las amplía la TSL de INDECOPI verificada (ADR-0014).",
   "certificates": [
     {
@@ -13,7 +13,7 @@
       "sources": [
         "http://crl.reniec.gob.pe/crt/sha2/ecernep.crt"
       ],
-      "verification": "HTTP; huella contrastada indirectamente: el validador oficial Firma Perú (PCM) reconoce esta raíz en la TSL (SPK-03 §7)"
+      "verification": "HTTP; huella contrastada indirectamente: el validador oficial Firma Perú (PCM) reconoce esta raíz en la TSL (SPK-03 §7); contrastada el 2026-10-28 con el repositorio oficial de RENIEC (https://pki.reniec.gob.pe/repositorio/, respuesta de RENIEC a CE-07)"
     },
     {
       "file": "ecep-reniec.pem",
@@ -25,7 +25,7 @@
       "sources": [
         "http://www.reniec.gob.pe/crt/sha2/ecep.crt"
       ],
-      "verification": "HTTP; firma verificada contra ECERNEP PERU CA ROOT 3"
+      "verification": "HTTP; firma verificada contra ECERNEP PERU CA ROOT 3; contrastada el 2026-10-28 con el repositorio oficial de RENIEC (https://pki.reniec.gob.pe/repositorio/, respuesta de RENIEC a CE-07)"
     },
     {
       "file": "ecep-reniec-ca-class-2-ii.pem",
@@ -38,7 +38,7 @@
         "http://crl.reniec.gob.pe/crt/sha2/caclass2ii.crt",
         "http://crl2.reniec.gob.pe/crt/sha2/caclass2ii.crt"
       ],
-      "verification": "HTTP; firma verificada contra ECEP-RENIEC; emisora de los certificados del DNIe v2"
+      "verification": "HTTP; firma verificada contra ECEP-RENIEC; emisora de los certificados del DNIe v2; contrastada el 2026-10-28 con el repositorio oficial de RENIEC (https://pki.reniec.gob.pe/repositorio/, respuesta de RENIEC a CE-07)"
     },
     {
       "file": "ecernep-peru-ca-root-5.pem",
@@ -50,7 +50,7 @@
       "sources": [
         "https://cdn.www.gob.pe/ecernep/root5/crt/ecernep5.crt"
       ],
-      "verification": "HTTPS (cdn.www.gob.pe)"
+      "verification": "HTTPS (cdn.www.gob.pe); contrastada el 2026-10-28 con el repositorio oficial de RENIEC (https://pki.reniec.gob.pe/repositorio/, respuesta de RENIEC a CE-07)"
     },
     {
       "file": "ecep-reniec-ca-root-5.pem",
@@ -63,7 +63,7 @@
         "http://crt.reniec.gob.pe/crt/root5/ecep.crt",
         "http://crt2.reniec.gob.pe/crt/root5/ecep.crt"
       ],
-      "verification": "HTTP; espejos idénticos; firma verificada contra ECERNEP PERU CA ROOT 5"
+      "verification": "HTTP; espejos idénticos; firma verificada contra ECERNEP PERU CA ROOT 5; contrastada el 2026-10-28 con el repositorio oficial de RENIEC (https://pki.reniec.gob.pe/repositorio/, respuesta de RENIEC a CE-07)"
     },
     {
       "file": "ecep-reniec-ca-class-3.pem",
@@ -76,7 +76,19 @@
         "http://crt.reniec.gob.pe/crt/root5/caclass3.crt",
         "http://crt2.reniec.gob.pe/crt/root5/caclass3.crt"
       ],
-      "verification": "HTTP; espejos idénticos; firma verificada contra ECEP-RENIEC CA ROOT 5; emisora de certificados de personas jurídicas"
+      "verification": "HTTP; espejos idénticos; firma verificada contra ECEP-RENIEC CA ROOT 5; emisora de certificados de personas jurídicas; contrastada el 2026-10-28 con el repositorio oficial de RENIEC (https://pki.reniec.gob.pe/repositorio/, respuesta de RENIEC a CE-07)"
+    },
+    {
+      "file": "ecep-reniec-ca-class-3-root-3.pem",
+      "role": "intermediate",
+      "hierarchy": "ROOT 3",
+      "subject": "CN=ECEP-RENIEC CA Class 3,O=Registro Nacional de Identificaci\\C3\\B3n y Estado Civil,C=PE",
+      "sha256": "19015493a1cc00411643fce4f48d8d17cba8d50f685e91749103e601fa61a9ec",
+      "not_after": "Aug 05 22:01:21 2032 GMT",
+      "sources": [
+        "http://crl.reniec.gob.pe/crt/sha2/caclass3.crt"
+      ],
+      "verification": "HTTP, enlazada desde el repositorio oficial de RENIEC (HTTPS); firma verificada contra ECEP-RENIEC. Es otra CA que la ECEP-RENIEC CA Class 3 de ROOT 5 (clave y emisor distintos); la TSL de INDECOPI del 2026-08-10 no la incluye"
     }
   ]
 }
