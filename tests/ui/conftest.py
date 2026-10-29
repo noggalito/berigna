@@ -129,5 +129,6 @@ def app(
         online=False,
         unique=False,
         appearance_dir=tmp_path_factory.mktemp("apariencia"),
+        history_path=tmp_path_factory.mktemp("historial") / "history.sqlite3",
     )
     i18n.set_language(Language.ES_PE)

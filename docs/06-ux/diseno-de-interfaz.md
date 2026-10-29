@@ -198,6 +198,10 @@ Cambiar el idioma reconstruye la ventana y vuelve a abrir las Preferencias en el
 
 Implementado en la Fase 3, incremento 6 (CU-07, RF-007). Se abre desde el menú principal ("Diagnóstico") y desde el botón "Diagnóstico" de los errores de lector, tarjeta o certificado; se apila sobre la página actual, de modo que "volver" regresa a ella. Comprueba en orden: servicio `pcscd`, lector, tarjeta, certificado de firma (sin PIN, con aviso si vence en menos de un mes), confianza y revocación en línea, y autoridad de sellado de tiempo. Cada paso muestra ✓, ⚠, ✗ u omitido, con una acción sugerida; los pasos que dependen de uno que falló se omiten. "Copiar el informe" copia el resultado con la versión de berigna y del sistema, sin PIN y con el DNI enmascarado; "Abrir la carpeta del registro" abre `~/.local/state/berigna/logs/` (RF-083).
 
+## 4.5 Historial y certificados de confianza
+
+Implementados en la Fase 3, incremento 6. Historial (RF-082; menú principal → Historial, Ctrl+H): las firmas, las firmas de lote y las verificaciones, la más reciente primero, con búsqueda por nombre, firmante o SHA-256, "Exportar a CSV" y "Borrar el historial" (con confirmación). Se activa o desactiva, y se elige guardar la ruta completa, en Preferencias → General → Historial. Certificados de confianza (RF-060): Preferencias → Confianza, agrupados por origen (incluidos en berigna, de la lista de INDECOPI, añadidos por el usuario), con el papel, la vigencia, la jerarquía y el SHA-256 seleccionable.
+
 ## 5. Pendientes
 
 - [ ] Prototipo de alta fidelidad (Figma o Penpot) de las cinco vistas.

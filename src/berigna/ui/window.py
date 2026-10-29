@@ -21,6 +21,7 @@ from berigna.core.token.monitor import DeviceStatus  # noqa: E402
 from berigna.ui import presentation  # noqa: E402
 from berigna.ui.batch import BatchPage, is_pdf  # noqa: E402
 from berigna.ui.diagnostics import DiagnosticsPage  # noqa: E402
+from berigna.ui.history import HistoryPage  # noqa: E402
 from berigna.ui.i18n import _, catalogue, current_language, translate_view  # noqa: E402
 from berigna.ui.signing import SigningPage, SigningServices  # noqa: E402
 from berigna.ui.verification import VerificationPage, Verify  # noqa: E402
@@ -42,6 +43,7 @@ class MainWindow:
         self.window.set_application(application)
         self._verify = verify
         self._signing = signing
+        self.services = signing
         self._toasts: Adw.ToastOverlay = builder.get_object("toasts")
         self._navigation: Adw.NavigationView = builder.get_object("navigation")
         self._status_icon: Gtk.Image = builder.get_object("status_icon")
@@ -53,6 +55,7 @@ class MainWindow:
         self.signing: SigningPage | None = None
         self.batch: BatchPage | None = None
         self.diagnostics: DiagnosticsPage | None = None
+        self.history: HistoryPage | None = None
         self.device_status: DeviceStatus | None = None
 
         open_action = Gio.SimpleAction.new("open", None)
@@ -118,6 +121,11 @@ class MainWindow:
         self.verification = self.signing = None
         self.batch = BatchPage(self, self._signing, paths)
         self.show_page(self.batch.page)
+
+    def show_history(self) -> None:
+        """The history page (RF-082), over the current page."""
+        self.history = HistoryPage(self, self._signing)
+        self._navigation.push(self.history.page)
 
     def show_diagnostics(self) -> None:
         """The diagnosis page (CU-07), over the current page so that "back" returns to it."""
