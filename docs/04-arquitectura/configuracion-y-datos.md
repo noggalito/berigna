@@ -100,7 +100,9 @@ CREATE TABLE operation (
   ts_utc        TEXT    NOT NULL,           -- ISO 8601
   kind          TEXT    NOT NULL,           -- sign | verify | batch
   file_name     TEXT    NOT NULL,           -- nombre del archivo; la ruta completa solo si history-full-path = true
-  file_sha256   TEXT    NOT NULL,
+  file_sha256   TEXT    NOT NULL,           -- del archivo original (o del verificado)
+  signed_name   TEXT,                       -- nombre del archivo firmado
+  signed_sha256 TEXT,                       -- su SHA-256, para encontrar la fila de un archivo
   format        TEXT,
   level         TEXT,
   signer_cn     TEXT,                       -- nombre del firmante
@@ -110,7 +112,7 @@ CREATE TABLE operation (
 );
 ```
 
-No se guarda el número de DNI completo ni el contenido de los documentos.
+No se guarda el número de DNI completo ni el contenido de los documentos. Implementado en la Fase 3, incremento 6 (`core.history`): `kind` es `sign`, `batch` (una fila por documento del lote) o `verify`; `result` es `ok` o `error` (con el `ERR-xxx` en `detail`) en las firmas, y la peor indicación ETSI en las verificaciones (con "válidas/total" en `detail`). El archivo se crea con permisos 0600 y su carpeta con 0700 (CS-11); "Borrar el historial" borra las filas y compacta el archivo (`VACUUM`). Se exporta a CSV desde la página Historial.
 
 ## 5. Formato del informe JSON de verificación (borrador)
 
