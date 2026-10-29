@@ -27,6 +27,7 @@ from pyhanko.sign.timestamps import TimeStamper  # noqa: E402
 
 from berigna.core.appearance import (  # noqa: E402
     AppearanceKind,
+    DniDisplay,
     StampData,
     VisibleSignature,
     render_appearance,
@@ -43,6 +44,8 @@ from berigna.core.errors import (  # noqa: E402
 )
 from berigna.core.formats.pades import PadesOptions, SignatureLevel  # noqa: E402
 from berigna.core.i18n import Language, translations  # noqa: E402
+from berigna.core.reasons import TEXTS as REASON_TEXTS  # noqa: E402
+from berigna.core.reasons import Reason, reason_text  # noqa: E402
 from berigna.core.report.explanations import explain_error  # noqa: E402
 from berigna.core.signing import SignResult, output_path, sign_pdf_file  # noqa: E402
 from berigna.core.token.base import HashAlgorithmName, TokenSigner  # noqa: E402
@@ -53,7 +56,7 @@ from berigna.ui import presentation  # noqa: E402
 from berigna.ui.help import HelpTopic, help_button  # noqa: E402
 from berigna.ui.i18n import N_, _, catalogue, current_language  # noqa: E402
 from berigna.ui.preview import PdfPreview  # noqa: E402
-from berigna.ui.widgets import label_factory  # noqa: E402
+from berigna.ui.widgets import brand_markup, label_factory  # noqa: E402
 
 if TYPE_CHECKING:
     from berigna.ui.window import MainWindow
@@ -83,6 +86,60 @@ APPEARANCES = (
     (AppearanceKind.LOGO, N_("Logo")),
     (AppearanceKind.QR, N_("QR code")),
 )
+# How the visible signature shows the DNI (decision of 2026-10-28).
+DNI_OPTIONS = (
+    (DniDisplay.LAST_FOUR, N_("Last four digits (****5678)")),
+    (DniDisplay.FULL, N_("Full (12345678)")),
+    (DniDisplay.HIDDEN, N_("Do not show")),
+)
+DNI_SAMPLES = {
+    DniDisplay.LAST_FOUR: "****0000",
+    DniDisplay.FULL: "00000000",
+    DniDisplay.HIDDEN: None,
+}
+# Reasons in the list, after "No reason" and before "Other…".
+REASONS = (Reason.AUTHORSHIP, Reason.AGREEMENT, Reason.ENDORSEMENT, Reason.APPROVAL)
+RECENT_LOCATIONS = 5
+
+
+class ChoiceWithOther:
+    """A list of choices whose last item, "Other…", shows an entry for free text (decision of
+    2026-10-28). The first item is "none"."""
+
+    def __init__(self, title: str, other: tuple[str, str], labels: list[str]) -> None:
+        other_label, other_title = other  # in the list, and the title of the entry
+        self.labels = [*labels, other_label]
+        self.combo = Adw.ComboRow(
+            title=title,
+            model=Gtk.StringList.new(self.labels),
+            factory=label_factory(visible=False),
+            list_factory=label_factory(visible=True),
+            subtitle_lines=0,
+        )
+        self.entry = Adw.EntryRow(title=other_title, use_markup=False)
+        self.combo.connect("notify::selected", lambda *_a: self._sync())
+        self._sync()
+
+    @property
+    def other(self) -> bool:
+        return self.combo.get_selected() == len(self.labels) - 1
+
+    def select(self, index: int, text: str = "") -> None:
+        self.entry.set_text(text)
+        self.combo.set_selected(index)
+        self._sync()
+
+    def _sync(self) -> None:
+        self.combo.set_subtitle(self.labels[self.combo.get_selected()])
+        self.entry.set_visible(self.other)
+
+    def connect(self, callback: Callable[[], None]) -> None:
+        self.combo.connect("notify::selected", lambda *_a: callback())
+        self.entry.connect("changed", lambda _e: callback())
+
+    def add_to(self, group: Adw.PreferencesGroup) -> None:
+        group.add(self.combo)
+        group.add(self.entry)
 
 
 class PinDialog(Adw.Dialog):
@@ -234,7 +291,7 @@ class SigningPage:
         if notices:
             group = Adw.PreferencesGroup()
             for notice in notices:
-                row = Adw.ActionRow(title=notice, title_lines=0, use_markup=False)
+                row = Adw.ActionRow(title=brand_markup(notice), title_lines=0)
                 row.add_prefix(Gtk.Image(icon_name="dialog-warning-symbolic"))
                 group.add(row)
             panel.add(group)
@@ -267,15 +324,29 @@ class SigningPage:
         self.level_buttons[chosen].set_active(True)
         panel.add(levels)
 
-        data = Adw.PreferencesGroup(title=_("Signature Data"))
+        data = Adw.PreferencesGroup(
+            title=_("Signature Data"),
+            description=_(
+                "Signature validators such as ReFirma show them. The reasons of the list are "
+                "written in the language of the signature."
+            ),
+        )
         settings = self._services.settings
-        self.reason = Adw.EntryRow(title=_("Reason"), use_markup=False)
-        self.location = Adw.EntryRow(title=_("Location"), use_markup=False)
+        self.reason = ChoiceWithOther(
+            _("Reason"),
+            (_("Other reason…"), _("Other Reason")),
+            [_("No reason"), *(_(REASON_TEXTS[reason]) for reason in REASONS)],
+        )
+        self.recent_locations = list(settings.get_strv("recent-locations")) if settings else []
+        self.location = ChoiceWithOther(
+            _("Location"),
+            (_("Other location…"), _("Other Location")),
+            [_("No location"), *self.recent_locations],
+        )
         if settings is not None:
-            self.reason.set_text(settings.get_string("signature-reason"))
-            self.location.set_text(settings.get_string("signature-location"))
-        data.add(self.reason)
-        data.add(self.location)
+            self._restore_data(settings)
+        self.reason.add_to(data)
+        self.location.add_to(data)
 
         self.preview = PdfPreview(self.data)
         self.preview.on_box_changed = lambda _box: self.update_appearance()
@@ -311,13 +382,46 @@ class SigningPage:
         self.appearance.set_selected(kinds.index(kind) if kind in kinds else 0)
         self.appearance.connect("notify::selected", lambda *_a: self.update_appearance())
         self.visible.connect("notify::active", lambda *_a: self._on_visible())
-        self.reason.connect("changed", lambda _e: self.update_appearance())
-        self.location.connect("changed", lambda _e: self.update_appearance())
+        self.reason.connect(self.update_appearance)
+        self.location.connect(self.update_appearance)
         group.add(self.visible)
         group.add(self.appearance)
         self.visible.set_active(settings.get_boolean("visible-signature") if settings else False)
         self._on_visible()
         return group
+
+    def _restore_data(self, settings: Gio.Settings) -> None:
+        """The last reason and location used."""
+        kinds = [Reason.NONE, *REASONS, Reason.OTHER]
+        kind = Reason(settings.get_string("signature-reason-kind"))
+        self.reason.select(kinds.index(kind), settings.get_string("signature-reason"))
+        last = settings.get_string("signature-location")
+        if last in self.recent_locations:
+            self.location.select(self.recent_locations.index(last) + 1)
+        elif last:
+            self.location.select(len(self.location.labels) - 1, last)
+
+    def reason_kind(self) -> Reason:
+        kinds = [Reason.NONE, *REASONS, Reason.OTHER]
+        return kinds[self.reason.combo.get_selected()]
+
+    def reason_value(self) -> str | None:
+        """The reason as written in the signature: in the language of the signature (RF-092)."""
+        return reason_text(self.reason_kind(), self.reason.entry.get_text(), self._language())
+
+    def location_value(self) -> str | None:
+        if self.location.other:
+            return self.location.entry.get_text().strip() or None
+        index = self.location.combo.get_selected()
+        return self.recent_locations[index - 1] if index > 0 else None
+
+    def _language(self) -> Language:
+        settings = self._services.settings
+        return Language(settings.get_string("appearance-language") if settings else "es_PE")
+
+    def _dni(self) -> DniDisplay:
+        settings = self._services.settings
+        return DniDisplay(settings.get_string("appearance-dni") if settings else "last-four")
 
     def appearance_kind(self) -> AppearanceKind:
         return APPEARANCES[self.appearance.get_selected()][0]
@@ -336,15 +440,14 @@ class SigningPage:
         box = self.preview.box
         if box is None or not self.visible.get_active():
             return None
-        settings = self._services.settings
-        language = settings.get_string("appearance-language") if settings else "es_PE"
         kind = self.appearance_kind()
         return VisibleSignature(
             box.page,
             (box.x, box.y, box.width, box.height),
             kind,
             self._image(kind),
-            Language(language),
+            self._language(),
+            self._dni(),
         )
 
     def update_appearance(self) -> None:
@@ -361,15 +464,23 @@ class SigningPage:
             return
         sample = StampData(
             _("NAMES AND SURNAMES"),
-            "****0000",
+            DNI_SAMPLES[visible.dni],
             dt.datetime.now().astimezone(),
-            self.reason.get_text().strip() or None,
-            self.location.get_text().strip() or None,
+            self.reason_value(),
+            self.location_value(),
         )
         try:
             self.preview.set_appearance(render_appearance(visible, sample))
         except AppearanceError:
             self.preview.set_appearance(None)
+
+    def _remember_data(self, settings: Gio.Settings, location: str | None) -> None:
+        settings.set_string("signature-reason-kind", self.reason_kind().value)
+        settings.set_string("signature-reason", self.reason.entry.get_text().strip())
+        settings.set_string("signature-location", location or "")
+        if location:
+            recent = [location, *(old for old in self.recent_locations if old != location)]
+            settings.set_strv("recent-locations", recent[:RECENT_LOCATIONS])
 
     def _preferred_level(self) -> SignatureLevel:
         settings = self._services.settings
@@ -409,16 +520,15 @@ class SigningPage:
         """Sign at ``level`` (the chosen one by default) in a worker thread."""
         level = level or self._level
         settings = self._services.settings
-        reason, location = self.reason.get_text().strip(), self.location.get_text().strip()
+        reason, location = self.reason_value(), self.location_value()
         if settings is not None:
-            settings.set_string("signature-reason", reason)
-            settings.set_string("signature-location", location)
+            self._remember_data(settings, location)
         suffix = settings.get_string("output-suffix") if settings else "-firmado"
         folder = settings.get_string("output-directory") if settings else ""
         digest = settings.get_string("digest-algorithm") if settings else "sha256"
         options = PadesOptions(
-            reason=reason or None,
-            location=location or None,
+            reason=reason,
+            location=location,
             digest=cast(HashAlgorithmName, digest),
         )
         # A folder that no longer exists (removed, unmounted) falls back to the original's.
@@ -482,7 +592,7 @@ class SigningPage:
         page = Adw.StatusPage(
             icon_name="object-select-symbolic",
             title=_("Document signed"),
-            description=presentation.signed_summary(result, requested),
+            description=brand_markup(presentation.signed_summary(result, requested)),
         )
         self._sign.set_visible(False)
         buttons = Gtk.Box(spacing=12, halign=Gtk.Align.CENTER)
@@ -516,7 +626,7 @@ class SigningPage:
         page = Adw.StatusPage(
             icon_name="dialog-error-symbolic",
             title=_("The document was not signed"),
-            description=message,
+            description=brand_markup(message),
         )
         buttons = Gtk.Box(spacing=12, halign=Gtk.Align.CENTER)
         back = Gtk.Button(label=_("_Back"), use_underline=True)

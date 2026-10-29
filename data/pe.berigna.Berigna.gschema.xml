@@ -55,6 +55,19 @@
     <value nick="es_PE" value="0"/>
     <value nick="quz_PE" value="1"/>
   </enum>
+  <enum id="pe.berigna.Berigna.DniDisplay">
+    <value nick="last-four" value="0"/>
+    <value nick="full" value="1"/>
+    <value nick="hidden" value="2"/>
+  </enum>
+  <enum id="pe.berigna.Berigna.Reason">
+    <value nick="none" value="0"/>
+    <value nick="authorship" value="1"/>
+    <value nick="agreement" value="2"/>
+    <value nick="endorsement" value="3"/>
+    <value nick="approval" value="4"/>
+    <value nick="other" value="5"/>
+  </enum>
   <enum id="pe.berigna.Berigna.ReportLanguage">
     <value nick="ui" value="0"/>
     <value nick="es_PE" value="1"/>
@@ -125,17 +138,30 @@
       <default>'es_PE'</default>
       <summary>Language of the fixed texts and the date of visible signatures (RF-092)</summary>
     </key>
+    <key name="appearance-dni" enum="pe.berigna.Berigna.DniDisplay">
+      <default>'last-four'</default>
+      <summary>How visible signatures show the DNI: last four digits, full or not at all</summary>
+      <description>The certificate in the signed PDF carries the full DNI anyway; this only concerns the printed stamp and its QR code.</description>
+    </key>
     <key name="appearance-profile" type="s">
       <default>''</default>
       <summary>Default appearance profile of visible signatures</summary>
     </key>
+    <key name="signature-reason-kind" enum="pe.berigna.Berigna.Reason">
+      <default>'none'</default>
+      <summary>Last signature reason chosen from the list</summary>
+    </key>
     <key name="signature-reason" type="s">
       <default>''</default>
-      <summary>Last signature reason used</summary>
+      <summary>Text of the last "Other" signature reason</summary>
     </key>
     <key name="signature-location" type="s">
       <default>''</default>
       <summary>Last signature location used</summary>
+    </key>
+    <key name="recent-locations" type="as">
+      <default>[]</default>
+      <summary>Signature locations used last, most recent first (up to five)</summary>
     </key>
     <key name="history-enabled" type="b">
       <default>true</default>

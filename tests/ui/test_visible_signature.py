@@ -9,7 +9,7 @@ from pathlib import Path
 from PIL import Image
 from pyhanko.pdf_utils.reader import PdfFileReader
 
-from berigna.core.appearance import AppearanceKind
+from berigna.core.appearance import AppearanceKind, DniDisplay
 from berigna.ui.application import BerignaApplication
 from berigna.ui.preview import EDGE, PdfPreview, SignatureBox
 from berigna.ui.signing import SigningPage
@@ -52,6 +52,9 @@ def test_sign_with_a_qr_code(app: BerignaApplication, tmp_path: Path) -> None:
         assert page.appearance_kind() is AppearanceKind.QR
         assert page.appearance.get_subtitle() == "Código QR"
         assert page.preview._appearance is not None  # drawn with sample data
+        visible = page.visible_signature()
+        assert visible is not None
+        assert visible.dni is DniDisplay.LAST_FOUR
         page._sign.emit("clicked")
         yield from wait_until(lambda: page.pin_dialog is not None, 10)
         assert page.pin_dialog is not None
@@ -117,6 +120,10 @@ def test_images_in_the_preferences(app: BerignaApplication, tmp_path: Path) -> N
         assert app.settings is not None
         assert app.settings.get_string("appearance-kind") == "logo"
         app.settings.reset("appearance-kind")
+        dialog.dni.set_selected(1)
+        assert app.settings.get_string("appearance-dni") == "full"
+        assert dialog.dni.get_subtitle() == "Completo (12345678)"
+        app.settings.reset("appearance-dni")
 
     drive(app, script)
     assert len(toasts) == 1
@@ -160,3 +167,5 @@ def test_the_name_goes_in_bold() -> None:
     from berigna.ui.widgets import brand_markup
 
     assert brand_markup("kept by berigna & co.") == "kept by <b>berigna</b> &amp; co."
+    # Not inside file names.
+    assert brand_markup("berigna-prueba.pdf: berigna.") == "berigna-prueba.pdf: <b>berigna</b>."

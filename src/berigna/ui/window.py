@@ -22,6 +22,7 @@ from berigna.ui import presentation  # noqa: E402
 from berigna.ui.i18n import _, catalogue, current_language, translate_view  # noqa: E402
 from berigna.ui.signing import SigningPage, SigningServices  # noqa: E402
 from berigna.ui.verification import VerificationPage, Verify  # noqa: E402
+from berigna.ui.widgets import brand_markup  # noqa: E402
 
 VIEW = "/pe/berigna/Berigna/ui/window.ui"
 
@@ -109,7 +110,7 @@ class MainWindow:
         self._status_label.set_label(view.message)
 
     def toast(self, message: str) -> None:
-        self._toasts.add_toast(Adw.Toast.new(message))
+        self._toasts.add_toast(Adw.Toast.new(brand_markup(message)))
 
     def _choose_file(self) -> None:
         pdf = Gtk.FileFilter()
@@ -168,7 +169,7 @@ class MainWindow:
                 status = Adw.StatusPage(
                     icon_name="x-office-document-symbolic",
                     title=path.name,
-                    description=presentation.document_summary(outcome),
+                    description=brand_markup(presentation.document_summary(outcome)),
                 )
                 self.show_page(self.page(path.name, "document", status))
         elif isinstance(outcome, BerignaError):

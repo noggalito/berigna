@@ -185,7 +185,7 @@ def test_files_that_are_not_pdf(app: BerignaApplication, tmp_path: Path) -> None
         yield from wait_until(lambda: app.main_window is not None)
         yield from wait_until(lambda: _visible_title(app) == "datos.xml")
         page = _window(app)._navigation.get_visible_page().get_child().get_content()
-        assert page.get_description().startswith("berigna todavía no puede firmar")
+        assert page.get_description().startswith("<b>berigna</b> todavía no puede firmar")
 
     drive(app, script, args=[str(path)])
 
