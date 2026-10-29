@@ -54,6 +54,8 @@ Interfaz (Fase 3):
 - `core.signing.output_path`: el nombre del archivo firmado se numera si ya existe, sin sobrescribir nunca (RF-045).
 - ERR-307: un documento certificado por su autor sin cambios permitidos (DocMDP) se rechaza antes del PIN; `inspect_document` lo indica (`locked`).
 - Plan de mantenimiento (`docs/11-mantenimiento/plan-de-mantenimiento.md`, BRG-MAN-001): versiones y ramas, hechos externos que obligan a publicar, vigilancia automática, proceso de cada versión, seguridad, incidencias y continuidad.
+- Traducción completa al quechua sureño (Cusco-Collao): 387 mensajes de la interfaz, del sello y de los informes, hecha con IA y el glosario `docs/06-ux/glosario-quechua.md` (BRG-UX-003), sin revisar por hablantes (DP-14); el aviso de traducción sin revisar y "Ver en español" se mantienen. Una sola forma plural (`nplurals=1`). "berigna" va en negrita también con sufijos quechuas ("berignaqa").
+- Protocolo de la prueba de usabilidad (`docs/07-calidad/prueba-de-usabilidad.md`, BRG-CAL-005): participantes, tareas, seguridad del PIN, consentimiento, cuestionario SUS en español y en quechua, registro y criterio de aceptación.
 - Historial de operaciones (RF-082; `core.history`): firmas, firmas de lote y verificaciones con fecha, nombre, SHA-256 del original y del firmado, nivel, firmante (DNI enmascarado) y resultado; búsqueda, exportación a CSV y borrado; SQLite con permisos 0600. Se desactiva o se le pide la ruta completa en Preferencias → General.
 - Preferencias → Confianza → Certificados de confianza (RF-060): los certificados con que se comprueban las firmas, por origen, con su vigencia y su SHA-256.
 - Diagnóstico (CU-07, RF-007; `core.diagnostics`): servicio `pcscd`, lector, tarjeta, certificado de firma (con aviso de vencimiento), confianza y revocación en línea, y TSA, con una acción sugerida por paso e informe copiable sin PIN y con el DNI enmascarado. Desde el menú y desde los errores de lector, tarjeta o certificado.
@@ -82,6 +84,7 @@ Interfaz (Fase 3):
 
 ### Corregido
 
+- Las pruebas de la interfaz heredaban el idioma de la anterior: una que cambiaba a quechua dejaba el quechua a las siguientes (no se notaba mientras el catálogo estaba vacío). Cada prueba empieza ahora en es_PE.
 - Las pruebas que arrancan berigna sin rutas propias escribían en el historial real del usuario (`~/.local/share/berigna/`): GLib guarda la carpeta de datos la primera vez que se le pregunta. berigna la lee ahora del entorno (`core.files.data_directory`) y las pruebas usan una carpeta temporal.
 - El diagnóstico daba "No se pudo consultar a RENIEC si tu certificado está revocado" con la red funcionando: validaba con la hora fijada, y la tolerancia de 1 s rechazaba la respuesta OCSP de RENIEC por "demasiado reciente"; ahora valida "ahora", con la tolerancia de 5 minutos. El motivo de una revocación no comprobada queda en el registro técnico, igual que cada paso del diagnóstico que no sale bien.
 - Las pruebas que arrancan berigna escribían el registro técnico en `~/.local/state` del usuario; ahora usan una carpeta temporal.

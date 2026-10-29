@@ -247,7 +247,7 @@ def test_pin_dialog_in_quechua_offers_spanish(app: BerignaApplication, tmp_path:
         page = _page(app)
         page._sign.emit("clicked")
         dialog = yield from _dialog(page)
-        spanish = _button(dialog, "Ver en español")
+        spanish = _button(dialog, "Kastilla simipi qhaway")  # "Ver en español", in Quechua
         spanish.emit("clicked")
         yield
         dialog.cancel_button.emit("clicked")

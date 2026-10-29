@@ -38,11 +38,13 @@ docs/
 │   └── manejo-de-pin-y-credenciales.md
 ├── 06-ux/
 │   ├── diseno-de-interfaz.md
-│   └── inventario-visual.md       ← iconos, ilustraciones y piezas gráficas por diseñar
+│   ├── inventario-visual.md       ← iconos, ilustraciones y piezas gráficas por diseñar
+│   └── glosario-quechua.md        ← términos fijos de la traducción al quechua sureño
 ├── 07-calidad/
 │   ├── estrategia-de-pruebas.md
 │   ├── protocolo-pruebas-con-pin.md   ← obligatorio antes de usar un PIN real
-│   └── validacion-externa-fase2.md    ← matriz PAdES contrastada con DSS 6.2
+│   ├── validacion-externa-fase2.md    ← matriz PAdES contrastada con DSS 6.2
+│   └── prueba-de-usabilidad.md        ← protocolo de la prueba con al menos 5 personas
 ├── 08-desarrollo/
 │   └── entorno-y-convenciones.md
 ├── 09-despliegue/

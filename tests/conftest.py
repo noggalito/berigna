@@ -4,6 +4,8 @@
 
 import datetime as dt
 import os
+import shutil
+import subprocess
 from pathlib import Path
 
 import pytest
@@ -66,6 +68,27 @@ def private_state(
     berigna go to temporary folders, never to the user's ~/.local (they did, 2026-10-29)."""
     monkeypatch.setenv("XDG_STATE_HOME", str(tmp_path_factory.mktemp("state")))
     monkeypatch.setenv("XDG_DATA_HOME", str(tmp_path_factory.mktemp("data")))
+
+
+@pytest.fixture
+def pending_quechua(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """A Quechua catalogue that still lacks most translations, as every new version will have
+    for a while: only "The signature is valid." is translated. The real Spanish one is kept."""
+    real = Path(os.environ.get("BERIGNA_LOCALEDIR") or "build/locale")
+    target = tmp_path / "locale"
+    shutil.copytree(real / "es_PE", target / "es_PE")
+    (target / "quz" / "LC_MESSAGES").mkdir(parents=True)
+    source = tmp_path / "quz.po"
+    source.write_text(
+        'msgid ""\nmsgstr ""\n"Content-Type: text/plain; charset=UTF-8\\n"\n\n'
+        'msgid "The signature is valid."\nmsgstr "Firmaqa chiqaqmi."\n',
+        encoding="utf-8",
+    )
+    subprocess.run(  # noqa: S603 - fixed arguments
+        ["msgfmt", "-o", str(target / "quz" / "LC_MESSAGES" / "berigna.mo"), str(source)],  # noqa: S607
+        check=True,
+    )
+    monkeypatch.setenv("BERIGNA_LOCALEDIR", str(target))
 
 
 @pytest.fixture(scope="session")
