@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# SPDX-FileCopyrightText: 2026 Calú
+# SPDX-FileCopyrightText: 2026 noggalito
 """Main window: start page, opened document and the DNIe status bar (BRG-UX-001 §3.1)."""
 
 import threading
@@ -24,7 +24,7 @@ from berigna.ui.signing import SigningPage, SigningServices  # noqa: E402
 from berigna.ui.verification import VerificationPage, Verify  # noqa: E402
 from berigna.ui.widgets import brand_markup  # noqa: E402
 
-VIEW = "/pe/berigna/Berigna/ui/window.ui"
+VIEW = "/com/noggalito/Berigna/ui/window.ui"
 
 
 class MainWindow:

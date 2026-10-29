@@ -9,7 +9,7 @@
 - Flatpak se construye además a partir de la versión 1.1 (decisión del 2026-10-28): un solo paquete para Ubuntu, Linux Mint, Fedora y otras distribuciones, con su propio GTK y libadwaita. Queda por probar el acceso a PC/SC desde el *sandbox* (`--socket=pcsc`) con el DNIe.
 - Fedora y similares (RPM) quedan en la hoja de ruta (versión 1.2).
 - Snap y AppImage se descartan por ahora (2026-10-28): Snap viene desactivado en Linux Mint y depende de la tienda de Canonical; AppImage obliga a incluir GTK, libadwaita y Python en el paquete y a responder de sus parches de seguridad.
-- La inclusión en los repositorios oficiales de Debian es un objetivo a largo plazo, no un requisito de la v1.
+- La inclusión en los repositorios oficiales de Debian es un objetivo a largo plazo, no un requisito de la v1. Modificado por ADR-0020 (2026-10-28): se solicita en la v1.0 estable.
 
 ## Justificación
 

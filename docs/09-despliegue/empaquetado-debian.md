@@ -6,7 +6,7 @@
 | Versión | 0.2.0 |
 | Estado | Borrador |
 | Fecha | 2026-10-27 |
-| Responsable | `{{TITULAR}}` |
+| Responsable | noggalito |
 
 ## 1. Paquetes binarios
 
@@ -29,9 +29,9 @@ Los tres paquetes son `Architecture: all` (DP-08).
 | `/usr/bin/berigna` | Lanzador |
 | `/usr/lib/python3/dist-packages/berigna/` | Código |
 | `/usr/share/berigna/` | GResource, almacén de confianza |
-| `/usr/share/applications/pe.berigna.Berigna.desktop` | Entrada de escritorio con `MimeType=application/pkcs7-signature;application/pkcs7-mime;application/pdf;application/xml;` |
-| `/usr/share/metainfo/pe.berigna.Berigna.metainfo.xml` | AppStream |
-| `/usr/share/glib-2.0/schemas/pe.berigna.Berigna.gschema.xml` | GSettings |
+| `/usr/share/applications/com.noggalito.Berigna.desktop` | Entrada de escritorio con `MimeType=application/pkcs7-signature;application/pkcs7-mime;application/pdf;application/xml;` |
+| `/usr/share/metainfo/com.noggalito.Berigna.metainfo.xml` | AppStream |
+| `/usr/share/glib-2.0/schemas/com.noggalito.Berigna.gschema.xml` | GSettings |
 | `/usr/share/icons/hicolor/…` | Iconos |
 | `/usr/share/locale/es_PE/LC_MESSAGES/berigna.mo` | Traducción es_PE |
 | `/usr/share/locale/es/LC_MESSAGES/berigna.mo` | El mismo catálogo es_PE, como respaldo para cualquier variante del español (ADR-0011) |
@@ -67,6 +67,18 @@ Signed-By: /etc/apt/keyrings/berigna.gpg
 EOF
 sudo apt update && sudo apt install berigna berigna-nautilus
 ```
+
+## 4 bis. Archivo oficial de Debian (ADR-0020)
+
+Desde la v1.0 estable se solicita la entrada de berigna en Debian. Orden de trabajo:
+
+1. Comprobar en WNPP si alguien ya pidió pyHanko; si no, abrir el ITP de `python3-pyhanko` y empaquetarlo en el equipo de Python de Debian (salsa.debian.org).
+2. Abrir el ITP de `berigna` y llevar el empaquetado de este documento a salsa, con `debian/watch`, `debian/upstream/metadata`, `autopkgtest` y la metainfo de AppStream.
+3. Publicar el paquete fuente en mentors.debian.net y pedir patrocinio (RFS) en la lista del equipo de Python.
+4. Revisión de la cola NEW por los ftpmasters (licencias y `debian/copyright`); después, *unstable* → *testing* → *trixie-backports*.
+5. Resolver antes las tipografías incluidas (ADR-0020, requisito 2).
+
+El campo `Maintainer` debe ser una dirección que lea una persona (`berigna@noggalito.com` sirve si llega al titular) o la lista del equipo de Python, con quien sube el paquete en `Uploaders`.
 
 ## 5. Compilación reproducible y verificación
 

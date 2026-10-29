@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# SPDX-FileCopyrightText: 2026 Calú
+# SPDX-FileCopyrightText: 2026 noggalito
 """RF-006 on hardware and on the real IOFE services. NO PIN is sent.
 
 Reads the signing certificate from a real DNIe v2 and validates it online: chain up to

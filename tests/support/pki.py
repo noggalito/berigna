@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# SPDX-FileCopyrightText: 2026 Calú
+# SPDX-FileCopyrightText: 2026 noggalito
 """Test PKI shaped like the IOFE (root -> CA with ARL -> signers with OCSP) and a tiny PDF."""
 
 import datetime as dt

@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# SPDX-FileCopyrightText: 2026 Calú
+# SPDX-FileCopyrightText: 2026 noggalito
 """PAdES signatures with pyHanko 0.25.x; the private-key operation happens in the token.
 
 Baseline levels (ETSI EN 319 142-1):

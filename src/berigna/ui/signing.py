@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# SPDX-FileCopyrightText: 2026 Calú
+# SPDX-FileCopyrightText: 2026 noggalito
 """Signing a PDF (CU-01, CU-03; BRG-UX-001 §3.2 and §3.3).
 
 The core runs in a worker thread (:func:`berigna.core.signing.sign_pdf_file`): it validates the

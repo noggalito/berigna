@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# SPDX-FileCopyrightText: 2026 Calú
+# SPDX-FileCopyrightText: 2026 noggalito
 """What kind of document the user opened, to choose between signing and verifying it.
 
 :func:`inspect_document` reads the file once and returns its SHA-256 along with what it found,

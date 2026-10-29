@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# SPDX-FileCopyrightText: 2026 Calú
+# SPDX-FileCopyrightText: 2026 noggalito
 """Languages of berigna 1.0 and their gettext catalogues (ADR-0011, ADR-0015).
 
 Two languages: Peruvian Spanish (``es_PE``) and Southern Quechua (``quz_PE``, catalogue

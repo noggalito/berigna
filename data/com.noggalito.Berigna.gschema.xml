@@ -1,66 +1,66 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- SPDX-License-Identifier: GPL-3.0-or-later -->
-<!-- SPDX-FileCopyrightText: 2026 Calú -->
+<!-- SPDX-FileCopyrightText: 2026 noggalito -->
 <!-- Preferences of berigna (BRG-ARQ configuración y datos §2). -->
 <schemalist>
-  <enum id="pe.berigna.Berigna.Level">
+  <enum id="com.noggalito.Berigna.Level">
     <value nick="B-B" value="0"/>
     <value nick="B-T" value="1"/>
     <value nick="B-LT" value="2"/>
     <value nick="B-LTA" value="3"/>
   </enum>
-  <enum id="pe.berigna.Berigna.PdfFormat">
+  <enum id="com.noggalito.Berigna.PdfFormat">
     <value nick="pades" value="0"/>
   </enum>
-  <enum id="pe.berigna.Berigna.XmlFormat">
+  <enum id="com.noggalito.Berigna.XmlFormat">
     <value nick="xades-enveloped" value="0"/>
     <value nick="xades-detached" value="1"/>
   </enum>
-  <enum id="pe.berigna.Berigna.OtherFormat">
+  <enum id="com.noggalito.Berigna.OtherFormat">
     <value nick="cades-detached" value="0"/>
     <value nick="cades-attached" value="1"/>
   </enum>
-  <enum id="pe.berigna.Berigna.Digest">
+  <enum id="com.noggalito.Berigna.Digest">
     <value nick="sha256" value="0"/>
     <value nick="sha384" value="1"/>
     <value nick="sha512" value="2"/>
   </enum>
-  <enum id="pe.berigna.Berigna.TsaAuth">
+  <enum id="com.noggalito.Berigna.TsaAuth">
     <value nick="none" value="0"/>
     <value nick="basic" value="1"/>
     <value nick="client-cert" value="2"/>
   </enum>
-  <enum id="pe.berigna.Berigna.ProxyMode">
+  <enum id="com.noggalito.Berigna.ProxyMode">
     <value nick="system" value="0"/>
     <value nick="manual" value="1"/>
     <value nick="none" value="2"/>
   </enum>
-  <enum id="pe.berigna.Berigna.TokenBackend">
+  <enum id="com.noggalito.Berigna.TokenBackend">
     <value nick="auto" value="0"/>
     <value nick="dnie-v2" value="1"/>
     <value nick="pkcs11" value="2"/>
   </enum>
-  <enum id="pe.berigna.Berigna.UiLanguage">
+  <enum id="com.noggalito.Berigna.UiLanguage">
     <value nick="system" value="0"/>
     <value nick="es_PE" value="1"/>
     <value nick="quz_PE" value="2"/>
   </enum>
-  <enum id="pe.berigna.Berigna.AppearanceKind">
+  <enum id="com.noggalito.Berigna.AppearanceKind">
     <value nick="text" value="0"/>
     <value nick="rubric" value="1"/>
     <value nick="logo" value="2"/>
     <value nick="qr" value="3"/>
   </enum>
-  <enum id="pe.berigna.Berigna.StampLanguage">
+  <enum id="com.noggalito.Berigna.StampLanguage">
     <value nick="es_PE" value="0"/>
     <value nick="quz_PE" value="1"/>
   </enum>
-  <enum id="pe.berigna.Berigna.DniDisplay">
+  <enum id="com.noggalito.Berigna.DniDisplay">
     <value nick="last-four" value="0"/>
     <value nick="full" value="1"/>
     <value nick="hidden" value="2"/>
   </enum>
-  <enum id="pe.berigna.Berigna.Reason">
+  <enum id="com.noggalito.Berigna.Reason">
     <value nick="none" value="0"/>
     <value nick="authorship" value="1"/>
     <value nick="agreement" value="2"/>
@@ -69,26 +69,26 @@
     <value nick="other" value="5"/>
     <value nick="on-behalf" value="6"/>
   </enum>
-  <enum id="pe.berigna.Berigna.ReportLanguage">
+  <enum id="com.noggalito.Berigna.ReportLanguage">
     <value nick="ui" value="0"/>
     <value nick="es_PE" value="1"/>
     <value nick="quz_PE" value="2"/>
   </enum>
 
-  <schema id="pe.berigna.Berigna" path="/pe/berigna/Berigna/">
-    <key name="default-level" enum="pe.berigna.Berigna.Level">
+  <schema id="com.noggalito.Berigna" path="/com/noggalito/Berigna/">
+    <key name="default-level" enum="com.noggalito.Berigna.Level">
       <default>'B-LT'</default>
       <summary>Signature level selected by default (DP-04)</summary>
     </key>
-    <key name="pdf-format" enum="pe.berigna.Berigna.PdfFormat">
+    <key name="pdf-format" enum="com.noggalito.Berigna.PdfFormat">
       <default>'pades'</default>
       <summary>Signature format for PDF documents</summary>
     </key>
-    <key name="xml-format" enum="pe.berigna.Berigna.XmlFormat">
+    <key name="xml-format" enum="com.noggalito.Berigna.XmlFormat">
       <default>'xades-enveloped'</default>
       <summary>Signature format for XML documents</summary>
     </key>
-    <key name="other-format" enum="pe.berigna.Berigna.OtherFormat">
+    <key name="other-format" enum="com.noggalito.Berigna.OtherFormat">
       <default>'cades-detached'</default>
       <summary>Signature format for other files</summary>
     </key>
@@ -100,7 +100,7 @@
       <default>''</default>
       <summary>Folder for signed files; empty means the folder of the original</summary>
     </key>
-    <key name="digest-algorithm" enum="pe.berigna.Berigna.Digest">
+    <key name="digest-algorithm" enum="com.noggalito.Berigna.Digest">
       <default>'sha256'</default>
       <summary>Hash algorithm of new signatures</summary>
     </key>
@@ -108,7 +108,7 @@
       <default>''</default>
       <summary>URL of the time-stamping authority (DP-02)</summary>
     </key>
-    <key name="tsa-auth" enum="pe.berigna.Berigna.TsaAuth">
+    <key name="tsa-auth" enum="com.noggalito.Berigna.TsaAuth">
       <default>'none'</default>
       <summary>Authentication with the time-stamping authority</summary>
     </key>
@@ -118,7 +118,7 @@
       <summary>Seconds to wait for a network response</summary>
       <description>Read timeout. Connecting always waits at least 20 seconds, to cover the SYN retransmissions seen on the RENIEC network (R-17).</description>
     </key>
-    <key name="proxy-mode" enum="pe.berigna.Berigna.ProxyMode">
+    <key name="proxy-mode" enum="com.noggalito.Berigna.ProxyMode">
       <default>'system'</default>
       <summary>Proxy configuration</summary>
     </key>
@@ -130,16 +130,16 @@
       <default>false</default>
       <summary>Make signatures visible by default</summary>
     </key>
-    <key name="appearance-kind" enum="pe.berigna.Berigna.AppearanceKind">
+    <key name="appearance-kind" enum="com.noggalito.Berigna.AppearanceKind">
       <default>'text'</default>
       <summary>Appearance of visible signatures: text, rubric, logo or QR code (RF-012)</summary>
       <description>The rubric and the logo are images loaded once in the preferences.</description>
     </key>
-    <key name="appearance-language" enum="pe.berigna.Berigna.StampLanguage">
+    <key name="appearance-language" enum="com.noggalito.Berigna.StampLanguage">
       <default>'es_PE'</default>
       <summary>Language of the fixed texts and the date of visible signatures (RF-092)</summary>
     </key>
-    <key name="appearance-dni" enum="pe.berigna.Berigna.DniDisplay">
+    <key name="appearance-dni" enum="com.noggalito.Berigna.DniDisplay">
       <default>'last-four'</default>
       <summary>How visible signatures show the DNI: last four digits, full or not at all</summary>
       <description>The certificate in the signed PDF carries the full DNI anyway; this only concerns the printed stamp and its QR code.</description>
@@ -148,7 +148,7 @@
       <default>''</default>
       <summary>Default appearance profile of visible signatures</summary>
     </key>
-    <key name="signature-reason-kind" enum="pe.berigna.Berigna.Reason">
+    <key name="signature-reason-kind" enum="com.noggalito.Berigna.Reason">
       <default>'none'</default>
       <summary>Last signature reason chosen from the list</summary>
     </key>
@@ -176,7 +176,7 @@
       <default>''</default>
       <summary>PKCS#11 module; empty means automatic detection</summary>
     </key>
-    <key name="token-backend" enum="pe.berigna.Berigna.TokenBackend">
+    <key name="token-backend" enum="com.noggalito.Berigna.TokenBackend">
       <default>'auto'</default>
       <summary>How to talk to the card: by its ATR, the DNIe v2 driver or PKCS#11</summary>
     </key>
@@ -185,11 +185,11 @@
       <summary>Download CRLs when OCSP fails during verification</summary>
       <description>The CRL of the CA that issues DNIe certificates is about 109 MB.</description>
     </key>
-    <key name="ui-language" enum="pe.berigna.Berigna.UiLanguage">
+    <key name="ui-language" enum="com.noggalito.Berigna.UiLanguage">
       <default>'system'</default>
       <summary>Language of the interface (ADR-0015)</summary>
     </key>
-    <key name="report-language" enum="pe.berigna.Berigna.ReportLanguage">
+    <key name="report-language" enum="com.noggalito.Berigna.ReportLanguage">
       <default>'ui'</default>
       <summary>Language of exported PDF reports</summary>
     </key>

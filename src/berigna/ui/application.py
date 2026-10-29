@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# SPDX-FileCopyrightText: 2026 Calú
+# SPDX-FileCopyrightText: 2026 noggalito
 """The GApplication: settings, language, DNIe monitor and the main window."""
 
 import logging
@@ -38,7 +38,7 @@ from berigna.ui.preferences import PreferencesDialog  # noqa: E402
 from berigna.ui.signing import SigningServices  # noqa: E402
 from berigna.ui.window import MainWindow  # noqa: E402
 
-APPLICATION_ID = "pe.berigna.Berigna"
+APPLICATION_ID = "com.noggalito.Berigna"
 # Where a proxy of the desktop is looked up: the services berigna talks to are all on the
 # Internet, and GIO answers per URL (a PAC file may say otherwise for intranet hosts).
 PROXY_PROBE_URL = "https://iofe.indecopi.gob.pe/"
@@ -51,7 +51,8 @@ def _open_dnie() -> TokenSigner:
     return DnieV2Token(PcscTransport.open_first(is_dnie_v2))
 
 
-WEBSITE = "https://github.com/noggalito/berigna"
+WEBSITE = "https://berigna.noggalito.com"
+REPOSITORY = "https://github.com/noggalito/berigna"
 
 
 class BerignaApplication(Adw.Application):
@@ -266,11 +267,11 @@ class BerignaApplication(Adw.Application):
             application_icon=APPLICATION_ID,
             version=__version__,
             comments=_("Sign and verify documents with your Peruvian DNIe."),
-            developer_name="Calú",
-            copyright="© 2026 Calú",
+            developer_name="noggalito",
+            copyright="© 2026 noggalito",
             license_type=Gtk.License.GPL_3_0,
             website=WEBSITE,
-            issue_url=f"{WEBSITE}/issues",
+            issue_url=f"{REPOSITORY}/issues",
         )
         parent = self.main_window.window if self.main_window else None
         about.present(parent)

@@ -6,13 +6,13 @@
 | Versión | 0.2.0 |
 | Estado | Borrador |
 | Fecha | 2026-10-27 |
-| Responsable | `{{TITULAR}}` |
+| Responsable | noggalito |
 
 ## 1. Ubicaciones (XDG)
 
 | Dato | Ruta | Formato | Sensible |
 |---|---|---|---|
-| Preferencias | GSettings, esquema `pe.berigna.Berigna` (en dconf) | GVariant | No |
+| Preferencias | GSettings, esquema `com.noggalito.Berigna` (en dconf) | GVariant | No |
 | Almacén de confianza (incluido en el paquete) | Recurso del paquete Python: `berigna/core/trust/anchors/` (en el código fuente, `src/berigna/core/trust/anchors/`) | PEM y `manifest.json` con huellas SHA-256; el paquete `.deb` firmado protege su integridad | No |
 | Anclas añadidas por el usuario | `$XDG_DATA_HOME/berigna/trust/` | PEM | No |
 | Perfiles de apariencia | `$XDG_DATA_HOME/berigna/appearances/` | JSON más imagen | Puede contener una imagen de la rúbrica |
@@ -25,7 +25,7 @@ Los permisos de los archivos del usuario son `0600` y los de los directorios `07
 
 ## 2. Esquema de GSettings
 
-Implementado en `data/pe.berigna.Berigna.gschema.xml` (Fase 3, incremento 1). Desde el incremento 4 la interfaz usa además `default-level`, `digest-algorithm`, `output-suffix`, `output-directory`, `tsa-url`, `network-timeout`, `proxy-mode`, `proxy-url`, `signature-reason` y `signature-location`, y las Preferencias muestran casi todas. `tsa-auth` (usuario y contraseña en libsecret, o certificado de cliente) queda para cuando haya una TSA contratada que lo exija (DP-02).
+Implementado en `data/com.noggalito.Berigna.gschema.xml` (Fase 3, incremento 1). Desde el incremento 4 la interfaz usa además `default-level`, `digest-algorithm`, `output-suffix`, `output-directory`, `tsa-url`, `network-timeout`, `proxy-mode`, `proxy-url`, `signature-reason` y `signature-location`, y las Preferencias muestran casi todas. `tsa-auth` (usuario y contraseña en libsecret, o certificado de cliente) queda para cuando haya una TSA contratada que lo exija (DP-02).
 
 Proxy (RF-064): el valor se aplica a las variables de entorno estándar del proceso (`https_proxy`, `no_proxy`), que `requests` lee en cada petición, también dentro de pyhanko-certvalidator (`core.net.proxy`). Con `system`, la interfaz pregunta a GIO por el proxy del escritorio.
 

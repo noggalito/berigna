@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# SPDX-FileCopyrightText: 2026 Calú
+# SPDX-FileCopyrightText: 2026 noggalito
 """The INDECOPI trusted list (TSL) as a source of trust anchors (ADR-0014).
 
 INDECOPI publishes the Peruvian TSL (ETSI TS 119 612, scheme territory PE) at :data:`TSL_URL`,

@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# SPDX-FileCopyrightText: 2026 Calú
+# SPDX-FileCopyrightText: 2026 noggalito
 """APDU transport to a smart card, and its PC/SC implementation.
 
 This is the only module that knows about pyscard: every pyscard exception is translated into

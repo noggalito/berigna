@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# SPDX-FileCopyrightText: 2026 Calú
+# SPDX-FileCopyrightText: 2026 noggalito
 """Human-readable verification report as PDF (RF-054), in es_PE or Southern Quechua.
 
 The report is built with ReportLab in invariant mode: the same verification gives the same

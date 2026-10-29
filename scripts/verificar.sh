@@ -1,6 +1,6 @@
 #!/bin/sh
 # SPDX-License-Identifier: GPL-3.0-or-later
-# SPDX-FileCopyrightText: 2026 Calú
+# SPDX-FileCopyrightText: 2026 noggalito
 # Local quality gate: the same checks the CI runs. Never runs HIL tests (no card, no PIN).
 # Optional pre-push hook:  ln -s ../../scripts/verificar.sh .git/hooks/pre-push
 set -eu

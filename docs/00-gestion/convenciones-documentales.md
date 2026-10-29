@@ -6,7 +6,7 @@
 | Versión | 0.2.0 |
 | Estado | Borrador |
 | Fecha | 2026-10-27 |
-| Responsable | `{{TITULAR}}` |
+| Responsable | noggalito |
 
 ## 1. Idioma y formato
 
@@ -101,9 +101,7 @@ Los identificadores marcados como "documentación interna" se gestionan en un re
 
 ## 7. Marcadores en el texto
 
-- `{{TITULAR}}`: nombre del titular o responsable del proyecto, pendiente de definir (DP-05).
 - `{{URL_REPOSITORIO}}`: URL del repositorio APT del proyecto (09-despliegue), pendiente de definir.
-- `{{CONTACTO}}`: medio de contacto del titular en las consultas externas.
-- `{{CONTACTO_SEGURIDAD}}`: dirección para reportes de vulnerabilidades (`SECURITY.md`), pendiente de definir.
-- `SPDX-FileCopyrightText: 2026 Calú`: titular provisional de las cabeceras de licencia hasta cerrar DP-05; se sustituirá en bloque.
+
+Resueltos el 2026-10-28 (DP-05): el titular del proyecto es la persona jurídica noggalito, que figura como responsable de los documentos y en las cabeceras de licencia (`SPDX-FileCopyrightText: 2026 noggalito`). Todo contacto (consultas, incidencias, seguridad, validación) va a `berigna@noggalito.com`, y el sitio del proyecto es `https://berigna.noggalito.com`.
 - `[VERIFICAR]`: afirmación que debe contrastarse con una fuente oficial o con una prueba antes de pasar el documento a Aprobado.

@@ -6,7 +6,7 @@
 | Versión | 0.2.0 |
 | Estado | Borrador |
 | Fecha | 2026-10-27 |
-| Responsable | `{{TITULAR}}` |
+| Responsable | noggalito |
 
 ## 1. Estructura del repositorio
 
@@ -40,7 +40,7 @@ berigna/
 ├── data/
 │   ├── brand/                    # logotipos SVG (GPL-3.0-or-later)
 │   ├── ui/*.blp, berigna.gresource.xml   # vistas en Blueprint y recursos
-│   ├── pe.berigna.Berigna.gschema.xml    # preferencias (GSettings)
+│   ├── com.noggalito.Berigna.gschema.xml    # preferencias (GSettings)
 │   └── *.desktop.in, *.metainfo.xml.in, icons/   # (previstos, Fases 3 y 5)
 ├── po/                           # LINGUAS, POTFILES, berigna.pot, es_PE.po, quz.po
 ├── help/                         # (previsto: manual Mallard)
@@ -114,7 +114,7 @@ El script `scripts/verificar.sh` ejecuta exactamente esas comprobaciones (nunca 
 | Cadenas de la interfaz | Texto fuente en inglés (en_US) dentro de `_()`, con comentarios para traductores (`# Translators:`) cuando el contexto no sea obvio. Toda cadena nueva debe llegar con su traducción a `po/es_PE.po` en el mismo PR y con su entrada en `po/quz.po`, traducida o marcada como pendiente para los traductores; una entrada pendiente bloquea la publicación de una versión (ADR-0011, ADR-0015). Nada de concatenar frases: se usan marcadores con nombre (`_("Signed by {name}").format(name=…)`) y `ngettext` para los plurales |
 | Configuración regional en desarrollo | Generar `es_PE.UTF-8` y `quz_PE` con `sudo dpkg-reconfigure locales` para poder probar ambos idiomas; las pruebas automáticas no dependen de que estén generadas. Herramientas: paquete `gettext` (`msgfmt`, `xgettext`) |
 | Comentarios y *docstrings* | En inglés. La documentación de producto, en español |
-| Cabeceras | `# SPDX-License-Identifier: GPL-3.0-or-later` y `# SPDX-FileCopyrightText: <año> {{TITULAR}}` |
+| Cabeceras | `# SPDX-License-Identifier: GPL-3.0-or-later` y `# SPDX-FileCopyrightText: <año> noggalito` |
 | Errores | Jerarquía `BerignaError` con un código (`ERR-xxx`) vinculado al catálogo de mensajes de UX |
 | Registros | El módulo `logging`, con un filtro que elimina los tipos sensibles (`Pin`, `bytes` del documento) |
 

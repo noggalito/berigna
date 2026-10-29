@@ -6,7 +6,7 @@
 | Versión | 0.1.0 |
 | Estado | Borrador |
 | Fecha | 2026-10-27 |
-| Responsable | `{{TITULAR}}` |
+| Responsable | noggalito |
 
 Metodología: STRIDE aplicado a los flujos de 04-arquitectura. Se revisa en cada fase y antes de cada versión.
 

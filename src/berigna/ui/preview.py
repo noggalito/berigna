@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# SPDX-FileCopyrightText: 2026 Calú
+# SPDX-FileCopyrightText: 2026 noggalito
 """PDF preview with Poppler (ADR-0016), kept in one module so the engine can change.
 
 Poppler only draws: what is signed are the bytes the core read, whose SHA-256 is checked
