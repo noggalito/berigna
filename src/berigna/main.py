@@ -18,7 +18,13 @@ def main(argv: Sequence[str] | None = None) -> int:
     if not resources:
         print("berigna: BERIGNA_RESOURCES is not set", file=sys.stderr)
         return 1
-    Gio.Resource.load(resources)._register()
+    from gi.repository import GLib
+
+    try:
+        Gio.Resource.load(resources)._register()
+    except GLib.Error as exc:  # a broken installation: say so rather than a traceback
+        print(f"berigna: cannot load {resources}: {exc.message}", file=sys.stderr)
+        return 1
 
     from berigna.core.logs import setup_logging
     from berigna.ui.application import BerignaApplication

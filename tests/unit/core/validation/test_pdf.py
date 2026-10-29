@@ -485,3 +485,29 @@ def test_ocsp_answer_dated_after_now_is_accepted(pki: Pki) -> None:
         crls=[pki.arl()],
     ).signatures
     assert report.indication is Indication.TOTAL_PASSED
+
+
+@pytest.mark.parametrize("stage", ["_adobe_revinfo", "_validate_timestamp", "_diagnose_chain"])
+def test_hostile_cms_past_the_digest_is_a_format_failure(
+    pki: Pki, monkeypatch: pytest.MonkeyPatch, stage: str
+) -> None:
+    """A CMS that breaks pyHanko or asn1crypto after the digest is still an ETSI result
+    (TOTAL-FAILED/FORMAT_FAILURE), never an unexpected error (AM-05)."""
+    from berigna.core.validation import pdf
+
+    def broken(*_args: object) -> object:
+        raise KeyError("hostile")
+
+    monkeypatch.setattr(pdf, stage, broken)
+    if stage == "_validate_timestamp":
+        result = verify_pdf(_pades(pki, "B-LTA")[0], pki.store, online=False)
+        [stamp] = result.document_timestamps
+        assert stamp.subindication == "FORMAT_FAILURE"
+        return
+    if stage == "_diagnose_chain":
+        data, moment = _signed_with_revinfo(pki)[0], NOW + dt.timedelta(days=400)  # expired
+        [report] = verify_pdf(data, pki.store, moment=moment, online=False).signatures
+    else:
+        [report] = verify_pdf(_signed_with_revinfo(pki)[0], pki.store, online=False).signatures
+    assert report.indication is Indication.TOTAL_FAILED
+    assert report.subindication == "FORMAT_FAILURE"
