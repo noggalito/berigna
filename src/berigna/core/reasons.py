@@ -23,6 +23,7 @@ class Reason(enum.Enum):
     AGREEMENT = "agreement"
     ENDORSEMENT = "endorsement"
     APPROVAL = "approval"
+    ON_BEHALF = "on-behalf"
     OTHER = "other"
 
 
@@ -31,6 +32,8 @@ TEXTS = {
     Reason.AGREEMENT: N_("In agreement"),
     Reason.ENDORSEMENT: N_("Endorsement (V° B°)"),
     Reason.APPROVAL: N_("Approval of the document"),
+    # Signing for someone else who asked for it, as ReFirma offers it ("Por encargo").
+    Reason.ON_BEHALF: N_("On behalf of another person"),
 }
 
 
