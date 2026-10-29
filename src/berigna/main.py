@@ -20,6 +20,12 @@ def main(argv: Sequence[str] | None = None) -> int:
         return 1
     Gio.Resource.load(resources)._register()
 
+    from berigna.core.logs import setup_logging
     from berigna.ui.application import BerignaApplication
+
+    try:
+        setup_logging()  # RF-083
+    except OSError as exc:  # a read-only home must not stop the program
+        print(f"berigna: no technical log: {exc}", file=sys.stderr)
 
     return int(BerignaApplication().run(list(sys.argv if argv is None else argv)))
