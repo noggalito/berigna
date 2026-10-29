@@ -7,7 +7,7 @@ import gi
 gi.require_version("Gtk", "4.0")
 from gi.repository import GLib, Gtk  # noqa: E402
 
-NAME = "berigna"
+from berigna.core.i18n import NAME  # noqa: E402
 
 
 def label_factory(*, visible: bool) -> Gtk.SignalListItemFactory:
@@ -26,5 +26,6 @@ def label_factory(*, visible: bool) -> Gtk.SignalListItemFactory:
 
 
 def brand_markup(text: str) -> str:
-    """``text`` as Pango markup, with the program's name in bold (decision of 2026-10-28)."""
-    return GLib.markup_escape_text(text).replace(NAME, f"<b>{NAME}</b>")
+    """``text`` as Pango markup, with the program's name in bold (decision of 2026-10-28).
+    Every message shown with markup goes through here, which also escapes file names."""
+    return NAME.sub("<b>berigna</b>", GLib.markup_escape_text(text))
