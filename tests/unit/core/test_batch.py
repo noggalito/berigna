@@ -193,9 +193,8 @@ def test_csv_report(pki: Pki, tmp_path: Path) -> None:
     assert failed[2] == "No firmado"
     assert failed[6] == "ERR-302"
     assert failed[7].startswith("Ya existe un archivo")
-    # Quechua: pending explanations fall back to Spanish, never to English.
     quechua = list(csv.reader(io.StringIO(batch_csv(items, Language.QUZ_PE))))
-    assert quechua[2][7] == failed[7]
+    assert quechua[2][7] == "Ñam kan chay sutiyuq archivo. Huk sutita akllay."
 
 
 def test_a_file_failing_while_signing_does_not_stop_the_others(

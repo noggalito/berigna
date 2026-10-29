@@ -116,6 +116,18 @@ def card(pki: Pki) -> DnieV2Simulator:
     return simulator
 
 
+@pytest.fixture(autouse=True)
+def spanish_interface() -> Iterator[None]:
+    """Every test starts in es_PE: a test that switches to Quechua must not leave it to the
+    next ones (unnoticed while the Quechua catalogue was empty and fell back to Spanish)."""
+    settings = Gio.Settings.new("com.noggalito.Berigna")
+    settings.reset("ui-language")
+    i18n.set_language(Language.ES_PE)
+    yield
+    settings.reset("ui-language")
+    i18n.set_language(Language.ES_PE)
+
+
 @pytest.fixture
 def app(
     readers: FakeReaders, pki: Pki, card: DnieV2Simulator, tmp_path_factory: pytest.TempPathFactory
