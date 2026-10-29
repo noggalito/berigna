@@ -3,7 +3,7 @@
 | Campo | Valor |
 |---|---|
 | Documento | BRG-UX-001 |
-| Versión | 0.3.2 |
+| Versión | 0.4.0 |
 | Estado | Borrador (bocetos de baja fidelidad) |
 | Fecha | 2026-10-29 |
 | Responsable | noggalito |
@@ -180,7 +180,7 @@ En "Preferencias → General → Idioma" se elige entre "Usar el idioma del sist
 Hasta que la traducción al quechua tenga corrección humana (versión 1.1, DP-14), berigna lo dice abiertamente:
 
 - Con la interfaz en quechua, la ventana principal muestra un `AdwBanner` con el texto, en quechua y en español, "Traducción sin revisar por hablantes. En caso de duda, prevalece el texto en español" y el botón "Ver en español", que cambia `ui-language` a es_PE (al momento, §4.1). No se puede cerrar: `AdwBanner` admite un solo botón, y el aviso debe seguir visible mientras la interfaz esté en quechua.
-- El diálogo del PIN y el resultado de la verificación en quechua incluyen el enlace "Ver en español", que muestra el mismo texto en es_PE sin cambiar de idioma.
+- El diálogo del PIN y el resultado de la verificación en quechua incluyen el botón "Leer en español", que muestra el mismo texto en es_PE sin cambiar de idioma (en la verificación, también los detalles técnicos y los sellos de documento). Se llama distinto del "Ver en español" del aviso, que sí cambia el idioma, para que nadie confunda las dos acciones (revisión del 2026-10-29).
 - El informe PDF en quechua añade la misma advertencia junto a la nota de prevalencia del español (ADR-0015, punto 7).
 - El aviso desaparece en la versión que incorpore la corrección por personas.
 
@@ -208,6 +208,6 @@ Implementados en la Fase 3, incremento 6. Historial (RF-082; menú principal →
 - [x] Icono de la aplicación según la guía de iconos de GNOME (BRG-UX-002 §2).
 - [ ] Prueba de usabilidad (RNF-USA-06) en la Fase 3.
 - [x] Microcopia completa de errores (catálogo `ERR-xxx`, con su mensaje, su causa y la acción sugerida) en es_PE y en quechua (`core.report.explanations`; una prueba exige un mensaje por código y los catálogos completos).
-- [x] Aviso de traducción sin revisar en la ventana principal, en el informe PDF en quechua y "Ver en español" en el diálogo del PIN y en el resultado de la verificación (§4.2).
+- [x] Aviso de traducción sin revisar en la ventana principal, en el informe PDF en quechua y "Leer en español" en el diálogo del PIN y en el resultado de la verificación (§4.2).
 - [x] Glosario terminológico para traductores: el del quechua es BRG-UX-003; el del inglés se hace con la traducción de la versión 1.1.
 - [ ] Revisión de las pantallas en quechua para detectar textos que se desborden (las palabras aglutinantes suelen ser largas), durante la prueba de usabilidad (BRG-CAL-005, participantes en quechua).

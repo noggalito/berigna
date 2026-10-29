@@ -88,7 +88,7 @@ Interfaz (Fase 3):
 
 ### Corregido
 
-- Con la interfaz en quechua, el resultado de la verificación ofrece "Ver en español": muestra el resumen y la explicación de cada firma en español sin cambiar de idioma, como el diálogo del PIN (BRG-UX-001 §4.2).
+- Con la interfaz en quechua, el resultado de la verificación ofrece "Leer en español": muestra el resumen, la explicación y los detalles técnicos de cada firma y sello en español, sin cambiar de idioma. El diálogo del PIN usa el mismo botón, que se distingue del "Ver en español" del aviso, el que cambia el idioma (BRG-UX-001 §4.2).
 - Un PDF con una firma cuyo CMS rompe pyHanko o asn1crypto después del resumen (datos de revocación de Adobe, sello de la firma o diagnóstico de la cadena) daba "error inesperado"; ahora es TOTAL-FAILED/FORMAT_FAILURE, como el resto de firmas malformadas. Lo mismo con los sellos de documento.
 - Cambiar el idioma con el diálogo del PIN abierto destruía la ventana y podía dejar el hilo de firma esperando para siempre con la tarjeta reservada. Ahora el diálogo se cancela antes (no se envía el PIN).
 - En un lote, un error que berigna no conoce detenía todos los documentos y el informe no llegaba a crearse; ahora falla solo ese documento (ERR-000) y los demás siguen (RF-043).

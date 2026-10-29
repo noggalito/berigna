@@ -134,5 +134,5 @@ Fases 0, 1 y 2 cerradas. Fase 3: funcionalmente completa (incrementos 1 a 7 hech
 | Perfiles con nombre de la firma visible | Versión 1.1 (decisión del 2026-10-29); en la v1.0, una sola apariencia, la de Preferencias | RF-081 | — |
 | Extensión de LibreOffice "Firmar con berigna" | Versión 1.2 (decisión del 2026-10-27) | RF-074 | — |
 
-Verificación local: `scripts/verificar.sh` (ruff, mypy estricto, pytest con cobertura mínima del 80 %; al 2026-10-29, 100 % del núcleo y 95 % del total con 476 pruebas, incluidas las de la interfaz con Xvfb; las 5 con hardware se omiten sin `BERIGNA_HIL=1`). Pruebas con hardware: `BERIGNA_HIL=1 pytest -m hil` (sin PIN) y los *scripts* manuales de `tests/hil/` (con PIN, según el protocolo).
+Verificación local: `scripts/verificar.sh` (ruff, mypy estricto, pytest con cobertura mínima del 80 %; al 2026-10-29, 100 % del núcleo y 95 % del total con 479 pruebas, incluidas las de la interfaz con Xvfb; las 5 con hardware se omiten sin `BERIGNA_HIL=1`). Pruebas con hardware: `BERIGNA_HIL=1 pytest -m hil` (sin PIN) y los *scripts* manuales de `tests/hil/` (con PIN, según el protocolo).
 

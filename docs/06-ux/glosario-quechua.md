@@ -3,7 +3,7 @@
 | Campo | Valor |
 |---|---|
 | Documento | BRG-UX-003 |
-| Versión | 0.1.0 |
+| Versión | 0.2.0 |
 | Estado | Borrador |
 | Fecha | 2026-10-29 |
 | Responsable | noggalito |
@@ -77,6 +77,7 @@ La primera traducción (2026-10-29) es automática, hecha con IA a partir de est
 | añadir, quitar | yapay, qichuy | |
 | exportar | hurquy | "sacar" |
 | copiar | kikinchay | "igualar" |
+| ver; leer | qhaway; ñawinchay | "Kastilla simipi qhaway" cambia el idioma; "Kastilla simipi ñawinchay" solo muestra el texto en español |
 | borrar | chinkachiy | "hacer desaparecer" |
 | buscar | maskhay | |
 | elegir | akllay | |
