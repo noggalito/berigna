@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: berigna\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-29 00:44-0500\n"
+"POT-Creation-Date: 2026-10-29 01:19-0500\n"
 "PO-Revision-Date: 2026-10-27 23:38-0500\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -725,7 +725,7 @@ msgstr "Firma en un lote"
 msgid "Verification"
 msgstr "Verificación"
 
-#: src/berigna/ui/application.py:298
+#: src/berigna/ui/application.py:297
 msgid "Sign and verify documents with your Peruvian DNIe."
 msgstr "Firma y verifica documentos con tu DNIe."
 
@@ -789,7 +789,7 @@ msgstr[1] "_Firmar {n} documentos"
 msgid "PDF documents"
 msgstr "Documentos PDF"
 
-#: src/berigna/ui/batch.py:230 src/berigna/ui/history.py:159
+#: src/berigna/ui/batch.py:230 src/berigna/ui/history.py:161
 #: src/berigna/ui/signing.py:443
 msgid "_Cancel"
 msgstr "_Cancelar"
@@ -830,19 +830,19 @@ msgstr "Mostrar en la _carpeta"
 msgid "Sign _Other Documents"
 msgstr "Firmar _otros documentos"
 
-#: src/berigna/ui/batch.py:414 src/berigna/ui/verification.py:70
+#: src/berigna/ui/batch.py:415 src/berigna/ui/verification.py:70
 msgid "Export Report"
 msgstr "Exportar el informe"
 
-#: src/berigna/ui/batch.py:414
+#: src/berigna/ui/batch.py:415
 msgid "batch-report.csv"
 msgstr "informe-del-lote.csv"
 
-#: src/berigna/ui/batch.py:427
+#: src/berigna/ui/batch.py:429
 msgid "The report could not be saved."
 msgstr "No se pudo guardar el informe."
 
-#: src/berigna/ui/batch.py:429
+#: src/berigna/ui/batch.py:431
 msgid "Report saved."
 msgstr "Informe guardado."
 
@@ -898,7 +898,7 @@ msgstr "No firmado: {reason}"
 msgid "Search by name, signer or SHA-256"
 msgstr "Buscar por nombre, firmante o SHA-256"
 
-#: src/berigna/ui/history.py:75 src/berigna/ui/history.py:131
+#: src/berigna/ui/history.py:75 src/berigna/ui/history.py:132
 msgid "Export to CSV"
 msgstr "Exportar a CSV"
 
@@ -914,7 +914,9 @@ msgstr "Historial"
 msgid ""
 "Kept only on this computer. It is a record for your own control; the signed "
 "documents are the evidence."
-msgstr "Se guarda solo en este equipo. Es un registro para tu propio control; la prueba son los documentos firmados."
+msgstr ""
+"Se guarda solo en este equipo. Es un registro para tu propio control; la "
+"prueba son los documentos firmados."
 
 #: src/berigna/ui/history.py:114
 msgid "The history is switched off"
@@ -932,33 +934,35 @@ msgstr "No se encontró nada"
 msgid "Nothing signed or verified yet"
 msgstr "Todavía no has firmado ni verificado nada"
 
-#: src/berigna/ui/history.py:131
+#: src/berigna/ui/history.py:132
 msgid "berigna-history.csv"
 msgstr "historial-berigna.csv"
 
-#: src/berigna/ui/history.py:148
+#: src/berigna/ui/history.py:150
 msgid "The history could not be saved."
 msgstr "No se pudo guardar el historial."
 
-#: src/berigna/ui/history.py:150
+#: src/berigna/ui/history.py:152
 msgid "History exported."
 msgstr "Historial exportado."
 
-#: src/berigna/ui/history.py:154
+#: src/berigna/ui/history.py:156
 msgid "Clear the History?"
 msgstr "¿Borrar el historial?"
 
-#: src/berigna/ui/history.py:156
+#: src/berigna/ui/history.py:158
 msgid ""
 "Every row is deleted from this computer. The signed documents are not "
 "touched."
-msgstr "Se borran todas las filas de este equipo. Los documentos firmados no se tocan."
+msgstr ""
+"Se borran todas las filas de este equipo. Los documentos firmados no se "
+"tocan."
 
-#: src/berigna/ui/history.py:160
+#: src/berigna/ui/history.py:162
 msgid "C_lear"
 msgstr "_Borrar"
 
-#: src/berigna/ui/history.py:174
+#: src/berigna/ui/history.py:176
 msgid "History cleared."
 msgstr "Historial borrado."
 
@@ -1010,7 +1014,9 @@ msgstr "Usar la carpeta del original"
 msgid ""
 "A list of the documents you sign and verify, kept only on this computer "
 "(Main Menu → History)."
-msgstr "Una lista de los documentos que firmas y verificas, guardada solo en este equipo (menú principal → Historial)."
+msgstr ""
+"Una lista de los documentos que firmas y verificas, guardada solo en este "
+"equipo (menú principal → Historial)."
 
 #: src/berigna/ui/preferences.py:163
 msgid "Keep a History"
@@ -1200,13 +1206,15 @@ msgstr "Certificados de confianza"
 msgid ""
 "The root and intermediate certificates against which signatures are checked. "
 "Compare the SHA-256 with the official source if in doubt."
-msgstr "Los certificados raíz e intermedios con los que se comprueban las firmas. Si tienes dudas, compara el SHA-256 con la fuente oficial."
+msgstr ""
+"Los certificados raíz e intermedios con los que se comprueban las firmas. Si "
+"tienes dudas, compara el SHA-256 con la fuente oficial."
 
-#: src/berigna/ui/preferences.py:484
+#: src/berigna/ui/preferences.py:482
 msgid "The trusted list could not be updated."
 msgstr "No se pudo actualizar la lista de confianza."
 
-#: src/berigna/ui/preferences.py:486
+#: src/berigna/ui/preferences.py:484
 msgid "The trusted list is up to date."
 msgstr "La lista de confianza está al día."
 
