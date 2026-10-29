@@ -12,7 +12,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: berigna\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-29 12:17-0500\n"
+"POT-Creation-Date: 2026-10-29 01:45-0500\n"
 "PO-Revision-Date: 2026-10-27 23:37-0500\n"
 "Last-Translator: noggalito <berigna@noggalito.com>\n"
 "Language-Team: none\n"
@@ -726,47 +726,47 @@ msgstr "Huñupi firma"
 msgid "Verification"
 msgstr "Chiqaqchay"
 
-#: src/berigna/ui/application.py:329
+#: src/berigna/ui/application.py:297
 msgid "Sign and verify documents with your Peruvian DNIe."
 msgstr "DNIeykiwan qillqakunata firmay, chiqaqchaypas."
 
-#: src/berigna/ui/batch.py:98 src/berigna/ui/signing.py:448
-#: src/berigna/ui/signing.py:527 src/berigna/ui/verification.py:73
+#: src/berigna/ui/batch.py:97 src/berigna/ui/signing.py:448
+#: src/berigna/ui/signing.py:521 src/berigna/ui/verification.py:73
 msgid "_Sign"
 msgstr "_Firmay"
 
-#: src/berigna/ui/batch.py:105
+#: src/berigna/ui/batch.py:104
 msgid "Sign Several Documents"
 msgstr "Achka qillqakunata firmay"
 
-#: src/berigna/ui/batch.py:114 src/berigna/ui/batch.py:219
+#: src/berigna/ui/batch.py:113 src/berigna/ui/batch.py:204
 msgid "Add Documents"
 msgstr "Qillqakunata yapay"
 
-#: src/berigna/ui/batch.py:115 src/berigna/ui/batch.py:231
+#: src/berigna/ui/batch.py:114 src/berigna/ui/batch.py:216
 msgid "Add Folder"
 msgstr "Carpetata yapay"
 
-#: src/berigna/ui/batch.py:123 src/berigna/ui/presentation.py:291
+#: src/berigna/ui/batch.py:122 src/berigna/ui/presentation.py:291
 msgid "Documents"
 msgstr "Qillqakuna"
 
-#: src/berigna/ui/batch.py:124
+#: src/berigna/ui/batch.py:123
 msgid "Include Subfolders When Adding a Folder"
 msgstr "Carpetata yapaspa ukhunpi carpetakunatapas yapay"
 
-#: src/berigna/ui/batch.py:168
+#: src/berigna/ui/batch.py:154
 #, python-brace-format
 msgid "{n} file is not a PDF or cannot be read; it was left out."
 msgid_plural "{n} files are not PDFs or cannot be read; they were left out."
 msgstr[0] ""
 "{n} archivoqa manan PDFchu utaq manan ñawinchakunmanchu; hawapi saqisqa."
 
-#: src/berigna/ui/batch.py:191
+#: src/berigna/ui/batch.py:176
 msgid "Remove from the List"
 msgstr "Listamanta qichuy"
 
-#: src/berigna/ui/batch.py:203
+#: src/berigna/ui/batch.py:188
 #, python-brace-format
 msgid ""
 "{n} document. They are signed with a single PIN; the signatures are not "
@@ -776,120 +776,102 @@ msgid_plural ""
 "visible."
 msgstr[0] "{n} qillqa. Huk PINllawan firmakunku; firmakunaqa manan rikukunchu."
 
-#: src/berigna/ui/batch.py:209
+#: src/berigna/ui/batch.py:194
 #, python-brace-format
 msgid "_Sign {n} Document"
 msgid_plural "_Sign {n} Documents"
 msgstr[0] "{n} qillqata _firmay"
 
-#: src/berigna/ui/batch.py:215 src/berigna/ui/window.py:177
+#: src/berigna/ui/batch.py:200 src/berigna/ui/window.py:154
 msgid "PDF documents"
 msgstr "PDF qillqakuna"
 
-#: src/berigna/ui/batch.py:249 src/berigna/ui/history.py:165
+#: src/berigna/ui/batch.py:234 src/berigna/ui/history.py:165
 #: src/berigna/ui/signing.py:447
 msgid "_Cancel"
 msgstr "_Saqiy"
 
-#: src/berigna/ui/batch.py:270
+#: src/berigna/ui/batch.py:255
 msgid "Cancelling after the current document…"
 msgstr "Kunan qillqata tukuspa saqishan…"
 
-#: src/berigna/ui/batch.py:297 src/berigna/ui/signing.py:708
+#: src/berigna/ui/batch.py:280 src/berigna/ui/signing.py:702
 msgid "Checking your certificate…"
 msgstr "Certificadoykita qhawarishan…"
 
-#: src/berigna/ui/batch.py:342
+#: src/berigna/ui/batch.py:325
 #, python-brace-format
 msgid "Signing {done} of {total} with your DNIe…"
 msgstr "DNIeykiwan {done} / {total} firmashan…"
 
-#: src/berigna/ui/batch.py:358
+#: src/berigna/ui/batch.py:341
 msgid "The documents were not signed"
 msgstr "Qillqakunaqa manan firmakurqanchu"
 
-#: src/berigna/ui/batch.py:393
+#: src/berigna/ui/batch.py:377
 #, python-brace-format
 msgid "{signed} of {total} document signed"
 msgid_plural "{signed} of {total} documents signed"
 msgstr[0] "{signed} / {total} qillqa firmasqa"
 
-#: src/berigna/ui/batch.py:415
+#: src/berigna/ui/batch.py:399
 msgid "_Export Report…"
 msgstr "Willakuyta _hurquy…"
 
-#: src/berigna/ui/batch.py:416 src/berigna/ui/signing.py:774
+#: src/berigna/ui/batch.py:400 src/berigna/ui/signing.py:768
 msgid "Show in _Folder"
 msgstr "_Carpetapi rikuchiy"
 
-#: src/berigna/ui/batch.py:417
+#: src/berigna/ui/batch.py:401
 msgid "Sign _Other Documents"
 msgstr "_Huk qillqakunata firmay"
 
-#: src/berigna/ui/batch.py:435 src/berigna/ui/verification.py:70
+#: src/berigna/ui/batch.py:419 src/berigna/ui/verification.py:70
 msgid "Export Report"
 msgstr "Willakuyta hurquy"
 
-#: src/berigna/ui/batch.py:435
+#: src/berigna/ui/batch.py:419
 msgid "batch-report.csv"
 msgstr "huñu-willakuy.csv"
 
-#: src/berigna/ui/batch.py:449
+#: src/berigna/ui/batch.py:433
 msgid "The report could not be saved."
 msgstr "Manan atikurqanchu willakuyta waqaychayta."
 
-#: src/berigna/ui/batch.py:451
+#: src/berigna/ui/batch.py:435
 msgid "Report saved."
 msgstr "Willakuyqa waqaychasqa."
 
-#: src/berigna/ui/diagnostics.py:53
-msgid "berigna Failed Unexpectedly Last Time"
-msgstr "Ñawpaq kutipi berignaqa mana suyasqata pantarqan"
-
-#: src/berigna/ui/diagnostics.py:55
-#, python-brace-format
-msgid ""
-"You can copy the report and send it as an issue at {url}. It has no PIN and "
-"no document contents, and the DNI only masked. Nothing is sent on its own."
-msgstr ""
-"Willakuyta kikinchaspa {url} nisqapi incidencia hina apachiyta atinki. Manan "
-"PINniyuqchu, manataq qillqakunaq contenidonniyuqchu, DNIpas pakasqa. Manan "
-"imapas kikillanmanta apachikunchu."
-
-#: src/berigna/ui/diagnostics.py:59 src/berigna/ui/signing.py:494
-msgid "_Close"
-msgstr "_Wichqay"
-
-#: src/berigna/ui/diagnostics.py:60 src/berigna/ui/diagnostics.py:109
-msgid "_Copy Report"
-msgstr "Willakuyta _kikinchay"
-
-#: src/berigna/ui/diagnostics.py:66 src/berigna/ui/diagnostics.py:164
-msgid "Report copied. It has no PIN, and the DNI only masked."
-msgstr "Willakuyqa kikinchasqa. Manan PINniyuqchu, DNIpas pakasqa."
-
-#: src/berigna/ui/diagnostics.py:87
+#: src/berigna/ui/diagnostics.py:62
 msgid "Check Again"
 msgstr "Wakmanta qhawariy"
 
-#: src/berigna/ui/diagnostics.py:94 src/berigna/ui/diagnostics.py:119
+#: src/berigna/ui/diagnostics.py:69 src/berigna/ui/diagnostics.py:94
 msgid "Diagnosis"
 msgstr "T'aqwiy"
 
-#: src/berigna/ui/diagnostics.py:96
+#: src/berigna/ui/diagnostics.py:71
 msgid ""
 "Checks the reader, the DNIe and the services, in order. The PIN is not asked."
 msgstr ""
 "Lectorta, DNIeta, servicioskunatapas siqinpi qhawarin. Manan PINta "
 "mañakunchu."
 
-#: src/berigna/ui/diagnostics.py:111
+#: src/berigna/ui/diagnostics.py:84
+msgid "_Copy Report"
+msgstr "Willakuyta _kikinchay"
+
+#: src/berigna/ui/diagnostics.py:86
 msgid "Open the _Log Folder"
 msgstr "_Registro carpetata kichay"
 
-#: src/berigna/ui/diagnostics.py:126
+#: src/berigna/ui/diagnostics.py:101
 msgid "Checking…"
 msgstr "Qhawarishan…"
+
+#: src/berigna/ui/diagnostics.py:139
+msgid "Report copied. It has no PIN, and the DNI only masked."
+msgstr "Willakuyqa kikinchasqa. Manan PINniyuqchu, DNIpas pakasqa."
 
 #: src/berigna/ui/help.py:42 src/berigna/ui/help.py:46
 msgid "More Information"
@@ -926,7 +908,7 @@ msgstr "CSVman hurquy"
 msgid "Clear History"
 msgstr "Ruwasqakunata chinkachiy"
 
-#: src/berigna/ui/history.py:84 src/berigna/ui/preferences.py:163
+#: src/berigna/ui/history.py:84 src/berigna/ui/preferences.py:161
 msgid "History"
 msgstr "Ruwasqakuna"
 
@@ -986,51 +968,51 @@ msgstr "_Chinkachiy"
 msgid "History cleared."
 msgstr "Ruwasqakunaqa chinkachisqa."
 
-#: src/berigna/ui/preferences.py:115
+#: src/berigna/ui/preferences.py:113
 msgid "General"
 msgstr "Llapanpaq"
 
-#: src/berigna/ui/preferences.py:116
+#: src/berigna/ui/preferences.py:114
 msgid "Language"
 msgstr "Simi"
 
-#: src/berigna/ui/preferences.py:118
+#: src/berigna/ui/preferences.py:116
 msgid "Interface Language"
 msgstr "Interfazpa siminqa"
 
-#: src/berigna/ui/preferences.py:120
+#: src/berigna/ui/preferences.py:118
 msgid "Use the System Language"
 msgstr "Sistemaq siminta llamk'achiy"
 
-#: src/berigna/ui/preferences.py:125
+#: src/berigna/ui/preferences.py:123
 msgid "Signatures"
 msgstr "Firmakuna"
 
-#: src/berigna/ui/preferences.py:127
+#: src/berigna/ui/preferences.py:125
 msgid "Default Level"
 msgstr "Ñawpaq akllasqa pata"
 
-#: src/berigna/ui/preferences.py:132
+#: src/berigna/ui/preferences.py:130
 msgid "Hash Algorithm"
 msgstr "Hash algoritmo"
 
-#: src/berigna/ui/preferences.py:134
+#: src/berigna/ui/preferences.py:132
 msgid "Suffix of Signed Files"
 msgstr "Firmasqa archivokunaq qhipa sutin"
 
-#: src/berigna/ui/preferences.py:136 src/berigna/ui/preferences.py:204
+#: src/berigna/ui/preferences.py:134 src/berigna/ui/preferences.py:202
 msgid "Folder for Signed Files"
 msgstr "Firmasqa archivokunaq carpetan"
 
-#: src/berigna/ui/preferences.py:140
+#: src/berigna/ui/preferences.py:138
 msgid "Choose Folder"
 msgstr "Carpetata akllay"
 
-#: src/berigna/ui/preferences.py:149
+#: src/berigna/ui/preferences.py:147
 msgid "Use the Folder of the Original"
 msgstr "Ñawpaq archivoq carpetanta llamk'achiy"
 
-#: src/berigna/ui/preferences.py:165
+#: src/berigna/ui/preferences.py:163
 msgid ""
 "A list of the documents you sign and verify, kept only on this computer "
 "(Main Menu → History)."
@@ -1038,35 +1020,35 @@ msgstr ""
 "Firmasqayki chiqaqchasqayki qillqakunaq listan, kay computadorallapi "
 "waqaychasqa (hatun menú → Ruwasqakuna)."
 
-#: src/berigna/ui/preferences.py:169
+#: src/berigna/ui/preferences.py:167
 msgid "Keep a History"
 msgstr "Ruwasqakunata waqaychay"
 
-#: src/berigna/ui/preferences.py:171
+#: src/berigna/ui/preferences.py:169
 msgid "Keep the Full Path of the Files"
 msgstr "Archivokunaq llapan ñanninta waqaychay"
 
-#: src/berigna/ui/preferences.py:172
+#: src/berigna/ui/preferences.py:170
 msgid "Otherwise only their names."
 msgstr "Mana chayqa, sutinkunallata."
 
-#: src/berigna/ui/preferences.py:190
+#: src/berigna/ui/preferences.py:188
 msgid "The suffix cannot be empty or contain “/”."
 msgstr "Qhipa sutiqa manan ch'usaqchu kanan, manataq «/» nisqayuqchu."
 
-#: src/berigna/ui/preferences.py:196
+#: src/berigna/ui/preferences.py:194
 msgid "The same folder as the original"
 msgstr "Ñawpaq archivoq kaq carpetan"
 
-#: src/berigna/ui/preferences.py:219 src/berigna/ui/signing.py:582
+#: src/berigna/ui/preferences.py:217 src/berigna/ui/signing.py:576
 msgid "Visible Signature"
 msgstr "Rikukuq firma"
 
-#: src/berigna/ui/preferences.py:221
+#: src/berigna/ui/preferences.py:219
 msgid "Defaults"
 msgstr "Ñawpaq akllasqakuna"
 
-#: src/berigna/ui/preferences.py:223
+#: src/berigna/ui/preferences.py:221
 msgid ""
 "The signed PDF always carries the full DNI in its certificate; “DNI in the "
 "Signature” only changes what is printed."
@@ -1074,67 +1056,67 @@ msgstr ""
 "Firmasqa PDFqa certificadonpi llapan DNIta apan; «Firmapi DNI» nisqaqa "
 "imprimisqallatam tikran."
 
-#: src/berigna/ui/preferences.py:240 src/berigna/ui/signing.py:591
+#: src/berigna/ui/preferences.py:238 src/berigna/ui/signing.py:585
 msgid "Appearance"
 msgstr "Rikch'ay"
 
-#: src/berigna/ui/preferences.py:247
+#: src/berigna/ui/preferences.py:245
 msgid "Language of the Signature"
 msgstr "Firmaq siminqa"
 
-#: src/berigna/ui/preferences.py:252
+#: src/berigna/ui/preferences.py:250
 msgid "DNI in the Signature"
 msgstr "Firmapi DNI"
 
-#: src/berigna/ui/preferences.py:261 src/berigna/ui/preferences.py:319
+#: src/berigna/ui/preferences.py:259 src/berigna/ui/preferences.py:317
 msgid "Images"
 msgstr "Siq'ikuna"
 
-#: src/berigna/ui/preferences.py:263
+#: src/berigna/ui/preferences.py:261
 msgid ""
 "Loaded once and kept by berigna, without the metadata of the original file."
 msgstr ""
 "Huk kutilla churakun, berignataq ñawpaq archivoq metadatosninta mana "
 "waqaychaspa waqaychan."
 
-#: src/berigna/ui/preferences.py:268
+#: src/berigna/ui/preferences.py:266
 msgid "Handwritten Signature"
 msgstr "Rúbrica"
 
-#: src/berigna/ui/preferences.py:269 src/berigna/ui/signing.py:103
+#: src/berigna/ui/preferences.py:267 src/berigna/ui/signing.py:103
 msgid "Logo"
 msgstr "Logotipo"
 
-#: src/berigna/ui/preferences.py:275 src/berigna/ui/preferences.py:324
+#: src/berigna/ui/preferences.py:273 src/berigna/ui/preferences.py:322
 msgid "Choose Image"
 msgstr "Siq'ita akllay"
 
-#: src/berigna/ui/preferences.py:284
+#: src/berigna/ui/preferences.py:282
 msgid "Remove Image"
 msgstr "Siq'ita qichuy"
 
-#: src/berigna/ui/preferences.py:301
+#: src/berigna/ui/preferences.py:299
 msgid "Loaded"
 msgstr "Churasqa"
 
-#: src/berigna/ui/preferences.py:301
+#: src/berigna/ui/preferences.py:299
 msgid "No image"
 msgstr "Mana siq'iyuq"
 
-#: src/berigna/ui/preferences.py:310 src/berigna/ui/verification.py:275
+#: src/berigna/ui/preferences.py:308 src/berigna/ui/verification.py:275
 #, python-brace-format
 msgid "{name} could not be saved."
 msgstr "Manan atikurqanchu {name} waqaychayta."
 
-#: src/berigna/ui/preferences.py:339
+#: src/berigna/ui/preferences.py:337
 msgid "Network"
 msgstr "Llika"
 
-#: src/berigna/ui/preferences.py:342
+#: src/berigna/ui/preferences.py:340
 msgid "Timestamping Authority"
 msgstr "Pacha sello churaq"
 
-#: src/berigna/ui/preferences.py:344
+#: src/berigna/ui/preferences.py:342
 msgid ""
 "Needed for the levels with a timestamp. Use a timestamping authority "
 "accredited by INDECOPI."
@@ -1142,71 +1124,71 @@ msgstr ""
 "Pacha selloyuq patakunapaq necesitakun. INDECOPIpa chiqaqchasqan pacha sello "
 "churaqta llamk'achiy."
 
-#: src/berigna/ui/preferences.py:348
+#: src/berigna/ui/preferences.py:346
 msgid "Address of the Timestamping Authority"
 msgstr "Pacha sello churaqpa tiyanan"
 
-#: src/berigna/ui/preferences.py:350
+#: src/berigna/ui/preferences.py:348
 msgid "_Test"
 msgstr "_Pruebay"
 
-#: src/berigna/ui/preferences.py:356
+#: src/berigna/ui/preferences.py:354
 msgid "Connection"
 msgstr "Tinkuy"
 
-#: src/berigna/ui/preferences.py:358
+#: src/berigna/ui/preferences.py:356
 msgid "Network Timeout"
 msgstr "Llikaq suyana pachan"
 
-#: src/berigna/ui/preferences.py:359
+#: src/berigna/ui/preferences.py:357
 msgid "Seconds to wait for each answer"
 msgstr "Sapa kutichiyta hayk'a segundota suyakun"
 
-#: src/berigna/ui/preferences.py:363
+#: src/berigna/ui/preferences.py:361
 msgid "Proxy"
 msgstr "Proxy"
 
-#: src/berigna/ui/preferences.py:366
+#: src/berigna/ui/preferences.py:364
 msgid "The Proxy of the System"
 msgstr "Sistemaq proxynin"
 
-#: src/berigna/ui/preferences.py:367
+#: src/berigna/ui/preferences.py:365
 msgid "Manual"
 msgstr "Makiwan"
 
-#: src/berigna/ui/preferences.py:368
+#: src/berigna/ui/preferences.py:366
 msgid "No Proxy"
 msgstr "Mana proxyyuq"
 
-#: src/berigna/ui/preferences.py:372
+#: src/berigna/ui/preferences.py:370
 msgid "Proxy Address"
 msgstr "Proxyq tiyanan"
 
-#: src/berigna/ui/preferences.py:385
+#: src/berigna/ui/preferences.py:383
 msgid "The address must start with http:// or https://."
 msgstr "Tiyananqa http:// utaq https:// nisqawan qallarinan."
 
-#: src/berigna/ui/preferences.py:393
+#: src/berigna/ui/preferences.py:391
 msgid "There is no timestamping authority configured."
 msgstr "Manan ni huk pacha sello churaqpas churasqachu."
 
-#: src/berigna/ui/preferences.py:401
+#: src/berigna/ui/preferences.py:399
 msgid "The timestamping authority answered with a valid time-stamp."
 msgstr "Pacha sello churaqqa chiqaq sellowan kutichirqan."
 
-#: src/berigna/ui/preferences.py:423
+#: src/berigna/ui/preferences.py:420
 msgid "The proxy address must start with http:// or https://."
 msgstr "Proxyq tiyananqa http:// utaq https:// nisqawan qallarinan."
 
-#: src/berigna/ui/preferences.py:430
+#: src/berigna/ui/preferences.py:427
 msgid "Trust"
 msgstr "Iñiy"
 
-#: src/berigna/ui/preferences.py:433
+#: src/berigna/ui/preferences.py:430
 msgid "INDECOPI Trusted List"
 msgstr "INDECOPIpa iñisqa listan"
 
-#: src/berigna/ui/preferences.py:436
+#: src/berigna/ui/preferences.py:433
 msgid ""
 "berigna adds the certification authorities accredited by INDECOPI to its own "
 "root certificates. The list is checked once a day."
@@ -1214,15 +1196,15 @@ msgstr ""
 "berignaqa INDECOPIpa chiqaqchasqan certificación entidadkunata kikin saphi "
 "certificadonkunaman yapan. Listaqa sapa p'unchaw huk kuti qhawarikun."
 
-#: src/berigna/ui/preferences.py:443
+#: src/berigna/ui/preferences.py:440
 msgid "_Update Now"
 msgstr "Kunan _musuqchay"
 
-#: src/berigna/ui/preferences.py:452
+#: src/berigna/ui/preferences.py:449
 msgid "Trusted Certificates"
 msgstr "Iñisqa certificadokuna"
 
-#: src/berigna/ui/preferences.py:454
+#: src/berigna/ui/preferences.py:451
 msgid ""
 "The root and intermediate certificates against which signatures are checked. "
 "Compare the SHA-256 with the official source if in doubt."
@@ -1230,11 +1212,11 @@ msgstr ""
 "Firmakuna chiqaqchanapaq saphi certificadokuna, chawpi certificadokunapas. "
 "Iskayrayaspaqa SHA-256 nisqata oficial pukyuwan tupachiy."
 
-#: src/berigna/ui/preferences.py:495
+#: src/berigna/ui/preferences.py:490
 msgid "The trusted list could not be updated."
 msgstr "Manan atikurqanchu iñisqa listata musuqchayta."
 
-#: src/berigna/ui/preferences.py:497
+#: src/berigna/ui/preferences.py:492
 msgid "The trusted list is up to date."
 msgstr "Iñisqa listaqa kunanpaqmi."
 
@@ -1601,32 +1583,27 @@ msgstr "Manan qhawarisqachu: berignaqa mana llikayuq llamk'ashan."
 msgid "berigna {version} diagnosis, {moment}"
 msgstr "berigna {version} t'aqwiy, {moment}"
 
-#: src/berigna/ui/presentation.py:496
-#, python-brace-format
-msgid "berigna {version} failure report, {moment}"
-msgstr "berigna {version} pantay willakuy, {moment}"
-
-#: src/berigna/ui/presentation.py:509
+#: src/berigna/ui/presentation.py:495
 msgid "Included in berigna"
 msgstr "berignawan hamuqkuna"
 
-#: src/berigna/ui/presentation.py:510
+#: src/berigna/ui/presentation.py:496
 msgid "From the INDECOPI trusted list"
 msgstr "INDECOPIpa iñisqa listanmanta"
 
-#: src/berigna/ui/presentation.py:511
+#: src/berigna/ui/presentation.py:497
 msgid "Added by you"
 msgstr "Qampa yapasqaykikuna"
 
-#: src/berigna/ui/presentation.py:532
+#: src/berigna/ui/presentation.py:518
 msgid "Intermediate"
 msgstr "Chawpi"
 
-#: src/berigna/ui/presentation.py:532
+#: src/berigna/ui/presentation.py:518
 msgid "Root"
 msgstr "Saphi"
 
-#: src/berigna/ui/presentation.py:537
+#: src/berigna/ui/presentation.py:523
 #, python-brace-format
 msgid "{role} · valid until {date}"
 msgstr "{role} · {date} p'unchawkama allin"
@@ -1760,7 +1737,7 @@ msgstr "_Kutiy"
 msgid "Sign Without _Timestamp (B-B)"
 msgstr "Mana pacha _sellowan firmay (B-B)"
 
-#: src/berigna/ui/signing.py:410 src/berigna/ui/signing.py:491
+#: src/berigna/ui/signing.py:410 src/berigna/ui/signing.py:485
 msgid "Confirm Signature"
 msgstr "Firmata takyachiy"
 
@@ -1768,7 +1745,11 @@ msgstr "Firmata takyachiy"
 msgid "DNIe PIN"
 msgstr "DNIeq PINnin"
 
-#: src/berigna/ui/signing.py:547
+#: src/berigna/ui/signing.py:488
+msgid "_Close"
+msgstr "_Wichqay"
+
+#: src/berigna/ui/signing.py:541
 msgid ""
 "Some of the signatures already in this document are not valid. Your "
 "signature will be added anyway."
@@ -1776,7 +1757,7 @@ msgstr ""
 "Kay qillqaq ñawpaq firmankunamanta wakinqa manan chiqaqchu. Firmaykiqa "
 "yapakunqapuni."
 
-#: src/berigna/ui/signing.py:584
+#: src/berigna/ui/signing.py:578
 msgid ""
 "Drag the box to move it and its corner to resize it; drag the page to scroll "
 "it. In a box taller than wide, the image goes above the text."
@@ -1785,31 +1766,31 @@ msgstr ""
 "rapita aysay kuyuchinaykipaq. Cuadro kinrayninmanta aswan suni kaqtinqa, "
 "siq'iqa qillqaq hawanpim."
 
-#: src/berigna/ui/signing.py:659
+#: src/berigna/ui/signing.py:653
 msgid "Load the image in Preferences → Visible Signature."
 msgstr "Akllanakuna → Rikukuq firma nisqapi siq'ita churay."
 
-#: src/berigna/ui/signing.py:665
+#: src/berigna/ui/signing.py:659
 msgid "NAMES AND SURNAMES"
 msgstr "SUTIKUNA, APELLIDOKUNAPAS"
 
-#: src/berigna/ui/signing.py:747
+#: src/berigna/ui/signing.py:741
 msgid "Signing with your DNIe…"
 msgstr "DNIeykiwan firmashan…"
 
-#: src/berigna/ui/signing.py:767
+#: src/berigna/ui/signing.py:761
 msgid "Document signed"
 msgstr "Qillqaqa firmasqa"
 
-#: src/berigna/ui/signing.py:773
+#: src/berigna/ui/signing.py:767
 msgid "_Open"
 msgstr "_Kichay"
 
-#: src/berigna/ui/signing.py:775
+#: src/berigna/ui/signing.py:769
 msgid "_Verify"
 msgstr "_Chiqaqchay"
 
-#: src/berigna/ui/signing.py:795
+#: src/berigna/ui/signing.py:789
 msgid "The document was not signed"
 msgstr "Qillqaqa manan firmakurqanchu"
 
@@ -1866,7 +1847,7 @@ msgid "Checking the certificates may take a few seconds."
 msgstr "Certificadokunata qhawariyqa wakin segundokunata unayanman."
 
 #: src/berigna/ui/verification.py:133 src/berigna/ui/window.py:111
-#: src/berigna/ui/window.py:239
+#: src/berigna/ui/window.py:216
 #, python-brace-format
 msgid "{name} could not be opened."
 msgstr "Manan atikurqanchu {name} kichayta."
@@ -1892,10 +1873,10 @@ msgstr "Kay firmawan qillqa imayna kasqan"
 msgid "Saved {name}"
 msgstr "{name} waqaychasqa"
 
-#: src/berigna/ui/window.py:158 src/berigna/ui/window.py:201
-msgid "Only files on this computer can be opened."
-msgstr "Kay computadorapi kaq archivokunallam kichakunman."
-
-#: src/berigna/ui/window.py:181
+#: src/berigna/ui/window.py:158
 msgid "Open Document"
 msgstr "Qillqata kichay"
+
+#: src/berigna/ui/window.py:178
+msgid "Only files on this computer can be opened."
+msgstr "Kay computadorapi kaq archivokunallam kichakunman."

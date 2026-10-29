@@ -3,13 +3,17 @@
 """Local record of unexpected failures (R-DES-11, BRG-DES-002 §5).
 
 Nothing is ever sent (RNF-SEG-07). An exception nobody caught, in the main thread or in a
-worker thread, goes to the technical log and to a pending report next to it; a crash in C
-code (GTK, Poppler) is written by ``faulthandler`` to its own file, read at the next start.
-On that next start the interface tells the user once and offers to copy the report.
+worker thread, goes to the technical log and to a pending report next to it, and is still
+printed as before; a crash in C code (GTK, Poppler) is written by ``faulthandler`` to its
+own file, and the next start moves it to the log and to the pending report. That start
+offers the report once; it is removed when the user has answered.
 
-Tracebacks carry no local variables, so no PIN; every run of five or more digits is masked.
+Every entry says when it happened and with which version. Tracebacks carry no local
+variables, so no PIN; every run of five or more digits is masked, and the home folder is
+written as ``~``.
 """
 
+import datetime as dt
 import faulthandler
 import logging
 import sys
@@ -19,29 +23,35 @@ from pathlib import Path
 from types import TracebackType
 from typing import TextIO
 
+import berigna
 from berigna.core.logs import log_directory
 from berigna.core.report.explanations import mask_numbers
 
 PENDING_NAME = "pending-failure.txt"
 FAULTS_NAME = "faulthandler.txt"
-MAX_PENDING = 64 * 1024  # a loop of failures must not fill the disk
+MAX_PENDING = 64 * 1024  # a loop of failures must not fill the disk: the oldest text goes
 
 log = logging.getLogger("berigna.crash")
 _faults: TextIO | None = None
+_directory: Path | None = None  # the one install() used, for the hooks
 _default_thread_hook = threading.excepthook
 
 
-def _append(path: Path, text: str) -> None:
-    try:
-        size = path.stat().st_size
-    except FileNotFoundError:
-        size = 0
-    if size >= MAX_PENDING:
-        return
+def _redact(text: str) -> str:
+    """Long numbers masked and the home folder, which names the user, written as ``~``."""
+    return mask_numbers(text.replace(str(Path.home()), "~"))
+
+
+def _append(path: Path, where: str, text: str) -> None:
+    moment = dt.datetime.now(dt.UTC).isoformat(timespec="seconds")
+    entry = _redact(f"[{moment} · berigna {berigna.__version__} · {where}]\n{text.rstrip()}\n\n")
     path.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
     path.touch(mode=0o600)
-    with path.open("a", encoding="utf-8") as stream:
-        stream.write(mask_numbers(text).rstrip("\n") + "\n\n")
+    try:
+        previous = path.read_text(encoding="utf-8", errors="replace")
+    except FileNotFoundError:
+        previous = ""
+    path.write_text((previous + entry)[-MAX_PENDING:], encoding="utf-8")
 
 
 def record(
@@ -57,7 +67,7 @@ def record(
     text = "".join(traceback.format_exception(exc_type, value, tb))
     try:
         log.critical("uncaught exception in the %s\n%s", where, text.rstrip())
-        _append((directory or log_directory()) / PENDING_NAME, f"[{where}]\n{text}")
+        _append((directory or _directory or log_directory()) / PENDING_NAME, where, text)
     except Exception:  # the hook must not fail in turn; stderr is the last resort
         if sys.__stderr__ is not None:
             sys.__stderr__.write(text)
@@ -66,22 +76,21 @@ def record(
 def _excepthook(
     exc_type: type[BaseException], value: BaseException, tb: TracebackType | None
 ) -> None:
-    if issubclass(exc_type, KeyboardInterrupt):
-        sys.__excepthook__(exc_type, value, tb)
-        return
-    record(exc_type, value, tb)
+    if not issubclass(exc_type, KeyboardInterrupt):
+        record(exc_type, value, tb)
+    sys.__excepthook__(exc_type, value, tb)  # still printed, as without the hook
 
 
 def _threading_excepthook(args: threading.ExceptHookArgs) -> None:
-    if args.exc_type is SystemExit:
-        return
-    thread = args.thread.name if args.thread is not None else None
-    record(args.exc_type, args.exc_value, args.exc_traceback, thread=thread)
+    if args.exc_type is not SystemExit:
+        thread = args.thread.name if args.thread is not None else None
+        record(args.exc_type, args.exc_value, args.exc_traceback, thread=thread)
+    _default_thread_hook(args)
 
 
 def install(directory: Path | None = None) -> None:
     """Install the hooks; first keep what ``faulthandler`` wrote if the last run crashed."""
-    global _faults
+    global _faults, _directory
     directory = directory or log_directory()
     directory.mkdir(parents=True, exist_ok=True, mode=0o700)
     faults = directory / FAULTS_NAME
@@ -90,34 +99,41 @@ def install(directory: Path | None = None) -> None:
     except FileNotFoundError:
         previous = ""
     if previous.strip():
-        _append(directory / PENDING_NAME, f"[fatal error in native code]\n{previous}")
+        log.critical("fatal error in native code in the last run\n%s", previous.rstrip())
+        _append(directory / PENDING_NAME, "fatal error in native code", previous)
     faults.touch(mode=0o600)
     if _faults is not None:
         faulthandler.disable()
         _faults.close()
     _faults = faults.open("w", encoding="utf-8")  # kept open: faulthandler writes to its fd
     faulthandler.enable(_faults)
+    _directory = directory
     sys.excepthook = _excepthook
     threading.excepthook = _threading_excepthook
 
 
 def uninstall() -> None:
     """Put back the default hooks and stop ``faulthandler`` (for the tests)."""
-    global _faults
+    global _faults, _directory
     sys.excepthook = sys.__excepthook__
     threading.excepthook = _default_thread_hook
+    _directory = None
     if _faults is not None:
         faulthandler.disable()
         _faults.close()
         _faults = None
 
 
-def take_pending(directory: Path | None = None) -> str | None:
-    """The pending report, if any, removed so that it is offered only once."""
+def pending(directory: Path | None = None) -> str | None:
+    """The pending report, if any, already masked when it was written."""
     path = (directory or log_directory()) / PENDING_NAME
     try:
-        text = path.read_text(encoding="utf-8", errors="replace")
-        path.unlink()
+        text = path.read_text(encoding="utf-8", errors="replace").strip()
     except FileNotFoundError:
         return None
-    return mask_numbers(text).strip() or None
+    return text or None
+
+
+def clear_pending(directory: Path | None = None) -> None:
+    """Remove the pending report once the user has seen it, so it is offered only once."""
+    ((directory or log_directory()) / PENDING_NAME).unlink(missing_ok=True)

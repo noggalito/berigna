@@ -32,8 +32,11 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     try:
         setup_logging()  # RF-083
-        crashes.install()  # R-DES-11
     except OSError as exc:  # a read-only home must not stop the program
         print(f"berigna: no technical log: {exc}", file=sys.stderr)
+    try:
+        crashes.install()  # R-DES-11
+    except OSError as exc:
+        print(f"berigna: no record of failures: {exc}", file=sys.stderr)
 
     return int(BerignaApplication().run(list(sys.argv if argv is None else argv)))
