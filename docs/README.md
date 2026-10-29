@@ -3,7 +3,7 @@
 | Campo | Valor |
 |---|---|
 | Documento | BRG-GEN-000 |
-| Versión | 0.5.0 |
+| Versión | 0.7.0 |
 | Estado | Borrador |
 | Fecha | 2026-10-29 |
 | Responsable | noggalito |
@@ -50,7 +50,7 @@ docs/
 │   └── recomendaciones-a-futuro.md    ← mejoras de la práctica de desarrollo, por fase
 ├── 09-despliegue/
 │   └── empaquetado-debian.md
-├── 10-investigacion/                  ← spikes SPK-01, SPK-03, SPK-05 y SPK-06
+├── 10-investigacion/                  ← spikes SPK-01, SPK-03, SPK-05, SPK-06 y SPK-07
 └── 11-mantenimiento/
     └── plan-de-mantenimiento.md       ← versiones, vigilancia, seguridad y continuidad tras la v1.0
 ```
@@ -77,13 +77,13 @@ Algunos documentos públicos citan identificadores cuyo detalle está en la docu
 | 00-gestion | Borrador | — |
 | 02-marco-normativo | Borrador | — |
 | 03-requisitos | Borrador | Línea base para la v1.0 |
-| 04-arquitectura | Borrador | ADR-0001 a ADR-0020 aceptados |
+| 04-arquitectura | Borrador | ADR-0001 a ADR-0021 aceptados |
 | 05-seguridad | Borrador | — |
 | 06-ux | Borrador | Interfaz implementada (Fase 3); glosario del quechua (BRG-UX-003) |
 | 07-calidad | Borrador | El protocolo de PIN está Vigente; protocolo de la prueba de usabilidad (BRG-CAL-005) pendiente de aplicar |
 | 08-desarrollo | Borrador | Recomendaciones a futuro (BRG-DES-002) |
 | 09-despliegue | Borrador | — |
-| 10-investigacion | En curso | SPK-01, SPK-03 y SPK-05 cerrados; SPK-06 (DNIe 1.0 y 3.0) pendiente |
+| 10-investigacion | En curso | SPK-01, SPK-03 y SPK-05 cerrados; SPK-06 (DNIe 1.0 y 3.0) y SPK-07 (NFC y teléfono) pendientes |
 | 11-mantenimiento | Borrador | Se aplica desde la v1.0 |
 
 ## 6. Decisiones técnicas principales
@@ -102,7 +102,8 @@ Algunos documentos públicos citan identificadores cuyo detalle está en la docu
 | Idiomas | es_PE y quechua sureño completos (ADR-0011, ADR-0015); en_US en la versión 1.1 |
 | Distribución | Paquete `.deb` para Debian 13 en un repositorio APT propio (ADR-0006) y entrada en el archivo oficial de Debian desde la v1.0 (ADR-0020); Flatpak en la 1.1 |
 | Titular e identificador | noggalito; `com.noggalito.Berigna` (ADR-0019); contacto `berigna@noggalito.com` |
-| Licencia | GPL-3.0-or-later (ADR-0005) |
+| Licencia | GPL-3.0-or-later (ADR-0005), con un permiso adicional para distribuir por tiendas de aplicaciones (ADR-0021) |
+| Otras plataformas | Windows, macOS, Android e iOS, y la lectura del DNIe por NFC, en estudio para la versión 1.1 (SPK-07) |
 
 ## 7. Estado de implementación (2026-10-29)
 
@@ -145,7 +146,10 @@ La cofirma CAdES (RF-023, "Podría") queda para después de la v1.0.
 | PIN pad (PC/SC parte 10) | Aplazado a la versión 1.1 (decisión del 2026-10-27; requiere un lector de clase 2) | RF-005, P-08 | — |
 | *Backend* PKCS#11 + SoftHSM | Aplazado a la versión 1.1 (decisión del 2026-10-27; el DNIe v2 no lo necesita) | ADR-0003 | — |
 | DNIe 1.0 y DNIe 3.0 | Versión 1.1 (decisión del 2026-10-27); identificación pendiente en SPK-06 | RNF-COM-05 | — |
+| Perfiles con nombre de la firma visible | Versión 1.1 (decisión del 2026-10-29); en la v1.0, una sola apariencia, la de Preferencias | RF-081 | — |
 | Extensión de LibreOffice "Firmar con berigna" | Versión 1.2 (decisión del 2026-10-27) | RF-074 | — |
+| Lectura del DNIe por NFC y teléfono (berigna en Android o el teléfono como puente) | Versión 1.1 (decisión del 2026-10-29); investigación en SPK-07 | ADR-0003, ADR-0012 | — |
+| Windows, macOS, Android e iOS | Versión 1.1 (decisión del 2026-10-29); el núcleo es independiente de la interfaz (ADR-0002) | ADR-0021 | — |
 
-Verificación local: `scripts/verificar.sh` (ruff, mypy estricto, pytest con cobertura mínima del 80 %; al 2026-10-29, 100 % del núcleo y 95 % del total con 476 pruebas, incluidas las de la interfaz con Xvfb; las 5 con hardware se omiten sin `BERIGNA_HIL=1`). Pruebas con hardware: `BERIGNA_HIL=1 pytest -m hil` (sin PIN) y los *scripts* manuales de `tests/hil/` (con PIN, según el protocolo).
+Verificación local: `scripts/verificar.sh` (ruff, mypy estricto, pytest con cobertura mínima del 80 %; al 2026-10-29, 100 % del núcleo y 95 % del total con 489 pruebas, incluidas las de la interfaz con Xvfb; las 5 con hardware se omiten sin `BERIGNA_HIL=1`). Pruebas con hardware: `BERIGNA_HIL=1 pytest -m hil` (sin PIN) y los *scripts* manuales de `tests/hil/` (con PIN, según el protocolo).
 
