@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-28 21:58-0500\n"
+"POT-Creation-Date: 2026-10-28 23:08-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -966,83 +966,94 @@ msgid ""
 "signature is possible."
 msgstr ""
 
-#: src/berigna/ui/presentation.py:321
+#: src/berigna/ui/presentation.py:319
+#, python-brace-format
+msgid ""
+"Your signing certificate expires on {date}, in {n} day. Renew it on RENIEC's "
+"Ciudadano Digital platform to keep signing."
+msgid_plural ""
+"Your signing certificate expires on {date}, in {n} days. Renew it on "
+"RENIEC's Ciudadano Digital platform to keep signing."
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/berigna/ui/presentation.py:332
 #, python-brace-format
 msgid "Saved as {name}, level {level}."
 msgstr ""
 
-#: src/berigna/ui/presentation.py:328
+#: src/berigna/ui/presentation.py:339
 msgid ""
 "The validation data could not be added because the revocation services did "
 "not answer."
 msgstr ""
 
-#: src/berigna/ui/presentation.py:331
+#: src/berigna/ui/presentation.py:342
 msgid "The document time-stamp could not be added."
 msgstr ""
 
-#: src/berigna/ui/presentation.py:341
+#: src/berigna/ui/presentation.py:352
 msgid "Checking the trusted list…"
 msgstr ""
 
-#: src/berigna/ui/presentation.py:345
+#: src/berigna/ui/presentation.py:356
 msgid "Not available"
 msgstr ""
 
-#: src/berigna/ui/presentation.py:346
+#: src/berigna/ui/presentation.py:357
 msgid "Only the root certificates included in berigna are used."
 msgstr ""
 
-#: src/berigna/ui/presentation.py:350
+#: src/berigna/ui/presentation.py:361
 #, python-brace-format
 msgid "List {sequence}, issued on {date}"
 msgstr ""
 
-#: src/berigna/ui/presentation.py:354
+#: src/berigna/ui/presentation.py:365
 #, python-brace-format
 msgid "Valid until {date}. {n} accredited certification authority."
 msgid_plural "Valid until {date}. {n} accredited certification authorities."
 msgstr[0] ""
 msgstr[1] ""
 
-#: src/berigna/ui/preview.py:80
+#: src/berigna/ui/preview.py:88
 msgid "No preview"
 msgstr ""
 
-#: src/berigna/ui/preview.py:81
+#: src/berigna/ui/preview.py:89
 msgid "This PDF cannot be shown, but it can still be signed."
 msgstr ""
 
-#: src/berigna/ui/preview.py:102
+#: src/berigna/ui/preview.py:115
 msgid "Zoom Out"
 msgstr ""
 
-#: src/berigna/ui/preview.py:103
+#: src/berigna/ui/preview.py:116
 msgid "Fit the Page"
 msgstr ""
 
-#: src/berigna/ui/preview.py:105
+#: src/berigna/ui/preview.py:118
 msgid "Zoom In"
 msgstr ""
 
-#: src/berigna/ui/preview.py:115
+#: src/berigna/ui/preview.py:128
 msgid "Previous Page"
 msgstr ""
 
-#: src/berigna/ui/preview.py:117
+#: src/berigna/ui/preview.py:130
 msgid "Next Page"
 msgstr ""
 
-#: src/berigna/ui/preview.py:124 src/berigna/ui/preview.py:126
+#: src/berigna/ui/preview.py:137 src/berigna/ui/preview.py:139
 msgid "Page Number"
 msgstr ""
 
-#: src/berigna/ui/preview.py:128
+#: src/berigna/ui/preview.py:141
 #, python-brace-format
 msgid "of {total}"
 msgstr ""
 
-#: src/berigna/ui/preview.py:169
+#: src/berigna/ui/preview.py:182
 msgid "Fit"
 msgstr ""
 
@@ -1149,8 +1160,8 @@ msgstr ""
 
 #: src/berigna/ui/signing.py:376
 msgid ""
-"Drag on the page to place it; drag the box to move it. In a box taller than "
-"wide, the image goes above the text."
+"Drag the box to move it and its corner to resize it; drag the page to scroll "
+"it. In a box taller than wide, the image goes above the text."
 msgstr ""
 
 #: src/berigna/ui/signing.py:471

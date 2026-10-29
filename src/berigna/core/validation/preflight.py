@@ -90,6 +90,9 @@ class RevocationNote(enum.Enum):
     UNAVAILABLE = "unavailable"  # online, but no usable OCSP/CRL (network, responder, old data)
 
 
+EXPIRY_WARNING = dt.timedelta(days=30)
+
+
 @dataclass(frozen=True)
 class SignerCheck:
     """Outcome of a successful check. ``revocation_checked`` False means: B-B only."""
@@ -102,6 +105,17 @@ class SignerCheck:
     @property
     def only_basic_level(self) -> bool:
         return not self.revocation_checked
+
+    @property
+    def expires(self) -> dt.datetime:
+        """End of validity of the signer certificate."""
+        return self.chain[-1].not_valid_after_utc
+
+    @property
+    def expires_soon(self) -> bool:
+        """Less than :data:`EXPIRY_WARNING` left: DNIe certificates last four years whatever
+        the validity of the DNI, and are renewed on Ciudadano Digital (RENIEC, 2026-10-28)."""
+        return self.expires - self.moment < EXPIRY_WARNING
 
 
 def signing_validation_context(

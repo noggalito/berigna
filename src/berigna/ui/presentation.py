@@ -312,6 +312,17 @@ def pin_warnings(check: SignerCheck, remaining_tries: int | None) -> tuple[str, 
                 "so only a basic signature is possible."
             )
         )
+    if check.expires_soon:
+        days = max(0, (check.expires - check.moment).days)
+        warnings.append(
+            ngettext(
+                "Your signing certificate expires on {date}, in {n} day. Renew it on RENIEC's "
+                "Ciudadano Digital platform to keep signing.",
+                "Your signing certificate expires on {date}, in {n} days. Renew it on RENIEC's "
+                "Ciudadano Digital platform to keep signing.",
+                days,
+            ).format(date=check.expires.astimezone().strftime("%Y-%m-%d"), n=days)
+        )
     return tuple(warnings)
 
 
