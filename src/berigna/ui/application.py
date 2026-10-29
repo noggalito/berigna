@@ -17,6 +17,7 @@ from pyhanko.sign.timestamps import TimeStamper  # noqa: E402
 
 from berigna import __version__  # noqa: E402
 from berigna.core.errors import TsaError  # noqa: E402
+from berigna.core.history import History  # noqa: E402
 from berigna.core.i18n import Language  # noqa: E402
 from berigna.core.net.proxy import ProxyMode, apply_proxy  # noqa: E402
 from berigna.core.net.tsa import TsaSettings, http_timestamper  # noqa: E402
@@ -66,6 +67,7 @@ class BerignaApplication(Adw.Application):
         tsl_cache: TslCache | None = None,
         tsl_download: Download | None = None,
         appearance_dir: Path | None = None,
+        history_path: Path | None = None,
         online: bool = True,
         unique: bool = True,
     ) -> None:
@@ -81,6 +83,7 @@ class BerignaApplication(Adw.Application):
         self._tsl_cache = tsl_cache
         self._tsl_download = tsl_download
         self._appearance_dir = appearance_dir
+        self._history_path = history_path
         self.tsl: TslRefresh | None = None
         self.preferences: PreferencesDialog | None = None
         self._open_token = open_token or _open_dnie
@@ -104,6 +107,7 @@ class BerignaApplication(Adw.Application):
             ("about", self._show_about, []),
             ("preferences", lambda *_args: self.show_preferences(), ["<Control>comma"]),
             ("diagnostics", lambda *_args: self.show_diagnostics(), []),
+            ("history", lambda *_args: self.show_history(), ["<Control>h"]),
             ("quit", lambda *_args: self.quit(), ["<Control>q"]),
             ("show-in-spanish", self._show_in_spanish, []),
         ):
@@ -140,12 +144,26 @@ class BerignaApplication(Adw.Application):
                 settings=self.settings,
                 online=self._online,
                 appearance_dir=self.appearance_dir(),
+                history=self.history,
             )
             self.main_window = MainWindow(self, self.verify, services)
             self.main_window.show_device_status(self._device_status)
         return self.main_window
 
     # -- Trust store and trusted list (RF-061, ADR-0014) ----------------------------------------
+
+    def trust_store(self) -> TrustStore:
+        """The store in use now: bundled anchors, plus the trusted list once loaded."""
+        return self._trust_store()
+
+    def history(self) -> History | None:
+        """The history of operations (RF-082), or None when the user switched it off."""
+        if self.settings is None or not self.settings.get_boolean("history-enabled"):
+            return None
+        path = self._history_path or (
+            Path(GLib.get_user_data_dir()) / "berigna" / "history.sqlite3"
+        )
+        return History(path, full_path=self.settings.get_boolean("history-full-path"))
 
     def appearance_dir(self) -> Path:
         """Where the preloaded rubric and logo are kept (RF-012)."""
@@ -225,6 +243,11 @@ class BerignaApplication(Adw.Application):
             return http_timestamper(settings)
         except TsaError:
             return None
+
+    def show_history(self) -> None:
+        window = self._window()
+        window.window.present()
+        window.show_history()
 
     def show_diagnostics(self) -> None:
         window = self._window()

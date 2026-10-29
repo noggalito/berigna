@@ -241,3 +241,23 @@ BATCH_OUTCOMES = {
     "failed": N_("Not signed"),
     "skipped": N_("Skipped"),
 }
+
+# History (RF-082): columns of the CSV export and kinds of operation.
+HISTORY_COLUMNS = (
+    N_("Date (UTC)"),
+    N_("Operation"),
+    N_("File"),
+    N_("SHA-256 of the file"),
+    N_("Signed file"),
+    N_("SHA-256 of the signed file"),
+    N_("Level"),
+    N_("Signer"),
+    N_("Certificate serial number"),
+    N_("Result"),
+    N_("Detail"),
+)
+HISTORY_KINDS = {
+    "sign": N_("Signature"),
+    "batch": N_("Signature in a batch"),
+    "verify": N_("Verification"),
+}
