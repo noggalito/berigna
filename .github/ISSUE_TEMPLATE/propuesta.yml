@@ -1,0 +1,32 @@
+name: Propuesta
+description: Una función nueva o un cambio en una existente.
+labels: [enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Antes de proponer, revisa la [hoja de ruta pública](https://github.com/noggalito/berigna/blob/main/docs/README.md) (§7): puede que ya esté prevista para una versión posterior.
+  - type: textarea
+    id: problema
+    attributes:
+      label: Qué problema resuelve
+      description: Describe la situación, no la solución. Por ejemplo, "tengo que firmar 200 actas cada mes y…".
+    validations:
+      required: true
+  - type: textarea
+    id: propuesta
+    attributes:
+      label: Qué propones
+    validations:
+      required: true
+  - type: textarea
+    id: alternativas
+    attributes:
+      label: Alternativas que consideraste
+  - type: checkboxes
+    id: datos
+    attributes:
+      label: Datos personales
+      options:
+        - label: Esta propuesta no contiene datos personales (DNI, certificados, documentos reales).
+          required: true
