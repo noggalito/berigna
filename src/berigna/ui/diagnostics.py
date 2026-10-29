@@ -45,6 +45,31 @@ def system_description(os_release: Path = Path("/etc/os-release")) -> str:
     return f"{name} · Python {platform.python_version()}"
 
 
+def offer_failure_report(window: "MainWindow", failure: str, issues: str) -> Adw.AlertDialog:
+    """The last run failed unexpectedly (R-DES-11): say so once and offer to copy the
+    report. Nothing is sent: the user decides whether to report it, and where."""
+    report = presentation.failure_report(failure, berigna.__version__, system_description())
+    dialog = Adw.AlertDialog(
+        heading=_("berigna Failed Unexpectedly Last Time"),
+        body=_(
+            "You can copy the report and send it as an issue at {url}. It has no PIN and no "
+            "document contents, and the DNI only masked. Nothing is sent on its own."
+        ).format(url=issues),
+    )
+    dialog.add_response("close", _("_Close"))
+    dialog.add_response("copy", _("_Copy Report"))
+    dialog.set_default_response("copy")
+
+    def respond(_dialog: Adw.AlertDialog, response: str) -> None:
+        if response == "copy":
+            Gdk.Display.get_default().get_clipboard().set(report)
+            window.toast(_("Report copied. It has no PIN, and the DNI only masked."))
+
+    dialog.connect("response", respond)
+    dialog.present(window.window)
+    return dialog
+
+
 class DiagnosticsPage:
     def __init__(
         self,

@@ -3,7 +3,7 @@
 | Campo | Valor |
 |---|---|
 | Documento | BRG-ARQ-003 |
-| Versión | 0.3.0 |
+| Versión | 0.4.0 |
 | Estado | Borrador |
 | Fecha | 2026-10-29 |
 | Responsable | noggalito |
@@ -21,6 +21,7 @@
 | Historial | `$XDG_DATA_HOME/berigna/history.sqlite3` | SQLite | Sí (nombres de archivo) |
 | Caché de OCSP, CRL y AIA | `$XDG_CACHE_HOME/berigna/revocation/` (prevista; hoy la caché vive en memoria durante cada operación) | DER | No |
 | Registro técnico | `$XDG_STATE_HOME/berigna/logs/berigna.log` (carpeta 0700) | Texto, rotativo (5 × 1 MB); INFO, o DEBUG con `BERIGNA_DEBUG=1` (`core.logs`) | Bajo: nunca el PIN ni el contenido de los documentos; todo número de cinco o más cifras (DNI, RUC) se enmascara a sus cuatro últimas, también en las trazas |
+| Registro de fallos | `pending-failure.txt` y `faulthandler.txt`, en la carpeta del registro técnico (0600) | Texto: trazas de las excepciones no capturadas y de los fallos de código nativo (`core.crashes`, R-DES-11) | Bajo: las mismas reglas que el registro técnico. El informe pendiente se ofrece una vez en el siguiente arranque y se borra; nunca se envía solo |
 | Credenciales de la TSA (si hay) | Llavero del sistema (libsecret, Secret Service) | — | Sí |
 
 Los permisos de los datos propios de berigna son `0600` y los de sus directorios `0700`. Los archivos firmados y los informes exportados son documentos del usuario: se crean con los permisos de cualquier archivo nuevo según su máscara (`core.files.write_atomically`).
