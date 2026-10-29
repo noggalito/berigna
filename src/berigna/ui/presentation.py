@@ -123,7 +123,7 @@ def etsi_code(indication: Indication, subindication: str | None) -> str:
 def _timestamp_text(stamp: TimestampReport | None) -> str:
     if stamp is None:
         return _(messages.REPORT_NONE)
-    parts = [format_time(stamp.time)] if stamp.time is not None else []
+    parts = [format_time(stamp.time, _)] if stamp.time is not None else []
     if stamp.tsa is not None:
         parts.append(common_name(stamp.tsa))
     parts.append(etsi_code(stamp.indication, stamp.subindication))
@@ -147,7 +147,7 @@ def _signature_view(report: PdfSignatureReport, user_anchor: bool) -> ResultView
     details += [
         Detail(
             _(messages.REPORT_CLAIMED_TIME),
-            format_time(claimed) if claimed is not None else _(messages.REPORT_NONE),
+            format_time(claimed, _) if claimed is not None else _(messages.REPORT_NONE),
         ),
         Detail(_(messages.REPORT_TIMESTAMP), _timestamp_text(report.timestamp)),
         Detail(_(messages.REPORT_CHANGES), _(messages.MODIFICATIONS[report.modifications])),
@@ -174,7 +174,7 @@ def _timestamp_view(stamp: TimestampReport) -> ResultView:
     if stamp.field_name is not None:
         details.append(Detail(_("Signature field"), stamp.field_name))
     return ResultView(
-        title=format_time(stamp.time) if stamp.time is not None else _("Unreadable time"),
+        title=format_time(stamp.time, _) if stamp.time is not None else _("Unreadable time"),
         icon=icon,
         style=style,
         explanation=explain_timestamp(stamp, catalogue()) or "",
@@ -348,11 +348,11 @@ def tsl_status(result: TslRefresh | None) -> tuple[str, str]:
     authorities = len(trusted.ca_certificates())
     return (
         _("List {sequence}, issued on {date}").format(
-            sequence=trusted.sequence_number, date=trusted.issued.strftime("%d/%m/%Y")
+            sequence=trusted.sequence_number, date=trusted.issued.strftime("%Y-%m-%d")
         ),
         ngettext(
             "Valid until {date}. {n} accredited certification authority.",
             "Valid until {date}. {n} accredited certification authorities.",
             authorities,
-        ).format(date=trusted.next_update.strftime("%d/%m/%Y"), n=authorities),
+        ).format(date=trusted.next_update.strftime("%Y-%m-%d"), n=authorities),
     )

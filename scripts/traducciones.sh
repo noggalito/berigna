@@ -20,6 +20,9 @@ update() {
     grep -v '^#' po/POTFILES | grep '\.blp$' | xgettext --files-from=- --language=C \
         --from-code=UTF-8 --keyword=_ --keyword=C_:1c,2 --add-comments=Translators: \
         --sort-by-file --join-existing --output=po/$DOMAIN.pot
+    # Desktop entry: Name, GenericName, Comment and Keywords.
+    grep -v '^#' po/POTFILES | grep '\.desktop\.in$' | xgettext --files-from=- --language=Desktop \
+        --from-code=UTF-8 --sort-by-file --join-existing --output=po/$DOMAIN.pot
     for lang in $LINGUAS; do
         if [ -f "po/$lang.po" ]; then
             msgmerge --quiet --update --backup=none --no-fuzzy-matching "po/$lang.po" po/$DOMAIN.pot

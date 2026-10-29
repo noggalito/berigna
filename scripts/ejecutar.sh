@@ -5,7 +5,13 @@
 #   scripts/ejecutar.sh [archivo…]
 # Preferences go to dconf under /pe/berigna/Berigna/, as in the installed program.
 set -eu
-cd "$(git rev-parse --show-toplevel)"
+# Files given with a relative path are found before leaving the current directory.
+for file; do
+    shift
+    if [ -e "$file" ]; then set -- "$@" "$(realpath "$file")"; else set -- "$@" "$file"; fi
+done
+# From the script's own directory: the desktop entry of scripts/escritorio.sh starts it from $HOME.
+cd "$(dirname "$0")/.."
 PY=${PYTHON:-.venv/bin}
 scripts/traducciones.sh compilar
 [ -d build/meson ] || meson setup build/meson
