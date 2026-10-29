@@ -47,6 +47,8 @@ class PreferencesDialog(Adw.PreferencesDialog):
     def __init__(self, application: "BerignaApplication") -> None:
         super().__init__(search_enabled=False, content_width=720)
         self._app = application
+        self.closed = False  # a worker answering late must not touch a closed dialog
+        self.connect("closed", lambda _d: setattr(self, "closed", True))
         settings = application.settings
         if settings is None:
             raise RuntimeError("preferences need the settings of the application")
@@ -386,7 +388,7 @@ class PreferencesDialog(Adw.PreferencesDialog):
 
     def test_tsa(self) -> None:
         """Ask the configured TSA for a time-stamp (RF-062, "Test")."""
-        configured = self._app._timestamper()
+        configured = self._app.timestamper()
         if configured is None:
             self.toast(_("There is no timestamping authority configured."))
             return
@@ -401,8 +403,9 @@ class PreferencesDialog(Adw.PreferencesDialog):
                 message = explain_error(exc.code, catalogue()) or ""
 
             def done() -> bool:
-                self.tsa_test.set_sensitive(True)
-                self.toast(message)
+                if not self.closed:
+                    self.tsa_test.set_sensitive(True)
+                    self.toast(message)
                 return GLib.SOURCE_REMOVE
 
             GLib.idle_add(done)
@@ -483,6 +486,8 @@ class PreferencesDialog(Adw.PreferencesDialog):
         self.show_tsl(None)
 
         def done(result: TslRefresh) -> None:
+            if self.closed:
+                return
             self.tsl_update.set_sensitive(True)
             self.show_tsl(result)
             self.show_store()

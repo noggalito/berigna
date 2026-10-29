@@ -68,6 +68,8 @@ def test_spanish_catalogue_is_complete() -> None:
 def test_po_has_no_pending_entries(catalogue: str) -> None:
     """Every entry of the template, the interface included, is translated into es_PE and into
     Quechua (RF-090, RNF-USA-07, ADR-0015): a new string comes with both translations."""
+    if shutil.which("msgfmt") is None:
+        pytest.fail("GNU gettext is needed: apt install gettext")
     result = subprocess.run(  # noqa: S603 - fixed program, catalogue from the parameters
         ["msgfmt", "--statistics", "--output-file=/dev/null", f"po/{catalogue}.po"],  # noqa: S607
         cwd=REPOSITORY,

@@ -17,6 +17,7 @@ from support.pki import NOW
 
 TSL_NS = "http://uri.etsi.org/02231/v2#"
 UNDER_SUPERVISION = "http://uri.etsi.org/TrstSvc/TrustedList/Svcstatus/undersupervision"
+# Misspelt as in INDECOPI's real list: "correcting" it would test a status berigna never sees.
 WITHDRAWN = "http://uri.etsi.org/TrstSvc/TrustedList/Svcstatus/No acredited"
 CA_QC = "http://uri.etsi.org/TrstSvc/Svctype/CA/QC"
 

@@ -3,9 +3,9 @@
 | Campo | Valor |
 |---|---|
 | Documento | BRG-ARQ-ADR |
-| Versión | 0.1.0 |
+| Versión | 0.1.1 |
 | Estado | Vivo |
-| Fecha | 2026-10-27 |
+| Fecha | 2026-10-28 |
 | Responsable | noggalito |
 
 Formato: Contexto → Decisión → Alternativas consideradas → Consecuencias. Estados posibles: Propuesto, Aceptado, Reemplazado por ADR-XXXX, Rechazado.

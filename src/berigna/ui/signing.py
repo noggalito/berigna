@@ -471,6 +471,12 @@ class PinDialog(Adw.Dialog):
         self._answer(pin)
         self.close()
 
+    def cancel(self) -> None:
+        """Answer "no PIN" and close, when the window under the dialog is going away."""
+        if not self._answered:
+            self._answer(None)
+            self.force_close()
+
     def _answer(self, pin: Pin | None) -> None:
         if not self._answered:
             self._answered = True

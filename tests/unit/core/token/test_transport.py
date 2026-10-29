@@ -184,6 +184,23 @@ def test_closed_transport_has_no_atr() -> None:
         _ = transport.atr
 
 
+def test_card_gone_before_reading_the_atr(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Between connect() and the first getATR(): CardRemovedError, not a pyscard error."""
+    from smartcard.Exceptions import CardConnectionException
+
+    from berigna.core.errors import CardRemovedError
+
+    transport, connection = _transport()
+
+    def gone() -> list[int]:
+        raise CardConnectionException("card removed", hresult=0x80100069)
+
+    monkeypatch.setattr(connection, "getATR", gone)
+    with pytest.raises(CardRemovedError):
+        _ = transport.atr
+    assert connection.disconnects == 1
+
+
 def test_unreadable_atr_is_skipped(monkeypatch: pytest.MonkeyPatch) -> None:
     from smartcard.Exceptions import CardConnectionException
 

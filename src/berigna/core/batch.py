@@ -9,9 +9,10 @@ The same order as :func:`berigna.core.signing.sign_pdf_file`, once for the whole
 2. The signer certificate and the level are checked once (RF-006).
 3. The PIN is asked once and sent once: on the DNIe v2 one VERIFY covers the whole session
    (SPK-01 §8.6).
-4. Each file is signed in turn. An error in one file does not stop the others (RF-043), and
-   the user can cancel between files. A card removed or a session that no longer accepts
-   operations stops the batch: the files left are reported as not signed.
+4. Each file is signed in turn. An error in one file does not stop the others (RF-043),
+   even one berigna does not know (ERR-000), and the user can cancel between files. A card
+   removed or a session that no longer accepts operations stops the batch: the files left
+   are reported as not signed.
 
 Closing the token session (power off the card) is the caller's ``with`` block.
 """
@@ -155,6 +156,9 @@ def sign_pdf_batch(
                 stopped = exc
             except BerignaError as exc:
                 items[index] = _failed(job, exc)
+            except Exception as exc:  # one file must not stop the batch (RF-043)
+                unexpected = BerignaError(f"unexpected error: {type(exc).__name__}: {exc}")
+                items[index] = _failed(job, unexpected)
             else:
                 items[index] = BatchItem(job, Outcome.SIGNED, result)
             if progress is not None:

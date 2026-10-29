@@ -84,6 +84,8 @@ def pending_quechua(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
         'msgid "The signature is valid."\nmsgstr "Firmaqa chiqaqmi."\n',
         encoding="utf-8",
     )
+    if shutil.which("msgfmt") is None:
+        pytest.fail("GNU gettext is needed: apt install gettext")
     subprocess.run(  # noqa: S603 - fixed arguments
         ["msgfmt", "-o", str(target / "quz" / "LC_MESSAGES" / "berigna.mo"), str(source)],  # noqa: S607
         check=True,

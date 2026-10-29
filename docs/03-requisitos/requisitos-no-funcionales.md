@@ -3,9 +3,9 @@
 | Campo | Valor |
 |---|---|
 | Documento | BRG-REQ-002 |
-| Versión | 0.2.0 |
+| Versión | 0.2.1 |
 | Estado | Borrador |
-| Fecha | 2026-10-27 |
+| Fecha | 2026-10-28 |
 | Responsable | noggalito |
 
 Identificadores: `RNF-<CATEGORÍA>-NN`.

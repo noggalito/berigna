@@ -215,3 +215,25 @@ def test_a_file_failing_while_signing_does_not_stop_the_others(
     items, _card, _leaf = _sign(pki, jobs)
     assert [item.outcome for item in items] == [Outcome.SIGNED, Outcome.FAILED, Outcome.SIGNED]
     assert items[1].code == "ERR-301"
+
+
+def test_an_unexpected_error_in_one_file_does_not_stop_the_others(
+    pki: Pki, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """RF-043 also for an error berigna does not know: that file fails with ERR-000."""
+    import berigna.core.batch as batch
+
+    jobs = _jobs(tmp_path, 3)
+    real = batch.sign_checked
+
+    def broken(job: SigningJob, **kwargs: object) -> object:
+        if job is jobs[1]:
+            raise StopIteration
+        return real(job, **kwargs)  # type: ignore[arg-type]
+
+    monkeypatch.setattr(batch, "sign_checked", broken)
+    items, _card, _leaf = _sign(pki, jobs)
+    assert [item.outcome for item in items] == [Outcome.SIGNED, Outcome.FAILED, Outcome.SIGNED]
+    assert items[1].code == "ERR-000"
+    assert items[1].detail is not None
+    assert "StopIteration" in items[1].detail

@@ -3,9 +3,9 @@
 | Campo | Valor |
 |---|---|
 | Documento | BRG-ARQ-001 |
-| Versión | 0.2.0 |
+| Versión | 0.2.1 |
 | Estado | Borrador |
-| Fecha | 2026-10-27 |
+| Fecha | 2026-10-29 |
 | Responsable | noggalito |
 
 ## 1. Principios
@@ -70,7 +70,6 @@ flowchart TB
     trust[trust: TrustStore]
     net[net: TsaClient, RevocationClient, HttpFetcher]
     appearance[appearance: renderizado de la firma visible]
-    settings[config: Settings, ver ADR]
     history[history: HistoryStore]
     report[report: informes PDF/JSON]
     i18n[i18n: gettext es_PE / quz]
@@ -100,7 +99,7 @@ flowchart TB
 | `core.formats.cades` | Firma y validación CMS/CAdES separada y envuelta | pyHanko (API CMS genérica), asn1crypto (ADR-0008) |
 | `core.formats.xades` | Firma y validación XAdES | Según SPK-03 (ADR-0008) |
 | `core.trust` | Almacén de confianza de la IOFE incluido (anclas como recurso del paquete con manifiesto de huellas), anclas añadidas por el usuario y TSL de INDECOPI (`tsl`, ADR-0014) | cryptography, lxml, signxml; implementado |
-| `core.net` | Clientes HTTP para TSA, OCSP, CRL y AIA, con caché, tiempos de espera y proxy | requests. Implementados `fetchers` (OCSP y CRL para validación previa, firma B-LT y verificación) y `tsa` (cliente RFC 3161 sobre el de pyHanko). Caché y proxy, pendientes |
+| `core.net` | Clientes HTTP para TSA, OCSP, CRL y AIA, con caché, tiempos de espera y proxy | requests. Implementados `fetchers` (OCSP y CRL para validación previa, firma B-LT y verificación), `tsa` (cliente RFC 3161 sobre el de pyHanko) y `proxy` (proxy del sistema, manual o ninguno en todas las peticiones, RF-064). La caché de la TSL está en `core.trust.cache`; la de OCSP y CRL en disco, prevista |
 | `core.appearance` | Sello de la firma visible (texto, rúbrica, logotipo o QR) dibujado como PDF de una página con las tipografías de la marca, e imágenes precargadas (ADR-0018) | ReportLab, Pillow; pyHanko lo coloca como apariencia estática; implementado |
 | `core.signing` | Orquestación: comprobar que el archivo no cambió, validar el certificado antes del PIN, firmar y escribir de forma atómica; pasos compartidos con el lote | Implementado para PDF, de B-B a B-LTA |
 | `core.batch` | Firma de varios PDF con un solo PIN, tolerante a fallos y cancelable entre archivos (CU-04) | Implementado |

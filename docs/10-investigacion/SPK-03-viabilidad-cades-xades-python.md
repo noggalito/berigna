@@ -3,9 +3,9 @@
 | Campo | Valor |
 |---|---|
 | Documento | BRG-INV-003 |
-| Versión | 0.2.0 |
+| Versión | 0.2.1 |
 | Estado | Cerrado (2026-10-27): PKI de pruebas y DNIe real |
-| Fecha | 2026-10-27 |
+| Fecha | 2026-10-28 |
 | Responsable | noggalito |
 
 ## 1. Preguntas

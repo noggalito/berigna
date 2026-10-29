@@ -3,9 +3,9 @@
 | Campo | Valor |
 |---|---|
 | Documento | BRG-MAN-001 |
-| Versión | 0.1.0 |
+| Versión | 0.1.1 |
 | Estado | Borrador |
-| Fecha | 2026-10-28 |
+| Fecha | 2026-10-29 |
 | Responsable | noggalito |
 
 ## 1. Propósito y alcance
@@ -105,7 +105,7 @@ Al publicar: etiqueta firmada, paquetes firmados en el repositorio APT, anuncio 
 
 ## 8. Incidencias y soporte
 
-- Plantillas de incidencia (fallo, propuesta, problema con un lector o un DNIe) que piden la versión, el lector y el informe de diagnóstico (RF-082), y advierten que no se adjunten PDF firmados ni capturas con el DNI completo.
+- Plantillas de incidencia (fallo, propuesta, problema con un lector o un DNIe) que piden la versión, el lector y el informe de diagnóstico (RF-007), y advierten que no se adjunten PDF firmados ni capturas con el DNI completo.
 - Clasificación semanal con etiquetas de tipo, componente y prioridad.
 - Objetivo de primera respuesta: 5 días hábiles.
 - berigna no tiene telemetría: las incidencias y las pruebas con usuarios son la única fuente de datos de uso.

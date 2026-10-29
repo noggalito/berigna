@@ -93,9 +93,15 @@ class PcscTransport:
 
     @property
     def atr(self) -> bytes:
+        from smartcard.Exceptions import SmartcardException
+
         if self._connection is None:
             raise CardCommunicationError("transport is closed")
-        return bytes(self._connection.getATR())
+        try:
+            return bytes(self._connection.getATR())
+        except SmartcardException as exc:
+            self.close()
+            raise CardRemovedError(f"cannot read the ATR: {exc}") from exc
 
     def transmit(self, apdu: bytes | bytearray) -> tuple[bytes, int]:
         from smartcard.Exceptions import NoCardException, SmartcardException

@@ -3,9 +3,9 @@
 | Campo | Valor |
 |---|---|
 | Documento | BRG-SEG-002 |
-| Versión | 0.1.0 |
+| Versión | 0.1.1 |
 | Estado | Borrador |
-| Fecha | 2026-10-27 |
+| Fecha | 2026-10-29 |
 | Responsable | noggalito |
 
 ## 1. Ciclo de vida del PIN

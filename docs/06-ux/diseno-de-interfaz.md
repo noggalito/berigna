@@ -3,9 +3,9 @@
 | Campo | Valor |
 |---|---|
 | Documento | BRG-UX-001 |
-| Versión | 0.3.0 |
+| Versión | 0.3.1 |
 | Estado | Borrador (bocetos de baja fidelidad) |
-| Fecha | 2026-10-28 |
+| Fecha | 2026-10-29 |
 | Responsable | noggalito |
 
 ## 1. Principios de UX
