@@ -127,3 +127,4 @@ Proyecto:
 - Archivos de comunidad: guía de contribución (`CONTRIBUTING.md`, con DCO, datos personales y protocolo de PIN), código de conducta (Contributor Covenant 2.1), `SUPPORT.md`, plantillas de incidencias (fallo y propuesta, con aviso de no publicar datos personales) y plantilla de PR.
 - Permiso adicional de la GPL para distribuir berigna por tiendas de aplicaciones (`LICENSE-EXCEPTION.md`, ADR-0021); el código fuente sigue siempre disponible bajo la GPL.
 - Investigación SPK-07: lectura del DNIe por NFC, con un lector sin contacto, con berigna en Android o con el teléfono como puente hacia el escritorio. Windows, macOS, Android e iOS, en estudio para la versión 1.1.
+- Consentimiento de la prueba de usabilidad conforme a la Ley N.° 29733: responsable, finalidad, plazos de conservación, derechos y grabación opcional.
