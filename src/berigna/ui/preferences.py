@@ -33,7 +33,7 @@ from berigna.ui import presentation  # noqa: E402
 from berigna.ui.help import HelpTopic, help_button  # noqa: E402
 from berigna.ui.i18n import _, catalogue  # noqa: E402
 from berigna.ui.signing import APPEARANCES, LEVEL_ORDER  # noqa: E402
-from berigna.ui.widgets import label_factory  # noqa: E402
+from berigna.ui.widgets import brand_markup, label_factory  # noqa: E402
 
 if TYPE_CHECKING:
     from berigna.ui.application import BerignaApplication
@@ -197,8 +197,8 @@ class PreferencesDialog(Adw.PreferencesDialog):
 
         images = Adw.PreferencesGroup(
             title=_("Images"),
-            description=_(
-                "Loaded once and kept by berigna, without the metadata of the original file."
+            description=brand_markup(
+                _("Loaded once and kept by berigna, without the metadata of the original file.")
             ),
         )
         self.image_rows: dict[AppearanceKind, tuple[Adw.ActionRow, Gtk.Button]] = {}

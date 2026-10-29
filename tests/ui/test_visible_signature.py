@@ -154,3 +154,9 @@ def test_drawing_and_moving_the_box() -> None:
     preview._on_drag_end(None, 0, 0)
     assert len(changes) == 2
     preview._on_drag_update(FakeDrag(0, 0), 1, 1)  # after the end: ignored
+
+
+def test_the_name_goes_in_bold() -> None:
+    from berigna.ui.widgets import brand_markup
+
+    assert brand_markup("kept by berigna & co.") == "kept by <b>berigna</b> &amp; co."

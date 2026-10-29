@@ -5,7 +5,9 @@
 import gi
 
 gi.require_version("Gtk", "4.0")
-from gi.repository import Gtk  # noqa: E402
+from gi.repository import GLib, Gtk  # noqa: E402
+
+NAME = "berigna"
 
 
 def label_factory(*, visible: bool) -> Gtk.SignalListItemFactory:
@@ -21,3 +23,8 @@ def label_factory(*, visible: bool) -> Gtk.SignalListItemFactory:
     factory.connect("setup", setup)
     factory.connect("bind", bind)
     return factory
+
+
+def brand_markup(text: str) -> str:
+    """``text`` as Pango markup, with the program's name in bold (decision of 2026-10-28)."""
+    return GLib.markup_escape_text(text).replace(NAME, f"<b>{NAME}</b>")

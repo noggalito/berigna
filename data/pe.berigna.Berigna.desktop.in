@@ -1,0 +1,12 @@
+[Desktop Entry]
+Name=berigna
+GenericName=PDF Signer
+Comment=Sign and verify PDF documents with the Peruvian DNIe
+Keywords=sign;signature;verify;PDF;DNIe;RENIEC;
+Exec=berigna %F
+Icon=pe.berigna.Berigna
+Terminal=false
+Type=Application
+Categories=Office;GTK;
+MimeType=application/pdf;
+StartupNotify=true
