@@ -45,15 +45,25 @@ def system_description(os_release: Path = Path("/etc/os-release")) -> str:
     return f"{name} · Python {platform.python_version()}"
 
 
-def offer_failure_report(window: "MainWindow", failure: str, issues: str) -> Adw.AlertDialog:
-    """The last run failed unexpectedly (R-DES-11): say so once and offer to copy the
-    report. Nothing is sent: the user decides whether to report it, and where."""
+def copy_report(window: "MainWindow", report: str) -> None:
+    """Put a support report on the clipboard and say what it holds."""
+    Gdk.Display.get_default().get_clipboard().set(report)
+    window.toast(_("Report copied. It has no PIN, and the DNI only masked."))
+
+
+def offer_failure_report(
+    window: "MainWindow", failure: str, issues: str, answered: Callable[[], None]
+) -> Adw.AlertDialog:
+    """The last run failed unexpectedly (R-DES-11): say so and offer to copy the report.
+    ``answered`` runs once the user has chosen, so that it is offered only once. Nothing is
+    sent: the user decides whether to report it, and where."""
     report = presentation.failure_report(failure, berigna.__version__, system_description())
     dialog = Adw.AlertDialog(
         heading=_("berigna Failed Unexpectedly Last Time"),
         body=_(
-            "You can copy the report and send it as an issue at {url}. It has no PIN and no "
-            "document contents, and the DNI only masked. Nothing is sent on its own."
+            "You can copy the report and send it as an issue at {url}. It has no PIN, and the "
+            "DNI only masked; check it before sending, as it may name your files and folders. "
+            "Nothing is sent on its own."
         ).format(url=issues),
     )
     dialog.add_response("close", _("_Close"))
@@ -62,8 +72,8 @@ def offer_failure_report(window: "MainWindow", failure: str, issues: str) -> Adw
 
     def respond(_dialog: Adw.AlertDialog, response: str) -> None:
         if response == "copy":
-            Gdk.Display.get_default().get_clipboard().set(report)
-            window.toast(_("Report copied. It has no PIN, and the DNI only masked."))
+            copy_report(window, report)
+        answered()
 
     dialog.connect("response", respond)
     dialog.present(window.window)
@@ -159,9 +169,7 @@ class DiagnosticsPage:
         )
 
     def copy_report(self) -> None:
-        clipboard = Gdk.Display.get_default().get_clipboard()
-        clipboard.set(self.report())
-        self._window.toast(_("Report copied. It has no PIN, and the DNI only masked."))
+        copy_report(self._window, self.report())
 
     def _open_logs(self) -> None:
         directory = log_directory()

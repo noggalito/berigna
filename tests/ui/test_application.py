@@ -175,13 +175,15 @@ def test_a_failure_of_the_last_run_is_offered_once(app: BerignaApplication) -> N
         assert dialog is not None
         assert dialog.get_heading() == "berigna tuvo un fallo inesperado la última vez"
         assert "https://github.com/noggalito/berigna/issues" in dialog.get_body()
-        assert not pending.exists()
+        assert "carpetas" in dialog.get_body()  # warns that paths may appear
+        assert pending.exists()  # removed only once the user has answered
         _window(app).toast = toasts.append  # type: ignore[method-assign]
         dialog.emit("response", "copy")
         clipboard = Gdk.Display.get_default().get_clipboard()
         copied: list[str] = []
         clipboard.read_text_async(None, lambda c, r: copied.append(c.read_text_finish(r)))
         yield from wait_until(lambda: bool(copied))
+        assert not pending.exists()
         assert copied[0].startswith("Informe de fallo de berigna ")
         assert "RuntimeError: FIR ****5678 hard" in copied[0]
         dialog.force_close()
@@ -194,12 +196,21 @@ def test_a_failure_of_the_last_run_is_offered_once(app: BerignaApplication) -> N
     assert toasts == ["Informe copiado. No incluye el PIN, y el DNI va enmascarado."]
 
 
-def test_entry_point_installs_the_failure_record(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_entry_point_installs_the_failure_record(
+    monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
     installed: list[bool] = []
     monkeypatch.setattr(crashes, "install", lambda: installed.append(True))
     monkeypatch.setattr(BerignaApplication, "run", lambda self, argv: 0)
     assert entry.main(["berigna"]) == 0
     assert installed == [True]
+
+    def broken() -> None:
+        raise PermissionError("pending-failure.txt")
+
+    monkeypatch.setattr(crashes, "install", broken)
+    assert entry.main(["berigna"]) == 0  # berigna still starts
+    assert "berigna: no record of failures" in capsys.readouterr().err
 
 
 def test_entry_point(monkeypatch: pytest.MonkeyPatch) -> None:
