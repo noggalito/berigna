@@ -123,14 +123,29 @@ class MainWindow:
         self.show_page(self.batch.page)
 
     def show_history(self) -> None:
-        """The history page (RF-082), over the current page."""
+        """The history page (RF-082), over the current page; brought back if already there."""
+        if self._back_to("history") and self.history is not None:
+            self.history.refresh()
+            return
         self.history = HistoryPage(self, self._signing)
         self._navigation.push(self.history.page)
 
     def show_diagnostics(self) -> None:
         """The diagnosis page (CU-07), over the current page so that "back" returns to it."""
+        if self._back_to("diagnostics") and self.diagnostics is not None:
+            self.diagnostics.run()
+            return
         self.diagnostics = DiagnosticsPage(self, self._signing, lambda: self.device_status)
         self._navigation.push(self.diagnostics.page)
+
+    def _back_to(self, tag: str) -> bool:
+        """Go back to the page ``tag`` if it is in the stack, rather than piling up a copy."""
+        page = self._navigation.find_page(tag)
+        stack = self._navigation.get_navigation_stack()
+        if page is None or not any(stack.get_item(i) is page for i in range(stack.get_n_items())):
+            return False
+        self._navigation.pop_to_page(page)
+        return True
 
     def open_files(self, files: Sequence[Gio.File]) -> None:
         """One document opens on its own; several, or a folder, make a batch (CU-04)."""
@@ -139,12 +154,20 @@ class MainWindow:
             self.open_file(files[0])
         elif paths:
             self.sign_batch([p for p in paths if p.is_dir() or is_pdf(p)] or paths)
+        else:  # several files, none on this computer: say so, as for one
+            self.toast(_("Only files on this computer can be opened."))
 
     def show_device_status(self, status: DeviceStatus | None) -> None:
         self.device_status = status
         view = presentation.device_status(status)
         self._status_icon.set_from_icon_name(view.icon)
         self._status_label.set_label(view.message)
+
+    def cancel_pin(self) -> None:
+        """Cancel a PIN dialog left open, before this window is destroyed."""
+        for page in (self.signing, self.batch):
+            if page is not None and page.pin_dialog is not None:
+                page.pin_dialog.cancel()
 
     def toast(self, message: str) -> None:
         self._toasts.add_toast(Adw.Toast.new(brand_markup(message)))

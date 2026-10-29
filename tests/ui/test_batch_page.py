@@ -7,6 +7,8 @@ import io
 from collections.abc import Generator
 from pathlib import Path
 
+import pytest
+
 from berigna.core.batch import Outcome
 from berigna.core.documents import inspect_document
 from berigna.core.token.dnie_v2 import INS_VERIFY
@@ -69,11 +71,14 @@ def test_sign_a_batch_with_one_pin(
         app.main_window.toast = toasts.append  # type: ignore[method-assign]
         app.main_window.sign_batch([first, second, third, note])
         page = _batch(app)
+        assert not page._sign.get_sensitive()  # while the files are read
+        yield from wait_until(lambda: len(page.files) == 3)
         assert [path for path, _sha in page.files] == [first, second, third]
         assert toasts == ["1 archivo no es PDF o no se puede leer; se dejó fuera."]
         assert page._sign.get_label() == "_Firmar 3 documentos"
         page.remove(second)
         page.add_paths([second])  # added again, at the end
+        yield from wait_until(lambda: len(page.files) == 3)
         page._sign.emit("clicked")
         yield from wait_until(lambda: page.pin_dialog is not None, 10)
         dialog = page.pin_dialog
@@ -108,6 +113,7 @@ def test_several_files_open_a_batch(app: BerignaApplication, tmp_path: Path) -> 
 
     def script(app: BerignaApplication) -> Generator[None, None, None]:
         yield from wait_until(lambda: app.main_window is not None and app.main_window.batch)
+        yield from wait_until(lambda: len(_batch(app).files) == 2)
         assert [path for path, _sha in _batch(app).files] == paths
 
     drive(app, script, args=[str(p) for p in paths])
@@ -118,6 +124,7 @@ def test_a_folder_opens_a_batch(app: BerignaApplication, tmp_path: Path) -> None
 
     def script(app: BerignaApplication) -> Generator[None, None, None]:
         yield from wait_until(lambda: app.main_window is not None and app.main_window.batch)
+        yield from wait_until(lambda: len(_batch(app).files) == 2)
         assert [path for path, _sha in _batch(app).files] == paths
 
     drive(app, script, args=[str(tmp_path / "carpeta")])
@@ -132,6 +139,9 @@ def test_cancelling_the_pin_signs_nothing(app: BerignaApplication, tmp_path: Pat
         assert app.main_window is not None
         app.main_window.sign_batch(paths)
         page = _batch(app)
+        page._sign.emit("clicked")  # too early: the files are still being read
+        assert page.pin_dialog is None
+        yield from wait_until(lambda: page._sign.get_sensitive())
         page._sign.emit("clicked")
         yield from wait_until(lambda: page.pin_dialog is not None, 10)
         assert page.pin_dialog is not None
@@ -158,3 +168,44 @@ def _dialog_texts(dialog: object) -> list[str]:
             stack.append(child)
             child = child.get_next_sibling()
     return texts
+
+
+def test_files_left_by_a_cancel_are_in_the_history(
+    app: BerignaApplication, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """RF-082: what the batch did not sign is recorded too, with ERR-309."""
+    import berigna.core.batch as core_batch
+
+    paths = _pdfs(tmp_path, "uno.pdf", "dos.pdf", "tres.pdf")
+    real = core_batch.sign_checked
+
+    def script(app: BerignaApplication) -> Generator[None, None, None]:
+        app.activate()
+        yield from wait_until(lambda: app.main_window is not None)
+        assert app.main_window is not None
+        app.main_window.sign_batch(paths)
+        page = _batch(app)
+
+        def then_cancel(job: object, **kwargs: object) -> object:
+            result = real(job, **kwargs)  # type: ignore[arg-type]
+            page._cancel.set()  # as the Cancel button does, after the first file
+            return result
+
+        monkeypatch.setattr(core_batch, "sign_checked", then_cancel)
+        yield from wait_until(lambda: page._sign.get_sensitive())
+        page._sign.emit("clicked")
+        yield from wait_until(lambda: page.pin_dialog is not None, 10)
+        assert page.pin_dialog is not None
+        page.pin_dialog.entry.set_text("123456")
+        page.pin_dialog.sign_button.emit("clicked")
+        yield from wait_until(lambda: _shown(page) == "done", 20)
+        history = app.main_window.services.history()
+        assert history is not None
+        entries = sorted(history.entries(), key=lambda e: e.file_name)
+        assert [(e.file_name, e.result, e.detail) for e in entries] == [
+            ("dos.pdf", "error", "ERR-309"),
+            ("tres.pdf", "error", "ERR-309"),
+            ("uno.pdf", "ok", "revocation-unchecked"),
+        ]
+
+    drive(app, script)

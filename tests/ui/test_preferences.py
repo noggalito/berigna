@@ -80,6 +80,18 @@ def test_general_preferences(app: BerignaApplication, tmp_path: Path) -> None:
     assert toasts == ["El sufijo no puede estar vacío ni contener «/»."]
 
 
+def test_preferences_open_only_once(app: BerignaApplication) -> None:
+    def script(app: BerignaApplication) -> Generator[None, None, None]:
+        dialog = yield from _open(app)
+        app.activate_action("preferences", None)
+        assert app.preferences is dialog
+        dialog.force_close()
+        yield from wait_until(lambda: app.preferences is None)
+        assert dialog.closed
+
+    drive(app, script)
+
+
 def test_changing_the_language_keeps_the_preferences_open(app: BerignaApplication) -> None:
     def script(app: BerignaApplication) -> Generator[None, None, None]:
         dialog = yield from _open(app)

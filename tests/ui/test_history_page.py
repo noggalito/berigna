@@ -47,6 +47,11 @@ def test_signing_and_verifying_are_recorded(app: BerignaApplication, tmp_path: P
         yield from wait_until(lambda: window.history is not None)
         page = window.history
         assert page is not None
+        stack = window._navigation.get_navigation_stack()
+        depth = stack.get_n_items()
+        app.activate_action("history", None)  # again from the menu: no second copy
+        assert window.history is page
+        assert stack.get_n_items() == depth
         kinds = [entry.kind for entry in page.entries]
         assert kinds == [Kind.VERIFY, Kind.SIGN]
         verified, signed = page.entries

@@ -150,6 +150,29 @@ def test_cancel_sends_no_pin(
     assert not (tmp_path / "contrato-firmado.pdf").exists()
 
 
+def test_changing_the_language_cancels_an_open_pin_dialog(
+    app: BerignaApplication, card: DnieV2Simulator, tmp_path: Path
+) -> None:
+    """The window is rebuilt in the new language; the worker waiting for the PIN must not be
+    left behind holding the card."""
+    path = _pdf(tmp_path)
+
+    def script(app: BerignaApplication) -> Generator[None, None, None]:
+        yield from wait_until(lambda: _signing(app))
+        page = _page(app)
+        page._sign.emit("clicked")
+        dialog = yield from _dialog(page)
+        assert app.settings is not None
+        app.settings.set_string("ui-language", "quz_PE")
+        assert dialog._answered
+        yield from wait_until(lambda: _shown(page) == "form", 10)  # the worker has finished
+        app.settings.reset("ui-language")
+
+    drive(app, script, args=[str(path)])
+    assert card.tries_left == card.max_tries
+    assert not (tmp_path / "contrato-firmado.pdf").exists()
+
+
 def test_level_without_revocation_data_offers_the_basic_level(
     readers: FakeReaders, pki: Pki, card: DnieV2Simulator, tmp_path: Path
 ) -> None:
