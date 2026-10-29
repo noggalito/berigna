@@ -3,9 +3,9 @@
 | Campo | Valor |
 |---|---|
 | Documento | BRG-REQ-001 |
-| Versión | 0.3.0 |
+| Versión | 0.4.0 |
 | Estado | Borrador |
-| Fecha | 2026-10-27 |
+| Fecha | 2026-10-29 |
 | Responsable | noggalito |
 
 Prioridades según MoSCoW (ver convenciones). Cada requisito tiene criterios de aceptación verificables. La columna CU indica los casos de uso relacionados.
@@ -221,7 +221,7 @@ Prioridades según MoSCoW (ver convenciones). Cada requisito tiene criterios de 
 ### RF-081: Perfiles de apariencia de la firma visible
 - Prioridad: Debería. Descripción: se guardan varios perfiles con nombre (por ejemplo, "Rúbrica" y "Sello institucional").
 ### RF-082: Historial local de operaciones
-- Prioridad: Debería. Descripción: fecha, operación, nombre del archivo, *hash* SHA-256, nivel y resultado. No se guarda el contenido. Se puede borrar.
+- Prioridad: Debería. Descripción: fecha, operación, nombre del archivo, *hash* SHA-256, nivel y resultado. En un lote, una fila por documento, también por los que quedaron sin firmar al cancelarlo o detenerse (ERR-309). No se guarda el contenido. Se puede borrar.
 ### RF-083: Registro técnico
 - Prioridad: Debe. Descripción: un registro rotativo con niveles (`ERROR`, `WARNING`, `INFO`, `DEBUG`) en `$XDG_STATE_HOME/berigna/logs/` (5 archivos de 1 MB). Nunca incluye el PIN, el contenido del documento ni el DNI completo.
 

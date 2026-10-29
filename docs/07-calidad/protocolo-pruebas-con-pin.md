@@ -3,9 +3,9 @@
 | Campo | Valor |
 |---|---|
 | Documento | BRG-CAL-002 |
-| Versión | 0.1.0 |
+| Versión | 0.1.1 |
 | Estado | Vigente |
-| Fecha | 2026-10-27 |
+| Fecha | 2026-10-29 |
 | Responsable | noggalito |
 
 ## 1. Por qué existe
@@ -22,7 +22,7 @@ Por eso, toda prueba que envíe el PIN de un DNIe real (pruebas HIL, *spikes*, v
 | PIN-02 | Cada ejecución envía el PIN como máximo una vez. Los *scripts* no tienen bucles de reintento |
 | PIN-03 | Antes de enviar el PIN se pide una confirmación explícita (`[s/N]`). La respuesta por defecto es no enviar nada |
 | PIN-04 | Si el VERIFY no devuelve `9000`, la ejecución se detiene y muestra el código. `63Cx` indica que quedan x intentos |
-| PIN-05 | Si quedan 2 intentos o menos, se suspenden todas las pruebas con ese DNIe hasta que el titular confirme el PIN correcto por otra vía (por ejemplo, firmando con ReFirma). Un intento acertado devuelve el contador al máximo |
+| PIN-05 | Si quedan 2 intentos o menos, se suspenden todas las pruebas con ese DNIe hasta que el titular confirme el PIN correcto por otra vía (por ejemplo, firmando con otro programa, como el de Firma Perú). Un intento acertado devuelve el contador al máximo |
 | PIN-06 | Ante cualquier duda sobre el PIN, se responde `N` a la confirmación. Cancelar no cuesta nada; fallar consume un intento |
 | PIN-07 | Prohibido probar a propósito un PIN incorrecto en un DNIe real. Los casos de PIN incorrecto, PIN bloqueado y "último intento" solo se prueban con el simulador o con SoftHSM |
 | PIN-08 | Prohibido usar PIN en la CI. Las pruebas automáticas solo usan el simulador o SoftHSM |

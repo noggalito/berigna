@@ -3,9 +3,9 @@
 | Campo | Valor |
 |---|---|
 | Documento | BRG-ARQ-003 |
-| Versión | 0.2.0 |
+| Versión | 0.3.0 |
 | Estado | Borrador |
-| Fecha | 2026-10-27 |
+| Fecha | 2026-10-29 |
 | Responsable | noggalito |
 
 ## 1. Ubicaciones (XDG)
@@ -14,14 +14,16 @@
 |---|---|---|---|
 | Preferencias | GSettings, esquema `com.noggalito.Berigna` (en dconf) | GVariant | No |
 | Almacén de confianza (incluido en el paquete) | Recurso del paquete Python: `berigna/core/trust/anchors/` (en el código fuente, `src/berigna/core/trust/anchors/`) | PEM y `manifest.json` con huellas SHA-256; el paquete `.deb` firmado protege su integridad | No |
-| Anclas añadidas por el usuario | `$XDG_DATA_HOME/berigna/trust/` | PEM | No |
-| Perfiles de apariencia | `$XDG_DATA_HOME/berigna/appearances/` | JSON más imagen | Puede contener una imagen de la rúbrica |
+| Anclas añadidas por el usuario | `$XDG_DATA_HOME/berigna/trust/` (prevista: `TrustStore.with_user_anchors` existe, la interfaz para añadirlas no) | PEM | No |
+| TSL de INDECOPI | `$XDG_DATA_HOME/berigna/tsl/` (`core.trust.cache`) | XML firmado y número de secuencia aceptado | No |
+| Imágenes de la firma visible | `$XDG_DATA_HOME/berigna/apariencia/` (carpeta 0700): `rubrica.png` y `logotipo.png` (ADR-0018 §6) | PNG sin metadatos, archivos 0600 | Sí (la rúbrica) |
+| Perfiles de apariencia con nombre | Previstos (RF-081), en la misma carpeta | JSON | No |
 | Historial | `$XDG_DATA_HOME/berigna/history.sqlite3` | SQLite | Sí (nombres de archivo) |
-| Caché de OCSP, CRL y AIA | `$XDG_CACHE_HOME/berigna/revocation/` | DER | No |
+| Caché de OCSP, CRL y AIA | `$XDG_CACHE_HOME/berigna/revocation/` (prevista; hoy la caché vive en memoria durante cada operación) | DER | No |
 | Registro técnico | `$XDG_STATE_HOME/berigna/logs/berigna.log` (carpeta 0700) | Texto, rotativo (5 × 1 MB); INFO, o DEBUG con `BERIGNA_DEBUG=1` (`core.logs`) | Bajo: nunca el PIN ni el contenido de los documentos; todo número de cinco o más cifras (DNI, RUC) se enmascara a sus cuatro últimas, también en las trazas |
 | Credenciales de la TSA (si hay) | Llavero del sistema (libsecret, Secret Service) | — | Sí |
 
-Los permisos de los archivos del usuario son `0600` y los de los directorios `0700`.
+Los permisos de los datos propios de berigna son `0600` y los de sus directorios `0700`. Los archivos firmados y los informes exportados son documentos del usuario: se crean con los permisos de cualquier archivo nuevo según su máscara (`core.files.write_atomically`).
 
 ## 2. Esquema de GSettings
 
@@ -60,7 +62,7 @@ Proxy (RF-064): el valor se aplica a las variables de entorno estándar del proc
 | `ui-language` | enum | `'system'` | system / es_PE / quz_PE; se aplica al momento (ADR-0011, ADR-0015). en_US se añade en la 1.1 |
 | `report-language` | enum | `'ui'` | ui / es_PE / quz_PE: idioma del informe PDF exportado |
 
-Los perfiles de apariencia (JSON) incluyen el campo `"language": "es_PE" | "quz_PE"`, que define el idioma de los textos fijos y del formato de fecha del sello visible (RF-092).
+Cuando existan los perfiles de apariencia con nombre (RF-081), su JSON incluirá el campo `"language": "es_PE" | "quz_PE"`, que define el idioma de los textos fijos y del formato de fecha del sello visible (RF-092); hoy lo define `appearance-language`.
 
 Despliegue en organizaciones: un administrador puede definir valores por defecto y bloquear claves mediante archivos en `/etc/dconf/db/local.d/` y `locks/`. Esto se documentará en el manual de administración.
 
