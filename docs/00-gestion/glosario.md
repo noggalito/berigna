@@ -44,7 +44,7 @@
 | PIN | Código personal que desbloquea el uso de la clave privada en el chip del DNIe. |
 | PIN pad | Lector con teclado propio, en el que el PIN se teclea sin pasar por el computador. |
 | PKCS#11 | Estándar (OASIS) de API para acceder a dispositivos criptográficos (*Cryptoki*). |
-| ReFirma | Software oficial de firma digital de RENIEC. Sirve como referencia de interoperabilidad. |
+| ReFirma | Software de firma digital de RENIEC. Desde la respuesta de RENIEC del 2026-10-28 se sabe que ya no lo distribuye ni da soporte a terceros; la referencia oficial de interoperabilidad es el validador de Firma Perú (PCM). |
 | RENIEC | Registro Nacional de Identificación y Estado Civil del Perú. |
 | SoftHSM | Implementación de PKCS#11 por software; se usa en pruebas automatizadas como *token* simulado. |
 | *Spike* | Investigación acotada en el tiempo para reducir incertidumbre técnica antes de comprometer un diseño. |

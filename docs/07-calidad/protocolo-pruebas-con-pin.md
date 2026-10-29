@@ -10,7 +10,7 @@
 
 ## 1. Por qué existe
 
-El PIN del DNIe se bloquea tras un número determinado de intentos fallidos consecutivos. Un DNIe bloqueado no puede firmar hasta que su titular haga el trámite de desbloqueo ante RENIEC. `[VERIFICAR]` el número exacto de intentos y el procedimiento de desbloqueo (consulta CE-07 a RENIEC). No debe averiguarse provocando fallos.
+El PIN del DNIe se bloquea tras tres intentos fallidos consecutivos en el DNIe 1.0 y cinco en las versiones posteriores. Un DNIe bloqueado no puede firmar hasta que su titular lo desbloquee en la plataforma Ciudadano Digital de RENIEC o en una de sus agencias (respuesta de RENIEC del 2026-10-28). el número exacto de intentos y el procedimiento de desbloqueo (consulta CE-07 a RENIEC). No debe averiguarse provocando fallos.
 
 Por eso, toda prueba que envíe el PIN de un DNIe real (pruebas HIL, *spikes*, validaciones de interoperabilidad) sigue este protocolo sin excepciones.
 
