@@ -58,6 +58,15 @@ def _certificate(key: rsa.RSAPrivateKey, cn: str, usage: x509.KeyUsage) -> bytes
     return cert.public_bytes(serialization.Encoding.DER)
 
 
+@pytest.fixture(autouse=True)
+def private_state(
+    tmp_path_factory: pytest.TempPathFactory, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """The technical log of a test that starts berigna goes to a temporary folder, never to
+    the user's ~/.local/state (it did, 2026-10-29)."""
+    monkeypatch.setenv("XDG_STATE_HOME", str(tmp_path_factory.mktemp("state")))
+
+
 @pytest.fixture(scope="session")
 def signing_key() -> rsa.RSAPrivateKey:
     return rsa.generate_private_key(public_exponent=65537, key_size=2048)
