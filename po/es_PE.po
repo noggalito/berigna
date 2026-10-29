@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: berigna\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-28 21:01-0500\n"
+"POT-Creation-Date: 2026-10-28 21:58-0500\n"
 "PO-Revision-Date: 2026-10-27 23:38-0500\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -500,23 +500,25 @@ msgstr ""
 "El PIN es incorrecto. Revísalo con cuidado antes de volver a intentarlo: "
 "tras varios intentos fallidos el DNIe se bloquea."
 
-#: src/berigna/core/report/messages.py:177
-msgid "The PIN is blocked. Go to RENIEC to unblock it."
-msgstr "El PIN está bloqueado. Acude a RENIEC para desbloquearlo."
+#: src/berigna/core/report/messages.py:179
+msgid ""
+"The PIN is blocked. Unblock it on RENIEC's Ciudadano Digital platform or at "
+"a RENIEC office."
+msgstr "El PIN está bloqueado. Desbloquéalo en la plataforma Ciudadano Digital de RENIEC o en una agencia de RENIEC."
 
-#: src/berigna/core/report/messages.py:178
+#: src/berigna/core/report/messages.py:182
 msgid "The DNIe did not accept the operation because the PIN was not verified."
 msgstr "El DNIe no aceptó la operación porque el PIN no se verificó."
 
-#: src/berigna/core/report/messages.py:179
+#: src/berigna/core/report/messages.py:183
 msgid "berigna refused to send a command that is not allowed to the card."
 msgstr "berigna se negó a enviar a la tarjeta un comando no permitido."
 
-#: src/berigna/core/report/messages.py:180
+#: src/berigna/core/report/messages.py:184
 msgid "Problem with the trusted root certificates."
 msgstr "Problema con los certificados raíz de confianza."
 
-#: src/berigna/core/report/messages.py:182
+#: src/berigna/core/report/messages.py:186
 msgid ""
 "The trusted root certificates installed with berigna have been altered. "
 "Reinstall berigna."
@@ -524,11 +526,11 @@ msgstr ""
 "Los certificados raíz de confianza instalados con berigna han sido "
 "alterados. Reinstala berigna."
 
-#: src/berigna/core/report/messages.py:184
+#: src/berigna/core/report/messages.py:188
 msgid "A root certificate you added is not valid as a root."
 msgstr "Un certificado raíz que añadiste no es válido como raíz."
 
-#: src/berigna/core/report/messages.py:186
+#: src/berigna/core/report/messages.py:190
 msgid ""
 "The INDECOPI trusted list could not be used: its signature or its content is "
 "not valid. The trusted root certificates installed with berigna are still "
@@ -538,7 +540,7 @@ msgstr ""
 "no son válidos. Se siguen usando los certificados raíz de confianza "
 "instalados con berigna."
 
-#: src/berigna/core/report/messages.py:190
+#: src/berigna/core/report/messages.py:194
 msgid ""
 "The INDECOPI trusted list is out of date. The trusted root certificates "
 "installed with berigna are still used."
@@ -546,31 +548,34 @@ msgstr ""
 "La lista de confianza de INDECOPI está desactualizada. Se siguen usando los "
 "certificados raíz de confianza instalados con berigna."
 
-#: src/berigna/core/report/messages.py:193
+#: src/berigna/core/report/messages.py:197
 msgid "Your certificate cannot be used to sign."
 msgstr "Tu certificado no se puede usar para firmar."
 
-#: src/berigna/core/report/messages.py:194
-msgid "Your certificate has expired or is not yet valid."
-msgstr "Tu certificado venció o todavía no está vigente."
+#: src/berigna/core/report/messages.py:199
+msgid ""
+"Your certificate has expired or is not yet valid. DNIe certificates last "
+"four years, even if the DNI is still valid; renew them on RENIEC's Ciudadano "
+"Digital platform."
+msgstr "Tu certificado venció o todavía no es válido. Los certificados del DNIe duran cuatro años, aunque el DNI siga vigente; se renuevan en la plataforma Ciudadano Digital de RENIEC."
 
-#: src/berigna/core/report/messages.py:195
+#: src/berigna/core/report/messages.py:202
 msgid "Your certificate has been revoked. Go to RENIEC."
 msgstr "Tu certificado fue revocado. Acude a RENIEC."
 
-#: src/berigna/core/report/messages.py:196
+#: src/berigna/core/report/messages.py:203
 msgid "Your certificate does not lead to a trusted root certificate."
 msgstr "Tu certificado no lleva a un certificado raíz de confianza."
 
-#: src/berigna/core/report/messages.py:197
+#: src/berigna/core/report/messages.py:204
 msgid "Your certificate could not be validated."
 msgstr "No se pudo validar tu certificado."
 
-#: src/berigna/core/report/messages.py:198
+#: src/berigna/core/report/messages.py:205
 msgid "The document could not be signed."
 msgstr "No se pudo firmar el documento."
 
-#: src/berigna/core/report/messages.py:200
+#: src/berigna/core/report/messages.py:207
 msgid ""
 "The file changed after you opened it. Open it again and check it before "
 "signing."
@@ -578,29 +583,29 @@ msgstr ""
 "El archivo cambió después de que lo abriste. Vuelve a abrirlo y revísalo "
 "antes de firmar."
 
-#: src/berigna/core/report/messages.py:202
+#: src/berigna/core/report/messages.py:209
 msgid "A file with that name already exists. Choose another name."
 msgstr "Ya existe un archivo con ese nombre. Elige otro nombre."
 
-#: src/berigna/core/report/messages.py:203
+#: src/berigna/core/report/messages.py:210
 msgid "Signing was cancelled. The PIN was not sent."
 msgstr "Se canceló la firma. El PIN no se envió."
 
-#: src/berigna/core/report/messages.py:204
+#: src/berigna/core/report/messages.py:211
 msgid "This PDF cannot be signed: it is damaged or protected."
 msgstr "Este PDF no se puede firmar: está dañado o protegido."
 
-#: src/berigna/core/report/messages.py:205
+#: src/berigna/core/report/messages.py:212
 msgid ""
 "The time-stamping authority did not answer. Check the connection or the TSA."
 msgstr ""
 "La autoridad de sellado de tiempo no respondió. Revisa la conexión o la TSA."
 
-#: src/berigna/core/report/messages.py:206
+#: src/berigna/core/report/messages.py:213
 msgid "That signature level is not available now. Choose a lower level."
 msgstr "Ese nivel de firma no está disponible ahora. Elige un nivel inferior."
 
-#: src/berigna/core/report/messages.py:208
+#: src/berigna/core/report/messages.py:215
 msgid ""
 "The visible signature cannot be drawn: the box is too small, the page is "
 "rotated or the image cannot be read. Make the box larger, use another page "
@@ -610,7 +615,7 @@ msgstr ""
 "página está girada o la imagen no se puede leer. Agranda el recuadro, usa "
 "otra página o elige otra imagen en Preferencias."
 
-#: src/berigna/core/report/messages.py:213
+#: src/berigna/core/report/messages.py:220
 msgid ""
 "The author certified this document so that it cannot be changed: it does not "
 "accept more signatures."
@@ -618,11 +623,11 @@ msgstr ""
 "El autor certificó este documento para que no se pueda modificar: no admite "
 "más firmas."
 
-#: src/berigna/core/report/messages.py:216
+#: src/berigna/core/report/messages.py:223
 msgid "The document could not be verified."
 msgstr "No se pudo verificar el documento."
 
-#: src/berigna/core/report/messages.py:217
+#: src/berigna/core/report/messages.py:224
 msgid "The file is not a document that berigna can read, or it is damaged."
 msgstr "El archivo no es un documento que berigna pueda leer, o está dañado."
 
@@ -1189,11 +1194,9 @@ msgstr "Datos de la firma"
 
 #: src/berigna/ui/signing.py:338
 msgid ""
-"Signature validators such as ReFirma show them. The reasons of the list are "
-"written in the language of the signature."
-msgstr ""
-"Los muestran los validadores de firmas, como ReFirma. Los motivos de la "
-"lista se escriben en el idioma de la firma."
+"Signature validators such as Firma Perú show them. The reasons of the list "
+"are written in the language of the signature."
+msgstr "Los muestran los validadores de firmas, como Firma Perú. Los motivos de la lista se escriben en el idioma de la firma."
 
 #: src/berigna/ui/signing.py:344
 msgid "Reason"
@@ -1377,6 +1380,19 @@ msgstr "Abrir documento"
 #: src/berigna/ui/window.py:141
 msgid "Only files on this computer can be opened."
 msgstr "Solo se pueden abrir archivos de este equipo."
+
+#~ msgid "The PIN is blocked. Go to RENIEC to unblock it."
+#~ msgstr "El PIN está bloqueado. Acude a RENIEC para desbloquearlo."
+
+#~ msgid "Your certificate has expired or is not yet valid."
+#~ msgstr "Tu certificado venció o todavía no está vigente."
+
+#~ msgid ""
+#~ "Signature validators such as ReFirma show them. The reasons of the list "
+#~ "are written in the language of the signature."
+#~ msgstr ""
+#~ "Los muestran los validadores de firmas, como ReFirma. Los motivos de la "
+#~ "lista se escriben en el idioma de la firma."
 
 #~ msgid "Show the Signature on the Page"
 #~ msgstr "Mostrar la firma en la página"
