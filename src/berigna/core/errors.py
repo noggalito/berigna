@@ -211,6 +211,12 @@ class AppearanceError(SigningError):
     code = "ERR-308"
 
 
+class BatchCancelledError(SigningError):
+    """The user cancelled a batch: this file and the following ones were not signed."""
+
+    code = "ERR-309"
+
+
 class CertifiedDocumentError(PdfFormatError):
     """The author certified the document so that no change, not even a signature, is allowed
     (DocMDP P=1, CU-03)."""
