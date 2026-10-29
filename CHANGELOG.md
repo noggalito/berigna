@@ -63,6 +63,7 @@ Interfaz (Fase 3):
 
 ### Cambiado
 
+- Los CSV del historial y del lote se proponen con la fecha y la hora delante: "2026-10-29_00h55_historial-berigna.csv".
 - Antes de firmar, el diálogo del PIN avisa si el certificado de firma vence en menos de un mes, con la fecha y dónde renovarlo (Ciudadano Digital).
 - Vista previa: arrastrar la página la desplaza (con zoom); el recuadro de la firma se mueve arrastrándolo y cambia de tamaño con el tirador de su esquina inferior derecha, en lugar de dibujarse de nuevo.
 - Respuesta de RENIEC (2026-10-28): el PIN bloqueado se desbloquea en Ciudadano Digital o en una agencia (ERR-111); los certificados del DNIe duran cuatro años, aunque el DNI siga vigente, y se renuevan en Ciudadano Digital (ERR-211). El validador de referencia es Firma Perú, porque RENIEC ya no distribuye ReFirma a terceros.
@@ -81,6 +82,7 @@ Interfaz (Fase 3):
 
 ### Corregido
 
+- Las pruebas que arrancan berigna sin rutas propias escribían en el historial real del usuario (`~/.local/share/berigna/`): GLib guarda la carpeta de datos la primera vez que se le pregunta. berigna la lee ahora del entorno (`core.files.data_directory`) y las pruebas usan una carpeta temporal.
 - El diagnóstico daba "No se pudo consultar a RENIEC si tu certificado está revocado" con la red funcionando: validaba con la hora fijada, y la tolerancia de 1 s rechazaba la respuesta OCSP de RENIEC por "demasiado reciente"; ahora valida "ahora", con la tolerancia de 5 minutos. El motivo de una revocación no comprobada queda en el registro técnico, igual que cada paso del diagnóstico que no sale bien.
 - Las pruebas que arrancan berigna escribían el registro técnico en `~/.local/state` del usuario; ahora usan una carpeta temporal.
 - Los archivos firmados, los informes exportados y el CSV del lote se creaban con permisos `rw-------` (los de un archivo temporal); ahora tienen los de cualquier archivo nuevo según la máscara del usuario, y al reemplazar uno existente se conservan los suyos.
