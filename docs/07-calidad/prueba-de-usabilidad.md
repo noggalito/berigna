@@ -3,7 +3,7 @@
 | Campo | Valor |
 |---|---|
 | Documento | BRG-CAL-005 |
-| Versión | 0.1.0 |
+| Versión | 0.2.0 |
 | Estado | Borrador |
 | Fecha | 2026-10-29 |
 | Responsable | noggalito |
@@ -47,13 +47,14 @@ Mientras no haya paquete `.deb` (Fase 5), berigna se instala desde el código fu
 2. Código y entorno (en la cuenta de prueba):
 
    ```bash
-   git clone https://github.com/noggalito/berigna.git ~/berigna
+   git clone --branch v0.3.0-rc.1 https://github.com/noggalito/berigna.git ~/berigna
    cd ~/berigna
    python3 -m venv --system-site-packages .venv
    .venv/bin/pip install --no-deps 'pyHanko==0.25.1'
    .venv/bin/pip install --no-deps -e .
    ```
 
+   Todos los participantes prueban la misma versión candidata, `v0.3.0-rc.1`, no la rama `main`, que sigue cambiando con la Fase 4 (BRG-DES-002 §6). Si una corrección obliga a repetir tareas, se anota en el registro con qué versión candidata se hizo cada sesión.
 3. Lanzador e icono en el escritorio: `scripts/escritorio.sh`. berigna aparece en la cuadrícula de aplicaciones como "berigna (desarrollo)".
 4. Comprobación: conectar el lector con un DNIe, abrir berigna y ejecutar ☰ → Diagnóstico. Todo debe salir en ✓, salvo la autoridad de sellado de tiempo mientras no haya una contratada (DP-02).
 5. Al terminar la prueba: `scripts/escritorio.sh quitar` y borrar la cuenta de prueba, con sus documentos y su historial.
