@@ -13,6 +13,8 @@ scripts/traducciones.sh compilar
 # Views and settings schema of the interface (ADR-0010); the tests read them from build/meson.
 [ -d build/meson ] || meson setup build/meson
 meson compile -C build/meson
+# Data files of the build: the desktop entry (desktop-file-validate, if installed).
+meson test -C build/meson --print-errorlogs > /dev/null
 # The interface tests need a display: Xvfb, so that they also run without a desktop. Without
 # WAYLAND_DISPLAY, or GTK would open the windows on the user's Wayland desktop instead.
 env -u BERIGNA_HIL -u WAYLAND_DISPLAY GDK_BACKEND=x11 BERIGNA_LOCALEDIR="$PWD/build/locale" \
