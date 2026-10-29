@@ -6,6 +6,7 @@ import io
 from collections.abc import Generator
 from pathlib import Path
 
+from gi.repository import Gtk
 from PIL import Image
 from pyhanko.pdf_utils.reader import PdfFileReader
 
@@ -139,33 +140,52 @@ def test_images_in_the_preferences(app: BerignaApplication, tmp_path: Path) -> N
 class FakeDrag:
     def __init__(self, x: float, y: float) -> None:
         self.start = (x, y)
+        self.state: object = None
 
     def get_start_point(self) -> tuple[bool, float, float]:
         return True, *self.start
 
+    def set_state(self, state: object) -> bool:
+        self.state = state
+        return True
 
-def test_drawing_and_moving_the_box() -> None:
+
+def test_moving_resizing_and_scrolling() -> None:
+    """Drag the box to move it, its corner to resize it, anywhere else to scroll (2026-10-28)."""
     preview = PdfPreview(minimal_pdf())
     width, height = preview.page_size(0)
     preview._transform = (0.0, 0.0, 1.0, height)  # one widget pixel per point
     changes: list[SignatureBox] = []
     preview.on_box_changed = changes.append
-    preview._on_drag_begin(None, 10, 10)  # no box: nothing happens
-    assert preview._drag is None
     preview.set_box(SignatureBox(0, 100, 100, 200, 60))
+    assert preview.cursor(150, height - 130) == "move"
+    assert preview.cursor(300, height - 100) == "se-resize"  # bottom right corner
+    assert preview.cursor(20, 20) == "grab"
     # Drag from inside the box: it moves, and stays on the page.
     start_x, start_y = 150, height - 130
     preview._on_drag_begin(None, start_x, start_y)
     preview._on_drag_update(FakeDrag(start_x, start_y), 1000, 0)
     assert preview.box == SignatureBox(0, width - 200, 100, 200, 60)
     preview._on_drag_end(None, 0, 0)
-    # Drag outside: a new box, never smaller than the minimum.
-    preview._on_drag_begin(None, 20, height - 20)
-    preview._on_drag_update(FakeDrag(20, height - 20), 5, -3)
-    assert preview.box is not None
-    assert (preview.box.width, preview.box.height) == (40, 15)
+    # Drag the corner: the top left corner stays, never below the minimum size.
+    preview.set_box(SignatureBox(0, 100, 100, 200, 60))
+    corner = (300, height - 100)
+    preview._on_drag_begin(None, *corner)
+    preview._on_drag_update(FakeDrag(*corner), -50, 40)  # narrower and taller
+    assert preview.box == SignatureBox(0, 100, 60, 150, 100)
+    preview._on_drag_update(FakeDrag(*corner), -1000, -1000)
+    assert preview.box == SignatureBox(0, 100, 160 - 15, 40, 15)
     preview._on_drag_end(None, 0, 0)
     assert len(changes) == 2
+    # Drag outside: the page scrolls, the box stays.
+    box = preview.box
+    preview._on_drag_begin(None, 20, 20)
+    drag = FakeDrag(20, 20)
+    preview._on_drag_update(drag, -30, -40)
+    assert preview.box == box
+    assert drag.state == Gtk.EventSequenceState.CLAIMED
+    preview._on_drag_end(None, 0, 0)
+    assert len(changes) == 2  # scrolling is not a change of the box
     preview._on_drag_update(FakeDrag(0, 0), 1, 1)  # after the end: ignored
 
 
