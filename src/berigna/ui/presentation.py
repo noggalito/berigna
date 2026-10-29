@@ -266,27 +266,33 @@ def level_title(level: SignatureLevel, translations: gettext.NullTranslations | 
 
 
 def pin_summary(
-    document: DocumentInfo,
+    document: DocumentInfo | int,
     check: SignerCheck,
     level: SignatureLevel,
     translations: gettext.NullTranslations | None = None,
 ) -> tuple[Detail, ...]:
     """What the PIN dialog shows before the PIN is sent (P-01, BRG-UX-001 §3.3).
 
-    ``translations`` gives it in another language: Quechua users can read it in Spanish.
+    ``document`` is the document, or the number of documents of a batch (CU-04), whose list
+    the user has just confirmed. ``translations`` gives it in another language: Quechua users
+    can read it in Spanish.
     """
     t = translations or catalogue()
     certificate = check.chain[-1]
-    pages = document.pages or 0
-    rows = [
-        Detail(
+    if isinstance(document, int):
+        what = Detail(
+            t.gettext("Documents"),
+            t.ngettext("{n} PDF document", "{n} PDF documents", document).format(n=document),
+        )
+    else:
+        pages = document.pages or 0
+        what = Detail(
             t.gettext("Document"),
             t.ngettext("{name} ({n} page)", "{name} ({n} pages)", pages).format(
                 name=document.path.name, n=pages
             ),
-        ),
-        Detail(t.gettext(messages.REPORT_SIGNER), common_name(certificate)),
-    ]
+        )
+    rows = [what, Detail(t.gettext(messages.REPORT_SIGNER), common_name(certificate))]
     identity = masked_id(certificate)
     if identity is not None:
         rows.append(Detail(t.gettext("DNI"), identity))

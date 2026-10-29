@@ -42,16 +42,31 @@ Adw.ApplicationWindow window {
               icon-name: "document-open-symbolic";
               title: _("Drop a document here to sign or verify it");
 
-              child: Button {
-                label: _("_Open Document…");
-                use-underline: true;
+              child: Box {
+                orientation: vertical;
+                spacing: 12;
                 halign: center;
-                action-name: "win.open";
 
-                styles [
-                  "pill",
-                  "suggested-action",
-                ]
+                Button {
+                  label: _("_Open Document…");
+                  use-underline: true;
+                  action-name: "win.open";
+
+                  styles [
+                    "pill",
+                    "suggested-action",
+                  ]
+                }
+
+                Button {
+                  label: _("Sign _Several Documents…");
+                  use-underline: true;
+                  action-name: "win.open-batch";
+
+                  styles [
+                    "pill",
+                  ]
+                }
               };
             };
           };
