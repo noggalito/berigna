@@ -66,3 +66,11 @@ def test_dated_name() -> None:
     assert name == f"{moment.astimezone():%Y-%m-%d_%Hh%M}_historial-berigna.csv"
     assert dated_name("x.csv", dt.datetime(2026, 10, 29, 0, 55, tzinfo=lima)).endswith("_x.csv")
     assert dated_name("x.csv")[:4].isdigit()
+
+
+def test_private_files_are_for_their_owner_only(tmp_path: Path) -> None:
+    path = tmp_path / "rubrica.png"
+    path.write_bytes(b"antes")
+    os.chmod(path, 0o664)
+    write_atomically(path, b"imagen", replace=True, private=True)
+    assert _mode(path) == 0o600
