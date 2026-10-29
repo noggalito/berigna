@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# SPDX-FileCopyrightText: 2026 Calú
+# SPDX-FileCopyrightText: 2026 noggalito
 """RFC 3161 time-stamping client (RF-062).
 
 The protocol work (request with nonce, check of status, nonce and message imprint) is pyHanko's

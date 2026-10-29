@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# SPDX-FileCopyrightText: 2026 Calú
+# SPDX-FileCopyrightText: 2026 noggalito
 """Signing in the interface with a simulated DNIe (CU-01, CU-03; P-01, P-06, P-07)."""
 
 from collections.abc import Generator
@@ -322,7 +322,7 @@ def test_unexpected_errors_do_not_leave_the_page_waiting(
 def test_reason_and_location_lists(app: BerignaApplication, tmp_path: Path) -> None:
     """The last reason and location come back; recent locations are offered (2026-10-28)."""
     path = _pdf(tmp_path)
-    settings = Gio.Settings.new("pe.berigna.Berigna")
+    settings = Gio.Settings.new("com.noggalito.Berigna")
     keys = ("recent-locations", "signature-location", "signature-reason-kind", "signature-reason")
     settings.set_strv("recent-locations", ["Sullana", "Cusco"])
     settings.set_string("signature-location", "Cusco")

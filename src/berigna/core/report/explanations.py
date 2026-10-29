@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# SPDX-FileCopyrightText: 2026 Calú
+# SPDX-FileCopyrightText: 2026 noggalito
 """Plain-language explanations of verification results and errors (RF-053, ADR-0011 §7).
 
 The core returns codes; this module turns them into sentences of the requested catalogue. With

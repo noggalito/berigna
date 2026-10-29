@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# SPDX-FileCopyrightText: 2026 Calú
+# SPDX-FileCopyrightText: 2026 noggalito
 """Contextual help: a "More information" button that opens the online help (ADR-0017).
 
 The pages live at ``https://berigna.noggalito.com/ayuda/<version>/<language>/<topic>``: the

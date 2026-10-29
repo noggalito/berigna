@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# SPDX-FileCopyrightText: 2026 Calú
+# SPDX-FileCopyrightText: 2026 noggalito
 """The real application under a display (Xvfb in scripts/verificar.sh and in the CI).
 
 Needs the build tree of Meson (``meson compile -C build/meson``): compiled views and schema.

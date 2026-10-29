@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# SPDX-FileCopyrightText: 2026 Calú
+# SPDX-FileCopyrightText: 2026 noggalito
 """Verification of the signatures in a PDF (RF-050, RF-053, RF-055, RF-056).
 
 Each signature gets an ETSI EN 319 102-1 indication from pyHanko's AdES validation: the *basic*

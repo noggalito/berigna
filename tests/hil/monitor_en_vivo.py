@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# SPDX-FileCopyrightText: 2026 Calú
+# SPDX-FileCopyrightText: 2026 noggalito
 """Manual HIL check of RF-001/RF-002: prints every device change with its time. NO PIN.
 
 Run it, then unplug and plug the reader and remove and insert the DNIe; each change must

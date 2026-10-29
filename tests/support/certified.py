@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# SPDX-FileCopyrightText: 2026 Calú
+# SPDX-FileCopyrightText: 2026 noggalito
 """Certified PDFs (DocMDP, ISO 32000 §12.8.2.2) for the tests, signed in software."""
 
 import io

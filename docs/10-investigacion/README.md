@@ -6,7 +6,7 @@
 | Versión | 0.2.0 |
 | Estado | En curso |
 | Fecha | 2026-10-27 |
-| Responsable | `{{TITULAR}}` |
+| Responsable | noggalito |
 
 Los *spikes* se ejecutan en la Fase 0, antes de escribir código de producto. Cada uno tiene una pregunta, un método, un criterio de cierre y una plantilla de resultados. Sus conclusiones actualizan las decisiones pendientes y los ADR.
 

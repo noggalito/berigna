@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# SPDX-FileCopyrightText: 2026 Calú
+# SPDX-FileCopyrightText: 2026 noggalito
 """Own trust store for signature validation (ADR-0009).
 
 The bundled anchors (roots and intermediates of the ROOT 3 and ROOT 5 hierarchies) are checked

@@ -6,7 +6,7 @@
 | Versión | 0.3.0 |
 | Estado | Borrador |
 | Fecha | 2026-10-28 |
-| Responsable | `{{TITULAR}}` |
+| Responsable | noggalito |
 
 ## 1. Propósito
 
@@ -74,7 +74,7 @@ Algunos documentos públicos citan identificadores cuyo detalle está en la docu
 | 00-gestion | Borrador | — |
 | 02-marco-normativo | Borrador | — |
 | 03-requisitos | Borrador | Línea base para la v1.0 |
-| 04-arquitectura | Borrador | ADR-0001 a ADR-0015 aceptados |
+| 04-arquitectura | Borrador | ADR-0001 a ADR-0020 aceptados |
 | 05-seguridad | Borrador | — |
 | 06-ux | Borrador | Bocetos de baja fidelidad |
 | 07-calidad | Borrador | El protocolo de PIN está Vigente |
@@ -97,7 +97,8 @@ Algunos documentos públicos citan identificadores cuyo detalle está en la docu
 | Dependencias | Las de Debian 13 más pyHanko 0.25.1 empaquetado (ADR-0013) |
 | Arquitecturas | Paquetes `Architecture: all`; amd64 con soporte oficial, arm64 sin soporte oficial |
 | Idiomas | es_PE y quechua sureño completos (ADR-0011, ADR-0015); en_US en la versión 1.1 |
-| Distribución | Paquete `.deb` para Debian 13 (ADR-0006) |
+| Distribución | Paquete `.deb` para Debian 13 en un repositorio APT propio (ADR-0006) y entrada en el archivo oficial de Debian desde la v1.0 (ADR-0020); Flatpak en la 1.1 |
+| Titular e identificador | noggalito; `com.noggalito.Berigna` (ADR-0019); contacto `berigna@noggalito.com` |
 | Licencia | GPL-3.0-or-later (ADR-0005) |
 
 ## 7. Estado de implementación (2026-10-28)
@@ -118,7 +119,7 @@ Fases 0, 1 y 2 cerradas.
 | `core.i18n` y `core.report` | Implementado: catálogos gettext es_PE (completo) y quechua (pendiente de los traductores, ADR-0015); explicación de cada indicación y subindicación ETSI y de cada `ERR-xxx`; informes JSON y PDF, con DNI y RUC enmascarados | RF-053, RF-054, PR-I18N-04, PR-I18N-07 | Pruebas de cobertura del catálogo; informe de un PDF real revisado |
 | TSA de producción | Pendiente de DP-02 (aún no hay TSA acreditada contratada) | RF-062 | — |
 | Proxy y caché de la TSL | Implementado (Fase 3, incremento 4): `core.net.proxy` y `core.trust.cache` | RF-061, RF-064 | Descarga real de la TSL de INDECOPI (secuencia 25, 68 CA) y lectura desde la caché |
-| `ui` (interfaz gráfica) | En curso, Fase 3. Incremento 1: aplicación `pe.berigna.Berigna` con Meson, ventana principal, estado del DNIe, apertura de archivos (botón, arrastrar y argumentos), esquema de GSettings, cambio de idioma sin reiniciar y aviso de traducción sin revisar. Incremento 2: verificación de PDF (CU-06) con resumen, detalles técnicos, informes JSON y PDF y versión firmada. Incremento 3: firma de PDF (CU-01, CU-03) con vista previa (Poppler, ADR-0016), nivel, diálogo del PIN y documentos certificados (ERR-307). Incremento 4: Preferencias (CU-08), TSL de INDECOPI en uso con caché y proxy. Incremento 5: firma visible (CU-02) con texto, rúbrica, logotipo o QR | RF-001 a RF-006, RF-010, RF-013, RF-014, RF-018, RF-045, RF-050, RF-053 a RF-056 | Pruebas de la aplicación real con Xvfb, también en la CI; PDF real firmado con el DNIe verificado en línea (TOTAL-PASSED) |
+| `ui` (interfaz gráfica) | En curso, Fase 3. Incremento 1: aplicación `com.noggalito.Berigna` con Meson, ventana principal, estado del DNIe, apertura de archivos (botón, arrastrar y argumentos), esquema de GSettings, cambio de idioma sin reiniciar y aviso de traducción sin revisar. Incremento 2: verificación de PDF (CU-06) con resumen, detalles técnicos, informes JSON y PDF y versión firmada. Incremento 3: firma de PDF (CU-01, CU-03) con vista previa (Poppler, ADR-0016), nivel, diálogo del PIN y documentos certificados (ERR-307). Incremento 4: Preferencias (CU-08), TSL de INDECOPI en uso con caché y proxy. Incremento 5: firma visible (CU-02) con texto, rúbrica, logotipo o QR | RF-001 a RF-006, RF-010, RF-013, RF-014, RF-018, RF-045, RF-050, RF-053 a RF-056 | Pruebas de la aplicación real con Xvfb, también en la CI; PDF real firmado con el DNIe verificado en línea (TOTAL-PASSED) |
 | Lotes, diagnóstico | Fase 3, incremento 6 | RF-040 a RF-043, RF-082, RF-083 | — |
 | CAdES y XAdES | Fase 4 (viabilidad probada en SPK-03) | RF-020 a RF-033 | — |
 | Extensión de Nautilus y empaquetado `.deb` | Fase 5 | RF-070 a RF-073, ADR-0006, ADR-0013 | — |

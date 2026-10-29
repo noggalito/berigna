@@ -1,9 +1,9 @@
 #!/bin/sh
 # SPDX-License-Identifier: GPL-3.0-or-later
-# SPDX-FileCopyrightText: 2026 Calú
+# SPDX-FileCopyrightText: 2026 noggalito
 # Run the interface from the source tree, with the views, schema and catalogues of build/.
 #   scripts/ejecutar.sh [archivo…]
-# Preferences go to dconf under /pe/berigna/Berigna/, as in the installed program.
+# Preferences go to dconf under /com/noggalito/Berigna/, as in the installed program.
 set -eu
 # Files given with a relative path are found before leaving the current directory.
 for file; do

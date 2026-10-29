@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# SPDX-FileCopyrightText: 2026 Calú
+# SPDX-FileCopyrightText: 2026 noggalito
 """Simulator of the DNIe v2 PKI applet, implementing the Transport protocol.
 
 It reproduces the behaviour measured in SPK-01: 228-byte READ BINARY chunks wrapped in a

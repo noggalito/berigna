@@ -6,7 +6,7 @@
 | Versión | 0.3.0 |
 | Estado | Borrador |
 | Fecha | 2026-10-27 |
-| Responsable | `{{TITULAR}}` |
+| Responsable | noggalito |
 
 Prioridades según MoSCoW (ver convenciones). Cada requisito tiene criterios de aceptación verificables. La columna CU indica los casos de uso relacionados.
 

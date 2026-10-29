@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# SPDX-FileCopyrightText: 2026 Calú
+# SPDX-FileCopyrightText: 2026 noggalito
 """Languages of berigna 1.0 (ADR-0015): choice, fallbacks and catalogues (PR-I18N-04)."""
 
 import gettext

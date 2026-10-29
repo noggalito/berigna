@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# SPDX-FileCopyrightText: 2026 Calú
+# SPDX-FileCopyrightText: 2026 noggalito
 """Revocation fetchers: never the CRL of an end-entity certificate (RF-063), hedged mirrors and
 one retry (R-17), tolerant of RENIEC's slow connection set-up."""
 

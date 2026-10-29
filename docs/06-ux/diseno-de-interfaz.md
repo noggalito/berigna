@@ -6,7 +6,7 @@
 | Versión | 0.3.0 |
 | Estado | Borrador (bocetos de baja fidelidad) |
 | Fecha | 2026-10-28 |
-| Responsable | `{{TITULAR}}` |
+| Responsable | noggalito |
 
 ## 1. Principios de UX
 
@@ -26,7 +26,7 @@ La identidad de berigna está en [`data/brand/`](../../data/brand/README.md), ba
 - Paleta: burdeos `#6B2232`, dorado `#C2A878`, crema `#F5ECE3`, carbón `#231C1E`. Contraste del burdeos sobre crema: 9,5:1.
 - El nombre se escribe siempre en minúsculas: berigna.
 - La interfaz usa la tipografía y los colores del sistema (HIG de GNOME, libadwaita), con el color de acento que el usuario eligió en GNOME (decisión del 2026-10-28): la marca no fuerza el burdeos en la interfaz, y vive en el icono, el informe, la web y la firma visible. Las tipografías de la marca (Arvo y Source Sans 3) se reservan para el logotipo y las piezas de comunicación, no para la interfaz.
-- El icono de la aplicación (`pe.berigna.Berigna`, a color, reducido para tamaños pequeños y simbólico) se hizo el 2026-10-28 a partir del isotipo, sin el nombre (BRG-UX-002 §2).
+- El icono de la aplicación (`com.noggalito.Berigna`, a color, reducido para tamaños pequeños y simbólico) se hizo el 2026-10-28 a partir del isotipo, sin el nombre (BRG-UX-002 §2).
 
 ## 2. Mapa de navegación
 

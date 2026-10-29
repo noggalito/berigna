@@ -6,7 +6,7 @@
 | Versión | 0.1.0 |
 | Estado | Vivo |
 | Fecha | 2026-10-27 |
-| Responsable | `{{TITULAR}}` |
+| Responsable | noggalito |
 
 Formato: Contexto → Decisión → Alternativas consideradas → Consecuencias. Estados posibles: Propuesto, Aceptado, Reemplazado por ADR-XXXX, Rechazado.
 
@@ -32,6 +32,8 @@ Un ADR aceptado no se edita. Si la decisión cambia, se escribe un ADR nuevo que
 | [ADR-0016](ADR-0016-previsualizacion-pdf-poppler.md) | Previsualización de PDF con Poppler | Aceptado |
 | [ADR-0017](ADR-0017-ayuda-contextual-en-linea.md) | Ayuda contextual en línea, por versión | Aceptado |
 | [ADR-0018](ADR-0018-apariencia-de-la-firma-visible.md) | Apariencia de la firma visible | Aceptado |
+| [ADR-0019](ADR-0019-identificador-com-noggalito-berigna.md) | Identificador de la aplicación `com.noggalito.Berigna` | Aceptado |
+| [ADR-0020](ADR-0020-debian-oficial-en-la-v1.md) | berigna en el archivo oficial de Debian desde la v1.0 | Aceptado |
 
 ## Fe de erratas
 

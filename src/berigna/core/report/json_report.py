@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# SPDX-FileCopyrightText: 2026 Calú
+# SPDX-FileCopyrightText: 2026 noggalito
 """Machine-readable verification report (RF-054).
 
 Codes are the normalised ETSI ones; explanations go in both languages of berigna 1.0

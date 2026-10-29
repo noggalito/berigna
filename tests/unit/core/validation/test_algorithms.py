@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# SPDX-FileCopyrightText: 2026 Calú
+# SPDX-FileCopyrightText: 2026 noggalito
 """Obsolete algorithms are refused by berigna's own policy, not a library default (ACR-18)."""
 
 import pytest

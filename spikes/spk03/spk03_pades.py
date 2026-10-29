@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# SPDX-FileCopyrightText: 2026 Calú
+# SPDX-FileCopyrightText: 2026 noggalito
 # Prototipo de investigación (spike). No es código de producción.
 """SPK-03 (complement): PAdES B-B / B-T / B-LT / B-LTA with pyHanko 0.25.1 and the token-like signer."""
 import io

@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# SPDX-FileCopyrightText: 2026 Calú
+# SPDX-FileCopyrightText: 2026 noggalito
 
 # Core package metadata and developer tooling. The desktop application (GTK, translations,
 # desktop integration) will be built with Meson from Phase 3 on (ADR-0010).
@@ -16,7 +16,7 @@ readme = "README.md"
 license = "GPL-3.0-or-later"
 license-files = ["LICENSE"]
 requires-python = ">=3.12"
-authors = [{ name = "Calú" }]
+authors = [{ name = "noggalito", email = "berigna@noggalito.com" }]
 # Production installs come from Debian 13 packages (ADR-0013, SPK-05); these bounds follow
 # those versions. pyHanko is pinned: 0.25.3 needs pyhanko-certvalidator>=0.26.5, newer than
 # Debian's 0.26.3.

@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# SPDX-FileCopyrightText: 2026 Calú
+# SPDX-FileCopyrightText: 2026 noggalito
 """Signer check before the PIN (RF-006): PR-VAL-02 to PR-VAL-05, PR-TOK-04."""
 
 import datetime as dt

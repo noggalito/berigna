@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# SPDX-FileCopyrightText: 2026 Calú
+# SPDX-FileCopyrightText: 2026 noggalito
 from collections.abc import Generator
 from pathlib import Path
 
@@ -171,9 +171,9 @@ def test_every_icon_exists_in_the_theme() -> None:
     names = set(presentation.ICONS)
     names |= {icon for icon, _style in presentation._INDICATION_ICONS.values()}
     names |= {icon for icon, _message in presentation._DEVICE.values()}
-    names |= {"open-menu-symbolic", "pe.berigna.Berigna", "pe.berigna.Berigna-symbolic"}
+    names |= {"open-menu-symbolic", "com.noggalito.Berigna", "com.noggalito.Berigna-symbolic"}
     # The application icons come from the resources, as GtkApplication registers them.
-    theme.add_resource_path("/pe/berigna/Berigna/icons")
+    theme.add_resource_path("/com/noggalito/Berigna/icons")
     assert [name for name in sorted(names) if not theme.has_icon(name)] == []
 
 
@@ -196,7 +196,7 @@ def test_files_that_are_not_pdf(app: BerignaApplication, tmp_path: Path) -> None
 )
 def test_tsa_comes_from_the_preferences(url: str, configured: bool) -> None:
     app = BerignaApplication(unique=False)
-    app.settings = Gio.Settings.new("pe.berigna.Berigna")
+    app.settings = Gio.Settings.new("com.noggalito.Berigna")
     app.settings.set_string("tsa-url", url)
     try:
         assert (app._configured_timestamper() is not None) is configured

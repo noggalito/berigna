@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# SPDX-FileCopyrightText: 2026 Calú
+# SPDX-FileCopyrightText: 2026 noggalito
 """Shared fixtures: a test key and certificates shaped like the DNIe v2 ones."""
 
 import datetime as dt

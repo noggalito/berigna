@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# SPDX-FileCopyrightText: 2026 Calú
+# SPDX-FileCopyrightText: 2026 noggalito
 """The last accepted INDECOPI trusted list, kept between runs (ADR-0014 §5, RF-061).
 
 The cache holds the list as downloaded and the state of the last download: its sequence number,

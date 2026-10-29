@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# SPDX-FileCopyrightText: 2026 Calú
+# SPDX-FileCopyrightText: 2026 noggalito
 """Trust store: bundled IOFE anchors, integrity against the manifest (AM-08), user anchors."""
 
 import datetime as dt

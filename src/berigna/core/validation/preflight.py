@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# SPDX-FileCopyrightText: 2026 Calú
+# SPDX-FileCopyrightText: 2026 noggalito
 """Check of the signer certificate before asking for the PIN (RF-006, ACR-13 to ACR-15).
 
 Validity, chain up to an IOFE anchor (ADR-0009), non-repudiation usage and revocation:

@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# SPDX-FileCopyrightText: 2026 Calú
+# SPDX-FileCopyrightText: 2026 noggalito
 # Same checks as scripts/verificar.sh, on Debian 13 with Debian's packages (ADR-0013):
 # only pyHanko (not in Debian, SPK-05) and the development tools come from PyPI. Never runs
 # the HIL tests (no card reader, no PIN).

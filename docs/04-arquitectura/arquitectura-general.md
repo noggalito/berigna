@@ -6,7 +6,7 @@
 | Versión | 0.2.0 |
 | Estado | Borrador |
 | Fecha | 2026-10-27 |
-| Responsable | `{{TITULAR}}` |
+| Responsable | noggalito |
 
 ## 1. Principios
 
@@ -232,7 +232,7 @@ class TokenSigner(Protocol):
 
 ## 6. Proceso y empaquetado
 
-- Un solo proceso `berigna`, con `Adw.Application` y un `application-id` único: `pe.berigna.Berigna` (provisional, depende de DP-05; debe ser un dominio controlado por el titular).
+- Un solo proceso `berigna`, con `Adw.Application` y un `application-id` único: `com.noggalito.Berigna`, del dominio `noggalito.com` del titular (ADR-0019).
 - La extensión de Nautilus es un módulo Python aparte, instalado en el directorio de extensiones de nautilus-python, en un paquete binario propio (`berigna-nautilus`).
 - Estructura de paquetes Debian: `berigna` (aplicación), `berigna-nautilus` (extensión), `python3-berigna-core` (opcional, si se separa el núcleo).
 

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// SPDX-FileCopyrightText: 2026 Calú
+// SPDX-FileCopyrightText: 2026 noggalito
 package brg;
 
 import eu.europa.esig.dss.model.DSSDocument;

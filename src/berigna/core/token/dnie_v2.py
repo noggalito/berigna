@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# SPDX-FileCopyrightText: 2026 Calú
+# SPDX-FileCopyrightText: 2026 noggalito
 """APDU driver for the PKI applet of the Peruvian DNIe v2 (ADR-0012, SPK-01 §8.4 and §8.6).
 
 Rules enforced here:
