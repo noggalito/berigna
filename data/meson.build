@@ -34,6 +34,21 @@ install_data(
   install_dir: get_option('datadir') / 'icons' / 'hicolor' / 'symbolic' / 'apps',
 )
 
+# The desktop entry: GNOME matches the window to it by the application ID, and takes the
+# name and the icon from it (dock, overview, alt+tab).
+i18n.merge_file(
+  input: application_id + '.desktop.in',
+  output: application_id + '.desktop',
+  type: 'desktop',
+  po_dir: meson.project_source_root() / 'po',
+  install: true,
+  install_dir: get_option('datadir') / 'applications',
+)
+desktop_file_validate = find_program('desktop-file-validate', required: false)
+if desktop_file_validate.found()
+  test('desktop', desktop_file_validate, args: [meson.current_build_dir() / application_id + '.desktop'])
+endif
+
 install_data(
   application_id + '.gschema.xml',
   install_dir: get_option('datadir') / 'glib-2.0' / 'schemas',

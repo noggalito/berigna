@@ -53,9 +53,16 @@ Interfaz (Fase 3):
 - Firma de PDF (CU-01, CU-03): vista previa con Poppler (ADR-0016), nivel (los que necesitan una TSA, desactivados mientras no haya una), motivo y ubicación; diálogo del PIN con el resumen, el DNI enmascarado y los intentos restantes; resultado con "Abrir", "Mostrar en la carpeta" y "Verificar"; ofrece firmar en B-B si la revocación no se pudo comprobar. Firmar encima de un PDF ya firmado avisa si alguna firma existente no es válida.
 - `core.signing.output_path`: el nombre del archivo firmado se numera si ya existe, sin sobrescribir nunca (RF-045).
 - ERR-307: un documento certificado por su autor sin cambios permitidos (DocMDP) se rechaza antes del PIN; `inspect_document` lo indica (`locked`).
+- Entrada de escritorio `pe.berigna.Berigna.desktop` (nombre, descripción y palabras clave traducidas; abre PDF), validada con `desktop-file-validate` en `meson test`. `scripts/escritorio.sh` la instala con los iconos en `~/.local/share` para el árbol de desarrollo, de modo que GNOME muestra el icono de berigna en el Dock.
+
+### Cambiado
+
+- Fechas y horas con la fecha ISO 8601, la hora con el símbolo h del SI y el desfase respecto de UTC, en la hora local: "2026-10-28 a las 18h47 UTC-5". Se aplica al sello visible, al QR, a la verificación y al informe PDF; el informe JSON sigue en ISO 8601 y UTC.
+- "Versión firmada" empieza con mayúscula ("Primeros … bytes del archivo"); en Preferencias → Firma visible, "berigna" va en negrita.
 
 ### Corregido
 
+- El QR de la firma visible no declaraba su codificación y algunos lectores de teléfono mostraban "Cómo" como "C髇o". Ahora lleva el indicador ECI de UTF-8 antes de los datos.
 - En Preferencias, el valor de las listas desplegables se cortaba ("Validación a largo plazo (…"), también al desplegarlas; ahora va completo como subtítulo y las opciones se ajustan en varias líneas.
 - Una excepción inesperada en el hilo de verificación o de firma dejaba la interfaz esperando para siempre; ahora se muestra como error inesperado (ERR-000) y se registra.
 - Las pruebas de la interfaz abrían sus ventanas en el escritorio del usuario en una sesión Wayland: GTK prefería `WAYLAND_DISPLAY` a la pantalla virtual de `xvfb-run`. Ahora usan solo X11 sobre Xvfb. Una prueba nueva comprueba que el núcleo no importa GTK ni la interfaz (RNF-MAN-01).

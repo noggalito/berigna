@@ -14,6 +14,7 @@ from berigna.core.report.explanations import (
     explain_timestamp,
     format_time,
     subindication_key,
+    utc_offset,
 )
 from berigna.core.validation import (
     Indication,
@@ -24,6 +25,7 @@ from berigna.core.validation import (
 from support.pki import NOW, Pki, build_pki
 
 SPANISH = translations(Language.ES_PE)
+WHEN = format_time(NOW, SPANISH.gettext)
 STRICT_QUECHUA = translations(Language.QUZ_PE, strict=True)
 
 
@@ -53,7 +55,7 @@ def test_valid_signature_with_certified_time(pki: Pki) -> None:
     text = explain_signature(_report(pki.leaf("JUAN PEREZ"), timestamp=stamp), SPANISH)
     assert text == (
         "La firma es válida. Firmado por JUAN PEREZ. "
-        f"La hora de la firma, {format_time(NOW)}, está certificada por una autoridad de "
+        f"La hora de la firma, {WHEN}, está certificada por una autoridad de "
         "sellado de tiempo. El documento no se ha modificado desde que se firmó."
     )
 
@@ -112,7 +114,7 @@ def test_unknown_subindication_gets_the_generic_text() -> None:
 def test_document_timestamp() -> None:
     stamp = TimestampReport(Indication.TOTAL_PASSED, None, NOW, None, "SelloBerigna1")
     assert explain_timestamp(stamp, SPANISH) == (
-        f"La firma es válida. Sello de tiempo de documento emitido el {format_time(NOW)}."
+        f"La firma es válida. Sello de tiempo de documento emitido el {WHEN}."
     )
     assert explain_timestamp(
         TimestampReport(Indication.TOTAL_FAILED, "FORMAT_FAILURE", None, None), SPANISH
@@ -147,6 +149,13 @@ def test_identity_numbers_are_masked(pki: Pki) -> None:
     assert "12345678" not in text
 
 
-def test_times_are_shown_in_utc() -> None:
+def test_times_use_iso_dates_si_hours_and_the_offset() -> None:
     lima = dt.timezone(dt.timedelta(hours=-5))
-    assert format_time(dt.datetime(2026, 10, 27, 10, 15, tzinfo=lima)) == "27/10/2026 15:15 UTC"
+    moment = dt.datetime(2026, 10, 28, 23, 47, tzinfo=dt.UTC)
+    spanish = SPANISH.gettext
+    assert format_time(moment, spanish, lima) == "2026-10-28 a las 18h47 UTC-5"
+    assert format_time(moment, spanish, dt.UTC) == "2026-10-28 a las 23h47 UTC"
+    india = dt.timezone(dt.timedelta(hours=5, minutes=30))
+    assert format_time(moment, zone=india) == "2026-10-29 at 05h17 UTC+5:30"
+    # Without a zone, the local one, with its offset: the moment stays unambiguous.
+    assert format_time(moment).endswith(utc_offset(moment.astimezone()))

@@ -10,6 +10,8 @@ for the translators makes the whole explanation ``None`` instead of mixing langu
 import datetime as dt
 import gettext
 import re
+from collections.abc import Callable
+from functools import partial
 
 from cryptography import x509
 from cryptography.x509.oid import NameOID
@@ -29,9 +31,29 @@ def _(catalogue: gettext.NullTranslations, message: str) -> str:
     return text
 
 
-def format_time(moment: dt.datetime) -> str:
-    """dd/mm/yyyy hh:mm in UTC: the same in both languages and unambiguous in Peru."""
-    return moment.astimezone(dt.UTC).strftime("%d/%m/%Y %H:%M UTC")
+def utc_offset(moment: dt.datetime) -> str:
+    """The offset of an aware ``moment`` as UTC-5, UTC+5:30 or UTC."""
+    minutes = int((moment.utcoffset() or dt.timedelta(0)).total_seconds()) // 60
+    if minutes == 0:
+        return "UTC"
+    hours, rest = divmod(abs(minutes), 60)
+    return f"UTC{'+' if minutes > 0 else '-'}{hours}" + (f":{rest:02d}" if rest else "")
+
+
+def format_time(
+    moment: dt.datetime,
+    gettext_: Callable[[str], str] = lambda message: message,
+    zone: dt.tzinfo | None = None,
+) -> str:
+    """ISO 8601 date, hours and minutes with the SI symbol h, and the offset from UTC, in
+    ``zone`` (by default the local one): 2026-10-28 a las 18h47 UTC-5."""
+    local = moment.astimezone(zone)
+    return gettext_(messages.MOMENT).format(
+        date=local.strftime("%Y-%m-%d"),
+        hour=local.strftime("%H"),
+        minute=local.strftime("%M"),
+        zone=utc_offset(local),
+    )
 
 
 def mask_numbers(text: str) -> str:
@@ -87,6 +109,7 @@ def explain_signature(
     """Explanation of one signature; ``None`` if the catalogue lacks a sentence."""
     try:
         sentences = _result(catalogue, report.indication, report.subindication)
+        strict = partial(_, catalogue)
         if report.signer is not None:
             name = common_name(report.signer)
             sentences.append(_(catalogue, messages.SIGNED_BY).format(name=name))
@@ -97,10 +120,10 @@ def explain_signature(
             and stamp.indication is Indication.TOTAL_PASSED
         ):
             sentences.append(
-                _(catalogue, messages.TIME_CERTIFIED).format(time=format_time(stamp.time))
+                _(catalogue, messages.TIME_CERTIFIED).format(time=format_time(stamp.time, strict))
             )
         elif report.claimed_signing_time is not None:
-            when = format_time(report.claimed_signing_time)
+            when = format_time(report.claimed_signing_time, strict)
             sentences.append(_(catalogue, messages.TIME_CLAIMED).format(time=when))
         if report.signer is not None:  # a format failure says nothing about the content
             sentences.append(_(catalogue, messages.MODIFICATIONS[report.modifications]))
@@ -116,7 +139,7 @@ def explain_timestamp(report: TimestampReport, catalogue: gettext.NullTranslatio
     try:
         sentences = _result(catalogue, report.indication, report.subindication)
         if report.time is not None:
-            when = format_time(report.time)
+            when = format_time(report.time, partial(_, catalogue))
             sentences.append(_(catalogue, messages.DOCUMENT_TIMESTAMP).format(time=when))
     except _UntranslatedError:
         return None
