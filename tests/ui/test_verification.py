@@ -7,12 +7,14 @@ from collections.abc import Generator
 from pathlib import Path
 
 import pytest
-from gi.repository import Adw, Gio
+from gi.repository import Adw, Gio, Gtk
 
 from berigna.core.errors import TrustStoreIntegrityError
+from berigna.core.i18n import Language
 from berigna.core.trust import TrustStore
 from berigna.core.validation import Indication, PdfVerification
 from berigna.core.validation.pdf import TimestampReport
+from berigna.ui import i18n
 from berigna.ui.application import BerignaApplication
 from berigna.ui.verification import VerificationPage
 from conftest import FakeReaders, drive, wait_until
@@ -76,6 +78,49 @@ def test_valid_signature_and_reports(app: BerignaApplication, pki: Pki, tmp_path
 
     drive(app, script, args=[str(path)])
     assert toasts == ["Se guardó informe.json", "No se pudo guardar x.json."]
+
+
+def _walk(widget: Gtk.Widget) -> Generator[Gtk.Widget, None, None]:
+    child = widget.get_first_child()
+    while child is not None:
+        yield child
+        yield from _walk(child)
+        child = child.get_next_sibling()
+
+
+def _spanish_button(app: BerignaApplication) -> Gtk.Button | None:
+    """The "Ver en español" button of the summary, labelled in Quechua."""
+    for child in _walk(_page(app).summary_row):
+        if isinstance(child, Gtk.Button) and child.get_label() == "Kastilla simipi qhaway":
+            return child
+    return None
+
+
+def test_result_in_quechua_offers_spanish(
+    app: BerignaApplication, pki: Pki, tmp_path: Path
+) -> None:
+    path = _file(tmp_path, signed_with_revinfo(pki))
+
+    def script(app: BerignaApplication) -> Generator[None, None, None]:
+        yield from wait_until(lambda: _shown(app) == "result")
+        assert _spanish_button(app) is None  # only in Quechua
+        assert app.settings is not None
+        app.settings.set_string("ui-language", "quz_PE")
+        yield from wait_until(lambda: _shown(app) == "result" and _spanish_button(app) is not None)
+        button = _spanish_button(app)
+        assert button is not None
+        button.emit("clicked")  # "Ver en español", in Quechua
+        yield
+        dialog = _page(app).show_spanish()
+        assert dialog.get_heading() == "firmado.pdf"
+        assert dialog.get_body().startswith("1 firma válida · ")
+        assert "La firma es válida." in dialog.get_body()
+        dialog.force_close()
+        assert i18n.current_language() is Language.QUZ_PE
+        app.settings.set_string("ui-language", "es_PE")
+        yield from wait_until(lambda: i18n.current_language() is Language.ES_PE)
+
+    drive(app, script, args=[str(path)])
 
 
 def test_indeterminate_result_can_be_verified_again(
