@@ -27,6 +27,7 @@ from berigna.core.signing import SignResult
 from berigna.core.token.monitor import DeviceState, DeviceStatus
 from berigna.core.trust import TrustStore
 from berigna.core.trust.cache import TslRefresh
+from berigna.core.trust.store import TrustedCertificate
 from berigna.core.validation import Indication, PdfVerification, SignerCheck
 from berigna.core.validation.pdf import PdfSignatureReport, TimestampReport
 from berigna.ui.i18n import N_, _, catalogue, ngettext
@@ -486,3 +487,43 @@ def diagnosis_report(results: list[DiagnosisResult], version: str, system: str) 
         mark = DIAGNOSIS_MARKS[result.status]
         lines.append(f"[{mark}] {_(DIAGNOSIS_TITLES[result.step])}: {diagnosis_text(result)}")
     return mask_numbers("\n".join(lines)) + "\n"
+
+
+# -- Trust store (RF-060) --------------------------------------------------------------------------
+
+TRUST_SOURCES = (
+    ("bundled", N_("Included in berigna")),
+    ("tsl", N_("From the INDECOPI trusted list")),
+    ("user", N_("Added by you")),
+)
+
+
+def _trust_source(entry: TrustedCertificate) -> str:
+    if entry.user_added:
+        return "user"
+    return "tsl" if entry.hierarchy == "TSL" else "bundled"
+
+
+def trust_store_view(store: TrustStore) -> list[tuple[str, list[tuple[str, str]]]]:
+    """The certificates berigna trusts, by where they come from: (group title, [(name,
+    details)]). The details give the role, the validity and the SHA-256 in groups of four, to
+    compare with an official source."""
+    groups: list[tuple[str, list[tuple[str, str]]]] = []
+    for key, title in TRUST_SOURCES:
+        rows = []
+        for entry in store.entries:
+            if _trust_source(entry) != key:
+                continue
+            certificate = entry.certificate
+            role = _("Root") if entry.role == "root" else _("Intermediate")
+            until = certificate.not_valid_after_utc.astimezone().strftime("%Y-%m-%d")
+            fingerprint = " ".join(
+                entry.sha256.upper()[i : i + 4] for i in range(0, len(entry.sha256), 4)
+            )
+            details = _("{role} · valid until {date}").format(role=role, date=until)
+            if entry.hierarchy and key == "bundled":
+                details += f" · {entry.hierarchy}"
+            rows.append((display_name(certificate.subject), f"{details}\nSHA-256 {fingerprint}"))
+        if rows:
+            groups.append((_(title), sorted(rows)))
+    return groups

@@ -25,6 +25,7 @@ from berigna.core.batch import BatchItem, Outcome, batch_outputs, sign_pdf_batch
 from berigna.core.errors import BerignaError, PinIncorrectError  # noqa: E402
 from berigna.core.files import write_atomically  # noqa: E402
 from berigna.core.formats.pades import SignatureLevel  # noqa: E402
+from berigna.core.history import Kind  # noqa: E402
 from berigna.core.report.batch_report import batch_csv  # noqa: E402
 from berigna.core.report.explanations import explain_error  # noqa: E402
 from berigna.core.signing import SigningJob  # noqa: E402
@@ -39,6 +40,7 @@ from berigna.ui.signing import (  # noqa: E402
     ask_pin_in_main_loop,
     failure_page,
     output_settings,
+    signature_entry,
 )
 from berigna.ui.widgets import brand_markup  # noqa: E402
 
@@ -90,6 +92,7 @@ class BatchPage:
         self.pin_dialog: PinDialog | None = None
         self._remaining_tries: int | None = None
         self._cancel = threading.Event()
+        self._check: SignerCheck | None = None  # set when the PIN is asked
 
         self._sign = Gtk.Button(label=_("_Sign"), use_underline=True, sensitive=False)
         self._sign.add_css_class("suggested-action")
@@ -296,11 +299,13 @@ class BatchPage:
                 log.exception("batch signing failed")
                 GLib.idle_add(self._failed, None, level)
             else:
-                GLib.idle_add(self._done, items)
+                GLib.idle_add(self._done, items, level)
 
         threading.Thread(target=work, name="berigna-batch", daemon=True).start()
 
     def _ask_pin(self, check: SignerCheck, level: SignatureLevel, count: int) -> Pin | None:
+        self._check = check
+
         def dialog(reply: Callable[[Pin | None], None]) -> PinDialog:
             self.pin_dialog = PinDialog(count, check, level, self._remaining_tries, reply)
             return self.pin_dialog
@@ -337,7 +342,28 @@ class BatchPage:
             self._show("error", page)
         return GLib.SOURCE_REMOVE
 
-    def _done(self, items: list[BatchItem]) -> bool:
+    def _record(self, items: list[BatchItem], level: SignatureLevel) -> None:
+        """RF-082: one history row per document the batch tried to sign."""
+        check, history = self._check, self._services.history()
+        if check is None or history is None:
+            return
+        for item in items:
+            if item.outcome is Outcome.SKIPPED:
+                continue
+            self._services.record(
+                signature_entry(
+                    Kind.BATCH,
+                    history.name(item.job.source),
+                    item.job.expected_sha256,
+                    check,
+                    item.result,
+                    item.code,
+                    level,
+                )
+            )
+
+    def _done(self, items: list[BatchItem], level: SignatureLevel) -> bool:
+        self._record(items, level)
         self.items = items
         self._remaining_tries = None
         signed = sum(item.outcome is Outcome.SIGNED for item in items)

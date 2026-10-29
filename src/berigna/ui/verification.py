@@ -6,6 +6,7 @@ The verification runs in a worker thread: it may query OCSP and CRL services for
 (R-17). A result that arrives after the user moved to another document is dropped.
 """
 
+import datetime as dt
 import hashlib
 import logging
 import threading
@@ -22,12 +23,13 @@ from gi.repository import Adw, Gio, GLib, Gtk  # noqa: E402
 from berigna.core.documents import DocumentInfo  # noqa: E402
 from berigna.core.errors import BerignaError  # noqa: E402
 from berigna.core.files import write_atomically  # noqa: E402
+from berigna.core.history import Entry, Kind  # noqa: E402
 from berigna.core.i18n import Language  # noqa: E402
 from berigna.core.report.explanations import explain_error  # noqa: E402
 from berigna.core.report.json_report import dumps, report_data  # noqa: E402
 from berigna.core.report.pdf_report import pdf_report  # noqa: E402
 from berigna.core.trust import TrustStore  # noqa: E402
-from berigna.core.validation import PdfVerification  # noqa: E402
+from berigna.core.validation import Indication, PdfVerification  # noqa: E402
 from berigna.ui import presentation  # noqa: E402
 from berigna.ui.i18n import N_, _, catalogue  # noqa: E402
 from berigna.ui.widgets import brand_markup  # noqa: E402
@@ -144,6 +146,30 @@ class VerificationPage:
             self._replace("error", error)
         return GLib.SOURCE_REMOVE
 
+    def _record(self, verification: PdfVerification) -> None:
+        """RF-082: the worst indication of the document and how many signatures passed."""
+        services = self._window.services
+        history = services.history()
+        if history is None:
+            return
+        indications = [s.indication for s in verification.signatures]
+        indications += [t.indication for t in verification.document_timestamps]
+        worst = next(
+            (i for i in (Indication.TOTAL_FAILED, Indication.INDETERMINATE) if i in indications),
+            Indication.TOTAL_PASSED,
+        )
+        passed = sum(s.indication is Indication.TOTAL_PASSED for s in verification.signatures)
+        services.record(
+            Entry(
+                moment=dt.datetime.now(dt.UTC),
+                kind=Kind.VERIFY,
+                file_name=history.name(self.document.path),
+                file_sha256=self._sha256,
+                result=worst.value,
+                detail=f"{passed}/{len(verification.signatures)}",
+            )
+        )
+
     def _replace(self, name: str, child: Gtk.Widget) -> None:
         old = self._stack.get_child_by_name(name)
         if old is not None:
@@ -158,6 +184,7 @@ class VerificationPage:
         self._sha256 = hashlib.sha256(data).hexdigest()
         self.verification, self._store = verification, store
         view = presentation.verification_view(verification, store)
+        self._record(verification)
 
         result = Adw.PreferencesPage()
         summary = Adw.PreferencesGroup()

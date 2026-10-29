@@ -12,6 +12,7 @@ shown (P-07).
 import datetime as dt
 import hashlib
 import logging
+import sqlite3
 import threading
 from collections.abc import Callable
 from dataclasses import dataclass
@@ -45,10 +46,11 @@ from berigna.core.errors import (  # noqa: E402
     TokenError,
 )
 from berigna.core.formats.pades import PadesOptions, SignatureLevel  # noqa: E402
+from berigna.core.history import Entry, History, Kind  # noqa: E402
 from berigna.core.i18n import Language, translations  # noqa: E402
 from berigna.core.reasons import TEXTS as REASON_TEXTS  # noqa: E402
 from berigna.core.reasons import Reason, reason_text  # noqa: E402
-from berigna.core.report.explanations import explain_error  # noqa: E402
+from berigna.core.report.explanations import common_name, explain_error  # noqa: E402
 from berigna.core.signing import SignResult, output_path, sign_pdf_file  # noqa: E402
 from berigna.core.token.base import HashAlgorithmName, TokenSigner  # noqa: E402
 from berigna.core.token.pin import Pin  # noqa: E402
@@ -79,6 +81,17 @@ class SigningServices:
     settings: Gio.Settings | None
     online: bool = True
     appearance_dir: Path | None = None  # preloaded rubric and logo (None: none available)
+    history: Callable[[], History | None] = lambda: None  # None: history switched off
+
+    def record(self, entry: Entry) -> None:
+        """Add ``entry`` to the history (RF-082), if kept; a failure never stops signing."""
+        history = self.history()
+        if history is None:
+            return
+        try:
+            history.record(entry)
+        except (OSError, sqlite3.Error):
+            log.exception("history not updated")
 
 
 # Kinds of visible signature, in the order of the list, after "Not visible" (decisions of
@@ -282,6 +295,32 @@ class SignatureData:
         )
 
 
+def signature_entry(
+    kind: Kind,
+    name: str,
+    sha256: str,
+    check: SignerCheck,
+    result: SignResult | None,
+    code: str | None,
+    level: SignatureLevel,
+) -> Entry:
+    """The history row of one signed (or failed) document."""
+    certificate = check.chain[-1]
+    return Entry(
+        moment=dt.datetime.now(dt.UTC),
+        kind=kind,
+        file_name=name,
+        file_sha256=sha256,
+        result="ok" if result is not None else "error",
+        signed_name=result.output.name if result else None,
+        signed_sha256=result.sha256 if result else None,
+        level=(result.level if result else level).value,
+        signer=common_name(certificate),
+        signer_serial=format(certificate.serial_number, "x"),
+        detail=code,
+    )
+
+
 def failure_page(
     window: "MainWindow",
     error: BerignaError | None,
@@ -473,6 +512,7 @@ class SigningPage:
         self._remaining_tries: int | None = None
         self.result: SignResult | None = None
         self.pin_dialog: PinDialog | None = None
+        self._check: SignerCheck | None = None  # set when the PIN is asked
 
         self._sign = Gtk.Button(label=_("_Sign"), use_underline=True)
         self._sign.add_css_class("suggested-action")
@@ -687,6 +727,8 @@ class SigningPage:
         threading.Thread(target=work, name="berigna-sign", daemon=True).start()
 
     def _ask_pin(self, check: SignerCheck, level: SignatureLevel) -> Pin | None:
+        self._check = check
+
         def dialog(reply: Callable[[Pin | None], None]) -> PinDialog:
             self.pin_dialog = PinDialog(self.document, check, level, self._remaining_tries, reply)
             return self.pin_dialog
@@ -695,7 +737,19 @@ class SigningPage:
             self._window, dialog, lambda: self._set_busy(_("Signing with your DNIe…"))
         )
 
+    def _record(self, result: SignResult | None, code: str | None, level: SignatureLevel) -> None:
+        """RF-082: once the PIN was sent, the outcome goes to the history."""
+        check = self._check
+        if check is None:
+            return
+        history = self._services.history()
+        name = history.name(self.document.path) if history else self.document.path.name
+        self._services.record(
+            signature_entry(Kind.SIGN, name, self.document.sha256, check, result, code, level)
+        )
+
     def _done(self, result: SignResult, requested: SignatureLevel) -> bool:
+        self._record(result, None, requested)
         self.result = result
         self._remaining_tries = None
         page = Adw.StatusPage(
@@ -721,6 +775,9 @@ class SigningPage:
     def _failed(self, error: BerignaError | None, level: SignatureLevel) -> bool:
         if isinstance(error, PinIncorrectError) and error.remaining_tries != 0:
             self._remaining_tries = error.remaining_tries
+        elif not isinstance(error, (SigningCancelledError, PinIncorrectError)):
+            self._record(None, error.code if error else "ERR-000", level)
+        self._check = None
         page = failure_page(
             self._window,
             error,
