@@ -2,19 +2,25 @@
 # SPDX-FileCopyrightText: 2026 noggalito
 """Texts and icons the window shows, kept apart from GTK so they can be tested headless."""
 
+import datetime as dt
 import gettext
 from collections import Counter
 from dataclasses import dataclass
 
+from berigna.core.diagnostics import Result as DiagnosisResult
+from berigna.core.diagnostics import Status as DiagnosisStatus
+from berigna.core.diagnostics import Step
 from berigna.core.documents import DocumentInfo, DocumentKind
 from berigna.core.formats.pades import SignatureLevel
 from berigna.core.report import messages
 from berigna.core.report.explanations import (
     common_name,
     display_name,
+    explain_error,
     explain_signature,
     explain_timestamp,
     format_time,
+    mask_numbers,
     masked_id,
 )
 from berigna.core.signing import SignResult
@@ -373,3 +379,110 @@ def tsl_status(result: TslRefresh | None) -> tuple[str, str]:
             authorities,
         ).format(date=trusted.next_update.strftime("%Y-%m-%d"), n=authorities),
     )
+
+
+# -- Diagnosis (CU-07, RF-007) ---------------------------------------------------------------------
+
+DIAGNOSIS_TITLES = {
+    Step.PCSC: N_("Smart Card Service (pcscd)"),
+    Step.READER: N_("Card Reader"),
+    Step.CARD: N_("DNIe"),
+    Step.CERTIFICATE: N_("Signing Certificate"),
+    Step.VALIDATION: N_("Trust and Revocation"),
+    Step.TSA: N_("Time-Stamping Authority"),
+}
+DIAGNOSIS_ICONS = {
+    DiagnosisStatus.OK: ("object-select-symbolic", "success"),
+    DiagnosisStatus.WARNING: ("dialog-warning-symbolic", "warning"),
+    DiagnosisStatus.ERROR: ("dialog-error-symbolic", "error"),
+    DiagnosisStatus.SKIPPED: ("action-unavailable-symbolic", "dimmed"),
+}
+DIAGNOSIS_MARKS = {
+    DiagnosisStatus.OK: "✓",
+    DiagnosisStatus.WARNING: "⚠",
+    DiagnosisStatus.ERROR: "✗",
+    DiagnosisStatus.SKIPPED: "·",
+}
+
+
+def _local_date(iso: str) -> str:
+    return dt.datetime.fromisoformat(iso).astimezone().strftime("%Y-%m-%d")
+
+
+def diagnosis_text(result: DiagnosisResult) -> str:
+    """What a step found and, when something is wrong, what to do (CU-07 step 2)."""
+    step, status, facts = result.step, result.status, result.facts
+    if status is DiagnosisStatus.SKIPPED and step is not Step.TSA:
+        return _("Not checked: an earlier step failed.")
+    if result.code is not None and not (step is Step.CERTIFICATE and result.code == "ERR-211"):
+        return explain_error(result.code, catalogue()) or ""
+    if step is Step.PCSC:
+        if status is DiagnosisStatus.OK:
+            return _("The service is running.")
+        return _(
+            "The service is not running. Install it and start it: "
+            "sudo apt install pcscd && sudo systemctl enable --now pcscd.socket"
+        )
+    if step is Step.READER:
+        if status is DiagnosisStatus.OK:
+            return _("Connected: {readers}.").format(readers=facts.get("readers", ""))
+        return _("No card reader is connected. Connect a USB smart card reader.")
+    if step is Step.CARD:
+        if status is DiagnosisStatus.OK:
+            return _("A DNIe is in {reader}.").format(reader=facts.get("reader", ""))
+        if "atr" in facts:
+            return _(
+                "The card in the reader is not a supported DNIe (ATR {atr}). Only the DNIe "
+                "version 2 is supported for now."
+            ).format(atr=facts["atr"])
+        return _("There is no card in the reader. Insert your DNIe.")
+    if step is Step.CERTIFICATE:
+        signer, date = facts.get("signer", ""), _local_date(facts["expires"])
+        days = int(facts.get("days", "0"))
+        if status is DiagnosisStatus.ERROR:
+            return _(
+                "{signer}: the certificate expired on {date}. Renew it on RENIEC's Ciudadano "
+                "Digital platform."
+            ).format(signer=signer, date=date)
+        if status is DiagnosisStatus.WARNING:
+            return ngettext(
+                "{signer}: the certificate expires on {date}, in {n} day. Renew it on RENIEC's "
+                "Ciudadano Digital platform.",
+                "{signer}: the certificate expires on {date}, in {n} days. Renew it on "
+                "RENIEC's Ciudadano Digital platform.",
+                days,
+            ).format(signer=signer, date=date, n=days)
+        return _("{signer}, valid until {date}.").format(signer=signer, date=date)
+    if step is Step.VALIDATION:
+        if status is DiagnosisStatus.OK:
+            return _("Your certificate is trusted and was not revoked (checked online).")
+        if facts.get("note") == "offline":
+            return _("Revocation was not checked: berigna is working without network access.")
+        return _(
+            "RENIEC could not be asked whether your certificate is revoked. Check the "
+            "connection; meanwhile only basic signatures (B-B) are possible."
+        )
+    # Step.TSA
+    if status is DiagnosisStatus.OK:
+        return _("The time-stamping authority answered.")
+    if facts.get("configured") == "False":
+        return _(
+            "No time-stamping authority is configured: only basic signatures (B-B) are "
+            "possible. Configure one in Preferences → Network."
+        )
+    return _("Not checked: berigna is working without network access.")
+
+
+def diagnosis_report(results: list[DiagnosisResult], version: str, system: str) -> str:
+    """The report to copy for support (CU-07 step 3): no PIN, the DNI only masked."""
+    lines = [
+        _("berigna {version} diagnosis, {moment}").format(
+            version=version, moment=format_time(dt.datetime.now(dt.UTC), _)
+        ),
+        system,
+        "",
+    ]
+    for result in results:
+        mark = DIAGNOSIS_MARKS[result.status]
+        lines.append(f"[{mark}] {_(DIAGNOSIS_TITLES[result.step])}: {diagnosis_text(result)}")
+    return mask_numbers("\n".join(lines)) + "\n"

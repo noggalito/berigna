@@ -18,7 +18,7 @@
 | Perfiles de apariencia | `$XDG_DATA_HOME/berigna/appearances/` | JSON más imagen | Puede contener una imagen de la rúbrica |
 | Historial | `$XDG_DATA_HOME/berigna/history.sqlite3` | SQLite | Sí (nombres de archivo) |
 | Caché de OCSP, CRL y AIA | `$XDG_CACHE_HOME/berigna/revocation/` | DER | No |
-| Registro técnico | `$XDG_STATE_HOME/berigna/logs/` | Texto, rotativo (5 × 1 MB) | Bajo (sin datos sensibles por diseño) |
+| Registro técnico | `$XDG_STATE_HOME/berigna/logs/berigna.log` (carpeta 0700) | Texto, rotativo (5 × 1 MB); INFO, o DEBUG con `BERIGNA_DEBUG=1` (`core.logs`) | Bajo: nunca el PIN ni el contenido de los documentos; todo número de cinco o más cifras (DNI, RUC) se enmascara a sus cuatro últimas, también en las trazas |
 | Credenciales de la TSA (si hay) | Llavero del sistema (libsecret, Secret Service) | — | Sí |
 
 Los permisos de los archivos del usuario son `0600` y los de los directorios `0700`.

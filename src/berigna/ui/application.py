@@ -103,6 +103,7 @@ class BerignaApplication(Adw.Application):
         for name, callback, accels in (
             ("about", self._show_about, []),
             ("preferences", lambda *_args: self.show_preferences(), ["<Control>comma"]),
+            ("diagnostics", lambda *_args: self.show_diagnostics(), []),
             ("quit", lambda *_args: self.quit(), ["<Control>q"]),
             ("show-in-spanish", self._show_in_spanish, []),
         ):
@@ -224,6 +225,11 @@ class BerignaApplication(Adw.Application):
             return http_timestamper(settings)
         except TsaError:
             return None
+
+    def show_diagnostics(self) -> None:
+        window = self._window()
+        window.window.present()
+        window.show_diagnostics()
 
     def _on_device_status(self, status: DeviceStatus) -> None:
         """Called from the monitor thread."""
