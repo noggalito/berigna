@@ -158,6 +158,8 @@ Implementado en la Fase 3, incremento 2. Diferencias con el boceto: la explicaci
 └──────────────────────────────────────────────────────────────┘
 ```
 
+Implementado en la Fase 3, incremento 6, solo con PDF (los demás formatos llegan en la Fase 4). Se entra con "Firmar varios documentos…" en la pantalla inicial, abriendo o arrastrando varios archivos a la vez, o una carpeta. La lista se construye en la misma página (añadir documentos, añadir una carpeta con o sin subcarpetas, quitar); lo que se firma es cada archivo tal como estaba al añadirlo (su SHA-256). El nivel y los datos de la firma son los de la firma individual. Diferencias con el boceto: la confirmación es el diálogo del PIN, que indica el número de documentos; las firmas del lote no son visibles; los archivos que fallan las comprobaciones previas se informan sin pedir el PIN por ellos; dos archivos del mismo nombre en una misma carpeta de salida se numeran. Resultado: una fila por archivo y los botones "Exportar el informe…" (CSV), "Mostrar en la carpeta" y "Firmar otros documentos", que deja en la lista los que no se firmaron.
+
 ## 4. Textos de los niveles (borrador)
 
 | Nivel | Título (es_PE) | Descripción (es_PE) | Title (en_US) | Description (en_US) |

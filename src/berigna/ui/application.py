@@ -127,8 +127,8 @@ class BerignaApplication(Adw.Application):
     def do_open(self, files: list[Gio.File], _n_files: int, _hint: str) -> None:
         window = self._window()
         window.window.present()
-        if files:  # batches come with increment 6; for now the first file is opened
-            window.open_file(files[0])
+        if files:
+            window.open_files(files)
 
     def _window(self) -> MainWindow:
         if self.main_window is None:

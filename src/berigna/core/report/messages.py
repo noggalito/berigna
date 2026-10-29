@@ -216,10 +216,28 @@ ERRORS: dict[str, str] = {
         "the image cannot be read. Make the box larger, use another page or choose another "
         "image in Preferences."
     ),
+    "ERR-309": N_("Not signed: the batch was cancelled before this file."),
     "ERR-307": N_(
         "The author certified this document so that it cannot be changed: "
         "it does not accept more signatures."
     ),
     "ERR-400": N_("The document could not be verified."),
     "ERR-401": N_("The file is not a document that berigna can read, or it is damaged."),
+}
+
+# Batch report (RF-042): columns and results.
+BATCH_COLUMNS = (
+    N_("File"),
+    N_("Folder"),
+    N_("Result"),
+    N_("Signed file"),
+    N_("Level"),
+    N_("SHA-256 of the signed file"),
+    N_("Code"),
+    N_("Explanation"),
+)
+BATCH_OUTCOMES = {
+    "signed": N_("Signed"),
+    "failed": N_("Not signed"),
+    "skipped": N_("Skipped"),
 }
