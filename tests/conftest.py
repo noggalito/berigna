@@ -62,9 +62,10 @@ def _certificate(key: rsa.RSAPrivateKey, cn: str, usage: x509.KeyUsage) -> bytes
 def private_state(
     tmp_path_factory: pytest.TempPathFactory, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    """The technical log of a test that starts berigna goes to a temporary folder, never to
-    the user's ~/.local/state (it did, 2026-10-29)."""
+    """The technical log, the history, the trusted list and the images of a test that starts
+    berigna go to temporary folders, never to the user's ~/.local (they did, 2026-10-29)."""
     monkeypatch.setenv("XDG_STATE_HOME", str(tmp_path_factory.mktemp("state")))
+    monkeypatch.setenv("XDG_DATA_HOME", str(tmp_path_factory.mktemp("data")))
 
 
 @pytest.fixture(scope="session")
