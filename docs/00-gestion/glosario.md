@@ -25,7 +25,7 @@
 | DNIe 3.0 | Generación presentada en abril de 2025 y única emitida desde agosto de 2025. Chip por identificar (SPK-06); prevista en la versión 1.1. |
 | DocMDP | *Document Modification Detection and Prevention*: firma de certificación de un PDF que define qué cambios se permiten después de firmar. |
 | ECEP-RENIEC | Entidad de Certificación para el Estado Peruano, operada por RENIEC. Su CA subordinada "ECEP-RENIEC CA Class 2 II" emite los certificados del DNIe v2 (verificado en SPK-01). |
-| ECERNEP | Entidad de Certificación Nacional para el Estado Peruano: raíz de la jerarquía del Estado. Raíz del DNIe v2: "ECERNEP PERU CA ROOT 3". Existe también una "Root 5". `[VERIFICAR]` qué entidad opera actualmente cada raíz (consulta CE-08). |
+| ECERNEP | Entidad de Certificación Nacional para el Estado Peruano: raíz de la jerarquía del Estado. Raíz del DNIe v2: "ECERNEP PERU CA ROOT 3". Existe también una "Root 5" (personas jurídicas) y, en la TSL de INDECOPI, una "Root 6". Según RENIEC (2026-10-28), la Secretaría de Gobierno y Transformación Digital de la PCM ejerce el rol de ECERNEP. |
 | JCOP | *Java Card OpenPlatform*: sistema operativo de tarjetas inteligentes de NXP. |
 | ETSI | *European Telecommunications Standards Institute*; publica los estándares AdES que adoptan muchas infraestructuras de firma, entre ellas la IOFE. |
 | Firma digital | En la legislación peruana, firma electrónica que usa criptografía asimétrica, basada en un certificado emitido dentro de la IOFE, y que tiene la misma validez y eficacia jurídica que la firma manuscrita. |

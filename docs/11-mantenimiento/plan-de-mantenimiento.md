@@ -130,7 +130,7 @@ Se revisan en cada versión menor:
 - Tiempo desde un hecho externo (§4) hasta la versión que lo resuelve.
 - Tiempo de corrección de las incidencias de seguridad frente a los plazos de §7.
 - Incidencias abiertas por prioridad y antigüedad.
-- Cobertura de pruebas (hoy: núcleo al 100 %, total al 97 %).
+- Cobertura de pruebas (2026-10-29: núcleo al 100 %, total al 95 %).
 - Resultados de la matriz con Firma Perú.
 
 ## 12. Pendiente para aplicar este plan
