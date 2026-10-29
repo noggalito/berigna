@@ -17,6 +17,7 @@ from pyhanko.sign.timestamps import TimeStamper  # noqa: E402
 
 from berigna import __version__  # noqa: E402
 from berigna.core.errors import TsaError  # noqa: E402
+from berigna.core.files import data_directory  # noqa: E402
 from berigna.core.history import History  # noqa: E402
 from berigna.core.i18n import Language  # noqa: E402
 from berigna.core.net.proxy import ProxyMode, apply_proxy  # noqa: E402
@@ -160,20 +161,18 @@ class BerignaApplication(Adw.Application):
         """The history of operations (RF-082), or None when the user switched it off."""
         if self.settings is None or not self.settings.get_boolean("history-enabled"):
             return None
-        path = self._history_path or (
-            Path(GLib.get_user_data_dir()) / "berigna" / "history.sqlite3"
-        )
+        path = self._history_path or (data_directory() / "history.sqlite3")
         return History(path, full_path=self.settings.get_boolean("history-full-path"))
 
     def appearance_dir(self) -> Path:
         """Where the preloaded rubric and logo are kept (RF-012)."""
         if self._appearance_dir is None:
-            self._appearance_dir = Path(GLib.get_user_data_dir()) / "berigna" / "apariencia"
+            self._appearance_dir = data_directory() / "apariencia"
         return self._appearance_dir
 
     def tsl_cache(self) -> TslCache:
         if self._tsl_cache is None:
-            self._tsl_cache = TslCache(Path(GLib.get_user_data_dir()) / "berigna" / "tsl")
+            self._tsl_cache = TslCache(data_directory() / "tsl")
         return self._tsl_cache
 
     def _default_store(self) -> TrustStore:

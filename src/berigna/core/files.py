@@ -2,6 +2,7 @@
 # SPDX-FileCopyrightText: 2026 noggalito
 """Writing files safely: atomically, with fsync, and never over a file unless asked."""
 
+import datetime as dt
 import os
 import tempfile
 from pathlib import Path
@@ -48,3 +49,20 @@ def write_atomically(path: Path, data: bytes, *, replace: bool = False) -> None:
     finally:
         if os.path.exists(temporary):
             os.unlink(temporary)
+
+
+def data_directory() -> Path:
+    """berigna's data folder, ``$XDG_DATA_HOME/berigna`` (usually ``~/.local/share/berigna``).
+
+    Read from the environment on every call; GLib.get_user_data_dir() keeps the first answer
+    for the whole process, so the tests could not move it and wrote into the user's own
+    history (2026-10-29)."""
+    data = os.environ.get("XDG_DATA_HOME") or str(Path.home() / ".local" / "share")
+    return Path(data) / "berigna"
+
+
+def dated_name(name: str, moment: dt.datetime | None = None) -> str:
+    """``name`` after the local date and time, so that exports sort by when they were made:
+    "2026-10-29_00h55_historial-berigna.csv" (decision of 2026-10-29)."""
+    local = (moment or dt.datetime.now()).astimezone()
+    return f"{local:%Y-%m-%d_%Hh%M}_{name}"
