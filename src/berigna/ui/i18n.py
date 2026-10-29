@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# SPDX-FileCopyrightText: 2026 Calú
+# SPDX-FileCopyrightText: 2026 noggalito
 """Language of the interface (ADR-0015) and translation of the compiled views.
 
 GTK translates ``translatable="yes"`` strings with the C library's gettext, which ignores

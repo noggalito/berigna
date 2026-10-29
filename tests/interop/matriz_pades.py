@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# SPDX-FileCopyrightText: 2026 Calú
+# SPDX-FileCopyrightText: 2026 noggalito
 """PAdES-by-level matrix for external validation (Phase 2 exit criterion, PR-INT-*).
 
 Signs one test PDF per level (B-B, B-T, B-LT, B-LTA) with berigna's own code, a simulated

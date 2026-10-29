@@ -1,6 +1,6 @@
 #!/bin/sh
 # SPDX-License-Identifier: GPL-3.0-or-later
-# SPDX-FileCopyrightText: 2026 Calú
+# SPDX-FileCopyrightText: 2026 noggalito
 # Validate the files of tests/interop/matriz_pades.py with DSS 6.2 (external validator).
 # Needs the DSS harness of SPK-03 built (spikes/preparar-entorno.sh; spikes/spk03/dssval).
 #   tests/interop/matriz_dss.sh /tmp/matriz [ruta/al/dssval]

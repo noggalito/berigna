@@ -6,7 +6,7 @@
 | Versión | 0.1.0 |
 | Estado | Borrador |
 | Fecha | 2026-10-28 |
-| Responsable | `{{TITULAR}}` |
+| Responsable | noggalito |
 
 ## 1. Propósito y alcance
 
@@ -90,8 +90,8 @@ Al publicar: etiqueta firmada, paquetes firmados en el repositorio APT, anuncio 
 
 ## 7. Seguridad
 
-- `SECURITY.md` en la raíz del repositorio con el canal privado de aviso (avisos de seguridad privados de GitHub y un correo).
-- Acuse de recibo en 3 días hábiles.
+- `SECURITY.md` en la raíz del repositorio con el canal privado de aviso: los avisos de seguridad privados de GitHub y `berigna@noggalito.com`. El sitio publica `https://berigna.noggalito.com/.well-known/security.txt` (RFC 9116) con los mismos datos.
+- Acuse de recibo en 5 días hábiles.
 - Plazos de corrección:
 
   | Gravedad | Ejemplos | Plazo |
@@ -121,7 +121,7 @@ Al publicar: etiqueta firmada, paquetes firmados en el repositorio APT, anuncio 
 - Al menos dos personas mantenedoras con permisos para fusionar y publicar.
 - Inventario de credenciales en la documentación interna: clave de firma del repositorio APT, claves de firma de los commits, organización de GitHub, dominio `noggalito.com` y sitio. Cada una con dos personas con acceso, fecha de caducidad y procedimiento de rotación.
 - La clave de firma del repositorio APT caduca y se renueva cada dos años; la nueva se publica con antelación en el paquete de claves.
-- La titularidad del proyecto (DP-05) decide quién responde ante INDECOPI y quién firma las versiones.
+- El titular del proyecto es la persona jurídica noggalito (DP-05): responde ante INDECOPI y firma las versiones. El contacto único es `berigna@noggalito.com`.
 
 ## 11. Indicadores
 
@@ -135,7 +135,8 @@ Se revisan en cada versión menor:
 
 ## 12. Pendiente para aplicar este plan
 
-- `SECURITY.md` y plantillas de incidencia.
+- Plantillas de incidencia y `security.txt` en el sitio.
+- Activar los avisos de seguridad privados en GitHub (Settings → Code security).
 - CI programada contra *stable* y *testing*, y comprobaciones semanales de la TSL y de los servicios de RENIEC.
 - Inventario de credenciales y segunda persona mantenedora (documentación interna).
 - Política de rotación de la clave del repositorio APT, cuando exista (Fase 5).

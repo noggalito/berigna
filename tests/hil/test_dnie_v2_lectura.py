@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# SPDX-FileCopyrightText: 2026 Calú
+# SPDX-FileCopyrightText: 2026 noggalito
 """Hardware-in-the-loop tests with a real reader and DNIe v2. NO PIN is ever sent here.
 
 Run with:  BERIGNA_HIL=1 pytest -m hil

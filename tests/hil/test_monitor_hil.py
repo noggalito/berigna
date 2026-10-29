@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# SPDX-FileCopyrightText: 2026 Calú
+# SPDX-FileCopyrightText: 2026 noggalito
 """Device monitor on real hardware (RF-001, RF-002). NO PIN is sent.
 
 BERIGNA_HIL=1 pytest -m hil

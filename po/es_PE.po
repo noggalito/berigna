@@ -1,6 +1,6 @@
 # Spanish translations for berigna package
 # Traducciones al español para el paquete berigna.
-# Copyright (C) 2026 Calú
+# Copyright (C) 2026 noggalito
 # This file is distributed under the same license as the berigna package.
 # Automatically generated, 2026.
 #
@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: berigna\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-28 20:11-0500\n"
+"POT-Creation-Date: 2026-10-28 21:01-0500\n"
 "PO-Revision-Date: 2026-10-27 23:38-0500\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -18,19 +18,19 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: data/pe.berigna.Berigna.desktop.in:2
+#: data/com.noggalito.Berigna.desktop.in:2
 msgid "berigna"
 msgstr "berigna"
 
-#: data/pe.berigna.Berigna.desktop.in:3
+#: data/com.noggalito.Berigna.desktop.in:3
 msgid "PDF Signer"
 msgstr "Firmador de PDF"
 
-#: data/pe.berigna.Berigna.desktop.in:4
+#: data/com.noggalito.Berigna.desktop.in:4
 msgid "Sign and verify PDF documents with the Peruvian DNIe"
 msgstr "Firma y verifica documentos PDF con el DNIe peruano"
 
-#: data/pe.berigna.Berigna.desktop.in:5
+#: data/com.noggalito.Berigna.desktop.in:5
 msgid "sign;signature;verify;PDF;DNIe;RENIEC;"
 msgstr "firmar;firma;verificar;PDF;DNIe;RENIEC;firma digital;"
 
@@ -626,7 +626,7 @@ msgstr "No se pudo verificar el documento."
 msgid "The file is not a document that berigna can read, or it is damaged."
 msgstr "El archivo no es un documento que berigna pueda leer, o está dañado."
 
-#: src/berigna/ui/application.py:268
+#: src/berigna/ui/application.py:269
 msgid "Sign and verify documents with your Peruvian DNIe."
 msgstr "Firma y verifica documentos con tu DNIe."
 
@@ -1109,16 +1109,16 @@ msgstr "Página anterior"
 msgid "Next Page"
 msgstr "Página siguiente"
 
-#: src/berigna/ui/preview.py:121 src/berigna/ui/preview.py:122
+#: src/berigna/ui/preview.py:124 src/berigna/ui/preview.py:126
 msgid "Page Number"
 msgstr "Número de página"
 
-#: src/berigna/ui/preview.py:124
+#: src/berigna/ui/preview.py:128
 #, python-brace-format
 msgid "of {total}"
 msgstr "de {total}"
 
-#: src/berigna/ui/preview.py:163
+#: src/berigna/ui/preview.py:169
 msgid "Fit"
 msgstr "Ajustar"
 
@@ -1231,7 +1231,9 @@ msgstr "Sin ubicación"
 msgid ""
 "Drag on the page to place it; drag the box to move it. In a box taller than "
 "wide, the image goes above the text."
-msgstr "Arrastra sobre la página para colocarla; arrastra el recuadro para moverlo. En un recuadro más alto que ancho, la imagen va encima del texto."
+msgstr ""
+"Arrastra sobre la página para colocarla; arrastra el recuadro para moverlo. "
+"En un recuadro más alto que ancho, la imagen va encima del texto."
 
 #: src/berigna/ui/signing.py:471
 msgid "Load the image in Preferences → Visible Signature."

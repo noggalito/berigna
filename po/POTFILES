@@ -11,4 +11,4 @@ src/berigna/ui/signing.py
 src/berigna/ui/verification.py
 src/berigna/ui/window.py
 data/ui/window.blp
-data/pe.berigna.Berigna.desktop.in
+data/com.noggalito.Berigna.desktop.in

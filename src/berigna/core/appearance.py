@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# SPDX-FileCopyrightText: 2026 Calú
+# SPDX-FileCopyrightText: 2026 noggalito
 """Appearance of a visible signature (RF-012, RF-092; ADR-0018).
 
 The appearance is drawn here, with ReportLab, as a one-page PDF the size of the signature box,

@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# SPDX-FileCopyrightText: 2026 Calú
+# SPDX-FileCopyrightText: 2026 noggalito
 """Simulated DNIe v2 cards whose signing certificate is issued by the test PKI."""
 
 from cryptography import x509

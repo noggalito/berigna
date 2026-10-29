@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# SPDX-FileCopyrightText: 2026 Calú
+# SPDX-FileCopyrightText: 2026 noggalito
 """Signing orchestration (flujos-de-firma-y-verificacion §1), independent of the UI.
 
 Order of the steps is part of the security design:

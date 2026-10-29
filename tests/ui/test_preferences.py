@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# SPDX-FileCopyrightText: 2026 Calú
+# SPDX-FileCopyrightText: 2026 noggalito
 """Preferences (CU-08): general, network and trust; the trusted list in the application."""
 
 from collections.abc import Generator

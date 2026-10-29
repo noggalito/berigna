@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# SPDX-FileCopyrightText: 2026 Calú
+# SPDX-FileCopyrightText: 2026 noggalito
 """Conversions between the two certificate types the core uses.
 
 berigna's own code works with ``cryptography`` certificates; pyHanko and pyhanko-certvalidator

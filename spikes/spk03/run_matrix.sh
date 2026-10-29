@@ -1,6 +1,6 @@
 #!/bin/sh
 # SPDX-License-Identifier: GPL-3.0-or-later
-# SPDX-FileCopyrightText: 2026 Calú
+# SPDX-FileCopyrightText: 2026 noggalito
 # SPK-03: validate every generated signature with DSS 6.2 and print a matrix row per file.
 S=$(dirname "$(readlink -f "$0")")
 cd "$S/dssval" || exit 1

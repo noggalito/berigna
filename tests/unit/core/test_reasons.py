@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# SPDX-FileCopyrightText: 2026 Calú
+# SPDX-FileCopyrightText: 2026 noggalito
 """Reasons for signing in a list, plus "Other" (decision of 2026-10-28)."""
 
 from berigna.core.i18n import NAME, Language

@@ -6,7 +6,7 @@
 | Versión | 0.2.0 |
 | Estado | Cerrado (2026-10-27): PKI de pruebas y DNIe real |
 | Fecha | 2026-10-27 |
-| Responsable | `{{TITULAR}}` |
+| Responsable | noggalito |
 
 ## 1. Preguntas
 

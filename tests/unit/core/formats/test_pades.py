@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# SPDX-FileCopyrightText: 2026 Calú
+# SPDX-FileCopyrightText: 2026 noggalito
 """PAdES B-B through the DNIe v2 driver (simulator): PR-PAD-01, PR-PAD-09, RF-013, RF-014."""
 
 import io

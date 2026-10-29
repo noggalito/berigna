@@ -1,8 +1,8 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# SPDX-FileCopyrightText: 2026 Calú
+# SPDX-FileCopyrightText: 2026 noggalito
 """Preferences (CU-08; RF-061 to RF-064, RF-080): general, network and trust.
 
-Every value lives in GSettings (`pe.berigna.Berigna`), so an administrator can set defaults
+Every value lives in GSettings (`com.noggalito.Berigna`), so an administrator can set defaults
 and lock keys for a whole organisation with dconf (configuracion-y-datos §2).
 """
 

@@ -6,7 +6,7 @@
 | Versión | 0.1.0 |
 | Estado | Borrador |
 | Fecha | 2026-10-27 |
-| Responsable | `{{TITULAR}}` |
+| Responsable | noggalito |
 
 ## 1. Ciclo de vida del PIN
 

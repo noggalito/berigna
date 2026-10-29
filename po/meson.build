@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# SPDX-FileCopyrightText: 2026 Calú
+# SPDX-FileCopyrightText: 2026 noggalito
 # Installs the catalogues of po/LINGUAS. The template and the merge are done by
 # scripts/traducciones.sh, which also handles the views (.blp).
 i18n.gettext(meson.project_name(), preset: 'glib')

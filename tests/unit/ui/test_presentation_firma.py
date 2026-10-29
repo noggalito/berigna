@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# SPDX-FileCopyrightText: 2026 Calú
+# SPDX-FileCopyrightText: 2026 noggalito
 """Texts of the signing flow (BRG-UX-001 §3.3 and §4, P-07)."""
 
 import datetime as dt

@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# SPDX-FileCopyrightText: 2026 Calú
+# SPDX-FileCopyrightText: 2026 noggalito
 """Cryptographic algorithms berigna refuses (ACR-18; INDECOPI guide, requirement 6 and annex 1).
 
 The values are written here instead of relying on the defaults of pyhanko-certvalidator, so

@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# SPDX-FileCopyrightText: 2026 Calú
+# SPDX-FileCopyrightText: 2026 noggalito
 """Source strings of the verification explanations and of the error codes (RF-053, PR-I18N-07).
 
 Strings are written in English and marked with ``N_`` for xgettext; they are translated when

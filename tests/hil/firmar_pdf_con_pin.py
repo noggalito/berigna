@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# SPDX-FileCopyrightText: 2026 Calú
+# SPDX-FileCopyrightText: 2026 noggalito
 """Manual HIL check of the full PAdES flow WITH the holder's PIN (B-B to B-LTA).
 
 Follows docs/07-calidad/protocolo-pruebas-con-pin.md. It creates a one-page TEST PDF, then runs

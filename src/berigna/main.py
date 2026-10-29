@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# SPDX-FileCopyrightText: 2026 Calú
+# SPDX-FileCopyrightText: 2026 noggalito
 """Entry point of the graphical application (ADR-0002: no public CLI, only files to open).
 
 ``BERIGNA_RESOURCES`` points to the compiled views (``berigna.gresource``); the installed

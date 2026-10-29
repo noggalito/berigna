@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# SPDX-FileCopyrightText: 2026 Calú
+# SPDX-FileCopyrightText: 2026 noggalito
 """Hot-plug monitor of readers and cards (RF-001, RF-002).
 
 The monitor never connects to a card: it uses ``SCardGetStatusChange``, which reports readers,
