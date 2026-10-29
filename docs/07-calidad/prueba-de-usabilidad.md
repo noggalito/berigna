@@ -29,7 +29,38 @@ Preguntas que debe responder:
 
 ## 3. Preparación
 
-- Equipo: Debian 13 con GNOME y berigna instalado desde el árbol de trabajo (`scripts/escritorio.sh`), sesión de un usuario de prueba, sin otras ventanas abiertas.
+### 3.1 Instalar berigna
+
+Mientras no haya paquete `.deb` (Fase 5), berigna se instala desde el código fuente, en un equipo con Debian 13 y GNOME, en una cuenta de usuario creada para la prueba (por ejemplo, `prueba`):
+
+1. Paquetes del sistema (como administrador):
+
+   ```bash
+   sudo apt install git gettext python3-venv meson ninja-build blueprint-compiler \
+     libglib2.0-bin desktop-file-utils pcscd libccid \
+     python3-gi python3-gi-cairo gir1.2-gtk-4.0 gir1.2-adw-1 gir1.2-poppler-0.18 \
+     python3-cryptography python3-asn1crypto python3-lxml python3-pyscard \
+     python3-pyhanko-certvalidator python3-signxml python3-requests python3-reportlab \
+     python3-pil python3-qrcode python3-tzlocal python3-click python3-yaml
+   ```
+
+2. Código y entorno (en la cuenta de prueba):
+
+   ```bash
+   git clone https://github.com/noggalito/berigna.git ~/berigna
+   cd ~/berigna
+   python3 -m venv --system-site-packages .venv
+   .venv/bin/pip install --no-deps 'pyHanko==0.25.1'
+   .venv/bin/pip install --no-deps -e .
+   ```
+
+3. Lanzador e icono en el escritorio: `scripts/escritorio.sh`. berigna aparece en la cuadrícula de aplicaciones como "berigna (desarrollo)".
+4. Comprobación: conectar el lector con un DNIe, abrir berigna y ejecutar ☰ → Diagnóstico. Todo debe salir en ✓, salvo la autoridad de sellado de tiempo mientras no haya una contratada (DP-02).
+5. Al terminar la prueba: `scripts/escritorio.sh quitar` y borrar la cuenta de prueba, con sus documentos y su historial.
+
+### 3.2 Entorno de la sesión
+
+- Equipo preparado como en §3.1, en la sesión del usuario de prueba, sin otras ventanas abiertas.
 - Lector de tarjetas conectado; DNIe del participante.
 - Carpeta `~/Documentos/prueba` con: `contrato.pdf`, `acta-1.pdf`, `acta-2.pdf`, `acta-3.pdf` (sin firmar) y `convenio-firmado.pdf` (con una firma válida). Ninguno con datos reales de personas.
 - Historial vacío; idioma de la interfaz según el participante (Preferencias → General → Idioma).

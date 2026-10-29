@@ -101,13 +101,18 @@ flowchart TB
 | `core.formats.xades` | Firma y validación XAdES | Según SPK-03 (ADR-0008) |
 | `core.trust` | Almacén de confianza de la IOFE incluido (anclas como recurso del paquete con manifiesto de huellas), anclas añadidas por el usuario y TSL de INDECOPI (`tsl`, ADR-0014) | cryptography, lxml, signxml; implementado |
 | `core.net` | Clientes HTTP para TSA, OCSP, CRL y AIA, con caché, tiempos de espera y proxy | requests. Implementados `fetchers` (OCSP y CRL para validación previa, firma B-LT y verificación) y `tsa` (cliente RFC 3161 sobre el de pyHanko). Caché y proxy, pendientes |
-| `core.appearance` | Composición del sello visible a partir de una plantilla de texto y una imagen | pyHanko stamp + Pillow |
-| `core.signing` | Orquestación: comprobar que el archivo no cambió, validar el certificado antes del PIN, firmar y escribir de forma atómica | Implementado para PDF (B-B) |
+| `core.appearance` | Sello de la firma visible (texto, rúbrica, logotipo o QR) dibujado como PDF de una página con las tipografías de la marca, e imágenes precargadas (ADR-0018) | ReportLab, Pillow; pyHanko lo coloca como apariencia estática; implementado |
+| `core.signing` | Orquestación: comprobar que el archivo no cambió, validar el certificado antes del PIN, firmar y escribir de forma atómica; pasos compartidos con el lote | Implementado para PDF, de B-B a B-LTA |
+| `core.batch` | Firma de varios PDF con un solo PIN, tolerante a fallos y cancelable entre archivos (CU-04) | Implementado |
+| `core.documents` | Lectura de un documento abierto: tipo, páginas, firmas, SHA-256 (RF-018) | Implementado |
+| `core.reasons` | Motivos de firma de la lista, en el idioma de la firma | Implementado |
+| `core.diagnostics` | Comprobaciones en orden del diagnóstico, sin PIN (CU-07, RF-007) | Implementado |
+| `core.files` | Escritura atómica con permisos correctos, carpeta de datos y nombres con fecha | Implementado |
+| `core.logs` | Registro técnico rotativo con números enmascarados (RF-083) | `logging` de la biblioteca estándar; implementado |
 | `core.validation` | Validación previa del firmante (`preflight`, RF-006) y verificación de firmas PDF con indicaciones ETSI (`pdf`, RF-050, RF-053, RF-055) | pyhanko-certvalidator 0.26.3 y la validación AdES de pyHanko 0.25.1; `preflight` implementado; `pdf` con sellos de tiempo y validación en el pasado |
 | `core.report` | Explicaciones en lenguaje llano de cada indicación y subindicación ETSI y de cada `ERR-xxx` (`messages`, `explanations`); informe de verificación en JSON con explicaciones en ambos idiomas (`json_report`) y en PDF en es_PE o en quechua (`pdf_report`) | gettext, ReportLab; implementado |
 | `core.i18n` | Idiomas es_PE y quechua sureño, elección según la configuración del usuario con es_PE de respaldo (ADR-0015) y carga de los catálogos; el quechua cae en es_PE, nunca en el texto fuente inglés | gettext de la biblioteca estándar; implementado |
-| `core.history` | Historial local en SQLite | sqlite3 (biblioteca estándar) |
-| `core.config` | Acceso tipado a la configuración (GSettings vía una interfaz, para no acoplar el núcleo a GTK) | — |
+| `core.history` | Historial local de operaciones, en un archivo solo legible por su dueño (RF-082) | sqlite3 (biblioteca estándar); implementado |
 | `ui` | Vistas, diálogos, previsualización de PDF y manejo de hilos | PyGObject, GTK4, libadwaita, Poppler-GLib (ADR-0016) |
 | `berigna-nautilus` | Entradas del menú contextual; solo lanza berigna con las rutas | nautilus-python |
 
@@ -147,7 +152,7 @@ Decisiones de implementación de `core.token.dnie_v2` (ADR-0012), documentadas p
 
 ## 4. Interfaces clave del núcleo
 
-Implementadas (Fases 1 y 2):
+Implementadas (Fases 1 a 3):
 
 ```python
 class TokenSigner(Protocol):                      # core.token.base
@@ -227,7 +232,7 @@ class TokenSigner(Protocol):
 - La interfaz se ejecuta en el bucle principal de GLib.
 - Las operaciones del núcleo se ejecutan en un único hilo de trabajo dedicado al *token* (las llamadas al *token*, sea PKCS#11 o APDU sobre una única conexión PC/SC, se serializan). La red y la validación pueden usar un pool de hilos aparte.
 - `check_signer` (y por tanto `sign_pdf_file`) crea su propio bucle de asyncio para pyhanko-certvalidator: debe llamarse desde un hilo de trabajo, nunca desde dentro de un bucle de asyncio en marcha.
-- La comunicación hacia la interfaz se hace con `GLib.idle_add` o con `Gio.Task`. La cancelación usa `Gio.Cancellable`, que se traduce a un token de cancelación del núcleo.
+- La comunicación hacia la interfaz se hace con `GLib.idle_add`. Cada operación (verificar, firmar, lote, diagnóstico) corre en su propio hilo de trabajo. La cancelación de un lote es un `threading.Event` que el núcleo consulta entre archivos; el núcleo no conoce GLib. No hay `core.config`: la configuración (GSettings) la lee la interfaz y la pasa al núcleo como parámetros.
 - La detección de lectores y tarjetas (`core.token.monitor`) sondea cada 0,5 s con `SCardGetStatusChange` en un hilo propio, sin conectarse a la tarjeta, de modo que no interfiere con una sesión de firma exclusiva. Solo avisa cuando cambia el estado (sin servicio PC/SC, sin lector, sin tarjeta, tarjeta no compatible con su ATR, DNIe listo), y la interfaz debe pasar el aviso al bucle principal con `GLib.idle_add`.
 
 ## 6. Proceso y empaquetado

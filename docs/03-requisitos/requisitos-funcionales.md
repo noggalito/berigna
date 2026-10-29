@@ -25,7 +25,7 @@ Prioridades según MoSCoW (ver convenciones). Cada requisito tiene criterios de 
 - Prioridad: Debe. CU: CU-01.
 - Descripción: se detecta la inserción y el retiro de la tarjeta, y se identifica si es un DNIe compatible.
 - Aceptación:
-  1. Al insertar un DNIe, el estado cambia a "DNIe detectado" y se leen sus certificados.
+  1. Al insertar un DNIe, el estado cambia a "DNIe listo"; el certificado de firma se lee al firmar y en el diagnóstico.
   2. Una tarjeta no reconocida produce el mensaje "Tarjeta no compatible", acompañado del ATR para soporte técnico.
   3. Si se retira la tarjeta durante una operación, la operación se aborta de forma segura sin dejar archivos de salida corruptos.
   4. El DNIe v2 se reconoce por su ATR (`3B DC 18 FF 81 91 FE 1F C3 80 73 C8 21 13 66 05 03 63 51 00 02 50`) y usa el driver `dnie_v2` (ADR-0012). El resto de tarjetas se intenta mediante PKCS#11.
@@ -169,7 +169,7 @@ Prioridades según MoSCoW (ver convenciones). Cada requisito tiene criterios de 
 ### RF-053: Resultado normalizado y comprensible
 - Prioridad: Debe.
 - Descripción: cada firma recibe una indicación según ETSI EN 319 102-1 (TOTAL-PASSED, TOTAL-FAILED o INDETERMINATE, con su subindicación) y una explicación en lenguaje llano en el idioma de la interfaz, por ejemplo:
-  - es_PE: "La firma es válida. El documento no ha sido modificado desde que Juan Pérez lo firmó el 27/10/2026 a las 10:15 (hora certificada por la TSA)."
+  - es_PE: "La firma es válida. Firmado por JUAN PEREZ. La hora de la firma, 2026-10-27 a las 10h15 UTC-5, está certificada por una autoridad de sellado de tiempo. El documento no se ha modificado desde que se firmó."
   - quechua: texto equivalente redactado por los traductores (ADR-0015). El ejemplo en en_US se conserva para la versión 1.1: "The signature is valid. The document has not been modified since Juan Pérez signed it on 10/27/2026 at 10:15 AM (time certified by the TSA)."
 - Aceptación: todas las combinaciones de indicación y subindicación tienen su explicación en es_PE y en quechua. El informe muestra además el estado de cada sello de tiempo (de firma, de archivo y de documento) por separado: un sello de archivo inválido se señala aunque la firma sea válida en la fecha actual (SPK-03 §5).
 
@@ -232,8 +232,8 @@ Prioridades según MoSCoW (ver convenciones). Cada requisito tiene criterios de 
 - Descripción: la aplicación está disponible completa en español del Perú (es_PE) y en quechua sureño (catálogo `quz`, configuración regional `quz_PE`), según ADR-0011 y ADR-0015. en_US llega en la versión 1.1.
   - Todas las cadenas pasan por gettext. El texto fuente (`msgid`) está en inglés, pero no se muestra en la v1.0.
   - Por defecto se usa el idioma del sistema. Las configuraciones de quechua sureño (`quz`, `quy`, `qu`) muestran el quechua y cualquier otro idioma muestra es_PE.
-  - Desde las preferencias se puede forzar es_PE o quechua (se aplica al reiniciar).
-  - Las fechas, las horas y los números siguen la configuración regional activa.
+  - Desde las preferencias se puede forzar es_PE o quechua; se aplica al momento, sin reiniciar.
+  - Las fechas y las horas se escriben igual en los dos idiomas: fecha ISO 8601, hora con el símbolo h del SI y desfase respecto de UTC ("2026-10-29 a las 18h47 UTC-5"; ADR-0011, precisión del 2026-10-28).
   - Cubre la interfaz, los mensajes de error, las explicaciones de verificación, los informes, la extensión de Nautilus, el `.desktop` y la metainfo de AppStream.
 - Aceptación:
   1. Ambos catálogos están traducidos al 100 % (`msgfmt --statistics` sin cadenas sin traducir ni marcadas como *fuzzy*).
