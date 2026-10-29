@@ -93,6 +93,7 @@ class BatchPage:
         self._remaining_tries: int | None = None
         self._cancel = threading.Event()
         self._check: SignerCheck | None = None  # set when the PIN is asked
+        self._adding = 0  # workers still reading files to add
 
         self._sign = Gtk.Button(label=_("_Sign"), use_underline=True, sensitive=False)
         self._sign.add_css_class("suggested-action")
@@ -133,21 +134,34 @@ class BatchPage:
         return clamp
 
     def add_paths(self, paths: Iterable[Path]) -> None:
-        """Add the PDFs among ``paths``; others, and those already listed, are left out."""
+        """Add the PDFs among ``paths``; others, and those already listed, are left out.
+
+        Reading and hashing a folder of large PDFs takes a while: it runs in a worker thread,
+        with the Sign button off until it is done."""
+        paths = list(paths)
+        recursive = self.recursive.get_active()
+        self._adding += 1
+        self._sign.set_sensitive(False)
+
+        def work() -> None:
+            hashed: list[tuple[Path, str]] = []
+            left_out = sum(1 for p in paths if not p.is_dir() and not is_pdf(p))
+            for path in collect_pdfs(paths, recursive=recursive):
+                try:
+                    hashed.append((path, hashlib.sha256(path.read_bytes()).hexdigest()))
+                except OSError:
+                    left_out += 1
+            GLib.idle_add(self._added, hashed, left_out)
+
+        threading.Thread(target=work, name="berigna-batch-add", daemon=True).start()
+
+    def _added(self, hashed: list[tuple[Path, str]], left_out: int) -> bool:
+        self._adding -= 1
         listed = {path for path, _sha in self.files}
-        left_out = 0
-        for path in collect_pdfs(paths, recursive=self.recursive.get_active()):
-            if path in listed:
-                continue
-            try:
-                sha = hashlib.sha256(path.read_bytes()).hexdigest()
-            except OSError:
-                left_out += 1
-                continue
-            self.files.append((path, sha))
-            listed.add(path)
-        others = [p for p in paths if not p.is_dir() and not is_pdf(p)]
-        left_out += len(others)
+        for path, sha in hashed:
+            if path not in listed:
+                self.files.append((path, sha))
+                listed.add(path)
         if left_out:
             self._window.toast(
                 ngettext(
@@ -157,6 +171,7 @@ class BatchPage:
                 ).format(n=left_out)
             )
         self._show_files()
+        return GLib.SOURCE_REMOVE
 
     def remove(self, path: Path) -> None:
         self.files = [(p, sha) for p, sha in self.files if p != path]
@@ -193,7 +208,7 @@ class BatchPage:
         self._sign.set_label(
             ngettext("_Sign {n} Document", "_Sign {n} Documents", count).format(n=count)
         )
-        self._sign.set_sensitive(count > 0)
+        self._sign.set_sensitive(count > 0 and not self._adding)
 
     def _choose_files(self) -> None:
         pdf = Gtk.FileFilter()
@@ -267,6 +282,8 @@ class BatchPage:
         self._stack.set_visible_child_name(name)
 
     def start(self, level: SignatureLevel | None = None) -> None:
+        if self._adding or not self.files:  # the list is not settled yet
+            return
         level = level or self.levels.level
         self.signature_data.remember()
         options = self.signature_data.options()
@@ -347,13 +364,12 @@ class BatchPage:
         return GLib.SOURCE_REMOVE
 
     def _record(self, items: list[BatchItem], level: SignatureLevel) -> None:
-        """RF-082: one history row per document the batch tried to sign."""
+        """RF-082: one history row per document of the batch, also those left unsigned when
+        it was cancelled or stopped (what was not done is part of the record)."""
         check, history = self._check, self._services.history()
         if check is None or history is None:
             return
         for item in items:
-            if item.outcome is Outcome.SKIPPED:
-                continue
             self._services.record(
                 signature_entry(
                     Kind.BATCH,
