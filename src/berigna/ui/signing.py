@@ -60,7 +60,12 @@ from berigna.ui import presentation  # noqa: E402
 from berigna.ui.help import HelpTopic, help_button  # noqa: E402
 from berigna.ui.i18n import N_, _, catalogue, current_language  # noqa: E402
 from berigna.ui.preview import PdfPreview  # noqa: E402
-from berigna.ui.widgets import brand_markup, label_factory  # noqa: E402
+from berigna.ui.widgets import (  # noqa: E402
+    brand_markup,
+    label_factory,
+    show_in_spanish,
+    spanish_button,
+)
 
 if TYPE_CHECKING:
     from berigna.ui.window import MainWindow
@@ -438,10 +443,7 @@ class PinDialog(Adw.Dialog):
         box.append(self.entry)
 
         if current_language() is Language.QUZ_PE:
-            spanish = Gtk.Button(label=_("Show in Spanish"), halign=Gtk.Align.START)
-            spanish.add_css_class("flat")
-            spanish.connect("clicked", lambda _b: self._show_spanish())
-            box.append(spanish)
+            box.append(spanish_button(self._show_spanish, halign=Gtk.Align.START))
 
         buttons = Gtk.Box(spacing=12, homogeneous=True, margin_top=6)
         self.cancel_button = Gtk.Button(label=_("_Cancel"), use_underline=True)
@@ -487,12 +489,8 @@ class PinDialog(Adw.Dialog):
         spanish = translations(Language.ES_PE)
         document, check, level = self._summary
         rows = presentation.pin_summary(document, check, level, spanish)
-        dialog = Adw.AlertDialog(
-            heading=spanish.gettext("Confirm Signature"),
-            body="\n".join(f"{row.label}: {row.value}" for row in rows),
-        )
-        dialog.add_response("close", spanish.gettext("_Close"))
-        dialog.present(self)
+        body = "\n".join(f"{row.label}: {row.value}" for row in rows)
+        show_in_spanish(self, spanish.gettext("Confirm Signature"), body)
 
 
 class SigningPage:

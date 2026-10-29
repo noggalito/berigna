@@ -88,6 +88,7 @@ Interfaz (Fase 3):
 
 ### Corregido
 
+- Con la interfaz en quechua, el resultado de la verificación ofrece "Leer en español": muestra el resumen, la explicación y los detalles técnicos de cada firma y sello en español, sin cambiar de idioma. El diálogo del PIN usa el mismo botón, que se distingue del "Ver en español" del aviso, el que cambia el idioma (BRG-UX-001 §4.2).
 - Un PDF con una firma cuyo CMS rompe pyHanko o asn1crypto después del resumen (datos de revocación de Adobe, sello de la firma o diagnóstico de la cadena) daba "error inesperado"; ahora es TOTAL-FAILED/FORMAT_FAILURE, como el resto de firmas malformadas. Lo mismo con los sellos de documento.
 - Cambiar el idioma con el diálogo del PIN abierto destruía la ventana y podía dejar el hilo de firma esperando para siempre con la tarjeta reservada. Ahora el diálogo se cancela antes (no se envía el PIN).
 - En un lote, un error que berigna no conoce detenía todos los documentos y el informe no llegaba a crearse; ahora falla solo ese documento (ERR-000) y los demás siguen (RF-043).
@@ -128,3 +129,4 @@ Proyecto:
 - Permiso adicional de la GPL para distribuir berigna por tiendas de aplicaciones (`LICENSE-EXCEPTION.md`, ADR-0021); el código fuente sigue siempre disponible bajo la GPL.
 - Investigación SPK-07: lectura del DNIe por NFC, con un lector sin contacto, con berigna en Android o con el teléfono como puente hacia el escritorio. Windows, macOS, Android e iOS, en estudio para la versión 1.1.
 - Consentimiento de la prueba de usabilidad conforme a la Ley N.° 29733: responsable, finalidad, plazos de conservación, derechos y grabación opcional.
+- Perfiles con nombre de la firma visible (RF-081), aplazados a la versión 1.1; pendientes de diseño de la interfaz al día.
