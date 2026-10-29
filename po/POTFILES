@@ -14,6 +14,7 @@ src/berigna/ui/preferences.py
 src/berigna/ui/preview.py
 src/berigna/ui/signing.py
 src/berigna/ui/verification.py
+src/berigna/ui/widgets.py
 src/berigna/ui/window.py
 data/ui/window.blp
 data/com.noggalito.Berigna.desktop.in

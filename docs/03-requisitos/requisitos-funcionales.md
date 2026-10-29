@@ -3,7 +3,7 @@
 | Campo | Valor |
 |---|---|
 | Documento | BRG-REQ-001 |
-| Versión | 0.4.0 |
+| Versión | 0.5.0 |
 | Estado | Borrador |
 | Fecha | 2026-10-29 |
 | Responsable | noggalito |
@@ -219,7 +219,7 @@ Prioridades según MoSCoW (ver convenciones). Cada requisito tiene criterios de 
 ### RF-080: Preferencias
 - Prioridad: Debe. Descripción: nivel por defecto, formato por tipo de archivo, sufijo y carpeta de salida, TSA, red, apariencia de la firma visible e idioma de la interfaz (sistema, es_PE o quechua; ver RF-090).
 ### RF-081: Perfiles de apariencia de la firma visible
-- Prioridad: Debería. Descripción: se guardan varios perfiles con nombre (por ejemplo, "Rúbrica" y "Sello institucional").
+- Prioridad: Debería (versión 1.1, decisión del 2026-10-29). Descripción: se guardan varios perfiles con nombre (por ejemplo, "Rúbrica" y "Sello institucional"). En la v1.0 hay una sola apariencia, la que se configura en Preferencias.
 ### RF-082: Historial local de operaciones
 - Prioridad: Debería. Descripción: fecha, operación, nombre del archivo, *hash* SHA-256, nivel y resultado. En un lote, una fila por documento, también por los que quedaron sin firmar al cancelarlo o detenerse (ERR-309). No se guarda el contenido. Se puede borrar.
 ### RF-083: Registro técnico

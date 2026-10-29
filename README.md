@@ -18,7 +18,7 @@ Aplicación de escritorio para GNU/Linux (Debian) que permite firmar digitalment
 | Objetivo normativo | Acreditación como software de firma digital ante INDECOPI (IOFE) |
 | Distribución | Paquete `.deb` en un repositorio propio y en el archivo oficial de Debian (desde la v1.0); Flatpak en la 1.1 |
 | Idiomas | Español del Perú (es_PE) y quechua sureño, ambos completos; inglés (en_US) en la versión 1.1 |
-| Licencia | GPL-3.0-or-later |
+| Licencia | GPL-3.0-or-later, con un permiso adicional para tiendas de aplicaciones |
 | Titular | noggalito (persona jurídica) |
 | Sitio y contacto | <https://berigna.noggalito.com> · `berigna@noggalito.com` |
 
@@ -34,3 +34,5 @@ Aplicación de escritorio para GNU/Linux (Debian) que permite firmar digitalment
 berigna es software libre: puedes redistribuirlo y/o modificarlo bajo los términos de la GNU General Public License publicada por la Free Software Foundation, en su versión 3 o, a tu elección, cualquier versión posterior (SPDX: `GPL-3.0-or-later`).
 
 Se distribuye con la esperanza de que sea útil, pero SIN NINGUNA GARANTÍA. Consulta la GPL para más detalles. El texto completo está en [`LICENSE`](LICENSE).
+
+Como permiso adicional según la sección 7 de la GPL, berigna se puede distribuir por tiendas de aplicaciones aunque sus condiciones restrinjan a quien lo instala, siempre que el código fuente siga disponible bajo la GPL por otro medio ([`LICENSE-EXCEPTION.md`](LICENSE-EXCEPTION.md), ADR-0021).

@@ -13,9 +13,12 @@ from berigna.core.trust import TrustStore
 from berigna.core.validation import Indication, Modifications, PdfVerification, verify_pdf
 from berigna.core.validation.pdf import PdfSignatureReport, TimestampReport
 from berigna.ui.presentation import (
+    Detail,
+    ResultView,
     VerificationView,
     device_status,
     document_summary,
+    verification_text,
     verification_view,
 )
 from support.pki import Pki, build_pki, minimal_pdf
@@ -92,6 +95,43 @@ def test_valid_signature(pki: Pki) -> None:
     assert details["Formato"] == "PAdES · /ETSI.CAdES.detached"
     assert details["Sello de tiempo de la firma"] == "Ninguno"
     assert signature.signed_revision_length is not None
+
+
+def test_verification_view_in_another_language(pki: Pki) -> None:
+    """Quechua users can read the result in Spanish (BRG-UX-001 §4.2)."""
+    result = verify_pdf(signed_with_revinfo(pki), pki.store, online=False)
+    spanish = verification_view(result, pki.store, translations(Language.ES_PE))
+    quechua = verification_view(result, pki.store, translations(Language.QUZ_PE))
+    assert spanish.summary == (
+        "1 firma válida · El documento no fue modificado después de la última firma."
+    )
+    assert quechua.summary != spanish.summary
+    assert quechua.signatures[0].explanation != spanish.signatures[0].explanation
+    assert spanish.signatures[0].explanation.startswith("La firma es válida.")
+
+
+def test_verification_text_has_summary_explanations_details_and_stamps() -> None:
+    spanish = translations(Language.ES_PE)
+    signature = ResultView(
+        title="FIRMANTE",
+        icon="",
+        style="success",
+        explanation="La firma es válida.",
+        details=(Detail("Formato", "PAdES"),),
+    )
+    stamp = ResultView(title="2026-10-28", icon="", style="success", explanation="", details=())
+    view = VerificationView(
+        icon="",
+        style="success",
+        summary="1 firma válida",
+        signatures=(signature,),
+        timestamps=(stamp,),
+        retry=False,
+    )
+    assert verification_text(view, spanish) == (
+        "1 firma válida\n\nFIRMANTE\nLa firma es válida.\nFormato: PAdES\n\n"
+        "Sellos de tiempo de documento\n\n2026-10-28"
+    )
 
 
 def test_signature_without_revocation_data_can_be_retried(pki: Pki) -> None:

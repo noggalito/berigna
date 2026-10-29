@@ -3,9 +3,9 @@
 | Campo | Valor |
 |---|---|
 | Documento | BRG-INV-000 |
-| Versión | 0.2.1 |
+| Versión | 0.3.0 |
 | Estado | En curso |
-| Fecha | 2026-10-28 |
+| Fecha | 2026-10-29 |
 | Responsable | noggalito |
 
 Los *spikes* se ejecutan en la Fase 0, antes de escribir código de producto. Cada uno tiene una pregunta, un método, un criterio de cierre y una plantilla de resultados. Sus conclusiones actualizan las decisiones pendientes y los ADR.
@@ -18,3 +18,4 @@ Los *spikes* se ejecutan en la Fase 0, antes de escribir código de producto. Ca
 | SPK-04 | ¿Qué exigen la normativa vigente y la guía de acreditación de INDECOPI? | — | Alta | Documentación interna. Conclusiones técnicas públicas: requisitos del software de usuario final (RF/RNF y ADR-0014) |
 | [SPK-05](SPK-05-dependencias-en-debian.md) | ¿Qué dependencias Python están en Debian 13 y cuáles hay que empaquetar? | DP-06 | Media | Cerrado (2026-10-27) |
 | [SPK-06](SPK-06-dnie-1-0-y-3-0.md) | ¿Qué chip, aplicaciones y ruta de firma tienen el DNIe 1.0 y el DNIe 3.0? | RNF-COM-05 (versión 1.1) | Alta | Pendiente: se necesita acceso a las tarjetas |
+| [SPK-07](SPK-07-nfc-y-telefono.md) | ¿Se puede leer el DNIe sin contacto (NFC) y firmar desde un lector NFC, un teléfono Android o con el teléfono como puente? | Plataformas de la versión 1.1 | Media | Pendiente: se necesita un lector sin contacto y un teléfono con NFC |
