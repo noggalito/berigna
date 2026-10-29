@@ -16,7 +16,7 @@ from gi.repository import Adw, Gio, GLib, Gtk  # noqa: E402
 from pyhanko.sign.timestamps import TimeStamper  # noqa: E402
 
 from berigna import __version__  # noqa: E402
-from berigna.core.crashes import take_pending  # noqa: E402
+from berigna.core import crashes  # noqa: E402
 from berigna.core.errors import TsaError  # noqa: E402
 from berigna.core.files import data_directory  # noqa: E402
 from berigna.core.history import History  # noqa: E402
@@ -149,14 +149,20 @@ class BerignaApplication(Adw.Application):
             return
         self._failure_checked = True
         try:
-            failure = take_pending()
+            failure = crashes.pending()
         except OSError:
             log.warning("the pending failure report could not be read", exc_info=True)
             return
         if failure is not None:
             self.failure_dialog = offer_failure_report(
-                self._window(), failure, f"{REPOSITORY}/issues"
+                self._window(), failure, f"{REPOSITORY}/issues", self._failure_answered
             )
+
+    def _failure_answered(self) -> None:
+        try:
+            crashes.clear_pending()
+        except OSError:
+            log.warning("the pending failure report could not be removed", exc_info=True)
 
     def _window(self) -> MainWindow:
         if self.main_window is None:
