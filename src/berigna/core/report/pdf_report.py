@@ -25,7 +25,7 @@ from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
 
 import berigna
-from berigna.core.i18n import Language, translations
+from berigna.core.i18n import NAME, Language, translations
 from berigna.core.report import messages
 from berigna.core.report.explanations import (
     common_name,
@@ -63,6 +63,7 @@ def _fonts(directory: Path = _DEJAVU) -> tuple[str, str]:
 class _Writer:
     def __init__(self, catalogue: gettext.NullTranslations, regular: str, bold: str) -> None:
         self.t = catalogue.gettext
+        self.bold = bold
         self.body = ParagraphStyle("body", fontName=regular, fontSize=9.5, leading=13)
         self.small = ParagraphStyle("small", parent=self.body, fontSize=8, leading=10)
         self.title = ParagraphStyle("title", fontName=bold, fontSize=16, leading=20)
@@ -71,6 +72,11 @@ class _Writer:
 
     def p(self, text: str, style: ParagraphStyle | None = None) -> Paragraph:
         return Paragraph(escape(text), style or self.body)
+
+    def credit(self, text: str) -> Paragraph:
+        """A sentence with the program's name in bold, as in the interface."""
+        name = f'<font name="{self.bold}">berigna</font>'
+        return Paragraph(NAME.sub(name, escape(text)), self.small)
 
     def table(self, rows: list[tuple[str, str]]) -> Table:
         data = [[self.p(self.t(label), self.label), self.p(value)] for label, value in rows]
@@ -192,7 +198,7 @@ def pdf_report(
                 Spacer(1, 3 * mm),
             ]
     story.append(Spacer(1, 6 * mm))
-    story.append(w.p(w.t(messages.REPORT_GENERATED).format(version=berigna.__version__), w.small))
+    story.append(w.credit(w.t(messages.REPORT_GENERATED).format(version=berigna.__version__)))
     if language is not Language.ES_PE:
         story.append(w.p(w.t(messages.REPORT_SPANISH_PREVAILS), w.small))
         story.append(w.p(w.t(messages.UNREVIEWED_TRANSLATION), w.small))
