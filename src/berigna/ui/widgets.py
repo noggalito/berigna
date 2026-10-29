@@ -2,12 +2,18 @@
 # SPDX-FileCopyrightText: 2026 noggalito
 """Small widget helpers shared by the pages."""
 
+from collections.abc import Callable
+
 import gi
 
 gi.require_version("Gtk", "4.0")
-from gi.repository import GLib, Gtk  # noqa: E402
+gi.require_version("Adw", "1")
+from gi.repository import Adw, GLib, Gtk  # noqa: E402
 
-from berigna.core.i18n import NAME  # noqa: E402
+from berigna.core.i18n import NAME, Language, translations  # noqa: E402
+from berigna.ui.i18n import N_, _  # noqa: E402
+
+CLOSE = N_("_Close")
 
 
 def label_factory(*, visible: bool) -> Gtk.SignalListItemFactory:
@@ -36,3 +42,20 @@ def named(button: Gtk.Button) -> Gtk.Button:
     (RNF-USA-03): GTK uses a tooltip only as the description."""
     button.update_property([Gtk.AccessibleProperty.LABEL], [button.get_tooltip_text() or ""])
     return button
+
+
+def spanish_button(show: Callable[[], None], **properties: object) -> Gtk.Button:
+    """ "Read in Spanish" (BRG-UX-001 §4.2): the same text in es_PE without changing the
+    language. The banner's "Show in Spanish" is another thing: it changes the language."""
+    button = Gtk.Button(label=_("Read in Spanish"), **properties)
+    button.add_css_class("flat")
+    button.connect("clicked", lambda _button: show())
+    return button
+
+
+def show_in_spanish(parent: Gtk.Widget, heading: str, body: str) -> Adw.AlertDialog:
+    """A dialog with a text already in Spanish, closed with a Spanish button."""
+    dialog = Adw.AlertDialog(heading=heading, body=body)
+    dialog.add_response("close", translations(Language.ES_PE).gettext(CLOSE))
+    dialog.present(parent)
+    return dialog

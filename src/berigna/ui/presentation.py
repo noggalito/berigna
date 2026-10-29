@@ -238,7 +238,7 @@ def verification_view(
     t = translations or catalogue()
     user_anchor = any(entry.user_added for entry in store.entries)
     indications = [r.indication for r in verification.signatures] + [
-        t.indication for t in verification.document_timestamps
+        stamp.indication for stamp in verification.document_timestamps
     ]
     if Indication.TOTAL_FAILED in indications:
         icon, style = _INDICATION_ICONS[Indication.TOTAL_FAILED]
@@ -254,6 +254,22 @@ def verification_view(
         timestamps=tuple(_timestamp_view(stamp, t) for stamp in verification.document_timestamps),
         retry=Indication.INDETERMINATE in indications,
     )
+
+
+def verification_text(view: VerificationView, translations: gettext.NullTranslations) -> str:
+    """The result page as plain text, for "Read in Spanish" (BRG-UX-001 §4.2): the summary,
+    then each signature and each document time-stamp with its explanation and details.
+    ``view`` must have been built with the same ``translations``."""
+
+    def block(result: ResultView) -> str:
+        lines = [result.title, *([result.explanation] if result.explanation else [])]
+        return "\n".join(lines + [f"{d.label}: {d.value}" for d in result.details])
+
+    blocks = [view.summary, *(block(signature) for signature in view.signatures)]
+    if view.timestamps:
+        blocks.append(translations.gettext("Document time-stamps"))
+        blocks += [block(stamp) for stamp in view.timestamps]
+    return "\n\n".join(blocks)
 
 
 # -- Signing (CU-01, BRG-UX-001 §3.2, §3.3 and §4) -----------------------------------------------

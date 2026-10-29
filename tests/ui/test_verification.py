@@ -89,9 +89,9 @@ def _walk(widget: Gtk.Widget) -> Generator[Gtk.Widget, None, None]:
 
 
 def _spanish_button(app: BerignaApplication) -> Gtk.Button | None:
-    """The "Ver en español" button of the summary, labelled in Quechua."""
+    """The "Leer en español" button of the summary, labelled in Quechua."""
     for child in _walk(_page(app).summary_row):
-        if isinstance(child, Gtk.Button) and child.get_label() == "Kastilla simipi qhaway":
+        if isinstance(child, Gtk.Button) and child.get_label() == "Kastilla simipi ñawinchay":
             return child
     return None
 
@@ -109,12 +109,15 @@ def test_result_in_quechua_offers_spanish(
         yield from wait_until(lambda: _shown(app) == "result" and _spanish_button(app) is not None)
         button = _spanish_button(app)
         assert button is not None
-        button.emit("clicked")  # "Ver en español", in Quechua
+        button.emit("clicked")  # "Leer en español", in Quechua: the language stays
         yield
-        dialog = _page(app).show_spanish()
+        dialog = _page(app).spanish_dialog
+        assert dialog is not None
         assert dialog.get_heading() == "firmado.pdf"
-        assert dialog.get_body().startswith("1 firma válida · ")
-        assert "La firma es válida." in dialog.get_body()
+        body = dialog.get_body()
+        assert body.startswith("1 firma válida · ")
+        assert "La firma es válida." in body
+        assert "Código ETSI EN 319 102-1: TOTAL-PASSED" in body  # the details too
         dialog.force_close()
         assert i18n.current_language() is Language.QUZ_PE
         app.settings.set_string("ui-language", "es_PE")
