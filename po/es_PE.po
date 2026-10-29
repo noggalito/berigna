@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: berigna\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-28 21:58-0500\n"
+"POT-Creation-Date: 2026-10-28 23:08-0500\n"
 "PO-Revision-Date: 2026-10-27 23:38-0500\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -504,7 +504,9 @@ msgstr ""
 msgid ""
 "The PIN is blocked. Unblock it on RENIEC's Ciudadano Digital platform or at "
 "a RENIEC office."
-msgstr "El PIN está bloqueado. Desbloquéalo en la plataforma Ciudadano Digital de RENIEC o en una agencia de RENIEC."
+msgstr ""
+"El PIN está bloqueado. Desbloquéalo en la plataforma Ciudadano Digital de "
+"RENIEC o en una agencia de RENIEC."
 
 #: src/berigna/core/report/messages.py:182
 msgid "The DNIe did not accept the operation because the PIN was not verified."
@@ -557,7 +559,10 @@ msgid ""
 "Your certificate has expired or is not yet valid. DNIe certificates last "
 "four years, even if the DNI is still valid; renew them on RENIEC's Ciudadano "
 "Digital platform."
-msgstr "Tu certificado venció o todavía no es válido. Los certificados del DNIe duran cuatro años, aunque el DNI siga vigente; se renuevan en la plataforma Ciudadano Digital de RENIEC."
+msgstr ""
+"Tu certificado venció o todavía no es válido. Los certificados del DNIe "
+"duran cuatro años, aunque el DNI siga vigente; se renuevan en la plataforma "
+"Ciudadano Digital de RENIEC."
 
 #: src/berigna/core/report/messages.py:202
 msgid "Your certificate has been revoked. Go to RENIEC."
@@ -1044,12 +1049,27 @@ msgstr ""
 "No se pudo comprobar en línea si tu certificado está revocado; por eso solo "
 "es posible una firma básica."
 
-#: src/berigna/ui/presentation.py:321
+#: src/berigna/ui/presentation.py:319
+#, python-brace-format
+msgid ""
+"Your signing certificate expires on {date}, in {n} day. Renew it on RENIEC's "
+"Ciudadano Digital platform to keep signing."
+msgid_plural ""
+"Your signing certificate expires on {date}, in {n} days. Renew it on "
+"RENIEC's Ciudadano Digital platform to keep signing."
+msgstr[0] ""
+"Tu certificado de firma vence el {date}, dentro de {n} día. Renuévalo en la "
+"plataforma Ciudadano Digital de RENIEC para seguir firmando."
+msgstr[1] ""
+"Tu certificado de firma vence el {date}, dentro de {n} días. Renuévalo en la "
+"plataforma Ciudadano Digital de RENIEC para seguir firmando."
+
+#: src/berigna/ui/presentation.py:332
 #, python-brace-format
 msgid "Saved as {name}, level {level}."
 msgstr "Guardado como {name}, nivel {level}."
 
-#: src/berigna/ui/presentation.py:328
+#: src/berigna/ui/presentation.py:339
 msgid ""
 "The validation data could not be added because the revocation services did "
 "not answer."
@@ -1057,28 +1077,28 @@ msgstr ""
 "No se pudieron añadir los datos de validación porque los servicios de "
 "revocación no respondieron."
 
-#: src/berigna/ui/presentation.py:331
+#: src/berigna/ui/presentation.py:342
 msgid "The document time-stamp could not be added."
 msgstr "No se pudo añadir el sello de tiempo del documento."
 
-#: src/berigna/ui/presentation.py:341
+#: src/berigna/ui/presentation.py:352
 msgid "Checking the trusted list…"
 msgstr "Comprobando la lista de confianza…"
 
-#: src/berigna/ui/presentation.py:345
+#: src/berigna/ui/presentation.py:356
 msgid "Not available"
 msgstr "No disponible"
 
-#: src/berigna/ui/presentation.py:346
+#: src/berigna/ui/presentation.py:357
 msgid "Only the root certificates included in berigna are used."
 msgstr "Solo se usan los certificados raíz incluidos en berigna."
 
-#: src/berigna/ui/presentation.py:350
+#: src/berigna/ui/presentation.py:361
 #, python-brace-format
 msgid "List {sequence}, issued on {date}"
 msgstr "Lista {sequence}, emitida el {date}"
 
-#: src/berigna/ui/presentation.py:354
+#: src/berigna/ui/presentation.py:365
 #, python-brace-format
 msgid "Valid until {date}. {n} accredited certification authority."
 msgid_plural "Valid until {date}. {n} accredited certification authorities."
@@ -1086,44 +1106,44 @@ msgstr[0] "Vigente hasta el {date}. {n} entidad de certificación acreditada."
 msgstr[1] ""
 "Vigente hasta el {date}. {n} entidades de certificación acreditadas."
 
-#: src/berigna/ui/preview.py:80
+#: src/berigna/ui/preview.py:88
 msgid "No preview"
 msgstr "Sin vista previa"
 
-#: src/berigna/ui/preview.py:81
+#: src/berigna/ui/preview.py:89
 msgid "This PDF cannot be shown, but it can still be signed."
 msgstr "Este PDF no se puede mostrar, pero se puede firmar igualmente."
 
-#: src/berigna/ui/preview.py:102
+#: src/berigna/ui/preview.py:115
 msgid "Zoom Out"
 msgstr "Alejar"
 
-#: src/berigna/ui/preview.py:103
+#: src/berigna/ui/preview.py:116
 msgid "Fit the Page"
 msgstr "Ajustar a la página"
 
-#: src/berigna/ui/preview.py:105
+#: src/berigna/ui/preview.py:118
 msgid "Zoom In"
 msgstr "Acercar"
 
-#: src/berigna/ui/preview.py:115
+#: src/berigna/ui/preview.py:128
 msgid "Previous Page"
 msgstr "Página anterior"
 
-#: src/berigna/ui/preview.py:117
+#: src/berigna/ui/preview.py:130
 msgid "Next Page"
 msgstr "Página siguiente"
 
-#: src/berigna/ui/preview.py:124 src/berigna/ui/preview.py:126
+#: src/berigna/ui/preview.py:137 src/berigna/ui/preview.py:139
 msgid "Page Number"
 msgstr "Número de página"
 
-#: src/berigna/ui/preview.py:128
+#: src/berigna/ui/preview.py:141
 #, python-brace-format
 msgid "of {total}"
 msgstr "de {total}"
 
-#: src/berigna/ui/preview.py:169
+#: src/berigna/ui/preview.py:182
 msgid "Fit"
 msgstr "Ajustar"
 
@@ -1196,7 +1216,9 @@ msgstr "Datos de la firma"
 msgid ""
 "Signature validators such as Firma Perú show them. The reasons of the list "
 "are written in the language of the signature."
-msgstr "Los muestran los validadores de firmas, como Firma Perú. Los motivos de la lista se escriben en el idioma de la firma."
+msgstr ""
+"Los muestran los validadores de firmas, como Firma Perú. Los motivos de la "
+"lista se escriben en el idioma de la firma."
 
 #: src/berigna/ui/signing.py:344
 msgid "Reason"
@@ -1232,11 +1254,9 @@ msgstr "Sin ubicación"
 
 #: src/berigna/ui/signing.py:376
 msgid ""
-"Drag on the page to place it; drag the box to move it. In a box taller than "
-"wide, the image goes above the text."
-msgstr ""
-"Arrastra sobre la página para colocarla; arrastra el recuadro para moverlo. "
-"En un recuadro más alto que ancho, la imagen va encima del texto."
+"Drag the box to move it and its corner to resize it; drag the page to scroll "
+"it. In a box taller than wide, the image goes above the text."
+msgstr "Arrastra el recuadro para moverlo y su esquina para cambiar su tamaño; arrastra la página para desplazarla. En un recuadro más alto que ancho, la imagen va encima del texto."
 
 #: src/berigna/ui/signing.py:471
 msgid "Load the image in Preferences → Visible Signature."
@@ -1380,6 +1400,13 @@ msgstr "Abrir documento"
 #: src/berigna/ui/window.py:141
 msgid "Only files on this computer can be opened."
 msgstr "Solo se pueden abrir archivos de este equipo."
+
+#~ msgid ""
+#~ "Drag on the page to place it; drag the box to move it. In a box taller "
+#~ "than wide, the image goes above the text."
+#~ msgstr ""
+#~ "Arrastra sobre la página para colocarla; arrastra el recuadro para "
+#~ "moverlo. En un recuadro más alto que ancho, la imagen va encima del texto."
 
 #~ msgid "The PIN is blocked. Go to RENIEC to unblock it."
 #~ msgstr "El PIN está bloqueado. Acude a RENIEC para desbloquearlo."

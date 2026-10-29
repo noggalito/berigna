@@ -26,6 +26,7 @@ from typing import Any
 
 from asn1crypto import algos
 from cryptography import x509
+from pyhanko.pdf_utils import generic
 from pyhanko.pdf_utils.incremental_writer import IncrementalPdfFileWriter
 from pyhanko.pdf_utils.misc import PdfError
 from pyhanko.pdf_utils.reader import PdfFileReader
@@ -138,7 +139,20 @@ def _open(pdf: bytes) -> tuple[IncrementalPdfFileWriter, set[str]]:
         existing = {name for name, _, _ in enumerate_sig_fields(writer)}
     except (PdfError, KeyError, ValueError) as exc:
         raise PdfFormatError(f"cannot read this PDF: {exc}") from exc
+    _repair_info(writer)
     return writer, existing
+
+
+def _repair_info(writer: IncrementalPdfFileWriter) -> None:
+    """Give the new revision an empty /Info when the trailer points to a missing one.
+
+    Metadata cleaners such as ExifTool delete /Info by freeing its object in an update and
+    leave the trailer entry, so it resolves to null; pyHanko then fails writing the
+    modification date, after the PIN was sent (real document, 2026-10-28)."""
+    if "/Info" in writer.trailer and not isinstance(
+        writer.trailer["/Info"], generic.DictionaryObject
+    ):
+        writer.set_info(generic.DictionaryObject())  # type: ignore[no-untyped-call]
 
 
 def page_count(pdf: bytes) -> int:
@@ -270,6 +284,10 @@ def sign_pdf_pades(
         raise TsaError(f"the TSA did not time-stamp the signature: {exc}") from exc
     except (PdfError, SigningError) as exc:
         raise PdfFormatError(f"cannot sign this PDF: {exc}") from exc
+    except (TypeError, AttributeError, KeyError) as exc:
+        # pyHanko meeting a structure it does not expect in a malformed PDF: still "this PDF
+        # cannot be signed" (ERR-304), not an unexpected error, and logged with its cause.
+        raise PdfFormatError(f"cannot sign this PDF: {type(exc).__name__}: {exc}") from exc
     data: bytes = output.getvalue()
     if stamper is None:
         return PadesResult(data, SignatureLevel.B_B)

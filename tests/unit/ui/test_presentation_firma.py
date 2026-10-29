@@ -27,7 +27,7 @@ from berigna.ui.presentation import (
 NOW = dt.datetime.now(dt.UTC)
 
 
-def _certificate(serial: str | None) -> x509.Certificate:
+def _certificate(serial: str | None, days_left: int = 400) -> x509.Certificate:
     key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
     attributes = [x509.NameAttribute(NameOID.COMMON_NAME, "PEREZ LOPEZ JUAN FIR 12345678 hard")]
     if serial is not None:
@@ -40,13 +40,15 @@ def _certificate(serial: str | None) -> x509.Certificate:
         .public_key(key.public_key())
         .serial_number(1)
         .not_valid_before(NOW - dt.timedelta(days=1))
-        .not_valid_after(NOW + dt.timedelta(days=1))
+        .not_valid_after(NOW + dt.timedelta(days=days_left, hours=1))
         .sign(key, hashes.SHA256())
     )
 
 
-def _check(serial: str | None = "PNOPE-12345678", checked: bool = True) -> SignerCheck:
-    return SignerCheck(checked, (_certificate(serial),), NOW)
+def _check(
+    serial: str | None = "PNOPE-12345678", checked: bool = True, days_left: int = 400
+) -> SignerCheck:
+    return SignerCheck(checked, (_certificate(serial, days_left),), NOW)
 
 
 DOCUMENT = DocumentInfo(Path("documentos/contrato.pdf"), DocumentKind.PDF, 10, "00", 3)
@@ -113,3 +115,23 @@ def test_signed_summary(reached: SignatureLevel, requested: SignatureLevel, endi
     assert text.startswith("Guardado como contrato-firmado.pdf, nivel ")
     assert text.endswith(ending)
     assert "technical" not in text
+
+
+@pytest.mark.parametrize(
+    ("days_left", "warned"), [(400, False), (30, False), (29, True), (1, True)]
+)
+def test_certificate_about_to_expire_is_warned_before_the_pin(days_left: int, warned: bool) -> None:
+    """Less than a month left (decision of 2026-10-28): the PIN dialog says when and where to
+    renew it."""
+    check = _check(days_left=days_left)
+    assert check.expires_soon is warned
+    warnings = pin_warnings(check, None)
+    if not warned:
+        assert warnings == ()
+        return
+    date = check.expires.astimezone().strftime("%Y-%m-%d")
+    unit = "día" if days_left == 1 else "días"
+    assert warnings == (
+        f"Tu certificado de firma vence el {date}, dentro de {days_left} {unit}. Renuévalo en "
+        "la plataforma Ciudadano Digital de RENIEC para seguir firmando.",
+    )
