@@ -16,15 +16,12 @@ result carries the level actually reached and the reason, and the caller must te
 """
 
 import asyncio
-import enum
-import hashlib
 import io
 import tempfile
 from collections.abc import Sequence
 from dataclasses import dataclass
 from typing import Any
 
-from asn1crypto import algos
 from cryptography import x509
 from pyhanko.pdf_utils import generic
 from pyhanko.pdf_utils.incremental_writer import IncrementalPdfFileWriter
@@ -37,37 +34,23 @@ from pyhanko.sign.timestamps import TimeStamper
 from pyhanko.sign.timestamps.common_utils import TimestampRequestError
 from pyhanko.sign.validation import read_certification_data
 from pyhanko.sign.validation.dss import async_add_validation_info
-from pyhanko.sign.validation.errors import SignatureValidationError
 from pyhanko.stamp import StaticStampStyle
 from pyhanko_certvalidator import ValidationContext
-from pyhanko_certvalidator.errors import CRLValidationError, OCSPValidationError, ValidationError
-from pyhanko_certvalidator.registry import SimpleCertificateStore
 
-from berigna.core.certs import to_asn1
 from berigna.core.errors import CertifiedDocumentError, PdfFormatError, TsaError
+from berigna.core.formats.common import VALIDATION_SERVICE_ERRORS, TokenCmsSigner, required
+from berigna.core.formats.common import SignatureLevel as SignatureLevel  # the PDF callers
 from berigna.core.token.base import HashAlgorithmName, TokenSigner
 
-_SIGNATURE_SIZE = 256  # RSA-2048 (DNIe v2, SPK-01)
 _FIELD_PREFIX = "FirmaBerigna"
 _TIMESTAMP_PREFIX = "SelloBerigna"
 
 # Failures of a service after the card has signed: they lower the level, they do not lose work.
-_SERVICE_ERRORS = (
+_SERVICE_ERRORS: tuple[type[Exception], ...] = (
     TimestampRequestError,
-    ValidationError,
-    CRLValidationError,
-    OCSPValidationError,
-    SignatureValidationError,
     PdfError,
-    ValueError,
+    *VALIDATION_SERVICE_ERRORS,
 )
-
-
-class SignatureLevel(enum.Enum):
-    B_B = "B-B"
-    B_T = "B-T"
-    B_LT = "B-LT"
-    B_LTA = "B-LTA"
 
 
 @dataclass(frozen=True)
@@ -96,41 +79,6 @@ class PadesOptions:
     contact: str | None = None
     digest: HashAlgorithmName = "sha256"
     visible: VisibleStamp | None = None
-
-
-def _registry(certificates: Sequence[x509.Certificate]) -> SimpleCertificateStore:
-    store = SimpleCertificateStore()  # type: ignore[no-untyped-call]
-    for certificate in certificates:
-        store.register(to_asn1(certificate))
-    return store
-
-
-class _TokenPdfSigner(signers.Signer):
-    """pyHanko signer that hashes locally and lets the token sign the digest (RNF-SEG-01)."""
-
-    def __init__(
-        self,
-        token: TokenSigner,
-        chain: Sequence[x509.Certificate],
-        digest: HashAlgorithmName,
-    ) -> None:
-        super().__init__(
-            signing_cert=to_asn1(chain[-1]),
-            cert_registry=_registry(chain[:-1]),
-            signature_mechanism=algos.SignedDigestAlgorithm({"algorithm": f"{digest}_rsa"}),
-            embed_roots=False,
-        )
-        self._token = token
-        self._digest: HashAlgorithmName = digest
-
-    async def async_sign_raw(
-        self, data: bytes, digest_algorithm: str, dry_run: bool = False
-    ) -> bytes:
-        if dry_run:
-            return bytes(_SIGNATURE_SIZE)
-        if digest_algorithm != self._digest:
-            raise ValueError(f"unexpected digest algorithm {digest_algorithm!r}")
-        return self._token.sign_digest(hashlib.new(digest_algorithm, data).digest(), self._digest)
 
 
 def _open(pdf: bytes) -> tuple[IncrementalPdfFileWriter, set[str]]:
@@ -212,12 +160,6 @@ def no_changes_allowed(reader: PdfFileReader) -> bool:
     return info is not None and info.permission is MDPPerm.NO_CHANGES
 
 
-def _required[T](value: T | None, level: SignatureLevel, what: str) -> T:
-    if value is None:
-        raise ValueError(f"{level.value} needs {what}")
-    return value
-
-
 def _next_name(prefix: str, existing: set[str]) -> str:
     return next(
         f"{prefix}{n}" for n in range(1, len(existing) + 2) if f"{prefix}{n}" not in existing
@@ -262,10 +204,10 @@ def sign_pdf_pades(
     :class:`~berigna.core.errors.TsaError` and nothing is returned.
     """
     stamper = (
-        _required(timestamper, level, "a time-stamper") if level is not SignatureLevel.B_B else None
+        required(timestamper, level, "a time-stamper") if level is not SignatureLevel.B_B else None
     )
     long_term = level in (SignatureLevel.B_LT, SignatureLevel.B_LTA)
-    context = _required(validation_context, level, "a validation context") if long_term else None
+    context = required(validation_context, level, "a validation context") if long_term else None
 
     opts = options or PadesOptions()
     writer, existing = _open(pdf)
@@ -278,7 +220,7 @@ def sign_pdf_pades(
         location=opts.location,
         contact_info=opts.contact,
     )
-    signer = _TokenPdfSigner(token, chain, opts.digest)
+    signer = TokenCmsSigner(token, chain, opts.digest)
     try:
         output = _sign(writer, metadata, signer, stamper, opts.visible, field_name)
     except TimestampRequestError as exc:
