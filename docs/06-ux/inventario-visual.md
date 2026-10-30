@@ -3,9 +3,9 @@
 | Campo | Valor |
 |---|---|
 | Documento | BRG-UX-002 |
-| Versión | 0.2.0 |
+| Versión | 0.3.0 |
 | Estado | Borrador |
-| Fecha | 2026-10-28 |
+| Fecha | 2026-10-30 |
 | Responsable | noggalito |
 
 Iconos, ilustraciones y demás piezas gráficas que necesita berigna, para adelantar su diseño. Complementa el diseño de interfaz (BRG-UX-001) y la identidad visual (`data/brand/`).
@@ -18,17 +18,17 @@ Iconos, ilustraciones y demás piezas gráficas que necesita berigna, para adela
 - Las capturas de pantalla, los ejemplos y las ilustraciones nunca muestran datos reales: se usa el firmante ficticio de las pruebas (por ejemplo, "QUISPE MAMANI ROSA FIR ****4321 hard"), nunca un DNI real.
 - Prueba de aceptación: `tests/ui/test_application.py::test_every_icon_exists_in_the_theme` comprueba que todo icono usado existe. Al añadir un icono propio se añade a esa lista.
 
-## 2. Icono de la aplicación (hecho el 2026-10-28)
+## 2. Icono de la aplicación (rehacer el 2026-10-30 con la identidad nueva)
 
-Se hizo a partir del isotipo de la marca, sin el nombre (decisión del titular), sobre un disco crema para que la onda conserve el contraste en paneles oscuros. Está en `data/icons/`; se instala en `hicolor` y va también en los recursos, de modo que funciona desde el árbol de trabajo.
+Se hace desde el isotipo de la marca, sin el nombre: la variante `color` (con relieve) para el icono principal, la `plano` para los tamaños pequeños (el manual ordena usar la plana por debajo del tamaño mínimo del relieve) y la `negro` para el simbólico. Está en `data/icons/`; se instala en `hicolor` y va también en los recursos, de modo que funciona desde el árbol de trabajo.
 
 | Archivo | Tamaño | Origen | Uso |
 |---|---|---|---|
-| `com.noggalito.Berigna.svg` | Escalable (lienzo de 128×128 px) | Símbolo completo (`berigna-simbolo-color.svg`) | Lanzador, "Acerca de", GNOME Software, Flathub, notificaciones |
-| `com.noggalito.Berigna-small.svg` | Se instala para 16, 24 y 32 px | Símbolo reducido (`berigna-reducido-color.svg`) | Listas y tamaños pequeños, donde las colas del símbolo completo no se leen |
-| `com.noggalito.Berigna-symbolic.svg` | 16×16 px | Símbolo reducido en negro | Barra superior de GNOME, menú contextual de Nautilus (RF-070) |
+| `com.noggalito.Berigna.svg` | Escalable (lienzo de 128×128 px) | Isotipo color (`berigna-isotipo-color.svg`) | Lanzador, "Acerca de", GNOME Software, Flathub, notificaciones |
+| `com.noggalito.Berigna-small.svg` | Se instala para 16, 24 y 32 px | Isotipo plano (`berigna-isotipo-plano.svg`) | Listas y tamaños pequeños |
+| `com.noggalito.Berigna-symbolic.svg` | 16×16 px | Isotipo negro (`berigna-isotipo-negro.svg`) | Barra superior de GNOME, menú contextual de Nautilus (RF-070) |
 
-Pendiente en la fuente de la marca: el símbolo deja una separación mínima entre el círculo y las colas doradas, que en fondo oscuro se ve como una línea muy fina en la unión de la onda con la cola izquierda. Conviene cerrarla en `berigna-simbolo-*.svg`; el icono se regenera a partir de ahí.
+Observación: a 24 px la onda y la cola rosa antiguo todavía se leen; por debajo (16 px) las colas se pierden. Si se las quiere más legibles, conviene pedir a la fuente de la marca un "isotipo reducido" (globo con la onda, sin colas finas) para el `-small`; no existe en el manual actual.
 
 Opcional, más adelante: una variante `com.noggalito.Berigna.Devel` con la franja de las aplicaciones de desarrollo de GNOME.
 
@@ -104,7 +104,7 @@ Es la pieza gráfica que más ven terceros, porque queda impresa en los document
 
 ## 7. Informe PDF de verificación
 
-- Cabecera con el logotipo horizontal (`berigna-horizontal-color.svg`). ReportLab no dibuja SVG sin otra biblioteca, así que hace falta una exportación PNG a 300 ppp, o convertir el logotipo a trazos que ReportLab dibuje.
+- Cabecera con el isologo horizontal (`berigna-isologo-horizontal-color.svg`). ReportLab no dibuja SVG sin otra biblioteca, así que hace falta una exportación PNG a 300 ppp, o convertir el isologo a trazos que ReportLab dibuje.
 - Colores de los resultados: hoy son los de la paleta de GNOME (verde `#26a269`, rojo `#c01c28`, naranja `#c64600`). Hay que decidir si se mantienen o se armonizan con la marca, sin perder la lectura de "válido / no válido / indeterminado" en blanco y negro.
 
 ## 8. Color de acento de la interfaz (decidido)

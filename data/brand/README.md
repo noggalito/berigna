@@ -1,19 +1,30 @@
 # Marca de berigna
 
-Fuentes vectoriales (SVG) de la identidad de berigna. El texto está convertido a trazos: no dependen de fuentes instaladas.
+Fuentes vectoriales (SVG) de la identidad de berigna. El texto está convertido
+a trazos: no dependen de fuentes instaladas.
 
 **Licencia:** GPL-3.0-or-later, la misma que el resto de berigna (© 2026 noggalito). Ver [`LICENSE`](LICENSE).
 
-| Versión | Archivos | Uso |
+| Pieza | Archivos | Uso |
 |---|---|---|
-| Vertical (principal) | `berigna-vertical-*.svg` | Siempre que el espacio lo permita |
-| Horizontal | `berigna-horizontal-*.svg` | Cabeceras y espacios apaisados |
-| Símbolo | `berigna-simbolo-*.svg` | Base del icono de la aplicación |
-| Símbolo reducido | `berigna-reducido-*.svg` | Tamaños pequeños |
-| Logotipo | `berigna-logotipo-*.svg` | Solo el nombre |
+| Isotipo (globo con la onda) | `berigna-isotipo-*.svg` | Base del icono de la aplicación, avatares y *favicons* |
+| Isologo vertical | `berigna-isologo-vertical-*.svg` | Piezas de formato entero: portada del sitio, la ficha técnica |
+| Isologo horizontal | `berigna-isologo-horizontal-*.svg` | Cabeceras de informes y espacios apaisados |
+| Logotipo (solo el nombre) | `berigna-logotipo-*.svg` | Piezas tipo texto |
 
-Variantes de color: `color` (preferente, sobre crema o blanco), `burdeos`, `negro`, `blanco` y `crema-sobre-burdeos`.
+Variantes: `color` (el relieve con degradado, `isotipo`/`isologos`), `plano`
+(obligatoria por debajo del tamaño mínimo del relieve: impresión a una o dos
+tintas, grabado, bordado, tamaños pequeños), `burdeos`, `negro`, `negativo`
+(siluetas claras sobre fondo burdeos) y `blanco`.
 
-Paleta: burdeos `#6B2232`, dorado `#C2A878`, crema `#F5ECE3`, carbón `#231C1E`. El nombre se escribe siempre en minúsculas: **berigna**.
+Paleta: burdeos `#6B2232`, rosa antiguo `#C4868C`, carbón `#2B1E20`, niebla
+`#F5EAEB`. El nombre se escribe siempre en minúsculas: **berigna**.
 
-Las exportaciones PNG no se versionan: se generan desde estos SVG cuando hacen falta.
+Icono de la aplicación: `data/icons/com.noggalito.Berigna.svg` se hace desde el
+isotipo `color`; `-small`, desde la variante `plano` (tamaños 16–32 px), y
+`-symbolic`, desde la variante `negro`, tal como indica el manual de marca.
+
+Las exportaciones PNG no se versionan: se generan desde estos SVG cuando
+hacen falta. El manual de marca y los archivos `.ai` editables viven en la
+documentación interna, y las tipografías del logotipo (Arvo y Source Sans 3)
+bajo la SIL Open Font License.

@@ -39,7 +39,7 @@ from berigna.core.report.explanations import format_time, identity_number, maske
 
 FONTS = Path(__file__).parent / "fonts"
 VERIFY_URL = "https://berigna.noggalito.com/verificar"
-INK = HexColor("#231C1E")  # carbón: neutral, prints well (BRG-UX-002 §6)
+INK = HexColor("#2B1E20")  # carbón: neutral, prints well (BRG-UX-002 §6)
 ACCENT = HexColor("#6B2232")  # burdeos, only for the thin rule
 
 _TYPEFACES = {

@@ -21,7 +21,7 @@ install_data(
   'icons' / application_id + '.svg',
   install_dir: get_option('datadir') / 'icons' / 'hicolor' / 'scalable' / 'apps',
 )
-# Small sizes: the reduced symbol, which reads better than the full one (data/brand/README.md).
+# Small sizes: the plano variant, which reads better below the relief's minimum size (data/brand/README.md).
 foreach size : ['16x16', '24x24', '32x32']
   install_data(
     'icons' / application_id + '-small.svg',

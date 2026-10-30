@@ -3,9 +3,9 @@
 | Campo | Valor |
 |---|---|
 | Documento | BRG-UX-001 |
-| Versión | 0.4.0 |
+| Versión | 0.4.1 |
 | Estado | Borrador (bocetos de baja fidelidad) |
-| Fecha | 2026-10-29 |
+| Fecha | 2026-10-30 |
 | Responsable | noggalito |
 
 ## 1. Principios de UX
@@ -21,12 +21,12 @@
 
 ## 1.1 Identidad visual
 
-La identidad de berigna está en [`data/brand/`](../../data/brand/README.md), bajo GPL-3.0-or-later como el resto del proyecto (© 2026 noggalito). Por eso el icono puede acompañar al paquete en Debian.
+La identidad de berigna está en [`data/brand/`](../../data/brand/README.md) (rehacha el 2026-10-30 con el kit `isotipo`/`isologo`/`logotipo` y la paleta burdeos–rosa antiguo–carbón–niebla), bajo GPL-3.0-or-later como el resto del proyecto (© 2026 noggalito). Por eso el icono puede acompañar al paquete en Debian.
 
-- Paleta: burdeos `#6B2232`, dorado `#C2A878`, crema `#F5ECE3`, carbón `#231C1E`. Contraste del burdeos sobre crema: 9,5:1.
+- Paleta: burdeos `#6B2232`, rosa antiguo `#C4868C`, carbón `#2B1E20`, niebla `#F5EAEB`. Contraste del burdeos sobre niebla: 9,4:1, y del carbón sobre niebla: 13,6:1.
 - El nombre se escribe siempre en minúsculas: berigna.
 - La interfaz usa la tipografía y los colores del sistema (HIG de GNOME, libadwaita), con el color de acento que el usuario eligió en GNOME (decisión del 2026-10-28): la marca no fuerza el burdeos en la interfaz, y vive en el icono, el informe, la web y la firma visible. Las tipografías de la marca (Arvo y Source Sans 3) se reservan para el logotipo y las piezas de comunicación, no para la interfaz.
-- El icono de la aplicación (`com.noggalito.Berigna`, a color, reducido para tamaños pequeños y simbólico) se hizo el 2026-10-28 a partir del isotipo, sin el nombre (BRG-UX-002 §2).
+- El icono de la aplicación (`com.noggalito.Berigna`, a color con relieve, la variante plano para tamaños pequeños y la negra para el simbólico) se rehíce el 2026-10-30 a partir del isotipo nuevo, sin el nombre (BRG-UX-002 §2).
 
 ## 2. Mapa de navegación
 
