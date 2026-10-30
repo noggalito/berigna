@@ -104,11 +104,11 @@ def test_unreadable_bytes_are_rejected(pki: Pki) -> None:
 def test_signer_refuses_a_digest_other_than_the_agreed_one(pki: Pki) -> None:
     import asyncio
 
-    from berigna.core.formats.pades import _TokenPdfSigner
+    from berigna.core.formats.common import TokenCmsSigner
 
     card, leaf = make_card(pki, "FIRMANTE")
     with DnieV2Token(card) as token:
-        signer = _TokenPdfSigner(token, [pki.root, pki.ca, leaf], "sha256")
+        signer = TokenCmsSigner(token, [pki.root, pki.ca, leaf], "sha256")
         with pytest.raises(ValueError, match="unexpected digest"):
             asyncio.run(signer.async_sign_raw(b"datos", "sha512"))
     assert INS_PSO not in card.instructions()
