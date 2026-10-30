@@ -3,9 +3,9 @@
 | Campo | Valor |
 |---|---|
 | Documento | BRG-ARQ-002 |
-| Versión | 0.1.1 |
+| Versión | 0.2.0 |
 | Estado | Borrador |
-| Fecha | 2026-10-28 |
+| Fecha | 2026-10-30 |
 | Responsable | noggalito |
 
 ## 1. Firma PAdES (nivel seleccionable)
@@ -63,6 +63,18 @@ Notas:
 - Si la TSA falla en el paso del sello, no queda ningún archivo escrito (todo ocurre en memoria o en un temporal). Se ofrece reintentar o bajar a B-B (CU-01, 7a).
 - En B-LT, los datos de validación incluyen también los de la cadena del certificado de la TSA.
 - La operación en el chip es una sola por firma. El resto del trabajo ocurre fuera del chip.
+- Si un servicio falla después de que el chip ha firmado (datos de validación, ruta de la TSA que no se puede construir, sello de documento), la firma no se pierde: se escribe con el nivel alcanzado y `SignResult.level_note` dice por qué es inferior al pedido.
+
+### 1.1 Firma CAdES de cualquier archivo (RF-020 a RF-022)
+
+Mismo orden de pasos que PAdES (`core.signing.sign_cades_file`), con estas diferencias:
+
+- El archivo puede ser de cualquier tipo y nunca se modifica. No hay comprobación de PDF firmable.
+- La salida es `<archivo>.p7s` (separada: solo la firma) o `<archivo>.p7m` (envuelta: la firma y una copia del archivo). Si el nombre existe, el número va antes de la extensión del archivo (`acta-2.xml.p7m`), para que al quitar `.p7m` o `.p7s` el nombre conserve su tipo (RF-045).
+- B-T: sello de tiempo de la firma (`signature-time-stamp`).
+- B-LT: los certificados de las rutas del firmante y de la TSA (sin las anclas) van en `SignedData.certificates`; las CRL y las respuestas OCSP, sin repetir, en `SignedData.crls`, las OCSP como `id-ri-ocsp-response` (RFC 5940).
+- B-LTA: `archive-time-stamp-v3` con su `ats-hash-index-v3` (ETSI EN 319 122-1 §5.5.3). La huella del contenido sale del atributo firmado `message-digest`, sin volver a calcularla.
+- Validación externa: BRG-CAL-006.
 
 ## 2. Firma por lotes
 
