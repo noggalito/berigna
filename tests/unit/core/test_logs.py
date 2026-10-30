@@ -8,19 +8,28 @@ from pathlib import Path
 
 import pytest
 
-from berigna.core.logs import BACKUPS, MAX_BYTES, log_directory, setup_logging
+from berigna.core.logs import (
+    BACKUPS,
+    LIBRARY_LOGGERS,
+    MAX_BYTES,
+    log_directory,
+    setup_logging,
+)
 
 
 @pytest.fixture
 def logger() -> Iterator[logging.Logger]:
-    logger = logging.getLogger("berigna")
-    handlers, level = list(logger.handlers), logger.level
-    yield logger
-    for handler in logger.handlers:
-        if handler not in handlers:
-            logger.removeHandler(handler)
-            handler.close()
-    logger.setLevel(level)
+    """setup_logging() changes process-wide loggers: put them back as they were."""
+    loggers = [logging.getLogger(name) for name in ("berigna", *LIBRARY_LOGGERS)]
+    saved = [(list(lg.handlers), lg.level, lg.propagate) for lg in loggers]
+    yield loggers[0]
+    for lg, (handlers, level, propagate) in zip(loggers, saved, strict=True):
+        for handler in list(lg.handlers):
+            if handler not in handlers:
+                lg.removeHandler(handler)
+                handler.close()
+        lg.setLevel(level)
+        lg.propagate = propagate
 
 
 def test_log_directory_follows_xdg(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
@@ -60,3 +69,23 @@ def test_rotation_and_debug(
     assert (handler[0].maxBytes, handler[0].backupCount) == (MAX_BYTES, BACKUPS)  # type: ignore[attr-defined]
     logging.getLogger("berigna.x").debug("visible en DEBUG")
     assert "visible en DEBUG" in path.read_text(encoding="utf-8")
+
+
+def test_library_tracebacks_go_to_the_log_not_the_terminal(
+    logger: logging.Logger, tmp_path: Path, capfd: pytest.CaptureFixture[str]
+) -> None:
+    """issue of 2026-10-30: pyhanko_certvalidator printed "Failed to build path" and its
+    traceback on the terminal, four times per verification."""
+    path = setup_logging(tmp_path / "logs", debug=False)
+    try:
+        raise LookupError("no issuer for FIR 87654321 hard")
+    except LookupError:
+        logging.getLogger("pyhanko_certvalidator.context").warning(
+            "Failed to build path", exc_info=True
+        )
+    logging.getLogger("pyhanko.sign.validation").info("No document timestamps after signature")
+    assert capfd.readouterr().err == ""
+    text = path.read_text(encoding="utf-8")
+    assert "WARNING pyhanko_certvalidator.context" in text
+    assert "LookupError: no issuer for FIR ****4321 hard" in text  # masked like the rest
+    assert "No document timestamps" not in text  # below WARNING: not even in the log

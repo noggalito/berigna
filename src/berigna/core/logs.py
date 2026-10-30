@@ -19,6 +19,9 @@ from berigna.core.report.explanations import mask_numbers
 MAX_BYTES = 1024 * 1024
 BACKUPS = 4  # five files in all
 LOG_NAME = "berigna.log"
+# pyHanko and its validator log a traceback each time a path cannot be built, a case that
+# the verification result already explains: they go to the technical log, not the terminal.
+LIBRARY_LOGGERS = ("pyhanko", "pyhanko_certvalidator")
 
 
 def log_directory() -> Path:
@@ -34,7 +37,8 @@ class MaskingFormatter(logging.Formatter):
 
 
 def setup_logging(directory: Path | None = None, *, debug: bool | None = None) -> Path:
-    """Send the logs of berigna to the rotating file in ``directory``; return its path."""
+    """Send the logs of berigna, and the warnings of pyHanko and its validator, to the rotating
+    file in ``directory``; return its path."""
     directory = directory or log_directory()
     directory.mkdir(parents=True, exist_ok=True, mode=0o700)
     path = directory / LOG_NAME
@@ -44,10 +48,15 @@ def setup_logging(directory: Path | None = None, *, debug: bool | None = None) -
     )
     if debug is None:
         debug = os.environ.get("BERIGNA_DEBUG") == "1"
-    logger = logging.getLogger("berigna")
-    for old in [h for h in logger.handlers if isinstance(h, RotatingFileHandler)]:
-        logger.removeHandler(old)
-        old.close()
-    logger.addHandler(handler)
-    logger.setLevel(logging.DEBUG if debug else logging.INFO)
+    for name, level in (
+        ("berigna", logging.DEBUG if debug else logging.INFO),
+        *((library, logging.DEBUG if debug else logging.WARNING) for library in LIBRARY_LOGGERS),
+    ):
+        logger = logging.getLogger(name)
+        for old in [h for h in logger.handlers if isinstance(h, RotatingFileHandler)]:
+            logger.removeHandler(old)
+            old.close()
+        logger.addHandler(handler)
+        logger.setLevel(level)
+        logger.propagate = name == "berigna"  # the libraries: never to the terminal
     return path

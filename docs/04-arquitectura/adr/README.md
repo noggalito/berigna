@@ -35,6 +35,7 @@ Un ADR aceptado no se edita. Si la decisión cambia, se escribe un ADR nuevo que
 | [ADR-0019](ADR-0019-identificador-com-noggalito-berigna.md) | Identificador de la aplicación `com.noggalito.Berigna` | Aceptado |
 | [ADR-0020](ADR-0020-debian-oficial-en-la-v1.md) | berigna en el archivo oficial de Debian desde la v1.0 | Aceptado |
 | [ADR-0021](ADR-0021-permiso-adicional-tiendas.md) | Permiso adicional de la GPL para distribuir por tiendas de aplicaciones | Aceptado |
+| [ADR-0022](ADR-0022-toda-ca-de-la-tsl-como-ancla-de-confianza.md) | Toda CA acreditada en la TSL como ancla de confianza | Aceptado |
 
 ## Fe de erratas
 

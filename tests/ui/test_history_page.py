@@ -147,6 +147,18 @@ def test_trusted_certificates(pki: Pki, tmp_path: Path) -> None:
     )
 
 
+def test_a_listed_intermediate_is_shown_as_what_it_is(pki: Pki) -> None:
+    """ADR-0022: an intermediate listed in the TSL is an anchor, but it is still an
+    intermediate certificate, and Preferences says so."""
+    from berigna.core.trust import TrustedCertificate, TrustStore
+
+    store = TrustStore([TrustedCertificate(pki.ca, "root", "TSL")])
+    [(title, [(name, details)])] = trust_store_view(store)
+    assert title == "De la lista de confianza de INDECOPI"
+    assert name == "TEST ECEP CA Class 2"
+    assert details.startswith("Intermedio · vigente hasta el ")
+
+
 def test_preferences_show_history_and_store(app: BerignaApplication) -> None:
     def script(app: BerignaApplication) -> Generator[None, None, None]:
         app.activate()

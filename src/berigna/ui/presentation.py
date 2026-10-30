@@ -564,7 +564,9 @@ def trust_store_view(store: TrustStore) -> list[tuple[str, list[tuple[str, str]]
             if _trust_source(entry) != key:
                 continue
             certificate = entry.certificate
-            role = _("Root") if entry.role == "root" else _("Intermediate")
+            # What the certificate is, not its role: a CA listed in the TSL is an anchor even
+            # when it is an intermediate (ADR-0022).
+            role = _("Root") if certificate.subject == certificate.issuer else _("Intermediate")
             until = certificate.not_valid_after_utc.astimezone().strftime("%Y-%m-%d")
             fingerprint = " ".join(
                 entry.sha256.upper()[i : i + 4] for i in range(0, len(entry.sha256), 4)

@@ -27,7 +27,9 @@ From the services in an accepted status, the CA certificates become trust anchor
 import base64
 import datetime as dt
 import hashlib
-from collections.abc import Sequence
+import warnings
+from collections.abc import Iterator, Sequence
+from contextlib import contextmanager
 from dataclasses import dataclass
 from importlib.resources import files
 from typing import Any
@@ -98,20 +100,19 @@ class TrustedList:
         for service in self.services:
             if service.accepted:
                 for certificate in service.certificates:
-                    if _ca_flags(certificate)[0]:
+                    if _is_ca(certificate):
                         seen.setdefault(_fingerprint(certificate), certificate)
         return list(seen.values())
 
 
-def _ca_flags(certificate: x509.Certificate) -> tuple[bool, bool]:
-    """(is a CA, is self-issued), read with asn1crypto.
+def _is_ca(certificate: x509.Certificate) -> bool:
+    """Whether ``certificate`` is a CA, read with asn1crypto.
 
     Some accredited roots in the 2026 list (GSE, Certicámara) carry extensions that cryptography
     refuses to parse (a UserNotice with an invalid string type); asn1crypto, which the signature
     validator also uses, reads them.
     """
-    parsed = to_asn1(certificate)
-    return bool(parsed.ca), bool(parsed.self_issued)
+    return bool(to_asn1(certificate).ca)
 
 
 def tsl_root() -> x509.Certificate:
@@ -150,6 +151,16 @@ def _signer_certificate(signature: Any) -> x509.Certificate:
         raise TslError(f"unreadable signer certificate: {exc}") from exc
 
 
+@contextmanager
+def _root_names() -> Iterator[None]:
+    """Read the names of the INDECOPI root without the warning that ``cryptography`` gives for
+    its ``C=PERU`` (a country code must have two letters; ADR-0014): it is printed on the
+    terminal and says nothing to the user."""
+    with warnings.catch_warnings():
+        warnings.filterwarnings("ignore", message="Attribute's length", category=UserWarning)
+        yield
+
+
 def _check_signer(
     signer: x509.Certificate,
     root: x509.Certificate,
@@ -162,7 +173,9 @@ def _check_signer(
         raise TslError("the trusted list is not signed under INDECOPI AAC RAIZ") from exc
     for certificate in (root, signer):
         if not certificate.not_valid_before_utc <= moment <= certificate.not_valid_after_utc:
-            raise TslError(f"{certificate.subject.rfc4514_string()} is not valid at {moment}")
+            with _root_names():
+                name = certificate.subject.rfc4514_string()
+            raise TslError(f"{name} is not valid at {moment}")
     try:
         usage = signer.extensions.get_extension_for_class(x509.KeyUsage).value
     except x509.ExtensionNotFound as exc:
@@ -183,7 +196,9 @@ def _check_not_revoked(
             crl = x509.load_pem_x509_crl(data)
         except ValueError as exc:
             raise TslError(f"unreadable CRL of the trusted list signer: {exc}") from exc
-    if crl.issuer != root.subject or not crl.is_signature_valid(root.public_key()):  # type: ignore[arg-type]
+    with _root_names():
+        issued_by_root = crl.issuer == root.subject
+    if not issued_by_root or not crl.is_signature_valid(root.public_key()):  # type: ignore[arg-type]
         raise TslError("the CRL of the trusted list signer is not signed by its root")
     if crl.next_update_utc is not None and crl.next_update_utc < moment:
         raise TslError("the CRL of the trusted list signer is out of date")
@@ -309,10 +324,13 @@ def load_tsl(
 
 
 def extend_store(store: TrustStore, trusted_list: TrustedList) -> TrustStore:
-    """``store`` plus the CA certificates of ``trusted_list`` it does not have yet."""
+    """``store`` plus the CA certificates of ``trusted_list`` it does not have yet, all as
+    trust anchors (ADR-0022): in a trusted list (ETSI TS 119 612) the certificate of a service
+    is the anchor of that service, also when it is not self-issued and its own root is not
+    published, as the TSA of Camerfirma (issued by "Chambers of Commerce Root - 2008")."""
     known = {entry.sha256 for entry in store.entries}
     extra = [
-        TrustedCertificate(cert, "root" if _ca_flags(cert)[1] else "intermediate", "TSL")
+        TrustedCertificate(cert, "root", "TSL")
         for cert in trusted_list.ca_certificates()
         if _fingerprint(cert) not in known
     ]

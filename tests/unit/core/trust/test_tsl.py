@@ -123,7 +123,7 @@ def test_accepted_ca_certificates_extend_the_store(pki: Pki, tsl_pki: TslPki) ->
     store = extend_store(base, trusted)
     assert [(e.role, e.hierarchy) for e in store.entries] == [
         ("root", "IOFE"),  # already known: not added twice
-        ("intermediate", "TSL"),
+        ("root", "TSL"),  # a listed CA is an anchor, self-issued or not (ADR-0022)
     ]
 
 
@@ -162,6 +162,49 @@ def test_signature_from_a_trusted_list_root_verifies_a_document(pki: Pki, tsl_pk
     assert verify_pdf(signed, store, online=False).signatures[0].indication is (
         Indication.TOTAL_PASSED
     )
+
+
+def test_a_listed_intermediate_anchors_a_hierarchy_whose_root_is_not_published(
+    pki: Pki, tsl_pki: TslPki
+) -> None:
+    """ADR-0022, the real case of 2026-10-30: the TSA of Soft & Net is issued by "Camerfirma TSA
+    II - 2014", listed in the TSL, whose root "Chambers of Commerce Root - 2008" is published
+    neither in the TSL nor in berigna. Here the CA issues both the signer and the TSA, and only
+    the CA (not its root) is listed: signature and time-stamp must be TOTAL-PASSED."""
+    from berigna.core.formats.pades import SignatureLevel, sign_pdf_pades
+    from berigna.core.token.dnie_v2 import DnieV2Token
+    from berigna.core.token.pin import Pin
+    from berigna.core.validation import Indication, signing_validation_context, verify_pdf
+    from support.cards import make_card
+    from support.pki import minimal_pdf
+    from support.tsa import make_timestamper
+
+    card, leaf = make_card(pki, "FIRMANTE CAMERFIRMA")
+    stamper, tsa = make_timestamper(pki)
+    context = signing_validation_context(
+        pki.store, online=False, ocsp_responses=[pki.ocsp(leaf), pki.ocsp(tsa)], crls=[pki.arl()]
+    )
+    with DnieV2Token(card) as token:
+        token.verify_pin(Pin("123456"))
+        signed = sign_pdf_pades(
+            minimal_pdf(),
+            token,
+            (pki.root, pki.ca, leaf),
+            level=SignatureLevel.B_T,
+            timestamper=stamper,
+            validation_context=context,
+        ).data
+    trusted = load_tsl(
+        build_tsl(tsl_pki, TslContent(services=[Service(pki.ca)])), root=tsl_pki.root
+    )
+    store = extend_store(TrustStore([]), trusted)
+    assert store.roots == [pki.ca]  # the listed intermediate, not its unpublished root
+    [report] = verify_pdf(
+        signed, store, online=False, ocsp_responses=[pki.ocsp(leaf), pki.ocsp(tsa)]
+    ).signatures
+    assert report.indication is Indication.TOTAL_PASSED
+    assert report.timestamp is not None
+    assert report.timestamp.indication is Indication.TOTAL_PASSED
 
 
 # -- synthetic lists: what is refused ---------------------------------------------------------
