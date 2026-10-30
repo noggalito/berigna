@@ -9,10 +9,12 @@ Two rules apply everywhere berigna goes online for OCSP or CRLs:
 - a failed request is retried once after a short pause. RENIEC's services have failed the
   first request after a while without use and answered the next one in ~1 s (R-17).
 
-CRLs are downloaded here and not with pyhanko-certvalidator 0.26.3's client, which has two
+CRLs are downloaded here instead of with pyhanko-certvalidator 0.26.3 (Debian 13), which has two
 faults that turned a slow mirror into a failed check (2026-10-27): it raises if any distribution
 point fails even when another one answered (``crl_job_results_as_completed`` never records a
-success), and it caches failed downloads, so a retry repeats the failure. RENIEC publishes each
+success in 0.26.3 — fixed upstream since 0.28.0, cf. pyHanko issue #903), and it caches failed
+downloads, so a retry repeats the failure (still the case upstream as of issue #903). RENIEC
+publishes each
 CA's CRL on two mirrors; ``crl2.reniec.gob.pe`` takes ~15 s to answer the first request after a
 while without use. Here every distribution point is tried at once and the first CRL that
 arrives is used (mirrors publish the same CRL). Each download runs in a daemon thread of its
