@@ -67,8 +67,13 @@ Interfaz (Fase 3):
 - Firma por lotes de PDF (CU-04, RF-040 a RF-043; `core.batch`): un solo PIN para todos los documentos, lista que se confirma antes del PIN, un error en un archivo no detiene los demás, cancelación entre archivos, nombres de salida que no chocan e informe CSV (`core.report.batch_report`). Se abre con "Firmar varios documentos…" o abriendo o arrastrando varios archivos o una carpeta. ERR-309 para los archivos que quedan sin firmar al cancelar.
 - Entrada de escritorio `com.noggalito.Berigna.desktop` (nombre, descripción y palabras clave traducidas; abre PDF), validada con `desktop-file-validate` en `meson test`. `scripts/escritorio.sh` la instala con los iconos en `~/.local/share` para el árbol de desarrollo, de modo que GNOME muestra el icono de berigna en el Dock.
 
+Firma CAdES (Fase 4):
+
+- Firma CAdES de cualquier archivo (RF-020 a RF-022; `berigna.core.formats.cades`, `berigna.core.signing.sign_cades_file`), separada (`.p7s`) o envuelta (`.p7m`), de B-B a B-LTA. B-LT embebe los certificados de las rutas del firmante y de la TSA, las CRL y las respuestas OCSP (`id-ri-ocsp-response`, RFC 5940), sin repetir. B-LTA añade un `archive-time-stamp-v3` con `ats-hash-index-v3` (ETSI EN 319 122-1). Mismo orden de seguridad que PAdES: archivo sin cambios, certificado y nivel comprobados antes del PIN, escritura atómica que nunca sobrescribe. Las ocho combinaciones son reconocidas por DSS 6.2, con TOTAL_PASSED en B-LT y B-LTA (`docs/07-calidad/validacion-externa-fase4.md`, `tests/interop/matriz_cades.py`).
+
 ### Cambiado
 
+- Lo que comparten PAdES y CAdES pasa a `berigna.core.formats.common` (niveles, firmante que delega en la tarjeta); los pasos de seguridad de `core.signing` son uno solo para los dos formatos (`prepare`), y `check_source` ya no comprueba el PDF, lo hacen quienes firman PDF.
 - Los CSV del historial y del lote se proponen con la fecha y la hora delante: "2026-10-29_00h55_historial-berigna.csv".
 - Antes de firmar, el diálogo del PIN avisa si el certificado de firma vence en menos de un mes, con la fecha y dónde renovarlo (Ciudadano Digital).
 - Vista previa: arrastrar la página la desplaza (con zoom); el recuadro de la firma se mueve arrastrándolo y cambia de tamaño con el tirador de su esquina inferior derecha, en lugar de dibujarse de nuevo.
@@ -92,6 +97,7 @@ Interfaz (Fase 3):
 
 ### Corregido
 
+- Si la ruta de certificación de la TSA no se podía construir al añadir los datos de B-LT (`PathBuildingError` de pyhanko-certvalidator, que no es un `ValidationError`), la excepción escapaba después de que la tarjeta hubiera firmado y la firma autorizada con el PIN se perdía. Ahora es un fallo de servicio más: se escribe la firma con el nivel alcanzado y el motivo, en PAdES y en CAdES.
 - Con la interfaz en quechua, el resultado de la verificación ofrece "Leer en español": muestra el resumen, la explicación y los detalles técnicos de cada firma y sello en español, sin cambiar de idioma. El diálogo del PIN usa el mismo botón, que se distingue del "Ver en español" del aviso, el que cambia el idioma (BRG-UX-001 §4.2).
 - Un PDF con una firma cuyo CMS rompe pyHanko o asn1crypto después del resumen (datos de revocación de Adobe, sello de la firma o diagnóstico de la cadena) daba "error inesperado"; ahora es TOTAL-FAILED/FORMAT_FAILURE, como el resto de firmas malformadas. Lo mismo con los sellos de documento.
 - Cambiar el idioma con el diálogo del PIN abierto destruía la ventana y podía dejar el hilo de firma esperando para siempre con la tarjeta reservada. Ahora el diálogo se cancela antes (no se envía el PIN).

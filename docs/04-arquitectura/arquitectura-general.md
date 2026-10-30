@@ -3,9 +3,9 @@
 | Campo | Valor |
 |---|---|
 | Documento | BRG-ARQ-001 |
-| Versión | 0.3.0 |
+| Versión | 0.4.0 |
 | Estado | Borrador |
-| Fecha | 2026-10-29 |
+| Fecha | 2026-10-30 |
 | Responsable | noggalito |
 
 ## 1. Principios
@@ -96,7 +96,8 @@ flowchart TB
 |---|---|---|
 | `core.token` | Detección de lectores y tarjetas, y selección del *backend* según el ATR. Dos *backends* con la misma interfaz `TokenSigner`: `dnie_v2`, driver APDU para el DNIe v2 (*applet* PKI, lectura de certificados, VERIFY, MSE:SET y PSO:CDS, con lista blanca de instrucciones), y `pkcs11`, el genérico (*slots*, login y logout, `C_Sign`) | pyscard (ADR-0012), implementado para el DNIe v2, con monitor en caliente; python-pkcs11 (ADR-0003), aplazado a la versión 1.1 |
 | `core.formats.pades` | Firma y validación PAdES, DSS/VRI, sellos de documento, DocMDP. Firma mediante un `Signer` personalizado de pyHanko que delega en `TokenSigner` | pyHanko 0.25.1 (ADR-0004, ADR-0013); implementada la firma B-B, B-T, B-LT y B-LTA |
-| `core.formats.cades` | Firma y validación CMS/CAdES separada y envuelta | pyHanko (API CMS genérica), asn1crypto (ADR-0008) |
+| `core.formats.common` | Lo que comparten los formatos: niveles, `TokenCmsSigner` (firmante de pyHanko que delega en `TokenSigner`) y los fallos de servicio que bajan el nivel en lugar de perder la firma | pyHanko, pyhanko-certvalidator; implementado |
+| `core.formats.cades` | Firma CMS/CAdES separada (`.p7s`) y envuelta (`.p7m`), de B-B a B-LTA; la validación llega en el incremento 3 de la Fase 4 | pyHanko (API CMS genérica), asn1crypto (ADR-0008); implementada la firma B-B a B-LTA |
 | `core.formats.xades` | Firma y validación XAdES | Según SPK-03 (ADR-0008) |
 | `core.trust` | Almacén de confianza de la IOFE incluido (anclas como recurso del paquete con manifiesto de huellas), anclas añadidas por el usuario y TSL de INDECOPI (`tsl`, ADR-0014) | cryptography, lxml, signxml; implementado |
 | `core.net` | Clientes HTTP para TSA, OCSP, CRL y AIA, con caché, tiempos de espera y proxy | requests. Implementados `fetchers` (OCSP y CRL para validación previa, firma B-LT y verificación), `tsa` (cliente RFC 3161 sobre el de pyHanko) y `proxy` (proxy del sistema, manual o ninguno en todas las peticiones, RF-064). La caché de la TSL está en `core.trust.cache`; la de OCSP y CRL en disco, prevista |
@@ -179,6 +180,15 @@ def sign_pdf_file(source, output, *, expected_sha256, token, store, ask_pin, opt
 
 def sign_pdf_pades(pdf, token, chain, options=None, *, level=SignatureLevel.B_B,
                    timestamper=None, validation_context=None) -> PadesResult  # core.formats.pades
+
+def sign_cades_file(source, output, *, expected_sha256, token, store, ask_pin,
+                    packaging=CadesPackaging.DETACHED, level=SignatureLevel.B_B,
+                    digest="sha256", timestamper=None, online=True,
+                    ocsp_responses=(), crls=()) -> SignResult                   # core.signing
+def cades_output_path(source, packaging, directory=None) -> Path                # core.signing
+def sign_cades(content, token, chain, *, packaging=CadesPackaging.DETACHED,
+               level=SignatureLevel.B_B, digest="sha256", timestamper=None,
+               validation_context=None) -> CadesResult                        # core.formats.cades
 
 def load_tsl(data, *, moment=None, signer_crl=None, minimum_sequence=None) -> TrustedList  # core.trust.tsl
 def fetch_tsl(*, url=TSL_URL, timeout=30.0) -> TrustedList

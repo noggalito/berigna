@@ -3,9 +3,9 @@
 | Campo | Valor |
 |---|---|
 | Documento | BRG-GEN-000 |
-| Versión | 0.7.0 |
+| Versión | 0.8.0 |
 | Estado | Borrador |
-| Fecha | 2026-10-29 |
+| Fecha | 2026-10-30 |
 | Responsable | noggalito |
 
 ## 1. Propósito
@@ -44,6 +44,7 @@ docs/
 │   ├── estrategia-de-pruebas.md
 │   ├── protocolo-pruebas-con-pin.md   ← obligatorio antes de usar un PIN real
 │   ├── validacion-externa-fase2.md    ← matriz PAdES contrastada con DSS 6.2
+│   ├── validacion-externa-fase4.md    ← matriz CAdES y XAdES contrastada con DSS 6.2
 │   └── prueba-de-usabilidad.md        ← protocolo de la prueba con al menos 5 personas
 ├── 08-desarrollo/
 │   ├── entorno-y-convenciones.md
@@ -112,7 +113,7 @@ Fases 0, 1 y 2 cerradas. Fase 3: funcionalmente completa (incrementos 1 a 7 hech
 Fase 4 (CAdES y XAdES), iniciada el 2026-10-29, en ocho incrementos:
 
 1. Registro local de fallos (R-DES-11). Hecho.
-2. Firma CAdES `.p7s` y `.p7m`, de B-B a B-LTA (`core.formats.cades`; RF-020 a RF-022).
+2. Firma CAdES `.p7s` y `.p7m`, de B-B a B-LTA (`core.formats.cades`; RF-020 a RF-022). Hecho: válida en DSS 6.2 (BRG-CAL-006).
 3. Verificación CAdES con indicaciones ETSI e informes (RF-051), con pruebas por propiedades sobre CMS (R-DES-07).
 4. Firma XAdES envuelta y envolvente, de B-B a B-LTA (`core.formats.xades`; RF-030, RF-031 y RF-033); la separada (RF-032), si cabe.
 5. Verificación XAdES (RF-052), también de las firmas de ReFirma y DSS (PR-INT-05, PR-INT-06), con pruebas por propiedades sobre XML.
@@ -141,7 +142,8 @@ La cofirma CAdES (RF-023, "Podría") queda para después de la v1.0.
 | `core.crashes` (registro local de fallos) | Implementado (Fase 4, incremento 1): excepciones no capturadas en cualquier hilo y fallos de código nativo (`faulthandler`) al registro técnico y a un informe pendiente, con los números enmascarados; en el siguiente arranque, un aviso único con "Copiar el informe"; nada se envía solo | R-DES-11, RNF-SEG-07 | Pruebas del núcleo y de la interfaz con Xvfb |
 | `core.diagnostics` y `core.logs` | Implementado (Fase 3, incremento 6): diagnóstico en orden con acción sugerida e informe copiable; registro técnico rotativo con números enmascarados | RF-007, RF-083 | Tarjeta simulada y PKI de pruebas; pruebas de la interfaz con Xvfb |
 | `core.history`, historial y vista del almacén de confianza | Implementado (Fase 3, incremento 6): historial SQLite 0600 con búsqueda, CSV y borrado; certificados de confianza por origen en Preferencias | RF-060, RF-082 | Pruebas de la interfaz con firma y verificación reales (tarjeta simulada) |
-| CAdES y XAdES | Fase 4 (viabilidad probada en SPK-03) | RF-020 a RF-033 | — |
+| `core.formats.cades` y `core.signing.sign_cades_file` | Implementado (Fase 4, incremento 2): firma CAdES separada (`.p7s`) y envuelta (`.p7m`) de cualquier archivo, de B-B a B-LTA, con el mismo orden de seguridad que PAdES; la verificación CAdES, en el incremento 3 | RF-020 a RF-022 | Tarjeta simulada y TSA de pruebas: las 8 combinaciones reconocidas por DSS 6.2, B-LT y B-LTA con TOTAL_PASSED (`07-calidad/validacion-externa-fase4.md`) |
+| XAdES | Fase 4, incrementos 4 y 5 (viabilidad probada en SPK-03) | RF-030 a RF-033 | — |
 | Extensión de Nautilus y empaquetado `.deb` | Fase 5 | RF-070 a RF-073, ADR-0006, ADR-0013 | — |
 | PIN pad (PC/SC parte 10) | Aplazado a la versión 1.1 (decisión del 2026-10-27; requiere un lector de clase 2) | RF-005, P-08 | — |
 | *Backend* PKCS#11 + SoftHSM | Aplazado a la versión 1.1 (decisión del 2026-10-27; el DNIe v2 no lo necesita) | ADR-0003 | — |
@@ -151,5 +153,5 @@ La cofirma CAdES (RF-023, "Podría") queda para después de la v1.0.
 | Lectura del DNIe por NFC y teléfono (berigna en Android o el teléfono como puente) | Versión 1.1 (decisión del 2026-10-29); investigación en SPK-07 | ADR-0003, ADR-0012 | — |
 | Windows, macOS, Android e iOS | Versión 1.1 (decisión del 2026-10-29); el núcleo es independiente de la interfaz (ADR-0002) | ADR-0021 | — |
 
-Verificación local: `scripts/verificar.sh` (ruff, mypy estricto, pytest con cobertura mínima del 80 %; al 2026-10-29, 100 % del núcleo y 95 % del total con 489 pruebas, incluidas las de la interfaz con Xvfb; las 5 con hardware se omiten sin `BERIGNA_HIL=1`). Pruebas con hardware: `BERIGNA_HIL=1 pytest -m hil` (sin PIN) y los *scripts* manuales de `tests/hil/` (con PIN, según el protocolo).
+Verificación local: `scripts/verificar.sh` (ruff, mypy estricto, pytest con cobertura mínima del 80 %; al 2026-10-30, 100 % del núcleo y 95 % del total con 524 pruebas, incluidas las de la interfaz con Xvfb; las 5 con hardware se omiten sin `BERIGNA_HIL=1`). Pruebas con hardware: `BERIGNA_HIL=1 pytest -m hil` (sin PIN) y los *scripts* manuales de `tests/hil/` (con PIN, según el protocolo).
 
