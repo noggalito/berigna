@@ -25,20 +25,18 @@ from pathlib import Path
 from pyhanko.sign.timestamps import TimeStamper
 
 from berigna.core.errors import BatchCancelledError, BerignaError, TokenError
-from berigna.core.formats.pades import PadesOptions, SignatureLevel
+from berigna.core.formats.pades import PadesOptions, SignatureLevel, check_pdf_signable
 from berigna.core.signing import (
     AskPin,
     SigningJob,
     SignResult,
-    check_level,
     check_source,
+    prepare,
     send_pin,
     sign_checked,
-    time_stamper,
 )
 from berigna.core.token.base import TokenSigner
 from berigna.core.trust import TrustStore
-from berigna.core.validation import check_signer
 
 
 class Outcome(enum.Enum):
@@ -109,22 +107,22 @@ def sign_pdf_batch(
     pending: list[int] = []
     for index, job in enumerate(jobs):
         try:
-            check_source(job.source, job.output, job.expected_sha256)
+            check_pdf_signable(check_source(job.source, job.output, job.expected_sha256))
         except BerignaError as exc:
             items[index] = _failed(job, exc)
         else:
             pending.append(index)
 
     if pending:
-        stamper = time_stamper(level, timestamper)
-        check = check_signer(
-            token.signing_certificate(),
+        stamper, check = prepare(
+            token,
             store,
+            level,
+            timestamper,
             online=online,
             ocsp_responses=ocsp_responses,
             crls=crls,
         )
-        check_level(check, level, stamper)
         send_pin(token, ask_pin, check)
         opts = options or PadesOptions()
         stopped: BerignaError | None = None

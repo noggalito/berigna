@@ -14,7 +14,7 @@ from berigna.core.token.pin import Pin
 from berigna.core.validation import Indication, signing_validation_context, verify_pdf
 from support.cards import make_card
 from support.pki import Pki, build_pki, minimal_pdf
-from support.tsa import FlakyTimeStamper, make_timestamper
+from support.tsa import FlakyTimeStamper, make_timestamper, unknown_timestamper
 
 
 @pytest.fixture(scope="module")
@@ -134,3 +134,25 @@ def test_levels_require_their_services(pki: Pki, level: SignatureLevel, missing:
     with DnieV2Token(card) as token, pytest.raises(ValueError, match="needs"):
         sign_pdf_pades(minimal_pdf(), token, (pki.root, pki.ca, leaf), level=level, **kwargs)  # type: ignore[arg-type]
     assert INS_PSO not in card.instructions()
+
+
+def test_a_tsa_whose_path_cannot_be_built_keeps_the_b_t(pki: Pki) -> None:
+    """Same regression as in CAdES: PathBuildingError is a service failure after signing."""
+    card, leaf = make_card(pki, "FIRMANTE")
+    stamper = unknown_timestamper()  # its path cannot be built: PathBuildingError
+    context = signing_validation_context(
+        pki.store, online=False, ocsp_responses=[pki.ocsp(leaf)], crls=[pki.arl()]
+    )
+    with DnieV2Token(card) as token:
+        token.verify_pin(Pin("123456"))
+        result = sign_pdf_pades(
+            minimal_pdf(),
+            token,
+            (pki.root, pki.ca, leaf),
+            level=SignatureLevel.B_LT,
+            timestamper=stamper,
+            validation_context=context,
+        )
+    assert result.level is SignatureLevel.B_T
+    assert result.note is not None
+    assert card.instructions().count(INS_PSO) == 1
