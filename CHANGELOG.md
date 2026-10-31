@@ -104,6 +104,7 @@ Firma CAdES (Fase 4):
 - Cambiar el idioma con el diálogo del PIN abierto destruía la ventana y podía dejar el hilo de firma esperando para siempre con la tarjeta reservada. Ahora el diálogo se cancela antes (no se envía el PIN).
 - En un lote, un error que berigna no conoce detenía todos los documentos y el informe no llegaba a crearse; ahora falla solo ese documento (ERR-000) y los demás siguen (RF-043).
 - Más errores de pyHanko al abrir un PDF malformado se muestran como ERR-304 antes del PIN; una tarjeta retirada justo al conectar da ERR-105, y un fallo de la TSA distinto de los habituales se muestra con su causa y no como "no respondió en 30 s".
+- Las pruebas de la interfaz abren una Xvfb propia cuando se las llama a mano (pytest tests/ui), de modo que ninguna ventana llega al escritorio de la persona que prueba; verificar.sh y la CI marcan como de confianza la de su xvfb-run (BERIGNA_TEST_DISPLAY).
 - El historial no cerraba su conexión con la base de datos si una operación fallaba.
 - Abrir Preferencias con el diálogo ya abierto ponía otro encima; ahora se muestra el mismo. La prueba de la TSA y "Actualizar ahora" ya no tocan el diálogo si se cerró mientras esperaban, y dos actualizaciones de la TSL (la del arranque y la manual) ya no escriben a la vez en la caché.
 - Un PDF cuya cabecera empieza en los últimos bytes del primer kilobyte se trataba como "otro tipo de archivo".

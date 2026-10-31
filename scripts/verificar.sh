@@ -17,5 +17,5 @@ meson compile -C build/meson
 meson test -C build/meson --print-errorlogs > /dev/null
 # The interface tests need a display: Xvfb, so that they also run without a desktop. Without
 # WAYLAND_DISPLAY, or GTK would open the windows on the user's Wayland desktop instead.
-env -u BERIGNA_HIL -u WAYLAND_DISPLAY GDK_BACKEND=x11 BERIGNA_LOCALEDIR="$PWD/build/locale" \
-    xvfb-run --auto-servernum "$PY/pytest" -q --cov=berigna
+env -u BERIGNA_HIL -u WAYLAND_DISPLAY BERIGNA_TEST_DISPLAY=1 GDK_BACKEND=x11 \
+    BERIGNA_LOCALEDIR="$PWD/build/locale" xvfb-run --auto-servernum "$PY/pytest" -q --cov=berigna
