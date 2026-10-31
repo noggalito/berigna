@@ -3,7 +3,7 @@
 | Campo | Valor |
 |---|---|
 | Documento | BRG-UX-001 |
-| Versión | 0.4.1 |
+| Versión | 0.5.0 |
 | Estado | Borrador (bocetos de baja fidelidad) |
 | Fecha | 2026-10-30 |
 | Responsable | noggalito |
@@ -71,7 +71,7 @@ flowchart LR
 
 ### 3.2 Firmar
 
-Implementado en la Fase 3, incremento 3; la firma visible, en el incremento 5 (ADR-0018): una lista de apariencia que empieza por "No visible" (después: solo texto, rúbrica, logotipo o código QR) en el panel, y el recuadro sobre la vista previa, que se mueve arrastrándolo y cambia de tamaño arrastrando su esquina inferior derecha (arrastrar el resto de la página la desplaza, como en un visor de documentos), con el sello dibujado en vivo con datos de muestra; en un recuadro más alto que ancho, la imagen va encima del texto. La vista previa abre en la primera página encajada en la ventana; tiene un campo para escribir el número de página y zoom del 50 % al 400 % (botones y Ctrl + rueda). Motivo y ubicación en listas con "Otro". Diferencias con el boceto: los niveles que necesitan una TSA aparecen desactivados mientras no haya una configurada (DP-02); un documento certificado "sin cambios" muestra el motivo y no deja firmar (ERR-307).
+Implementado en la Fase 3, incremento 3; la firma visible, en el incremento 5 (ADR-0018): una lista de apariencia que empieza por "No visible" (después: solo texto, rúbrica, logotipo o código QR) en el panel, y el recuadro sobre la vista previa, que se mueve arrastrándolo y cambia de tamaño arrastrando su esquina inferior derecha (arrastrar el resto de la página la desplaza, como en un visor de documentos), con el sello dibujado en vivo con datos de muestra; en un recuadro más alto que ancho, la imagen va encima del texto. La vista previa abre en la primera página encajada en la ventana; tiene un campo para escribir el número de página y zoom del 50 % al 400 % (botones y Ctrl + rueda). El recuadro de la firma aparece en la página que se esté viendo y la sigue al cambiar de página (el usuario elige la página libremente; decisión del 2026-10-30). Motivo y ubicación en listas con "Otro". Diferencias con el boceto: los niveles que necesitan una TSA aparecen desactivados mientras no haya una configurada (DP-02); un documento certificado "sin cambios" muestra el motivo y no deja firmar (ERR-307).
 
 ```
 ┌──────────────────────────────────────────────────────────────┐
