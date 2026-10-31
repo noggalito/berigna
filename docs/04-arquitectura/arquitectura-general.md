@@ -110,7 +110,7 @@ flowchart TB
 | `core.files` | Escritura atómica con permisos correctos, carpeta de datos y nombres con fecha | Implementado |
 | `core.logs` | Registro técnico rotativo con números enmascarados (RF-083) | `logging` de la biblioteca estándar; implementado |
 | `core.crashes` | Registro local de fallos: excepciones no capturadas en cualquier hilo y fallos de código nativo, ofrecidos una vez en el siguiente arranque (R-DES-11) | `sys.excepthook`, `threading.excepthook`, `faulthandler`; implementado |
-| `core.validation` | Validación previa del firmante (`preflight`, RF-006) y verificación de firmas PDF con indicaciones ETSI (`pdf`, RF-050, RF-053, RF-055) | pyhanko-certvalidator 0.26.3 y la validación AdES de pyHanko 0.25.1; `preflight` implementado; `pdf` con sellos de tiempo y validación en el pasado |
+| `core.validation` | Validación previa del firmante (`preflight`, RF-006), verificación de firmas PDF (`pdf`, RF-050, RF-053, RF-055) y de CAdES (`cades`, RF-051), con los procesos ETSI y la especificación del almacén compartidos (`spec`) | pyhanko-certvalidator 0.26.3 y la validación AdES de pyHanko 0.25.1; `preflight` y `pdf` implementados; `cades` contrastado con DSS 6.2 (BRG-CAL-006 §3.2) |
 | `core.report` | Explicaciones en lenguaje llano de cada indicación y subindicación ETSI y de cada `ERR-xxx` (`messages`, `explanations`); informe de verificación en JSON con explicaciones en ambos idiomas (`json_report`) y en PDF en es_PE o en quechua (`pdf_report`) | gettext, ReportLab; implementado |
 | `core.i18n` | Idiomas es_PE y quechua sureño, elección según la configuración del usuario con es_PE de respaldo (ADR-0015) y carga de los catálogos; el quechua cae en es_PE, nunca en el texto fuente inglés | gettext de la biblioteca estándar; implementado |
 | `core.history` | Historial local de operaciones, en un archivo solo legible por su dueño (RF-082) | sqlite3 (biblioteca estándar); implementado |
@@ -172,6 +172,12 @@ def verify_pdf(data, store, *, moment=None, online=True, ocsp_responses=(), crls
 # PdfVerification: signatures (PdfSignatureReport: indicación y subindicación ETSI, firmante,
 # cobertura, modificaciones posteriores, longitud de la revisión firmada y sello de tiempo de
 # la firma) y document_timestamps (TimestampReport de cada sello de documento)
+
+def verify_cades(signature, store, *, content=None, moment=None, online=True,
+                 ocsp_responses=(), crls=(), timeout=10.0) -> CadesVerification   # core.validation
+# CadesVerification: signatures (CadesSignatureReport: indicación y subindicación ETSI,
+# firmante, hora declarada, sello de firma y sellos de archivo) y content (la encapsulada de
+# un .p7m); cades_content(raw) extrae el contenido encapsulado (RF-051)
 
 def sign_pdf_file(source, output, *, expected_sha256, token, store, ask_pin, options=None,
                   level=SignatureLevel.B_B, timestamper=None, online=True,

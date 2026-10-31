@@ -3,7 +3,7 @@
 | Campo | Valor |
 |---|---|
 | Documento | BRG-GEN-000 |
-| Versión | 0.8.0 |
+| Versión | 0.9.0 |
 | Estado | Borrador |
 | Fecha | 2026-10-30 |
 | Responsable | noggalito |
@@ -114,7 +114,7 @@ Fase 4 (CAdES y XAdES), iniciada el 2026-10-29, en ocho incrementos:
 
 1. Registro local de fallos (R-DES-11). Hecho.
 2. Firma CAdES `.p7s` y `.p7m`, de B-B a B-LTA (`core.formats.cades`; RF-020 a RF-022). Hecho: válida en DSS 6.2 (BRG-CAL-006).
-3. Verificación CAdES con indicaciones ETSI e informes (RF-051), con pruebas por propiedades sobre CMS (R-DES-07).
+3. Verificación CAdES con indicaciones ETSI (`core.validation.cades`, `verify_cades`, RF-051). Hecha: contrastada con DSS 6.2 en la matriz (BRG-CAL-006). La interfaz (CU-05) y las pruebas por propiedades llegan con los incrementos 6 y 7.
 4. Firma XAdES envuelta y envolvente, de B-B a B-LTA (`core.formats.xades`; RF-030, RF-031 y RF-033); la separada (RF-032), si cabe.
 5. Verificación XAdES (RF-052), también de las firmas de ReFirma y DSS (PR-INT-05, PR-INT-06), con pruebas por propiedades sobre XML.
 6. Interfaz: firmar otros archivos (CU-05, con nombre, tamaño, tipo, SHA-256 y vista de texto), verificar `.p7s`, `.p7m` y `.xml`, y lotes mixtos (RF-041).
@@ -134,6 +134,7 @@ La cofirma CAdES (RF-023, "Podría") queda para después de la v1.0.
 | `core.signing` | Implementado (PDF, B-B a B-LTA) | RF-006, RF-018, RF-045 | Pruebas del orden de seguridad (TOCTOU, cancelación, no sobrescritura, nivel y TSA comprobados antes del PIN) |
 | `core.net` (`fetchers`, `tsa`) | Implementado: cliente RFC 3161 con comprobación previa y plazo total; OCSP y CRL con reintento, espejos escalonados y sin CRL de certificados finales | RF-062 (sin interfaz), RF-063 | TSA HTTP local en las pruebas; DigiCert real; RENIEC real |
 | `core.validation.pdf` (verificador PAdES) | Implementado: procesos de ETSI EN 319 102-1 básico (§5.3) y de validación a largo plazo (§5.6.3), sellos de firma y de documento (§5.4), validación en el pasado, datos de revocación embebidos (DSS y `revocationInfoArchival` de Adobe), cobertura y modificaciones posteriores | RF-050, RF-053, RF-055, RF-056 | Matriz B-B a B-LTA y documentos reales contrastados con DSS 6.2 (`07-calidad/validacion-externa-fase2.md`) |
+| `core.validation.cades` (verificador CAdES, `verify_cades`) | Implementado (Fase 4, incremento 3): mismos procesos ETSI sobre el CMS (básico §5.3 y con sello §5.5), sello de firma y sellos de archivo `archive-time-stamp-v3` con su integridad contra el `ats-hash-index-v3` (§5.4), contenido encapsulado o dado por el llamador, datos de revocación embebidos (RFC 5940) o por el llamador | RF-051, RF-053, RF-056 | Las 8 combinaciones de la matriz contrastadas con DSS 6.2: indicación idéntica y subindicación más precisa (BRG-CAL-006 §3.3) |
 | `core.i18n` y `core.report` | Implementado: catálogos gettext es_PE y quechua, completos (el quechua, traducción automática en línea sin revisar por hablantes hasta la 1.1, DP-14, ADR-0015); explicación de cada indicación y subindicación ETSI y de cada `ERR-xxx`; informes JSON y PDF, con DNI y RUC enmascarados | RF-053, RF-054, PR-I18N-04, PR-I18N-07 | Pruebas de cobertura del catálogo; informe de un PDF real revisado |
 | TSA de producción | Pendiente de DP-02 (aún no hay TSA acreditada contratada) | RF-062 | — |
 | Proxy y caché de la TSL | Implementado (Fase 3, incremento 4): `core.net.proxy` y `core.trust.cache` | RF-061, RF-064 | Descarga real de la TSL de INDECOPI (secuencia 25, 68 CA) y lectura desde la caché |
@@ -142,7 +143,7 @@ La cofirma CAdES (RF-023, "Podría") queda para después de la v1.0.
 | `core.crashes` (registro local de fallos) | Implementado (Fase 4, incremento 1): excepciones no capturadas en cualquier hilo y fallos de código nativo (`faulthandler`) al registro técnico y a un informe pendiente, con los números enmascarados; en el siguiente arranque, un aviso único con "Copiar el informe"; nada se envía solo | R-DES-11, RNF-SEG-07 | Pruebas del núcleo y de la interfaz con Xvfb |
 | `core.diagnostics` y `core.logs` | Implementado (Fase 3, incremento 6): diagnóstico en orden con acción sugerida e informe copiable; registro técnico rotativo con números enmascarados | RF-007, RF-083 | Tarjeta simulada y PKI de pruebas; pruebas de la interfaz con Xvfb |
 | `core.history`, historial y vista del almacén de confianza | Implementado (Fase 3, incremento 6): historial SQLite 0600 con búsqueda, CSV y borrado; certificados de confianza por origen en Preferencias | RF-060, RF-082 | Pruebas de la interfaz con firma y verificación reales (tarjeta simulada) |
-| `core.formats.cades` y `core.signing.sign_cades_file` | Implementado (Fase 4, incremento 2): firma CAdES separada (`.p7s`) y envuelta (`.p7m`) de cualquier archivo, de B-B a B-LTA, con el mismo orden de seguridad que PAdES; la verificación CAdES, en el incremento 3 | RF-020 a RF-022 | Tarjeta simulada y TSA de pruebas: las 8 combinaciones reconocidas por DSS 6.2, B-LT y B-LTA con TOTAL_PASSED (`07-calidad/validacion-externa-fase4.md`) |
+| `core.formats.cades` y `core.signing.sign_cades_file` | Implementado (Fase 4, incremento 2): firma CAdES separada (`.p7s`) y envuelta (`.p7m`) de cualquier archivo, de B-B a B-LTA, con el mismo orden de seguridad que PAdES; la verificación CAdES está en `core.validation.cades` (incremento 3, contrastada con DSS 6.2) | RF-020 a RF-022 | Tarjeta simulada y TSA de pruebas: las 8 combinaciones reconocidas por DSS 6.2, B-LT y B-LTA con TOTAL_PASSED (`07-calidad/validacion-externa-fase4.md`); las 8 verificadas por `verify_cades` con la misma indicación que DSS |
 | XAdES | Fase 4, incrementos 4 y 5 (viabilidad probada en SPK-03) | RF-030 a RF-033 | — |
 | Extensión de Nautilus y empaquetado `.deb` | Fase 5 | RF-070 a RF-073, ADR-0006, ADR-0013 | — |
 | PIN pad (PC/SC parte 10) | Aplazado a la versión 1.1 (decisión del 2026-10-27; requiere un lector de clase 2) | RF-005, P-08 | — |

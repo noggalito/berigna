@@ -234,3 +234,10 @@ class UnreadableDocumentError(VerificationError):
     """The file is not a document of the expected format, or it is damaged."""
 
     code = "ERR-401"
+
+
+class UnreadableSignatureError(VerificationError):
+    """The file is not a CAdES signature (a CMS that berigna can verify), or it is
+    damaged, or a detached one comes without the file it signs (RF-051)."""
+
+    code = "ERR-402"

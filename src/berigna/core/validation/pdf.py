@@ -21,6 +21,11 @@ Signature time-stamps and document time-stamps get their own indication (§5.4),
 separately from the signature (RF-053): an invalid archive time-stamp is shown even when the
 signature passes. Time-stamping units are validated against the same trust store.
 
+The ETSI machinery shared with the CAdES verifier (indications, time-stamp reports, chain
+diagnosis and the validation settings) lives in :mod:`berigna.core.validation.spec`; here
+stays what only exists in a PDF: the Document Security Store, the revisions (RF-055) and the
+legacy Adobe attribute.
+
 Like :func:`~berigna.core.validation.check_signer`, :func:`verify_pdf` runs its own asyncio
 event loop: call it from a worker thread.
 """
@@ -40,58 +45,48 @@ from asn1crypto import x509 as asn1_x509
 from cryptography import x509
 from pyhanko.pdf_utils.misc import PdfError
 from pyhanko.pdf_utils.reader import PdfFileReader
-from pyhanko.sign.ades.report import AdESFailure, AdESIndeterminate, AdESPassed
 from pyhanko.sign.diff_analysis import ModificationLevel, SuspiciousModification
 from pyhanko.sign.validation import ades, generic_cms
-from pyhanko.sign.validation.errors import SignatureValidationError, ValidationInfoReadingError
+from pyhanko.sign.validation.errors import ValidationInfoReadingError
 from pyhanko.sign.validation.ltv import retrieve_adobe_revocation_info
 from pyhanko.sign.validation.pdf_embedded import EmbeddedPdfSignature
 from pyhanko.sign.validation.policy_decl import (
-    LocalKnowledge,
     PdfSignatureValidationSpec,
-    RevinfoOnlineFetchingRule,
-    RevocationInfoGatheringSpec,
     SignatureValidationSpec,
-    bootstrap_validation_data_handlers,
 )
-from pyhanko.sign.validation.settings import KeyUsageConstraints
 from pyhanko.sign.validation.status import SignatureCoverageLevel
-from pyhanko_certvalidator import CertificateValidator
-from pyhanko_certvalidator.context import CertValidationPolicySpec
-from pyhanko_certvalidator.errors import (
-    ExpiredError,
-    InsufficientRevinfoError,
-    NotYetValidError,
-    ValidationError,
-)
 from pyhanko_certvalidator.ltv.types import ValidationTimingInfo
-from pyhanko_certvalidator.policy_decl import (
-    CertRevTrustPolicy,
-    RevocationCheckingPolicy,
-    RevocationCheckingRule,
-)
-from pyhanko_certvalidator.registry import SimpleTrustManager
-from pyhanko_certvalidator.revinfo.archival import CRLContainer, OCSPContainer
 
-from berigna.core.certs import to_asn1, to_cryptography
+from berigna.core.certs import to_cryptography
 from berigna.core.errors import UnreadableDocumentError
-from berigna.core.net.fetchers import RevocationFetcherBackend
 from berigna.core.trust import TrustStore
-from berigna.core.validation.algorithms import algorithm_policy, signature_algorithm_policy
 from berigna.core.validation.preflight import time_tolerance
-
-_VERIFICATION_POLICY = RevocationCheckingPolicy(
-    ee_certificate_rule=RevocationCheckingRule.CRL_OR_OCSP_REQUIRED,
-    intermediate_ca_cert_rule=RevocationCheckingRule.CRL_REQUIRED,
+from berigna.core.validation.spec import (
+    GENERIC_CHAIN_FAILURE,
+    MALFORMED,
+    Context,
+    Indication,
+    TimestampReport,
+    indication,
+    timestamp_report,
 )
+from berigna.core.validation.spec import diagnose_chain as _diagnose_cms_chain
+from berigna.core.validation.spec import validation_spec as _spec_of
+
+# Re-used names: the tests of hostile inputs patch the PDF steps by name (AM-05).
+GENERIC_CHAIN_FAILURE = GENERIC_CHAIN_FAILURE
+_MALFORMED = (PdfError, *MALFORMED)
+_indication = indication
 
 
-class Indication(enum.Enum):
-    """Main indication of ETSI EN 319 102-1 §5.1.3."""
-
-    TOTAL_PASSED = "TOTAL-PASSED"
-    TOTAL_FAILED = "TOTAL-FAILED"
-    INDETERMINATE = "INDETERMINATE"
+__all__ = [
+    "Indication",
+    "Modifications",
+    "PdfSignatureReport",
+    "PdfVerification",
+    "TimestampReport",
+    "verify_pdf",
+]
 
 
 class Modifications(enum.Enum):
@@ -102,17 +97,6 @@ class Modifications(enum.Enum):
     FORM_FILLING = "form-filling"
     ANNOTATIONS = "annotations"
     OTHER = "other"  # anything else, including changes pyHanko flags as suspicious
-
-
-@dataclass(frozen=True)
-class TimestampReport:
-    """A signature time-stamp or a document time-stamp (RF-053)."""
-
-    indication: Indication
-    subindication: str | None
-    time: dt.datetime | None  # the time certified by the TSA; None if unreadable
-    tsa: x509.Certificate | None
-    field_name: str | None = None  # set for document time-stamps
 
 
 @dataclass(frozen=True)
@@ -178,16 +162,6 @@ def _modifications(integrity: dict[str, Any]) -> Modifications:
     }.get(level, Modifications.OTHER)
 
 
-def _indication(subindic: Any) -> tuple[Indication, str | None]:
-    if isinstance(subindic, AdESPassed):
-        return Indication.TOTAL_PASSED, None
-    if isinstance(subindic, AdESFailure):
-        return Indication.TOTAL_FAILED, subindic.name
-    if isinstance(subindic, AdESIndeterminate):
-        return Indication.INDETERMINATE, subindic.name
-    raise TypeError(f"unexpected AdES subindication {subindic!r}")  # pragma: no cover
-
-
 def _failed_format(sig: EmbeddedPdfSignature, subfilter: str) -> PdfSignatureReport:
     """A signature whose structure cannot be processed: ETSI TOTAL-FAILED/FORMAT_FAILURE."""
     return PdfSignatureReport(
@@ -203,67 +177,24 @@ def _failed_format(sig: EmbeddedPdfSignature, subfilter: str) -> PdfSignatureRep
     )
 
 
-@dataclass(frozen=True)
-class _Context:
-    """What every signature of one document is validated with."""
-
-    store: TrustStore
-    dss: tuple[list[Any], list[Any], list[Any]]  # certificates, OCSP responses, CRLs
-    extra: tuple[list[Any], list[Any]]  # OCSP responses and CRLs supplied by the caller
-    timing: ValidationTimingInfo
-    tolerance: dt.timedelta
-    online: bool
-    timeout: float
-
-
-def _spec(context: _Context, adobe: tuple[list[Any], list[Any]]) -> SignatureValidationSpec:
+def _spec(
+    context: Context,
+    dss: tuple[list[Any], list[Any], list[Any]],
+    adobe: tuple[list[Any], list[Any]],
+) -> SignatureValidationSpec:
+    """The validation settings of one file: the certificates of the store and the document as
+    known, and the revocation data of the document (DSS and Adobe) plus the caller's."""
     store = context.store
-    dss_certs, dss_ocsps, dss_crls = context.dss
-    ocsps = dss_ocsps + adobe[0] + context.extra[0]
-    crls = dss_crls + adobe[1] + context.extra[1]
-    knowledge = LocalKnowledge(
-        known_certs=[to_asn1(c) for c in store.intermediates] + dss_certs,
-        known_ocsps=[c for o in ocsps for c in OCSPContainer.load_multi(o)],
-        known_crls=[CRLContainer(c) for c in crls],
-    )
-    return SignatureValidationSpec(
-        cert_validation_policy=CertValidationPolicySpec(
-            trust_manager=SimpleTrustManager.build(trust_roots=[to_asn1(c) for c in store.roots]),
-            revinfo_policy=CertRevTrustPolicy(_VERIFICATION_POLICY),
-            time_tolerance=context.tolerance,
-            algorithm_usage_policy=algorithm_policy(),
-        ),
-        revinfo_gathering_policy=RevocationInfoGatheringSpec(
-            online_fetching_rule=(
-                RevinfoOnlineFetchingRule.NO_HISTORICAL_FETCH
-                if context.online
-                else RevinfoOnlineFetchingRule.LOCAL_ONLY
-            ),
-            fetcher_backend=RevocationFetcherBackend(context.timeout),
-        ),
-        local_knowledge=knowledge,
-        key_usage_settings=KeyUsageConstraints(key_usage={"non_repudiation"}),
-        signature_algorithm_policy=signature_algorithm_policy(),
-    )
-
-
-def _timestamp_report(
-    result: ades.AdESBasicValidationResult[Any], field_name: str | None = None
-) -> TimestampReport:
-    indication, subindication = _indication(result.ades_subindic)
-    status = result.api_status
-    return TimestampReport(
-        indication=indication,
-        subindication=subindication,
-        time=getattr(status, "timestamp", None),
-        tsa=to_cryptography(status.signing_cert) if status is not None else None,
-        field_name=field_name,
-    )
+    dss_certs, dss_ocsps, dss_crls = dss
+    ocsps = [*dss_ocsps, *adobe[0], *context.extra_ocsps]
+    crls = [*dss_crls, *adobe[1], *context.extra_crls]
+    return _spec_of(context, [*store.intermediates, *dss_certs], ocsps, crls)
 
 
 def _validate_timestamp(
-    tst: cms.SignedData, imprint: bytes, spec: SignatureValidationSpec, context: _Context
+    tst: cms.SignedData, imprint: bytes, spec: SignatureValidationSpec, context: Context
 ) -> ades.AdESBasicValidationResult[Any]:
+    """§5.4: a document time-stamp or a signature time-stamp validated on its own."""
     return asyncio.run(
         ades.ades_timestamp_validation(
             tst, spec, expected_tst_imprint=imprint, timing_info=context.timing
@@ -271,49 +202,29 @@ def _validate_timestamp(
     )
 
 
-_GENERIC_CHAIN_FAILURE = "CERTIFICATE_CHAIN_GENERAL_FAILURE"
-# What pyHanko and asn1crypto raise on a signature they cannot process (AM-05).
-_MALFORMED = (PdfError, SignatureValidationError, ValueError, KeyError, TypeError)
+def _timestamp_report(
+    result: ades.AdESBasicValidationResult[Any], field_name: str | None = None
+) -> TimestampReport:
+    return timestamp_report(result, field_name)
 
 
 def _diagnose_chain(
-    sig: EmbeddedPdfSignature, spec: SignatureValidationSpec, context: _Context
+    sig: EmbeddedPdfSignature, spec: SignatureValidationSpec, context: Context
 ) -> str:
-    """Name the ETSI subindication pyHanko folds into CERTIFICATE_CHAIN_GENERAL_FAILURE.
-
-    pyHanko 0.25.1 reports missing revocation data and an expired CA certificate with that
-    generic value; ETSI EN 319 102-1 (§5.2.6) distinguishes them. The chain is validated again
-    on its own to see which error comes out. If it passes this time, the first failure was
-    transient (a service that did not answer): TRY_LATER as well.
-    """
-    handlers = bootstrap_validation_data_handlers(spec, timing_info=context.timing)
-    validation_context = spec.cert_validation_policy.build_validation_context(
-        timing_info=context.timing, handlers=handlers
-    )
-    embedded = [c.chosen for c in sig.signed_data["certificates"] if c.name == "certificate"]
-    validator = CertificateValidator(
-        sig.signer_cert, intermediate_certs=embedded, validation_context=validation_context
-    )
-    try:
-        asyncio.run(validator.async_validate_usage({"non_repudiation"}))  # type: ignore[no-untyped-call]
-    except InsufficientRevinfoError:
-        return "TRY_LATER"
-    except NotYetValidError:
-        return "NOT_YET_VALID"
-    except ExpiredError:
-        return "OUT_OF_BOUNDS_NO_POE"
-    except ValidationError:
-        return _GENERIC_CHAIN_FAILURE
-    return "TRY_LATER"
+    """Name the ETSI subindication pyHanko folds into CERTIFICATE_CHAIN_GENERAL_FAILURE."""
+    return _diagnose_cms_chain(sig.signed_data, sig.signer_cert, spec, context.timing)
 
 
 def _validate_signature(
-    sig: EmbeddedPdfSignature, digest: bytes, context: _Context
+    sig: EmbeddedPdfSignature,
+    digest: bytes,
+    context: Context,
+    dss: tuple[list[Any], list[Any], list[Any]],
 ) -> tuple[ades.AdESBasicValidationResult[Any], TimestampReport | None, SignatureValidationSpec]:
     """The ETSI validation proper: basic process, or the LTA one when the signature has a
     time-stamp."""
-    spec = _spec(context, _adobe_revinfo(sig.signed_data))
     timestamp: TimestampReport | None = None
+    spec = _spec(context, dss, _adobe_revinfo(sig.signed_data))
     tst = sig.attached_timestamp_data
     tst_imprint = generic_cms.compute_signature_tst_digest(sig.signer_info)
     if tst is None or tst_imprint is None:
@@ -336,7 +247,9 @@ def _validate_signature(
     return result, timestamp, spec
 
 
-def _verify_signature(sig: EmbeddedPdfSignature, context: _Context) -> PdfSignatureReport:
+def _verify_signature(
+    sig: EmbeddedPdfSignature, context: Context, dss: tuple[list[Any], list[Any], list[Any]]
+) -> PdfSignatureReport:
     subfilter = str(sig.sig_object.get("/SubFilter", ""))
     try:
         sig.compute_integrity_info()  # type: ignore[no-untyped-call]
@@ -352,9 +265,9 @@ def _verify_signature(sig: EmbeddedPdfSignature, context: _Context) -> PdfSignat
         return _failed_format(sig, subfilter)
 
     try:
-        result, timestamp, spec = _validate_signature(sig, digest, context)
+        result, timestamp, spec = _validate_signature(sig, digest, context, dss)
         indication, subindication = _indication(result.ades_subindic)
-        if subindication == _GENERIC_CHAIN_FAILURE and sig.attached_timestamp_data is None:
+        if subindication == GENERIC_CHAIN_FAILURE and sig.attached_timestamp_data is None:
             # Basic process only: under the LTA process the cause may be in the past validation.
             subindication = _diagnose_chain(sig, spec, context)
     except _MALFORMED:
@@ -374,10 +287,14 @@ def _verify_signature(sig: EmbeddedPdfSignature, context: _Context) -> PdfSignat
     )
 
 
-def _verify_document_timestamp(sig: EmbeddedPdfSignature, context: _Context) -> TimestampReport:
+def _verify_document_timestamp(
+    sig: EmbeddedPdfSignature, context: Context, dss: tuple[list[Any], list[Any], list[Any]]
+) -> TimestampReport:
     try:
         imprint = sig.compute_digest()
-        result = _validate_timestamp(sig.signed_data, imprint, _spec(context, ([], [])), context)
+        result = _validate_timestamp(
+            sig.signed_data, imprint, _spec(context, dss, ([], [])), context
+        )
     except _MALFORMED:
         return TimestampReport(
             Indication.TOTAL_FAILED, "FORMAT_FAILURE", None, None, sig.field_name
@@ -404,9 +321,6 @@ def verify_pdf(
     that can be parsed. A PDF without signatures gives an empty report.
     """
     when = moment or dt.datetime.now(dt.UTC)
-    timing = ValidationTimingInfo(
-        validation_time=when, best_signature_time=when, point_in_time_validation=moment is not None
-    )
     try:
         reader = PdfFileReader(io.BytesIO(data), strict=False)
         embedded = list(reader.embedded_signatures)
@@ -414,14 +328,15 @@ def verify_pdf(
     except (PdfError, ValueError, KeyError, TypeError) as exc:
         raise UnreadableDocumentError(f"cannot read this PDF: {exc}") from exc
 
-    context = _Context(
+    context = Context(
         store=store,
-        dss=dss,
-        extra=(
-            [asn1_ocsp.OCSPResponse.load(o) for o in ocsp_responses],
-            [asn1_crl.CertificateList.load(c) for c in crls],
+        extra_ocsps=[asn1_ocsp.OCSPResponse.load(o) for o in ocsp_responses],
+        extra_crls=[asn1_crl.CertificateList.load(c) for c in crls],
+        timing=ValidationTimingInfo(
+            validation_time=when,
+            best_signature_time=when,
+            point_in_time_validation=moment is not None,
         ),
-        timing=timing,
         tolerance=time_tolerance(moment),
         online=online,
         timeout=timeout,
@@ -430,9 +345,9 @@ def verify_pdf(
     stamps: list[TimestampReport] = []
     for sig in embedded:
         if sig.sig_object_type == "/DocTimeStamp":
-            stamps.append(_verify_document_timestamp(sig, context))
+            stamps.append(_verify_document_timestamp(sig, context, dss))
         else:
-            reports.append(_verify_signature(sig, context))
+            reports.append(_verify_signature(sig, context, dss))
     return PdfVerification(
         signatures=tuple(reports), document_timestamps=tuple(stamps), moment=when
     )

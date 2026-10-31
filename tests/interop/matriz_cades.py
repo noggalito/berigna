@@ -21,7 +21,7 @@ from berigna.core.formats.cades import CadesPackaging, sign_cades
 from berigna.core.formats.common import SignatureLevel
 from berigna.core.token.dnie_v2 import DnieV2Token
 from berigna.core.token.pin import Pin
-from berigna.core.validation import signing_validation_context
+from berigna.core.validation import signing_validation_context, verify_cades
 from support.cards import make_card
 from support.pki import build_pki
 from support.tsa import make_timestamper
@@ -64,6 +64,17 @@ def main() -> int:
             name = f"cades-{level.value}.{packaging.value}"
             (out / name).write_bytes(result.data)
             print(f"| {name} | {level.value} | {result.level.value} |")
+    print()
+    print("Verificación propia de berigna sobre los mismos archivos (verify_cades, sin red):")
+    print("| Archivo | Indicación | Subindicación |")
+    print("|---|---|---|")
+    for packaging in CadesPackaging:
+        for level in SignatureLevel:
+            name = f"cades-{level.value}.{packaging.value}"
+            [report] = verify_cades(
+                (out / name).read_bytes(), pki.store, content=CONTENT, online=False
+            ).signatures
+            print(f"| {name} | {report.indication.value} | {report.subindication or '—'} |")
     return 0
 
 

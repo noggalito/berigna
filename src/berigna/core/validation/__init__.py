@@ -2,6 +2,12 @@
 # SPDX-FileCopyrightText: 2026 noggalito
 """Certificate and signature validation."""
 
+from berigna.core.validation.cades import (
+    CadesSignatureReport,
+    CadesVerification,
+    cades_content,
+    verify_cades,
+)
 from berigna.core.validation.pdf import (
     Indication,
     Modifications,
@@ -18,6 +24,8 @@ from berigna.core.validation.preflight import (
 )
 
 __all__ = [
+    "CadesSignatureReport",
+    "CadesVerification",
     "Indication",
     "Modifications",
     "PdfSignatureReport",
@@ -25,7 +33,9 @@ __all__ = [
     "RevocationNote",
     "SignerCheck",
     "TimestampReport",
+    "cades_content",
     "check_signer",
     "signing_validation_context",
+    "verify_cades",
     "verify_pdf",
 ]
