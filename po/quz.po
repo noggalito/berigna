@@ -1,5 +1,5 @@
 # Quechua sureño, variedad Cusco-Collao (catálogo quz; también se instala como quy y qu) para
-# berigna. Primera versión del 2026-10-29: traducción automática con IA y el glosario de
+# berigna. Primera versión del 2026-10-29: traducción automática en línea, con el glosario de
 # docs/06-ux/glosario-quechua.md, SIN REVISAR por hablantes; la interfaz y el informe PDF lo
 # avisan y permiten ver el texto en español, que prevalece (DP-14, ADR-0015). La revisión por
 # personas llega en la versión 1.1. En quechua el sustantivo no varía tras un número ("kimsa

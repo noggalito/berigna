@@ -12,7 +12,7 @@
 
 Términos fijos de la interfaz y de los informes de berigna en quechua sureño (catálogo `po/quz.po`, ADR-0015). Garantiza que el mismo concepto se diga siempre igual y sirve de punto de partida a la revisión por hablantes, prevista para la versión 1.1 (DP-14).
 
-La primera traducción (2026-10-29) es automática, hecha con IA a partir de este glosario, y **no está revisada por hablantes**. La interfaz y el informe PDF en quechua lo avisan y permiten ver el texto en español, que prevalece (ADR-0011 §3, BRG-UX-001 §4.2).
+La primera traducción (2026-10-29) es automática, hecha en línea a partir de este glosario, y **no está revisada por hablantes**. La interfaz y el informe PDF en quechua lo avisan y permiten ver el texto en español, que prevalece (ADR-0011 §3, BRG-UX-001 §4.2).
 
 ## 2. Variedad y escritura
 

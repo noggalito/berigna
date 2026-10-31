@@ -14,7 +14,7 @@ Se evaluaron el kichwa amazónico (variedades de Lamas, `qvs`, y del Napo, `qvo`
 ## Decisión
 
 1. Idiomas de la v1.0: es_PE y quechua sureño, ambos completos. La interfaz, las explicaciones de verificación, los informes, el sello visible, el aviso legal y el manual de usuario se traducen.
-2. Variedad y escritura del quechua: la configuración regional de referencia es `quz_PE` (cusco-collao). La traducción usa el alfabeto oficial y la norma escrita del quechua sureño, que también leen los hablantes de la variedad ayacucho-chanka. Modificado el 2026-10-28 (DP-14): en la v1.0 la traducción se hace con traductores en línea y ayuda de IA, con un glosario terminológico propio; la corrección por personas hablantes llega en la versión 1.1.
+2. Variedad y escritura del quechua: la configuración regional de referencia es `quz_PE` (cusco-collao). La traducción usa el alfabeto oficial y la norma escrita del quechua sureño, que también leen los hablantes de la variedad ayacucho-chanka. Modificado el 2026-10-28 (DP-14): en la v1.0 la traducción se hace con traductores en línea, apoyada en el glosario terminológico propio; la corrección por personas hablantes llega en la versión 1.1.
 3. Catálogo: `po/quz.po`, que se instala como `quz`, `quy` y `qu`, para que cualquier configuración de quechua sureño lo encuentre.
 4. en_US pasa a la versión 1.1. Los textos fuente (`msgid`) siguen escritos en inglés, según la convención de gettext (ADR-0011, punto 2), pero en la v1.0 no son un idioma ofrecido al usuario.
 5. Reglas de respaldo, que sustituyen al punto 5 de ADR-0011:
