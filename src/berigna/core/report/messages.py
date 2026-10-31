@@ -223,6 +223,7 @@ ERRORS: dict[str, str] = {
     ),
     "ERR-400": N_("The document could not be verified."),
     "ERR-401": N_("The file is not a document that berigna can read, or it is damaged."),
+    "ERR-402": N_("The signature cannot be read, or it is not a CAdES signature."),
 }
 
 # Batch report (RF-042): columns and results.

@@ -1,12 +1,18 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # SPDX-FileCopyrightText: 2026 noggalito
-"""The real application under a display (Xvfb in scripts/verificar.sh and in the CI).
+"""The real application under a display (Xvfb). It never reaches the desktop of the person
+testing: ``verificar.sh`` and the CI mark their own ``xvfb-run`` display with
+``BERIGNA_TEST_DISPLAY``, and when pytest runs without it (by hand), this module starts a
+private Xvfb on the spot, so windows no longer appear on GNOME whatever the session is.
 
 Needs the build tree of Meson (``meson compile -C build/meson``): compiled views and schema.
 Settings live in memory, so the tests never touch the user's dconf.
 """
 
+import atexit
 import os
+import shutil
+import subprocess
 from collections.abc import Callable, Generator, Iterator
 from pathlib import Path
 
@@ -28,7 +34,34 @@ os.environ["GSETTINGS_BACKEND"] = "memory"
 # desktop and the test windows would appear on it.
 os.environ.pop("WAYLAND_DISPLAY", None)
 os.environ["GDK_BACKEND"] = "x11"
-if not os.environ.get("DISPLAY"):
+
+
+def _own_display() -> None:
+    """A private Xvfb, so that the tests never open windows on the person's desktop."""
+    if shutil.which("Xvfb") is None:
+        pytest.skip("X11 tests need Xvfb or xvfb-run: apt install xvfb", allow_module_level=True)
+    for number in range(99, 200):
+        if not Path(f"/tmp/.X11-unix/X{number}").exists():  # noqa: S108 - the constant of X11
+            break
+    else:  # pragma: no cover - a hundred displays in use: no
+        pytest.skip("no free display number for the private Xvfb", allow_module_level=True)
+    # Own inputs, and the directory is a constant of X11: no untrusted input here.
+    xvfb = shutil.which("Xvfb")
+    assert xvfb is not None  # checked a few lines above
+    process = subprocess.Popen(  # noqa: S603
+        [xvfb, f":{number}", "-screen", "0", "1280x1024x24", "-nolisten", "tcp"],
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    )
+    atexit.register(lambda: (process.terminate(), process.wait()))
+    os.environ["DISPLAY"] = f":{number}"
+
+
+if os.environ.get("BERIGNA_TEST_DISPLAY"):
+    pass  # provided by the caller (verificar.sh, the CI): its xvfb-run display
+else:
+    _own_display()
+if not os.environ.get("DISPLAY"):  # pragma: no cover - the start above cannot fail silently
     pytest.skip("needs a display: run under xvfb-run", allow_module_level=True)
 if not Path(os.environ["BERIGNA_RESOURCES"]).exists():
     pytest.fail("compile the views first: meson setup build/meson && meson compile -C build/meson")

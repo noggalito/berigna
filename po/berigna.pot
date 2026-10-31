@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-29 14:00-0500\n"
+"POT-Creation-Date: 2026-10-30 22:32-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -315,13 +315,13 @@ msgid "Signature verification report"
 msgstr ""
 
 #: src/berigna/core/report/messages.py:130
-#: src/berigna/core/report/messages.py:230
-#: src/berigna/core/report/messages.py:249
+#: src/berigna/core/report/messages.py:231
+#: src/berigna/core/report/messages.py:250
 msgid "File"
 msgstr ""
 
 #: src/berigna/core/report/messages.py:131
-#: src/berigna/core/report/messages.py:250
+#: src/berigna/core/report/messages.py:251
 msgid "SHA-256 of the file"
 msgstr ""
 
@@ -349,8 +349,8 @@ msgid "Signature {number} of {total}: {field}"
 msgstr ""
 
 #: src/berigna/core/report/messages.py:137
-#: src/berigna/core/report/messages.py:232
-#: src/berigna/core/report/messages.py:256
+#: src/berigna/core/report/messages.py:233
+#: src/berigna/core/report/messages.py:257
 msgid "Result"
 msgstr ""
 
@@ -359,7 +359,7 @@ msgid "ETSI EN 319 102-1 code"
 msgstr ""
 
 #: src/berigna/core/report/messages.py:139
-#: src/berigna/core/report/messages.py:254
+#: src/berigna/core/report/messages.py:255
 msgid "Signer"
 msgstr ""
 
@@ -593,70 +593,74 @@ msgstr ""
 msgid "The file is not a document that berigna can read, or it is damaged."
 msgstr ""
 
-#: src/berigna/core/report/messages.py:231
+#: src/berigna/core/report/messages.py:226
+msgid "The signature cannot be read, or it is not a CAdES signature."
+msgstr ""
+
+#: src/berigna/core/report/messages.py:232
 msgid "Folder"
 msgstr ""
 
-#: src/berigna/core/report/messages.py:233
-#: src/berigna/core/report/messages.py:251
+#: src/berigna/core/report/messages.py:234
+#: src/berigna/core/report/messages.py:252
 msgid "Signed file"
 msgstr ""
 
-#: src/berigna/core/report/messages.py:234
-#: src/berigna/core/report/messages.py:253 src/berigna/ui/presentation.py:341
+#: src/berigna/core/report/messages.py:235
+#: src/berigna/core/report/messages.py:254 src/berigna/ui/presentation.py:341
 msgid "Level"
 msgstr ""
 
-#: src/berigna/core/report/messages.py:235
-#: src/berigna/core/report/messages.py:252
+#: src/berigna/core/report/messages.py:236
+#: src/berigna/core/report/messages.py:253
 msgid "SHA-256 of the signed file"
 msgstr ""
 
-#: src/berigna/core/report/messages.py:236
+#: src/berigna/core/report/messages.py:237
 msgid "Code"
 msgstr ""
 
-#: src/berigna/core/report/messages.py:237
+#: src/berigna/core/report/messages.py:238
 msgid "Explanation"
 msgstr ""
 
-#: src/berigna/core/report/messages.py:240
+#: src/berigna/core/report/messages.py:241
 msgid "Signed"
 msgstr ""
 
-#: src/berigna/core/report/messages.py:241
+#: src/berigna/core/report/messages.py:242
 msgid "Not signed"
 msgstr ""
 
-#: src/berigna/core/report/messages.py:242
+#: src/berigna/core/report/messages.py:243
 msgid "Skipped"
 msgstr ""
 
-#: src/berigna/core/report/messages.py:247
+#: src/berigna/core/report/messages.py:248
 msgid "Date (UTC)"
 msgstr ""
 
-#: src/berigna/core/report/messages.py:248
+#: src/berigna/core/report/messages.py:249
 msgid "Operation"
 msgstr ""
 
-#: src/berigna/core/report/messages.py:255
+#: src/berigna/core/report/messages.py:256
 msgid "Certificate serial number"
 msgstr ""
 
-#: src/berigna/core/report/messages.py:257
+#: src/berigna/core/report/messages.py:258
 msgid "Detail"
 msgstr ""
 
-#: src/berigna/core/report/messages.py:260
+#: src/berigna/core/report/messages.py:261
 msgid "Signature"
 msgstr ""
 
-#: src/berigna/core/report/messages.py:261
+#: src/berigna/core/report/messages.py:262
 msgid "Signature in a batch"
 msgstr ""
 
-#: src/berigna/core/report/messages.py:262
+#: src/berigna/core/report/messages.py:263
 msgid "Verification"
 msgstr ""
 
@@ -1519,15 +1523,15 @@ msgstr ""
 msgid "Added by you"
 msgstr ""
 
-#: src/berigna/ui/presentation.py:567
+#: src/berigna/ui/presentation.py:569
 msgid "Intermediate"
 msgstr ""
 
-#: src/berigna/ui/presentation.py:567
+#: src/berigna/ui/presentation.py:569
 msgid "Root"
 msgstr ""
 
-#: src/berigna/ui/presentation.py:572
+#: src/berigna/ui/presentation.py:574
 #, python-brace-format
 msgid "{role} · valid until {date}"
 msgstr ""

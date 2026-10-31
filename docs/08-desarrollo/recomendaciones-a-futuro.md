@@ -3,9 +3,9 @@
 | Campo | Valor |
 |---|---|
 | Documento | BRG-DES-002 |
-| Versión | 0.2.0 |
+| Versión | 0.3.0 |
 | Estado | Borrador |
-| Fecha | 2026-10-29 |
+| Fecha | 2026-10-30 |
 | Responsable | noggalito |
 
 ## 1. Propósito
@@ -42,6 +42,9 @@ Punto de partida: el proyecto ya tiene ADR, trazabilidad de requisitos a pruebas
 | R-DES-12 | Paquete `.deb` reproducible (`reprotest` en la CI) | Lo exige en la práctica Debian oficial (ADR-0020) y le sirve al auditor: el paquete publicado se corresponde con el código | Medio |
 | R-DES-13 | Revisión de accesibilidad con Orca en todas las vistas y comprobación del contraste en los temas claro y oscuro, con resultado registrado | RNF-USA-03 tiene la base (botones con nombre) pero no hay evidencia de uso real con lector de pantalla | Bajo |
 | R-DES-14 | Continuidad (BRG-MAN-001 §10): réplica del repositorio fuera de GitHub, custodia y copia de las claves (commits, futuro repositorio APT), segunda persona con acceso | Con una sola persona mantenedora es el riesgo más alto y el más barato de reducir | Trivial |
+| R-DES-15 | Informe de verificación autónomo: extender el informe del RF de exportación (junto a RF-053) con el detalle del *path building* (hoja → intermedia → eslabón faltante, con OID, revisión y código normalizado) y la frase llana del eslabón ausente; el informe explica el resultado aunque la cadena no se construya | Del fallo PathBuildingError/TSA Camerfirma (ADR-0022, resuelto el 2026-10-30) quedó este hueco: con `NO_CERTIFICATE_CHAIN_FOUND` el usuario no ve dónde se rompió; el informe que se explica solo es el RNF que el expediente pide a este software | Bajo |
+| R-DES-16 | Pin exacto de `pyhanko-certvalidator` en el `.venv` (valor elegido documentado) y revisión del comentario de límites de `pyproject.toml` (hoy `~=0.26.3` sin comentario de causa; el 0.25.3 exige `>=0.26.5`) | En el entorno actual la resolución puede caer en el paquete del sistema 0.26.3 y el límite justificado en ADR-0013 no queda blindado a nivel de entorno; la política de dependencias exige cada pin con su causa en el propio pin | Bajo |
+| R-DES-17 | *Copy* canónico para los tres sellos («sello de tiempo de la firma», «del documento», «de archivo») en el inventario visual (06-ux) y frase de ejemplo «El documento no lleva sello de tiempo posterior a la firma» en pantalla e informe | RF-053 ya exige estados separados; falta fijar el texto que evita confundir un sello ausente del documento con una firma sin fecha cierta (lección del issue resuelto, Fase 4) | Trivial |
 
 ## 5. Informes de fallos
 
