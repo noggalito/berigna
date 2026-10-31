@@ -10,7 +10,9 @@ dragging its bottom right corner resizes it, and the appearance is drawn inside 
 
 It opens on the first page, fitted to the window. The page number can be typed, and the page
 zoomed in and out (buttons or Ctrl + wheel) to place the box precisely; dragging anywhere
-else on the page scrolls it, as in a document viewer (decision of 2026-10-28).
+else on the page scrolls it, as in a document viewer (decision of 2026-10-28). The box
+appears on the page being shown and follows the page when it changes (decisión del
+2026-10-30): the user picks, at will, the page of the signature.
 
 The page and the appearance are rendered once per size and kept as images: a QR code has
 hundreds of small squares, and redrawing them on every movement made dragging slow.
@@ -55,6 +57,17 @@ class SignatureBox:
             page == self.page
             and self.x <= x <= self.x + self.width
             and self.y <= y <= self.y + self.height
+        )
+
+    def on_page(self, page: int, size: tuple[float, float]) -> "SignatureBox":
+        """The same box on another page, clamped inside its size (RF-012)."""
+        width, height = size
+        return SignatureBox(
+            page,
+            max(0.0, min(self.x, width - self.width)),
+            max(0.0, min(self.y, height - self.height)),
+            self.width,
+            self.height,
         )
 
 
@@ -160,13 +173,19 @@ class PdfPreview(Gtk.Box):
         return float(width), float(height)
 
     def show_page(self, number: int) -> None:
-        """Show page ``number`` (from 0), clamped to the document, from its top."""
+        """Show page ``number`` (from 0), clamped to the document, from its top. The box of
+        the visible signature follows the page shown: the user chooses the page (RF-012,
+        decisión del 2026-10-30), and the box is clamped inside each page."""
         page = max(0, min(number, self.page_count - 1))
         changed = page != self.page
         self.page = page
         self.page_entry.set_text(str(page + 1))
         self._previous.set_sensitive(page > 0)
         self._next.set_sensitive(page < self.page_count - 1)
+        if changed and self.box is not None:
+            self.box = self.box.on_page(page, self.page_size(page))
+            if self.on_box_changed is not None:
+                self.on_box_changed(self.box)
         if changed:
             self._scrolled.get_vadjustment().set_value(0)
         self._resize()
@@ -221,22 +240,26 @@ class PdfPreview(Gtk.Box):
 
     # -- Visible signature box -------------------------------------------------------------
 
-    def default_box(self) -> SignatureBox:
-        """Bottom right of the last page, where signatures usually go."""
-        last = self.page_count - 1
-        page_width, _height = self.page_size(last)
+    def default_box(self, page: int | None = None) -> SignatureBox:
+        """Bottom right of ``page`` (the one shown by default), where signatures usually go."""
+        number = self.page if page is None else page
+        page_width, _height = self.page_size(number)
         width, height = DEFAULT_BOX
-        return SignatureBox(last, max(0.0, page_width - width - EDGE), EDGE, width, height)
+        return SignatureBox(number, max(0.0, page_width - width - EDGE), EDGE, width, height)
 
     def set_box(self, box: SignatureBox | None) -> None:
-        """Show ``box`` (None hides it) and turn to its page."""
+        """Show ``box`` on the page being shown (None hides it). The page shall not jump:
+        the user picks it by moving through the document (decisión del 2026-10-30)."""
         self.box = box
         if box is not None and self.page_count:
-            self.show_page(box.page)
+            self.box = box.on_page(self.page, self.page_size(self.page))
             if self.zoom is not None:
                 GLib.idle_add(self._scroll_to_box)
-        elif self.page_count:
+        if self.page_count:
             self._area.queue_draw()
+        placed = self.box
+        if placed is not None and self.on_box_changed is not None:
+            self.on_box_changed(placed)
 
     def _scroll_to_box(self) -> bool:
         """Zoomed in, centre the box in the view."""

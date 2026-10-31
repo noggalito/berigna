@@ -49,9 +49,9 @@ def test_sign_with_a_qr_code(app: BerignaApplication, tmp_path: Path) -> None:
         page.appearance.set_selected(4)  # QR code
         box = page.preview.box
         assert box is not None
-        assert box.page == 1  # the last page, bottom right
+        assert box.page == 0  # the page being shown, bottom right (decisión del 2026-10-30)
         assert box.y == EDGE
-        assert page.preview.page == 1
+        assert page.preview.page == 0  # no jump: the user picks the page
         assert page.appearance_kind() is AppearanceKind.QR
         assert page.appearance.get_subtitle() == "Código QR"
         assert page.preview._appearance is not None  # drawn with sample data
@@ -156,8 +156,8 @@ def test_moving_resizing_and_scrolling() -> None:
     width, height = preview.page_size(0)
     preview._transform = (0.0, 0.0, 1.0, height)  # one widget pixel per point
     changes: list[SignatureBox] = []
-    preview.on_box_changed = changes.append
     preview.set_box(SignatureBox(0, 100, 100, 200, 60))
+    preview.on_box_changed = changes.append  # set_box activates the visible signature
     assert preview.cursor(150, height - 130) == "move"
     assert preview.cursor(300, height - 100) == "se-resize"  # bottom right corner
     assert preview.cursor(20, 20) == "grab"
@@ -176,7 +176,7 @@ def test_moving_resizing_and_scrolling() -> None:
     preview._on_drag_update(FakeDrag(*corner), -1000, -1000)
     assert preview.box == SignatureBox(0, 100, 160 - 15, 40, 15)
     preview._on_drag_end(None, 0, 0)
-    assert len(changes) == 2
+    assert len(changes) == 3  # a drag and a new box
     # Drag outside: the page scrolls, the box stays.
     box = preview.box
     preview._on_drag_begin(None, 20, 20)
@@ -185,8 +185,29 @@ def test_moving_resizing_and_scrolling() -> None:
     assert preview.box == box
     assert drag.state == Gtk.EventSequenceState.CLAIMED
     preview._on_drag_end(None, 0, 0)
-    assert len(changes) == 2  # scrolling is not a change of the box
+    assert len(changes) == 3  # scrolling is not a change of the box
     preview._on_drag_update(FakeDrag(0, 0), 1, 1)  # after the end: ignored
+
+
+def test_the_box_follows_the_page_shown() -> None:
+    """The user picks the page of the visible signature freely: the box travels to the page
+    shown when it changes, clamped inside each page (decisión del 2026-10-30)."""
+    preview = PdfPreview(two_page_pdf())
+    width, _height = preview.page_size(0)
+    preview.set_box(SignatureBox(0, width - 240, 100, 200, 60))
+    preview.show_page(1)  # navigation, without any jump away
+    assert preview.page == 1
+    other_width, other_height = preview.page_size(1)
+    # The box keeps its geometry, clamped to the size of the page shown.
+    assert preview.box == SignatureBox(
+        1, other_width - 240, 100 if other_height >= 160 else 40, 200, 60
+    )
+    preview.show_page(-1)  # clamped navigation: back to the first page
+    assert preview.box.page == 0
+    # A box placed beyond the bounds of a page is brought inside it (any size).
+    assert SignatureBox(0, 9999.0, 9999.0, 200, 60).on_page(1, (400.0, 300.0)) == SignatureBox(
+        1, 200.0, 240.0, 200, 60
+    )
 
 
 def test_page_number_and_zoom() -> None:

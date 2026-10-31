@@ -3,9 +3,9 @@
 | Campo | Valor |
 |---|---|
 | Documento | BRG-REQ-003 |
-| Versión | 0.2.0 |
+| Versión | 0.3.0 |
 | Estado | Borrador |
-| Fecha | 2026-10-29 |
+| Fecha | 2026-10-30 |
 | Responsable | noggalito |
 
 ## 1. Diagrama general
@@ -68,7 +68,7 @@ Postcondición: existe un PDF firmado válido y el original no ha cambiado. Si e
 Extiende CU-01. Requisitos: RF-012, RF-081.
 
 1. En el paso 2 de CU-01, el usuario elige una apariencia en la lista "Firma visible", que empieza por "No visible": solo texto, rúbrica, logotipo o código QR (ADR-0018).
-2. El sistema propone la apariencia de las preferencias y un recuadro en la última página. Los perfiles con nombre (RF-081) quedan para después de la Fase 3.
+2. El sistema propone la apariencia de las preferencias y un recuadro en la página que esté viendo; al cambiar de página, el recuadro sigue a la página mostrada, dentro de su tamaño (decisión del 2026-10-30). Los perfiles con nombre (RF-081) quedan para después de la Fase 3.
 3. El usuario arrastra o redimensiona el recuadro sobre la previsualización (con zoom), o cambia de página. Un recuadro más alto que ancho pone la imagen o el QR encima del texto.
 4. El sistema muestra una vista previa en vivo de la apariencia con los datos reales del certificado.
 5. Continúa en el paso 3 de CU-01.
