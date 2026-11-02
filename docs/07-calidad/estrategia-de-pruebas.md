@@ -3,9 +3,9 @@
 | Campo | Valor |
 |---|---|
 | Documento | BRG-CAL-001 |
-| Versión | 0.3.0 |
+| Versión | 0.4.0 |
 | Estado | Borrador |
-| Fecha | 2026-10-29 |
+| Fecha | 2026-11-02 |
 | Responsable | noggalito |
 
 ## 1. Objetivos
@@ -121,7 +121,7 @@ Cada celda se ejecuta en tres entornos: (a) SoftHSM en CI, (b) validación con D
 | PR-INT-02 | La misma matriz validada en DSS | TOTAL-PASSED con el nivel correcto |
 | PR-INT-03 | PAdES abiertos en Adobe Acrobat Reader (con la raíz de la IOFE como confiable) | "Firma válida" |
 | PR-INT-04 | PAdES abiertos en Evince/Papers y Okular | Se muestra la firma; la apariencia es correcta |
-| PR-INT-05 | Firmas generadas por Firma Perú y por ReFirma, validadas en berigna | Mismo resultado que en Firma Perú |
+| PR-INT-05 | Firmas generadas por Firma Perú y por ReFirma, validadas en berigna (ReFirma PDF solo firma PDF: en CAdES y XAdES, solo Firma Perú) | Mismo resultado que en Firma Perú |
 | PR-INT-06 | Firmas generadas por DSS, validadas en berigna | Mismo resultado que en DSS |
 | PR-INT-07 | Matriz completa validada en el validador oficial Firma Perú (https://apps.firmaperu.gob.pe/web/validador.xhtml; usa DSS y la TSL peruana) | "Resultado válido" con el formato y nivel correctos. Primera evidencia: PAdES B-B del DNIe real, 2026-10-27 |
 

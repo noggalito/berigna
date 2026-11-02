@@ -7,7 +7,8 @@ Packaging: enveloped (the signature goes inside the document), enveloping (the d
 inside ``ds:Object`` of the signature) or detached (the signature is its own XML file, which
 references the document by name). Baseline levels (ETSI EN 319 132-1):
 
-- B-B: the signature alone (signxml, ``XAdESSigner``; C14N 1.0 inclusive;
+- B-B: the signature alone (signxml, ``XAdESSigner``; C14N 1.0 for the data object,
+  exclusive C14N for ``SignedInfo``, ``SignedProperties`` and ``KeyInfo``;
   ``SigningCertificate`` with the signer certificate only).
 - B-T: plus ``xades:SignatureTimeStamp`` over ``ds:SignatureValue`` (own code).
 - B-LT: plus ``CertificateValues`` and ``RevocationValues`` with the data gathered with the
@@ -30,7 +31,7 @@ import enum
 import hashlib
 import io
 from collections.abc import Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from typing import Any, cast
 
 from asn1crypto import cms
@@ -43,6 +44,7 @@ from pyhanko.sign.timestamps import TimeStamper
 from pyhanko.sign.timestamps.common_utils import TimestampRequestError
 from pyhanko_certvalidator import CertificateValidator, ValidationContext
 from signxml import methods
+from signxml.algorithms import CanonicalizationMethod
 from signxml.xades.xades import XAdESSigner
 
 from berigna.core.certs import to_asn1
@@ -65,10 +67,13 @@ from berigna.core.token.base import HashAlgorithmName, TokenSigner
 DS = "http://www.w3.org/2000/09/xmldsig#"
 XADES = "http://uri.etsi.org/01903/v1.3.2#"
 XADES141 = "http://uri.etsi.org/01903/v1.4.1#"
-# References without Transforms are canonicalised with C14N 1.0 (XMLDSig); using it for
-# SignedInfo too keeps signxml and the validators (DSS/Santuario) in agreement (SPK-03 §3).
-C14N10 = "http://www.w3.org/TR/2001/REC-xml-c14n-20010315"
+# Exclusive C14N for SignedInfo, the references to SignedProperties and KeyInfo and the
+# archive time-stamp, as DSS and Firma Perú: the inclusive one makes those subsets inherit
+# the xml: attributes of the root of an enveloped document, which lxml and signxml leave out
+# and DSS 6.2 applies inconsistently; berigna's enveloped signatures of a root with xml:lang
+# were invalid (2026-11-02). The data object keeps C14N 1.0 (_Signer).
 EXC_C14N = "http://www.w3.org/2001/10/xml-exc-c14n#"
+ARCHIVE_C14N = EXC_C14N  # written in the archive time-stamp and used to compute it
 ENVELOPED = f"{DS}enveloped-signature"
 NS = {"ds": DS, "xades": XADES}
 _DIGESTS = {hashes.SHA256: "sha256", hashes.SHA384: "sha384", hashes.SHA512: "sha512"}
@@ -120,17 +125,69 @@ class _TokenKey:
         return self._public
 
 
+class _Signer(XAdESSigner):
+    """signxml's signer with the canonicalization of each reference fixed (2026-11-02):
+
+    - the data object (the whole document, the ``ds:Object`` of the enveloping form or the
+      external file) keeps inclusive C14N 1.0: it covers every namespace declaration in
+      scope, also those used only inside values (``xsi:type="ns:Tipo"`` in UBL), which the
+      exclusive one would leave out of the digest; it has no ancestors to inherit from;
+    - ``SignedInfo``, ``SignedProperties`` and ``KeyInfo`` sit under the root of an
+      enveloped document: exclusive C14N, explicit in each reference, so that no ``xml:``
+      attribute of the root is inherited, which DSS 6.2 does not apply consistently.
+
+    Both are private hooks of signxml 4.0.5: ``_HOOKS`` is checked at import, and the tests
+    check the transforms of every reference."""
+
+    def _unpack(self, data: Any, references: Any) -> Any:
+        sig_root, doc_root, c14n_inputs, refs = super()._unpack(data, references)
+        inclusive = [
+            replace(ref, c14n_method=CanonicalizationMethod.CANONICAL_XML_1_0)
+            if ref.c14n_method is None
+            else ref
+            for ref in refs
+        ]
+        return sig_root, doc_root, c14n_inputs, inclusive
+
+    def _add_reference_to_signed_info(
+        self, sig_root: etree._Element, node_to_reference: etree._Element, **attrs: str
+    ) -> None:
+        """The references to ``SignedProperties`` and ``KeyInfo``, with an explicit exclusive
+        C14N, as DSS and Firma Perú write them (signxml writes them without a transform).
+        No ``InclusiveNamespaces``: berigna never passes ``inclusive_ns_prefixes``."""
+        signed_info = sig_root.find("ds:SignedInfo", NS)
+        reference = etree.SubElement(
+            signed_info, f"{{{DS}}}Reference", URI=f"#{node_to_reference.get('Id')}"
+        )
+        for name, value in attrs.items():
+            reference.set(name, value)
+        transforms = etree.SubElement(reference, f"{{{DS}}}Transforms")
+        etree.SubElement(transforms, f"{{{DS}}}Transform", Algorithm=EXC_C14N)
+        etree.SubElement(reference, f"{{{DS}}}DigestMethod", Algorithm=self.digest_alg.value)
+        octets = etree.tostring(
+            node_to_reference, method="c14n", exclusive=True, with_comments=False
+        )
+        etree.SubElement(reference, f"{{{DS}}}DigestValue").text = base64.b64encode(
+            self._get_digest(octets, algorithm=self.digest_alg)
+        ).decode()
+
+
+_HOOKS = ("_unpack", "_add_reference_to_signed_info")
+if not all(callable(getattr(XAdESSigner, hook, None)) for hook in _HOOKS):  # pragma: no cover
+    raise ImportError(f"signxml no longer has the hooks berigna overrides: {_HOOKS}")
+
+
 def _signer(packaging: XadesPackaging, digest: HashAlgorithmName) -> XAdESSigner:
     method = {
         XadesPackaging.ENVELOPED: methods.enveloped,
         XadesPackaging.ENVELOPING: methods.enveloping,
         XadesPackaging.DETACHED: methods.detached,
     }[packaging]
-    return XAdESSigner(
+    return _Signer(
         method=method,
         signature_algorithm=f"rsa-{digest}",
         digest_algorithm=digest,
-        c14n_algorithm=C14N10,
+        c14n_algorithm=EXC_C14N,
     )
 
 
@@ -311,24 +368,35 @@ def _without_signature(element: etree._Element, sig: etree._Element) -> etree._E
     without = copy.deepcopy(element)
     copies = without.findall(".//ds:Signature", NS)
     own = copies[element.findall(".//ds:Signature", NS).index(sig)]
-    own.getparent().remove(own)
+    own.getparent().remove(own)  # signxml appends it last: it has no tail text to keep
     return without
 
 
+def _exclusive(element: etree._Element) -> bytes:
+    """Exclusive C14N without comments: the archive time-stamp's own (``ARCHIVE_C14N``)."""
+    return bytes(etree.tostring(element, method="c14n", exclusive=True, with_comments=False))
+
+
 def _reference_octets(
-    document: etree._Element, sig: etree._Element, reference: etree._Element, data: etree._Element
+    document: etree._Element,
+    sig: etree._Element,
+    reference: etree._Element,
+    data: etree._Element,
+    archive_c14n: str,
 ) -> bytes:
     """The octets of one ``ds:Reference`` as used for the archive time-stamp (EN 319 132-1
     §5.4.2 / SPK-03 §4): the data objects, with the reference's transforms applied — the
     enveloped one removes only the signature it belongs to — and the elements of the
-    signature document as node-sets (archive c14n, C14N 1.0).
+    signature document as node-sets (archive c14n, exclusive).
 
     C14N without comments, as XMLDSig does for ``URI=""`` and ``#id`` and as the declared
     CanonicalizationMethod says: lxml includes the comments unless ``with_comments=False``
     (review of 2026-11-01)."""
     uri = reference.get("URI")
     transforms = [t.get("Algorithm") for t in reference.findall("ds:Transforms/ds:Transform", NS)]
-    exclusive = EXC_C14N in transforms
+    # every reference ends in a C14N transform; one without would be a node-set,
+    # canonicalized with the archive's own algorithm (EN 319 132-1 §5.5.2)
+    exclusive = EXC_C14N in transforms if transforms else archive_c14n == EXC_C14N
     if uri == "":  # the whole document, without this signature (enveloped transform)
         target = _without_signature(document, sig)
     elif uri.startswith("#"):  # an element of the signature document
@@ -337,7 +405,6 @@ def _reference_octets(
             target = _without_signature(target, sig)  # the enveloped transform on #id
     else:
         target = data  # the external document, as the DigestValue was computed over it
-        exclusive = False
     return bytes(etree.tostring(target, method="c14n", exclusive=exclusive, with_comments=False))
 
 
@@ -354,28 +421,22 @@ async def _add_archive_timestamp(
     ``QualifyingProperties``, also the referenced ones, SPK-03 §4)."""
     h = hashlib.new(digest, b"")
     for reference in sig.findall("ds:SignedInfo/ds:Reference", NS):
-        h.update(_reference_octets(document, sig, reference, data))
+        h.update(_reference_octets(document, sig, reference, data, ARCHIVE_C14N))
     for path in ("ds:SignedInfo", "ds:SignatureValue", "ds:KeyInfo"):
         element = sig.find(path, NS)
         if element is not None:
-            h.update(
-                bytes(etree.tostring(element, method="c14n", exclusive=False, with_comments=False))
-            )
+            h.update(_exclusive(element))
     properties = _unsigned_properties(sig)
     for element in properties:  # the archive time-stamp is added after, not hashed
-        h.update(
-            bytes(etree.tostring(element, method="c14n", exclusive=False, with_comments=False))
-        )
+        h.update(_exclusive(element))
     for obj in sig.findall("ds:Object", NS):
         if obj.find("xades:QualifyingProperties", NS) is None:
-            h.update(
-                bytes(etree.tostring(obj, method="c14n", exclusive=False, with_comments=False))
-            )
+            h.update(_exclusive(obj))
     token = await stamper.async_timestamp(h.digest(), digest)
     archive = etree.SubElement(
         properties, f"{{{XADES141}}}ArchiveTimeStamp", nsmap={"xades141": XADES141}
     )
-    etree.SubElement(archive, f"{{{DS}}}CanonicalizationMethod", Algorithm=C14N10)
+    etree.SubElement(archive, f"{{{DS}}}CanonicalizationMethod", Algorithm=ARCHIVE_C14N)
     etree.SubElement(archive, f"{{{XADES}}}EncapsulatedTimeStamp").text = base64.b64encode(
         bytes(token.dump())
     ).decode()

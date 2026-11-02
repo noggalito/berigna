@@ -174,9 +174,12 @@ def _verify_the_signature_value(signed: Signed, digest: HashAlgorithmName = "sha
     value = base64.b64decode(signed.signature().find("ds:SignatureValue", NS).text)
     key = signed.leaf.public_key()
     assert isinstance(key, rsa.RSAPublicKey)
+    method = signed_info.find("ds:CanonicalizationMethod", NS).get("Algorithm")
     key.verify(
         value,
-        etree.tostring(signed_info, method="c14n", exclusive=False, with_comments=False),
+        etree.tostring(
+            signed_info, method="c14n", exclusive=method == EXC_C14N, with_comments=False
+        ),
         padding.PKCS1v15(),
         _HASHES[digest](),
     )
@@ -215,10 +218,15 @@ def _reference_digest_matches(
             [target] = signature.getroottree().getroot().xpath(f"//*[@Id='{uri[1:]}']")
             if ENVELOPED in transforms:  # #id on the root: without the signature it carries
                 target = _without_its_own_signature(target, signature)
-            octets = etree.tostring(target, method="c14n", exclusive=False, with_comments=False)
+            octets = etree.tostring(
+                target, method="c14n", exclusive=EXC_C14N in transforms, with_comments=False
+            )
         else:
             octets = etree.tostring(
-                parse_xml(content), method="c14n", exclusive=False, with_comments=False
+                parse_xml(content),
+                method="c14n",
+                exclusive=EXC_C14N in transforms,
+                with_comments=False,
             )
         expected = base64.b64encode(hashlib.new(digest, octets).digest()).decode()
         assert reference.find("ds:DigestValue", NS).text == expected, uri
@@ -314,7 +322,8 @@ def _archive_imprint(
     signed: Signed, digest: HashAlgorithmName, *, content: bytes = CONTENT
 ) -> bytes:
     """EN 319 132-1 §5.4.2, recomputed independently of the module: the data objects with
-    the enveloped transform (only its own signature excised), C14N 1.0 without comments."""
+    the enveloped transform (only its own signature excised), exclusive C14N without
+    comments: the archive's own and the transform of every reference."""
     document = signed.document
     signature = signature_element(document)  # from the same parse, as above
     h = hashlib.new(digest)
@@ -328,7 +337,7 @@ def _archive_imprint(
                 etree.tostring(
                     _without_its_own_signature(document, signature),
                     method="c14n",
-                    exclusive=False,
+                    exclusive=True,
                     with_comments=False,
                 )
             )
@@ -336,23 +345,23 @@ def _archive_imprint(
             [target] = signature.getroottree().getroot().xpath(f"//*[@Id='{uri[1:]}']")
             if ENVELOPED in transforms:  # #id on the root: without the signature it carries
                 target = _without_its_own_signature(target, signature)
-            h.update(etree.tostring(target, method="c14n", exclusive=False, with_comments=False))
+            h.update(etree.tostring(target, method="c14n", exclusive=True, with_comments=False))
         else:
             h.update(
                 etree.tostring(
-                    parse_xml(content), method="c14n", exclusive=False, with_comments=False
+                    parse_xml(content), method="c14n", exclusive=True, with_comments=False
                 )
             )
     for path in ("ds:SignedInfo", "ds:SignatureValue", "ds:KeyInfo"):
         element = signature.find(path, NS)
         if element is not None:
-            h.update(etree.tostring(element, method="c14n", exclusive=False, with_comments=False))
+            h.update(etree.tostring(element, method="c14n", exclusive=True, with_comments=False))
     for element in signed.unsigned():
         if _name(element) != "ArchiveTimeStamp":  # the time-stamp does not cover itself
-            h.update(etree.tostring(element, method="c14n", exclusive=False, with_comments=False))
+            h.update(etree.tostring(element, method="c14n", exclusive=True, with_comments=False))
     for obj in signature.findall("ds:Object", NS):
         if obj.find("xades:QualifyingProperties", NS) is None:
-            h.update(etree.tostring(obj, method="c14n", exclusive=False, with_comments=False))
+            h.update(etree.tostring(obj, method="c14n", exclusive=True, with_comments=False))
     return h.digest()
 
 
@@ -604,18 +613,22 @@ def test_the_archive_transform_removes_only_its_own_signature(pki: Pki) -> None:
         etree.tostring(
             _without_its_own_signature(document, second),
             method="c14n",
-            exclusive=False,
+            exclusive=True,
             with_comments=False,
         )
     )
     for path in ("ds:SignedInfo", "ds:SignatureValue", "ds:KeyInfo"):
-        h.update(etree.tostring(second.find(path, NS), method="c14n", with_comments=False))
+        h.update(
+            etree.tostring(
+                second.find(path, NS), method="c14n", exclusive=True, with_comments=False
+            )
+        )
     for element in _unsigned_properties(second):
         if _name(element) != "ArchiveTimeStamp":  # the time-stamp does not cover itself
-            h.update(etree.tostring(element, method="c14n", with_comments=False))
+            h.update(etree.tostring(element, method="c14n", exclusive=True, with_comments=False))
     for obj in second.findall("ds:Object", NS):
         if obj.find("xades:QualifyingProperties", NS) is None:  # none: it has only this one
-            h.update(etree.tostring(obj, method="c14n", with_comments=False))
+            h.update(etree.tostring(obj, method="c14n", exclusive=True, with_comments=False))
     assert _token_of(archive)["message_imprint"]["hashed_message"].native == h.digest()
 
 
@@ -743,3 +756,21 @@ def test_an_archive_timestamp_without_key_info(pki: Pki) -> None:
         if _name(element) == "ArchiveTimeStamp"
     ]
     assert archive.tag == f"{{{XADES141}}}ArchiveTimeStamp"
+
+
+@pytest.mark.parametrize("packaging", list(XadesPackaging))
+def test_every_reference_declares_its_canonicalization(pki: Pki, packaging: XadesPackaging) -> None:
+    """The data object with C14N 1.0 (it keeps the namespace declarations used only inside
+    values); SignedProperties and KeyInfo with exclusive C14N (nothing inherited from the
+    root). Both come from overriding private hooks of signxml: if they stop being called,
+    this fails (2026-11-02)."""
+    signature = _sign(pki, SignatureLevel.B_B, packaging).signature()
+    for reference in signature.findall("ds:SignedInfo/ds:Reference", NS):
+        transforms = [
+            t.get("Algorithm") for t in reference.findall("ds:Transforms/ds:Transform", NS)
+        ]
+        internal = reference.get("Type") or reference.get("URI", "").startswith("#SignXMLCert")
+        expected = EXC_C14N if internal else "http://www.w3.org/TR/2001/REC-xml-c14n-20010315"
+        assert transforms[-1] == expected, reference.get("URI")
+    method = signature.find("ds:SignedInfo/ds:CanonicalizationMethod", NS).get("Algorithm")
+    assert method == EXC_C14N
