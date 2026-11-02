@@ -3,9 +3,9 @@
 | Campo | Valor |
 |---|---|
 | Documento | BRG-CAL-006 |
-| Versión | 0.2.0 |
+| Versión | 0.3.0 |
 | Estado | En curso |
-| Fecha | 2026-10-30 |
+| Fecha | 2026-11-01 |
 | Responsable | noggalito |
 
 ## 1. Objetivo
@@ -15,10 +15,11 @@ Criterio de salida de la Fase 4 (hoja de ruta): la matriz completa de formato ×
 ## 2. Método
 
 1. `tests/interop/matriz_cades.py` firma un mismo archivo de texto en CAdES separada (`.p7s`) y envuelta (`.p7m`), de B-B a B-LTA, con el código de berigna, el DNIe simulado, la PKI de pruebas y una TSA de pruebas.
-2. `tests/interop/matriz_dss.sh` valida los archivos con DSS 6.2 (arnés de SPK-03), con la raíz de pruebas como única ancla. Una `.p7s` se valida contra el archivo firmado. Las URL de revocación de la PKI de pruebas no responden, así que DSS trabaja solo con lo que la firma trae.
-3. Verificación propia de berigna (incremento 3): la misma matriz se relee con `berigna.core.validation.cades.verify_cades` (RF-051), sin red, y sus indicaciones y subindicaciones quedan junto a las de DSS.
+2. `tests/interop/matriz_xades.py` firma un mismo documento XML (`datos.xml`) en XAdES envuelta, envolvente y separada (`.xsig`, que referencia a `datos.xml`), de B-B a B-LTA, con los mismos medios.
+3. `tests/interop/matriz_dss.sh` valida todos los archivos con DSS 6.2 (arnés de SPK-03), con la raíz de pruebas como única ancla. Una `.p7s` se valida contra `datos.txt` y una `.xsig` contra `datos.xml`. Las URL de revocación de la PKI de pruebas no responden, así que DSS trabaja solo con lo que la firma trae.
+4. Verificación propia de berigna (incremento 3): la misma matriz CAdES se relee con `berigna.core.validation.cades.verify_cades` (RF-051), sin red, y sus indicaciones y subindicaciones quedan junto a las de DSS. Lo propio con XAdES llega con el incremento 5.
 
-Para repetirlo: `.venv/bin/python tests/interop/matriz_cades.py DIR` y `tests/interop/matriz_dss.sh DIR [dssval]`. El arnés se prepara con `spikes/preparar-entorno.sh`; si el sistema solo tiene el entorno de ejecución de Java 21, el JDK 8 compila `Validate.java` con las bibliotecas de DSS 6.2.
+Para repetirlo: `.venv/bin/python tests/interop/matriz_cades.py DIR` y `.venv/bin/python tests/interop/matriz_xades.py DIR`, y `tests/interop/matriz_dss.sh DIR [dssval]`. El arnés se prepara con `spikes/preparar-entorno.sh`; si el sistema solo tiene el entorno de ejecución de Java 21, el JDK 8 compila `Validate.java` con las bibliotecas de DSS 6.2.
 
 ## 3. Resultados
 
@@ -64,9 +65,32 @@ Conclusiones:
 - Donde DSS da la subindicación genérica `CERTIFICATE_CHAIN_GENERAL_FAILURE`, berigna precisa la causa con su diagnóstico de cadena (ETSI EN 319 102-1 §5.2.6): `TRY_LATER`, porque falta información de revocación — el mismo criterio de la Fase 2 (BRG-CAL-004 §3.1).
 - La verificación de B-LTA comprueba además que el sello de archivo cubre todavía las piezas del CMS (integridad del `ats-hash-index-v3`): en la matriz todo se cumple.
 
-### 3.3 XAdES
+### 3.3 XAdES (incremento 4, 2026-11-01)
 
-Pendiente (incremento 4).
+Las doce combinaciones de variante y nivel, generadas con el DNIe simulado y una TSA de pruebas y validadas con DSS 6.2 (la separada, contra `datos.xml`):
+
+| Archivo | Nivel pedido | Nivel alcanzado (berigna) | DSS 6.2 |
+|---|---|---|---|
+| `xades-envuelta-B-B.xml` | B-B | B-B | XAdES-BASELINE-B, INDETERMINATE / NO_CERTIFICATE_CHAIN_FOUND |
+| `xades-envuelta-B-T.xml` | B-T | B-T | XAdES-BASELINE-T, INDETERMINATE / CERTIFICATE_CHAIN_GENERAL_FAILURE |
+| `xades-envuelta-B-LT.xml` | B-LT | B-LT | XAdES-BASELINE-LT, TOTAL_PASSED |
+| `xades-envuelta-B-LTA.xml` | B-LTA | B-LTA | XAdES-BASELINE-LTA, TOTAL_PASSED |
+| `xades-envolvente-B-B.xml` | B-B | B-B | XAdES-BASELINE-B, INDETERMINATE / NO_CERTIFICATE_CHAIN_FOUND |
+| `xades-envolvente-B-T.xml` | B-T | B-T | XAdES-BASELINE-T, INDETERMINATE / CERTIFICATE_CHAIN_GENERAL_FAILURE |
+| `xades-envolvente-B-LT.xml` | B-LT | B-LT | XAdES-BASELINE-LT, TOTAL_PASSED |
+| `xades-envolvente-B-LTA.xml` | B-LTA | B-LTA | XAdES-BASELINE-LTA, TOTAL_PASSED |
+| `xades-separada-B-B.xsig` | B-B | B-B | XAdES-BASELINE-B, INDETERMINATE / NO_CERTIFICATE_CHAIN_FOUND |
+| `xades-separada-B-T.xsig` | B-T | B-T | XAdES-BASELINE-T, INDETERMINATE / CERTIFICATE_CHAIN_GENERAL_FAILURE |
+| `xades-separada-B-LT.xsig` | B-LT | B-LT | XAdES-BASELINE-LT, TOTAL_PASSED |
+| `xades-separada-B-LTA.xsig` | B-LTA | B-LTA | XAdES-BASELINE-LTA, TOTAL_PASSED |
+
+Conclusiones:
+
+- DSS reconoce el nivel exacto y la variante de las doce firmas, también la separada, que resuelve la referencia externa y valida contra `datos.xml`.
+- B-LT y B-LTA dan TOTAL_PASSED en las tres variantes: los certificados de las rutas (sin las anclas) y las respuestas OCSP y la CRL embebidos en `CertificateValues` y `RevocationValues` bastan, y el `xades141:ArchiveTimeStamp` con su cobertura es correcto.
+- En las B-LTA, DSS valida aparte los dos sellos en el informe detallado: `SIGNATURE_TIMESTAMP=PASSED` y `ARCHIVE_TIMESTAMP=PASSED` en las tres variantes.
+- B-B y B-T no llevan datos de revocación, así que ningún validador puede dar más que INDETERMINATE sin consultar la red, con las mismas subindicaciones que CAdES (§3.1). Es el resultado esperado.
+- RF-032 (XAdES separada) entra en la v1.0 por decisión del titular (2026-11-01); SPK-03 la había dejado sin probar y la matriz la cubre.
 
 ## 4. Pendiente
 
