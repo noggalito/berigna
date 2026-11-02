@@ -17,7 +17,7 @@ Código de la Fase 0 que respalda las conclusiones de `docs/10-investigacion/`. 
 | `spk03/spk03_xades.py` | XAdES envuelta y envolvente de B-B a B-LTA (signxml más capa propia) | SPK-03 §4 |
 | `spk03/spk03_pades.py` | PAdES B-B a B-LTA con pyHanko | SPK-03 §3 |
 | `spk03/spk03_dnie.py` | CAdES, XAdES y PAdES B-B con el DNIe real y un solo PIN (driver APDU) | SPK-03 §7 |
-| `spk03/dssval/` | Arnés Java mínimo sobre DSS 6.2 (validador de referencia) | SPK-03 §2 |
+| `spk03/dssval/` | Arnés Java mínimo sobre DSS 6.2: validador de referencia (`Validate`) y firmador XAdES con la PKI de pruebas para PR-INT-06 (`Sign`) | SPK-03 §2, BRG-CAL-006 §3.6 |
 | `spk03/run_matrix.sh` | Valida con DSS todas las firmas generadas y comprueba cada sello | SPK-03 §3 |
 | `spk03/evidencias/matriz-resultados.txt` | Resultado de la matriz: 20 de 20 en TOTAL_PASSED | SPK-03 §3 |
 | `ca-iofe/` | Certificados **públicos** de la cadena del DNIe v2 (huellas en `docs/04-arquitectura/configuracion-y-datos.md` §3) | configuracion-y-datos §3 |

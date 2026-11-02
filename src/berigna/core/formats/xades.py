@@ -134,7 +134,7 @@ def _signer(packaging: XadesPackaging, digest: HashAlgorithmName) -> XAdESSigner
     )
 
 
-def _parse_document(content: bytes | str) -> etree._ElementTree:
+def parse_document(content: bytes | str) -> etree._ElementTree:
     """The whole document (prologue included), with a hardened parser: no entity resolution,
     no network, no DTD loading (review of 2026-11-01). Raises
     :class:`~berigna.core.errors.UnreadableDocumentError` when ``content`` is not XML."""
@@ -148,8 +148,8 @@ def _parse_document(content: bytes | str) -> etree._ElementTree:
 
 def parse_xml(content: bytes | str) -> etree._Element:
     """The root element of the document to sign, or
-    :class:`~berigna.core.errors.UnreadableDocumentError`. See :func:`_parse_document`."""
-    return _parse_document(content).getroot()
+    :class:`~berigna.core.errors.UnreadableDocumentError`. See :func:`parse_document`."""
+    return parse_document(content).getroot()
 
 
 def _has_instructions_outside(root: etree._Element) -> bool:
@@ -184,7 +184,7 @@ def check_xml_signable(content: bytes, packaging: XadesPackaging) -> None:
     of these costs the user a PIN entry.
     """
     try:
-        tree = _parse_document(content)
+        tree = parse_document(content)
     except UnreadableDocumentError as exc:
         raise XmlFormatError(f"cannot read this XML document: {exc}") from exc
     if tree.docinfo.doctype:
@@ -448,7 +448,7 @@ async def _sign(
     context: ValidationContext | None,
 ) -> XadesResult:
     """All the steps in one event loop, so that the services share it."""
-    tree = _parse_document(content)
+    tree = parse_document(content)
     data = tree.getroot()
     signer = _signer(packaging, digest)
     key = _TokenKey(token, chain[-1].public_key(), digest)

@@ -31,7 +31,7 @@ tar xzf "apache-maven-$V-bin.tar.gz"
 
 cd "$DIR/spk03/dssval"
 "$ENV/tools/apache-maven-$V/bin/mvn" -q -B dependency:copy-dependencies -DoutputDirectory=lib
-mkdir -p classes && javac -d classes -cp 'lib/*' src/main/java/brg/Validate.java
+mkdir -p classes && javac -d classes -cp 'lib/*' src/main/java/brg/Validate.java src/main/java/brg/Sign.java
 
 cat > "$ENV/activar" <<EOF
 export PYTHONPATH="$SITE:$DIR/spk03"

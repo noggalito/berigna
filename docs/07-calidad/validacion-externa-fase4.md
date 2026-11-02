@@ -3,7 +3,7 @@
 | Campo | Valor |
 |---|---|
 | Documento | BRG-CAL-006 |
-| Versión | 0.4.0 |
+| Versión | 0.5.0 |
 | Estado | En curso |
 | Fecha | 2026-11-02 |
 | Responsable | noggalito |
@@ -17,7 +17,8 @@ Criterio de salida de la Fase 4 (hoja de ruta): la matriz completa de formato ×
 1. `tests/interop/matriz_cades.py` firma un mismo archivo de texto en CAdES separada (`.p7s`) y envuelta (`.p7m`), de B-B a B-LTA, con el código de berigna, el DNIe simulado, la PKI de pruebas y una TSA de pruebas.
 2. `tests/interop/matriz_xades.py` firma un mismo documento XML (`datos.xml`) en XAdES envuelta, envolvente y separada (`.xsig`, que referencia a `datos.xml`), de B-B a B-LTA, con los mismos medios.
 3. `tests/interop/matriz_dss.sh` valida todos los archivos con DSS 6.2 (arnés de SPK-03), con la raíz de pruebas como única ancla. Una `.p7s` se valida contra `datos.txt` y una `.xsig` contra `datos.xml`. Las URL de revocación de la PKI de pruebas no responden, así que DSS trabaja solo con lo que la firma trae.
-4. Verificación propia de berigna (incremento 3): la misma matriz CAdES se relee con `berigna.core.validation.cades.verify_cades` (RF-051), sin red, y sus indicaciones y subindicaciones quedan junto a las de DSS. Lo propio con XAdES llega con el incremento 5.
+4. Verificación propia de berigna (incrementos 3 y 5): la misma matriz CAdES se relee con `berigna.core.validation.cades.verify_cades` (RF-051) y la XAdES con `berigna.core.validation.xades.verify_xades` (RF-052), sin red, y sus indicaciones y subindicaciones quedan junto a las de DSS. `matriz_xades.py` añade la verificación propia como última columna de su tabla.
+5. Firmas de terceros (incremento 5): `tests/interop/firmas_dss.py` hace que DSS 6.2 firme el mismo documento en las tres variantes y los cuatro niveles (`brg.Sign` del arnés, con una clave de la PKI de pruebas, la TSA de pruebas por HTTP y los datos de revocación como archivos) y compara la verificación de berigna con la validación de DSS (PR-INT-06). `tests/interop/verificar_firma_peru.py` verifica una firma real de Firma Perú o ReFirma con el almacén propio y la TSL de INDECOPI, en línea (PR-INT-05); la firma y el documento quedan en la documentación interna, porque llevan los datos de una persona.
 
 Para repetirlo: `.venv/bin/python tests/interop/matriz_cades.py DIR` y `.venv/bin/python tests/interop/matriz_xades.py DIR`, y `tests/interop/matriz_dss.sh DIR [dssval]`. El arnés se prepara con `spikes/preparar-entorno.sh`; si el sistema solo tiene el entorno de ejecución de Java 21, el JDK 8 compila `Validate.java` con las bibliotecas de DSS 6.2.
 
@@ -94,13 +95,78 @@ Conclusiones:
 
 ### 3.4 Documentos difíciles, tras las correcciones (2026-11-02)
 
-La revisión del 2026-11-01 halló que las pruebas usaban un único XML sin comentarios, sin prólogo y sin firmas previas. La matriz se amplió con las correcciones de esa revisión y las 44 combinaciones se validaron de nuevo con DSS 6.2:
+La revisión del 2026-11-01 halló que las pruebas usaban un único XML sin comentarios, sin prólogo y sin firmas previas. La matriz se amplió con las correcciones de esa revisión y se validó de nuevo con DSS 6.2: 36 firmas XAdES (44 archivos con los 8 CAdES de la misma corrida):
 
 - Un documento con comentarios dentro y fuera de la raíz y codificación ISO-8859-1, firmado en las tres variantes y los cuatro niveles; la separada viaja con un nombre con espacios y tildes (`acta de sesión.xml`) y la URI del documento va codificada por ciento. TOTAL_PASSED en B-LT y B-LTA, sin ningún HASH_FAILURE: los resúmenes y los sellos excluyen los comentarios, como XMLDSig.
 - La separada sobre un documento que ya lleva una firma envuelta: la primera firma sigue siendo válida y DSS da TOTAL_PASSED en B-LT y B-LTA.
 - Un documento con una instrucción de procesamiento fuera de la raíz (`<?xml-stylesheet?>`): envuelta con `Id` en la raíz y envolvente, TOTAL_PASSED en B-LT y B-LTA. La envuelta sin `Id` y la separada se rechazan antes del PIN (ERR-313): DSS da HASH_FAILURE de ellas, porque digiere el documento completo y el resumen de la referencia cubre solo el elemento raíz.
 - xmlsec1 1.2.41 (Debian) verifica aparte, en la CI, los resúmenes y el valor de la firma de las tres variantes, con los comentarios dentro del documento: un verificador que no comparte código con berigna.
 
+### 3.5 Verificación XAdES propia (incremento 5, 2026-11-02)
+
+`verify_xades` (RF-052) sobre las 36 firmas de la matriz, sin red. La indicación principal coincide con la de DSS 6.2 en las 36: TOTAL-PASSED en las 18 B-LT y B-LTA, también las de los documentos difíciles y la separada sobre una firma, e INDETERMINATE en las 18 B-B y B-T. Las doce de siempre:
+
+| Archivo | berigna (`verify_xades`) | DSS 6.2 |
+|---|---|---|
+| `xades-envuelta-B-B.xml` | INDETERMINATE / TRY_LATER | INDETERMINATE / NO_CERTIFICATE_CHAIN_FOUND |
+| `xades-envuelta-B-T.xml` | INDETERMINATE / TRY_LATER (sello: INDETERMINATE) | INDETERMINATE / CERTIFICATE_CHAIN_GENERAL_FAILURE |
+| `xades-envuelta-B-LT.xml` | TOTAL-PASSED (sello: PASSED) | TOTAL_PASSED |
+| `xades-envuelta-B-LTA.xml` | TOTAL-PASSED (sellos: PASSED, PASSED) | TOTAL_PASSED |
+| `xades-envolvente-B-B.xml` | INDETERMINATE / TRY_LATER | INDETERMINATE / NO_CERTIFICATE_CHAIN_FOUND |
+| `xades-envolvente-B-T.xml` | INDETERMINATE / TRY_LATER (sello: INDETERMINATE) | INDETERMINATE / CERTIFICATE_CHAIN_GENERAL_FAILURE |
+| `xades-envolvente-B-LT.xml` | TOTAL-PASSED (sello: PASSED) | TOTAL_PASSED |
+| `xades-envolvente-B-LTA.xml` | TOTAL-PASSED (sellos: PASSED, PASSED) | TOTAL_PASSED |
+| `xades-separada-B-B.xsig` | INDETERMINATE / TRY_LATER | INDETERMINATE / NO_CERTIFICATE_CHAIN_FOUND |
+| `xades-separada-B-T.xsig` | INDETERMINATE / TRY_LATER (sello: INDETERMINATE) | INDETERMINATE / CERTIFICATE_CHAIN_GENERAL_FAILURE |
+| `xades-separada-B-LT.xsig` | TOTAL-PASSED (sello: PASSED) | TOTAL_PASSED |
+| `xades-separada-B-LTA.xsig` | TOTAL-PASSED (sellos: PASSED, PASSED) | TOTAL_PASSED |
+
+Conclusiones:
+
+- Donde DSS da una subindicación de cadena, berigna precisa la causa: `TRY_LATER`, porque falta la revocación. En B-B, DSS no encuentra la cadena (`NO_CERTIFICATE_CHAIN_FOUND`) porque la firma solo lleva el certificado del firmante y DSS tiene solo la raíz; berigna tiene la CA intermedia en su almacén, como con el DNIe real.
+- El sello de firma de B-T queda INDETERMINATE por lo mismo: sin la revocación de la TSA. Con los datos suministrados, la B-T pasa (pruebas unitarias).
+- El sello de archivo de B-LTA se recalcula sobre la firma tal como está (EN 319 132-1 §5.5.2): PASSED en las nueve B-LTA. Si se añade un certificado a `CertificateValues` después del sellado, la firma sigue TOTAL-PASSED y el sello pasa a TOTAL-FAILED / HASH_FAILURE (PR-TSA-05).
+
+### 3.6 Firmas generadas por DSS (PR-INT-06, 2026-11-02)
+
+DSS 6.2 firma `datos.xml` en las tres variantes y los cuatro niveles (`tests/interop/firmas_dss.py`); berigna verifica sin red y DSS valida:
+
+| Archivo | berigna (`verify_xades`) | DSS 6.2 |
+|---|---|---|
+| `dss-xades-envuelta-B-B.xml` | INDETERMINATE / TRY_LATER | XAdES-BASELINE-B, INDETERMINATE / CERTIFICATE_CHAIN_GENERAL_FAILURE |
+| `dss-xades-envuelta-B-T.xml` | INDETERMINATE / TRY_LATER (sello: INDETERMINATE) | XAdES-BASELINE-T, INDETERMINATE / CERTIFICATE_CHAIN_GENERAL_FAILURE |
+| `dss-xades-envuelta-B-LT.xml` | TOTAL-PASSED (sello: PASSED) | XAdES-BASELINE-LT, TOTAL_PASSED |
+| `dss-xades-envuelta-B-LTA.xml` | TOTAL-PASSED (sellos: PASSED, PASSED) | XAdES-BASELINE-LTA, TOTAL_PASSED |
+| `dss-xades-envolvente-B-B.xml` | INDETERMINATE / TRY_LATER | XAdES-BASELINE-B, INDETERMINATE / CERTIFICATE_CHAIN_GENERAL_FAILURE |
+| `dss-xades-envolvente-B-T.xml` | INDETERMINATE / TRY_LATER (sello: INDETERMINATE) | XAdES-BASELINE-T, INDETERMINATE / CERTIFICATE_CHAIN_GENERAL_FAILURE |
+| `dss-xades-envolvente-B-LT.xml` | TOTAL-PASSED (sello: PASSED) | XAdES-BASELINE-LT, TOTAL_PASSED |
+| `dss-xades-envolvente-B-LTA.xml` | TOTAL-PASSED (sellos: PASSED, PASSED) | XAdES-BASELINE-LTA, TOTAL_PASSED |
+| `dss-xades-separada-B-B.xml` | INDETERMINATE / TRY_LATER | XAdES-BASELINE-B, INDETERMINATE / CERTIFICATE_CHAIN_GENERAL_FAILURE |
+| `dss-xades-separada-B-T.xml` | INDETERMINATE / TRY_LATER (sello: INDETERMINATE) | XAdES-BASELINE-T, INDETERMINATE / CERTIFICATE_CHAIN_GENERAL_FAILURE |
+| `dss-xades-separada-B-LT.xml` | TOTAL-PASSED (sello: PASSED) | XAdES-BASELINE-LT, TOTAL_PASSED |
+| `dss-xades-separada-B-LTA.xml` | TOTAL-PASSED (sellos: PASSED, PASSED) | XAdES-BASELINE-LTA, TOTAL_PASSED |
+
+Conclusiones:
+
+- La indicación principal coincide en las doce: PR-INT-06 se cumple.
+- Las firmas de DSS usan lo que las de berigna no: `C14N` exclusiva, `SigningCertificateV2` con SHA-512 y `IssuerSerialV2`, y en la envolvente el documento en base64 dentro de `ds:Object`, con la transformada `base64`. La primera corrida dio FORMAT_FAILURE en las cuatro envolventes porque esa transformada faltaba en la lista permitida; se añadió y se corrió de nuevo.
+- berigna da PASSED al sello de archivo que calculó DSS: el cálculo de la cobertura (EN 319 132-1 §5.5.2) coincide con el de un tercero, no solo con el del firmante de berigna.
+
+### 3.7 Firma real de Firma Perú (PR-INT-05, 2026-11-02)
+
+Un documento XML de prueba firmado con Firma Perú y un DNIe real: XAdES-BASELINE-B envuelta, con la referencia `URI=""` y la transformada XPath Filter 2.0 `subtract` de todos los `ds:Signature`, C14N exclusiva y `SigningCertificateV2`, emitida por ECEP-RENIEC CA Class 2 II. La firma y el documento, que llevan el nombre y el DNI del firmante, quedan en la documentación interna.
+
+| Verificación | Resultado |
+|---|---|
+| berigna en línea (`verificar_firma_peru.py`: almacén propio, TSL de INDECOPI, OCSP y CRL de RENIEC) | TOTAL-PASSED; cubre el documento completo (`SignedScope.DOCUMENT`) |
+| berigna sin red | INDETERMINATE / TRY_LATER (sin la revocación, como cualquier B-B) |
+| berigna con un precio del documento cambiado | TOTAL-FAILED / HASH_FAILURE |
+| DSS 6.2, con ECERNEP PERU CA ROOT 3 como ancla y revocación en línea | XAdES-BASELINE-B, TOTAL_PASSED |
+
+PR-INT-05 se cumple con Firma Perú. Falta una firma XAdES de ReFirma.
+
 ## 4. Pendiente
 
 - La misma matriz con el DNIe real y PIN, y en Firma Perú (incremento 8).
+- PR-INT-05 con una firma XAdES de ReFirma.
+- Firma XAdES envuelta de un documento cuya raíz lleva `xml:lang` (u otro atributo `xml:`): la firma de berigna sale inválida, con HASH_FAILURE en DSS 6.2 y en `verify_xades` (2026-11-02). signxml canonicaliza con lxml, que no hereda los atributos `xml:` de los antepasados en la C14N inclusiva de un subconjunto (`SignedProperties` y `KeyInfo`, dentro de la raíz). La envolvente y la separada no se ven afectadas. Necesita una corrección aparte en `core.formats.xades`.
