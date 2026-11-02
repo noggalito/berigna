@@ -12,6 +12,7 @@ that the Spanish version prevails (ADR-0011 §3, ADR-0015).
 
 import gettext
 import io
+from collections.abc import Sequence
 from pathlib import Path
 from typing import Any
 from xml.sax.saxutils import escape
@@ -28,6 +29,7 @@ import berigna
 from berigna.core.i18n import NAME, Language, translations
 from berigna.core.report import messages
 from berigna.core.report.explanations import (
+    SignatureReport,
     common_name,
     display_name,
     explain_signature,
@@ -36,10 +38,13 @@ from berigna.core.report.explanations import (
 )
 from berigna.core.trust import TrustStore
 from berigna.core.validation import (
+    CadesVerification,
     Indication,
     PdfSignatureReport,
     PdfVerification,
     TimestampReport,
+    XadesSignatureReport,
+    XadesVerification,
 )
 
 _DEJAVU = Path("/usr/share/fonts/truetype/dejavu")
@@ -119,8 +124,28 @@ def _timestamp_text(w: _Writer, stamp: TimestampReport | None) -> str:
     return " · ".join(parts)
 
 
+def _format_rows(w: _Writer, report: SignatureReport) -> list[tuple[str, str]]:
+    """The rows only one format has: changes and signed revision of a PDF; packaging,
+    archive time-stamps and, for XAdES, what was signed (AM-06)."""
+    if isinstance(report, PdfSignatureReport):
+        return [
+            (messages.REPORT_CHANGES, w.t(messages.MODIFICATIONS[report.modifications])),
+            (
+                messages.REPORT_SIGNED_REVISION,
+                w.t(messages.REPORT_SIGNED_BYTES).format(length=report.signed_revision_length),
+            ),
+        ]
+    rows = [(messages.REPORT_FORMAT, w.t(messages.PACKAGINGS[report.packaging]))]
+    if isinstance(report, XadesSignatureReport) and report.scope is not None:
+        rows.append((messages.REPORT_SCOPE, w.t(messages.SCOPES[report.scope])))
+    if report.archive_timestamps:
+        stamps = "; ".join(_timestamp_text(w, stamp) for stamp in report.archive_timestamps)
+        rows.append((messages.REPORT_ARCHIVE_TIMESTAMPS, stamps))
+    return rows
+
+
 def _signature_section(
-    w: _Writer, report: PdfSignatureReport, number: int, total: int, catalogue: Any
+    w: _Writer, report: SignatureReport, number: int, total: int, catalogue: Any
 ) -> list[Any]:
     rows: list[tuple[str, str]] = [
         (messages.REPORT_ETSI, _etsi(report.indication, report.subindication)),
@@ -132,17 +157,14 @@ def _signature_section(
         ]
     if report.claimed_signing_time is not None:
         rows.append((messages.REPORT_CLAIMED_TIME, format_time(report.claimed_signing_time, w.t)))
-    rows += [
-        (messages.REPORT_TIMESTAMP, _timestamp_text(w, report.timestamp)),
-        (messages.REPORT_CHANGES, w.t(messages.MODIFICATIONS[report.modifications])),
-        (
-            messages.REPORT_SIGNED_REVISION,
-            w.t(messages.REPORT_SIGNED_BYTES).format(length=report.signed_revision_length),
-        ),
-    ]
-    heading = w.t(messages.REPORT_SIGNATURE).format(
-        number=number, total=total, field=report.field_name
-    )
+    rows.append((messages.REPORT_TIMESTAMP, _timestamp_text(w, report.timestamp)))
+    rows += _format_rows(w, report)
+    if isinstance(report, PdfSignatureReport):
+        heading = w.t(messages.REPORT_SIGNATURE).format(
+            number=number, total=total, field=report.field_name
+        )
+    else:
+        heading = w.t(messages.REPORT_SIGNATURE_NUMBER).format(number=number, total=total)
     return [
         w.p(heading, w.heading),
         w.result(report.indication),
@@ -154,14 +176,16 @@ def _signature_section(
 
 
 def pdf_report(
-    verification: PdfVerification,
+    verification: PdfVerification | CadesVerification | XadesVerification,
     *,
     file_name: str,
     file_sha256: str,
     store: TrustStore,
     language: Language = Language.ES_PE,
+    signed_file: tuple[str, str] | None = None,
 ) -> bytes:
-    """The report of :func:`berigna.core.validation.verify_pdf` as a PDF document."""
+    """The report of a verification (PAdES, CAdES or XAdES) as a PDF document.
+    ``signed_file`` is the name and SHA-256 of the file a detached signature signs."""
     catalogue = translations(language)
     regular, bold = _fonts()
     w = _Writer(catalogue, regular, bold)
@@ -177,20 +201,32 @@ def pdf_report(
             [
                 (messages.REPORT_FILE, file_name),
                 (messages.REPORT_SHA256, _grouped(file_sha256)),
+                *(
+                    [
+                        (messages.REPORT_SIGNED_FILE, signed_file[0]),
+                        (messages.REPORT_SHA256, _grouped(signed_file[1])),
+                    ]
+                    if signed_file is not None
+                    else []
+                ),
                 (messages.REPORT_VERIFIED_AT, format_time(verification.moment, w.t)),
                 (messages.REPORT_TRUST, trust),
             ]
         ),
         Spacer(1, 8 * mm),
     ]
-    total = len(verification.signatures)
+    reports: Sequence[SignatureReport] = verification.signatures
+    total = len(reports)
     if total == 0:
         story.append(w.p(w.t(messages.REPORT_NO_SIGNATURES)))
-    for number, report in enumerate(verification.signatures, start=1):
+    for number, report in enumerate(reports, start=1):
         story += _signature_section(w, report, number, total, catalogue)
-    if verification.document_timestamps:
+    document_stamps = (
+        verification.document_timestamps if isinstance(verification, PdfVerification) else ()
+    )
+    if document_stamps:
         story.append(w.p(w.t(messages.REPORT_DOCUMENT_TIMESTAMPS), w.heading))
-        for stamp in verification.document_timestamps:
+        for stamp in document_stamps:
             story += [
                 w.result(stamp.indication),
                 w.p(f"{stamp.field_name or ''} · {_timestamp_text(w, stamp)}"),

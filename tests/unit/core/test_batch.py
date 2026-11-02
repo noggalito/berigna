@@ -9,13 +9,16 @@ from pathlib import Path
 
 import pytest
 
-from berigna.core.batch import BatchItem, Outcome, batch_outputs, sign_pdf_batch
+from berigna.core.batch import BatchItem, Outcome, batch_outputs, sign_batch
+from berigna.core.documents import DocumentKind, inspect_document
 from berigna.core.errors import CardRemovedError, SigningCancelledError
+from berigna.core.formats.cades import CadesPackaging
+from berigna.core.formats.xades import XadesPackaging
 from berigna.core.i18n import Language
 from berigna.core.report.batch_report import batch_csv
 from berigna.core.signing import SigningJob
 from berigna.core.token.dnie_v2 import INS_PSO, INS_VERIFY, DnieV2Token
-from berigna.core.validation import Indication, verify_pdf
+from berigna.core.validation import Indication, verify_cades, verify_pdf
 from support.cards import make_card
 from support.pki import Pki, build_pki, minimal_pdf
 from support.prompts import PinPrompt
@@ -43,7 +46,7 @@ def _sign(
     card, leaf = make_card(pki, "FIRMANTE LOTE")
     prompt = kwargs.pop("prompt", PinPrompt())
     with DnieV2Token(card) as token:
-        items = sign_pdf_batch(
+        items = sign_batch(
             jobs,
             token=token,
             store=pki.store,
@@ -163,6 +166,72 @@ def test_outputs_never_collide(tmp_path: Path) -> None:
     assert batch_outputs([tmp_path / "a" / "acta.pdf"], "-firmado") == [
         tmp_path / "a" / "acta-firmado.pdf"
     ]
+
+
+def test_outputs_of_a_mixed_batch(tmp_path: Path) -> None:
+    """RF-041 and RF-045: each output named as its format names it, never twice the same."""
+    sources = [
+        tmp_path / "a" / "acta.xml",
+        tmp_path / "b" / "acta.xml",
+        tmp_path / "a" / "planilla.csv",
+        tmp_path / "b" / "planilla.csv",
+        tmp_path / "a" / "contrato.pdf",
+    ]
+    packagings = [
+        XadesPackaging.DETACHED,
+        XadesPackaging.DETACHED,
+        CadesPackaging.ENVELOPING,
+        CadesPackaging.ENVELOPING,
+        None,
+    ]
+    out = tmp_path / "firmados"
+    assert batch_outputs(sources, "-firmado", out, packagings) == [
+        out / "acta.xml.xsig",
+        out / "acta-2.xml.xsig",
+        out / "planilla.csv.p7m",
+        out / "planilla-2.csv.p7m",
+        out / "contrato-firmado.pdf",
+    ]
+
+
+def test_a_mixed_batch_signs_each_file_in_its_format(pki: Pki, tmp_path: Path) -> None:
+    """RF-041: PAdES, XAdES and CAdES in one batch with one PIN; an XML that cannot be
+    signed enveloped is reported before the PIN and the others go on (RF-043)."""
+    files = {
+        "contrato.pdf": (minimal_pdf(), None),
+        "acta.xml": (b"<acta><punto>1</punto></acta>", XadesPackaging.ENVELOPED),
+        "planilla.csv": (b"nombre;monto\nRosa;100\n", CadesPackaging.DETACHED),
+        "firmada.xml": (
+            b'<a><ds:Signature xmlns:ds="http://www.w3.org/2000/09/xmldsig#"/></a>',
+            XadesPackaging.ENVELOPED,
+        ),
+    }
+    sources = []
+    for name, (data, _packaging) in files.items():
+        (tmp_path / name).write_bytes(data)
+        sources.append(tmp_path / name)
+    packagings = [packaging for _data, packaging in files.values()]
+    outputs = batch_outputs(sources, "-firmado", packagings=packagings)
+    jobs = [
+        SigningJob(source, output, hashlib.sha256(source.read_bytes()).hexdigest(), packaging)
+        for source, output, packaging in zip(sources, outputs, packagings, strict=True)
+    ]
+    items, card, _leaf = _sign(pki, jobs)
+    assert [item.outcome for item in items] == [Outcome.SIGNED] * 3 + [Outcome.FAILED]
+    assert items[3].code == "ERR-312"
+    assert card.instructions().count(INS_VERIFY) == 1  # type: ignore[attr-defined]
+    assert [output.name for output in outputs[:3]] == [
+        "contrato-firmado.pdf",
+        "acta-firmado.xml",
+        "planilla.csv.p7s",
+    ]
+    assert inspect_document(outputs[0]).signatures == 1
+    assert inspect_document(outputs[1]).kind is DocumentKind.XML
+    signature = outputs[2].read_bytes()
+    [report] = verify_cades(
+        signature, pki.store, content=files["planilla.csv"][0], online=False
+    ).signatures
+    assert report.subindication != "HASH_FAILURE"
 
 
 def test_csv_report(pki: Pki, tmp_path: Path) -> None:

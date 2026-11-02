@@ -17,7 +17,17 @@ from cryptography import x509
 from cryptography.x509.oid import NameOID
 
 from berigna.core.report import messages
-from berigna.core.validation import Indication, PdfSignatureReport, TimestampReport
+from berigna.core.validation import (
+    CadesSignatureReport,
+    Indication,
+    Modifications,
+    PdfSignatureReport,
+    SignedScope,
+    TimestampReport,
+    XadesSignatureReport,
+)
+
+SignatureReport = PdfSignatureReport | CadesSignatureReport | XadesSignatureReport
 
 
 class _UntranslatedError(Exception):
@@ -106,8 +116,24 @@ def _result(
     return sentences
 
 
+def _content_sentence(report: SignatureReport, catalogue: gettext.NullTranslations) -> list[str]:
+    """What the signature says about the content: the changes after signing of a PDF; for
+    CAdES and XAdES, whose digest covers all that was signed, that it is unchanged when the
+    signature is valid, and for XAdES what it covers (AM-06)."""
+    if isinstance(report, PdfSignatureReport):
+        return [_(catalogue, messages.MODIFICATIONS[report.modifications])]
+    sentences = []
+    scope = report.scope if isinstance(report, XadesSignatureReport) else None
+    # over a part of the document, the rest may have changed: never say it did not (AM-06)
+    if report.indication is Indication.TOTAL_PASSED and scope is not SignedScope.PART:
+        sentences.append(_(catalogue, messages.MODIFICATIONS[Modifications.NONE]))
+    if scope is not None:
+        sentences.append(_(catalogue, messages.SCOPES[scope]))
+    return sentences
+
+
 def explain_signature(
-    report: PdfSignatureReport,
+    report: SignatureReport,
     catalogue: gettext.NullTranslations,
     *,
     user_anchor: bool = False,
@@ -132,7 +158,7 @@ def explain_signature(
             when = format_time(report.claimed_signing_time, strict)
             sentences.append(_(catalogue, messages.TIME_CLAIMED).format(time=when))
         if report.signer is not None:  # a format failure says nothing about the content
-            sentences.append(_(catalogue, messages.MODIFICATIONS[report.modifications]))
+            sentences += _content_sentence(report, catalogue)
         if user_anchor:
             sentences.append(_(catalogue, messages.USER_ANCHOR))
     except _UntranslatedError:

@@ -15,7 +15,7 @@ Order of the steps is part of the security design:
 """
 
 import hashlib
-from collections.abc import Callable, Sequence
+from collections.abc import Callable, Collection, Sequence
 from dataclasses import dataclass, replace
 from pathlib import Path
 from typing import Protocol
@@ -69,26 +69,41 @@ def _read_unchanged(path: Path, expected_sha256: str) -> bytes:
     return data
 
 
-def _free_name(folder: Path, name: Callable[[str], str]) -> Path:
-    """The first ``name("")``, ``name("-2")``, ``name("-3")``… not taken in ``folder`` (RF-045)."""
+def _free_name(
+    folder: Path, name: Callable[[str], str], taken: Collection[Path] = frozenset()
+) -> Path:
+    """The first ``name("")``, ``name("-2")``, ``name("-3")``… that neither exists in
+    ``folder`` nor is in ``taken`` (the outputs already given to a batch) (RF-045)."""
     candidate = folder / name("")
     number = 2
-    while candidate.exists():
+    while candidate.exists() or candidate in taken:
         candidate = folder / name(f"-{number}")
         number += 1
     return candidate
 
 
-def output_path(source: Path, suffix: str, directory: Path | None = None) -> Path:
+# How a file is signed: PAdES (None), or CAdES or XAdES in one of their packagings.
+Packaging = CadesPackaging | XadesPackaging | None
+
+
+def output_path(
+    source: Path,
+    suffix: str,
+    directory: Path | None = None,
+    taken: Collection[Path] = frozenset(),
+) -> Path:
     """Where to write the signed copy of ``source``: ``<name><suffix>.pdf`` in ``directory``
     (the folder of ``source`` by default), numbered when that name is taken (RF-045)."""
     return _free_name(
-        directory or source.parent, lambda n: f"{source.stem}{suffix}{n}{source.suffix}"
+        directory or source.parent, lambda n: f"{source.stem}{suffix}{n}{source.suffix}", taken
     )
 
 
 def cades_output_path(
-    source: Path, packaging: CadesPackaging, directory: Path | None = None
+    source: Path,
+    packaging: CadesPackaging,
+    directory: Path | None = None,
+    taken: Collection[Path] = frozenset(),
 ) -> Path:
     """Where to write the CAdES signature of ``source``: ``<name>.p7s`` or ``<name>.p7m``
     (RF-020, RF-021) in ``directory`` (the folder of ``source`` by default). When that name is
@@ -97,6 +112,7 @@ def cades_output_path(
     return _free_name(
         directory or source.parent,
         lambda n: f"{source.stem}{n}{source.suffix}.{packaging.value}",
+        taken,
     )
 
 
@@ -105,6 +121,7 @@ def xades_output_path(
     packaging: XadesPackaging,
     suffix: str,
     directory: Path | None = None,
+    taken: Collection[Path] = frozenset(),
 ) -> Path:
     """Where to write the XAdES signature of ``source`` (RF-030 to RF-032, RF-045). The
     enveloped and enveloping forms are the signed document, ``<name><suffix>.xml``; the
@@ -113,9 +130,25 @@ def xades_output_path(
     name of the document."""
     if packaging is XadesPackaging.DETACHED:
         return _free_name(
-            directory or source.parent, lambda n: f"{source.stem}{n}{source.suffix}.xsig"
+            directory or source.parent, lambda n: f"{source.stem}{n}{source.suffix}.xsig", taken
         )
-    return output_path(source, suffix, directory)
+    return output_path(source, suffix, directory, taken)
+
+
+def signed_output_path(
+    source: Path,
+    packaging: Packaging,
+    suffix: str,
+    directory: Path | None = None,
+    taken: Collection[Path] = frozenset(),
+) -> Path:
+    """Where to write what signing ``source`` in ``packaging`` produces, whatever the format;
+    never a name in ``taken`` (RF-045)."""
+    if isinstance(packaging, CadesPackaging):
+        return cades_output_path(source, packaging, directory, taken)
+    if isinstance(packaging, XadesPackaging):
+        return xades_output_path(source, packaging, suffix, directory, taken)
+    return output_path(source, suffix, directory, taken)
 
 
 def _visible_stamp(
@@ -194,11 +227,13 @@ def sign_pdf_file(
 
 @dataclass(frozen=True)
 class SigningJob:
-    """One file to sign: the bytes shown to the user (by their SHA-256) go to ``output``."""
+    """One file to sign: the bytes shown to the user (by their SHA-256) go to ``output``, in
+    PAdES or, for a batch of several kinds of file (RF-041), in ``packaging``."""
 
     source: Path
     output: Path
     expected_sha256: str
+    packaging: Packaging = None
 
 
 def check_source(source: Path, output: Path, expected_sha256: str) -> bytes:
