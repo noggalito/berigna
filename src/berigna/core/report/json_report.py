@@ -11,6 +11,7 @@ kept.
 
 import datetime as dt
 import json
+from collections.abc import Sequence
 from typing import Any
 
 from cryptography import x509
@@ -18,13 +19,21 @@ from cryptography import x509
 import berigna
 from berigna.core.i18n import Language, translations
 from berigna.core.report.explanations import (
+    SignatureReport,
     common_name,
     explain_signature,
     explain_timestamp,
     masked_id,
 )
 from berigna.core.trust import TrustStore
-from berigna.core.validation import PdfVerification, TimestampReport
+from berigna.core.validation import (
+    CadesSignatureReport,
+    CadesVerification,
+    PdfSignatureReport,
+    PdfVerification,
+    TimestampReport,
+    XadesVerification,
+)
 
 SCHEMA = "berigna-verification-report/1"
 
@@ -68,23 +77,48 @@ def _catalogues() -> dict[Language, Any]:
     }
 
 
+def _format_fields(report: SignatureReport) -> dict[str, Any]:
+    """What only one format has: the revision of a PDF, the packaging of CAdES and XAdES,
+    and what a XAdES signature covers (AM-06)."""
+    if isinstance(report, PdfSignatureReport):
+        return {
+            "id": report.field_name,
+            "format": "PAdES",
+            "subfilter": report.subfilter,
+            "covers_whole_document": report.covers_whole_document,
+            "modifications_after": report.modifications.value,
+            "signed_revision_length": report.signed_revision_length,
+        }
+    fields: dict[str, Any] = {
+        "id": None,
+        "format": "CAdES" if isinstance(report, CadesSignatureReport) else "XAdES",
+        "packaging": report.packaging.value,
+        "archive_timestamps": [_timestamp(stamp) for stamp in report.archive_timestamps],
+    }
+    if not isinstance(report, CadesSignatureReport):
+        fields["scope"] = report.scope.value if report.scope is not None else None
+        fields["references"] = list(report.references)
+    return fields
+
+
 def report_data(
-    verification: PdfVerification,
+    verification: PdfVerification | CadesVerification | XadesVerification,
     *,
     file_name: str,
     file_sha256: str,
     store: TrustStore,
+    signed_file: tuple[str, str] | None = None,
 ) -> dict[str, Any]:
-    """The report of :func:`berigna.core.validation.verify_pdf` as a JSON-ready dict."""
+    """The report of a verification (PAdES, CAdES or XAdES) as a JSON-ready dict.
+    ``signed_file`` is the name and SHA-256 of the file a detached signature signs."""
     catalogues = _catalogues()
     user_roots = any(entry.user_added for entry in store.entries)
     signatures = []
-    for report in verification.signatures:
+    reports: Sequence[SignatureReport] = verification.signatures
+    for report in reports:
         signatures.append(
             {
-                "id": report.field_name,
-                "format": "PAdES",
-                "subfilter": report.subfilter,
+                **_format_fields(report),
                 "signer": _signer(report.signer),
                 "signing_time": {
                     "claimed": _iso(report.claimed_signing_time),
@@ -92,9 +126,6 @@ def report_data(
                 },
                 "indication": report.indication.value,
                 "sub_indication": report.subindication,
-                "covers_whole_document": report.covers_whole_document,
-                "modifications_after": report.modifications.value,
-                "signed_revision_length": report.signed_revision_length,
                 "explanation": _explanations(
                     {lang: explain_signature(report, cat) for lang, cat in catalogues.items()}
                 ),
@@ -108,7 +139,9 @@ def report_data(
                 {lang: explain_timestamp(stamp, cat) for lang, cat in catalogues.items()}
             ),
         }
-        for stamp in verification.document_timestamps
+        for stamp in (
+            verification.document_timestamps if isinstance(verification, PdfVerification) else ()
+        )
     ]
     return {
         "schema": SCHEMA,
@@ -116,6 +149,9 @@ def report_data(
         "validated_at": _iso(verification.moment),
         "languages": [language.value for language in catalogues],
         "file": {"name": file_name, "sha256": file_sha256},
+        "signed_file": (
+            {"name": signed_file[0], "sha256": signed_file[1]} if signed_file is not None else None
+        ),
         "trust_store": {"anchors": len(store.entries), "user_anchors": user_roots},
         "signatures": signatures,
         "document_timestamps": stamps,

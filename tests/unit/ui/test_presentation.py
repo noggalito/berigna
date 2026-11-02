@@ -59,10 +59,9 @@ def _info(kind: DocumentKind, pages: int | None = None, signatures: int = 0) -> 
         (_info(DocumentKind.PDF, 1), "Documento PDF, 1 página, sin firmas"),
         (_info(DocumentKind.PDF, 3, 1), "Documento PDF, 3 páginas, 1 firma"),
         (_info(DocumentKind.PDF, 2, 2), "Documento PDF, 2 páginas, 2 firmas"),
-        (
-            _info(DocumentKind.OTHER),
-            "berigna todavía no puede firmar ni verificar este tipo de archivo.",
-        ),
+        (_info(DocumentKind.XML), "Documento XML, sin firmas"),
+        (_info(DocumentKind.XML, signatures=1), "Documento XML, 1 firma"),
+        (_info(DocumentKind.OTHER), "Archivo para firmar en CAdES"),
     ],
 )
 def test_document_summary(info: DocumentInfo, summary: str) -> None:

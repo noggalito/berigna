@@ -8,7 +8,9 @@ shown (:mod:`berigna.core.report.explanations`). The es_PE text is the legally b
 must have an entry here and a translation in ``po/es_PE.po``; the tests enforce both.
 """
 
-from berigna.core.validation import Indication, Modifications
+from berigna.core.formats.cades import CadesPackaging
+from berigna.core.formats.xades import XadesPackaging
+from berigna.core.validation import Indication, Modifications, SignedScope
 
 
 def N_(message: str) -> str:
@@ -115,6 +117,26 @@ MODIFICATIONS: dict[Modifications, str] = {
     ),
 }
 
+# What a XAdES signature covers (AM-06): said next to the result, so that a signature over a
+# part of the document is not taken for one over all of it.
+SCOPES: dict[SignedScope, str] = {
+    SignedScope.DOCUMENT: N_("The signature covers the whole document."),
+    SignedScope.PART: N_(
+        "The signature covers only part of the document: the rest was not signed."
+    ),
+    SignedScope.OBJECT: N_("The signed content is inside the signature."),
+    SignedScope.EXTERNAL: N_("The signature covers a separate file."),
+}
+
+# Formats of the signatures that are not PDF (RF-020, RF-021, RF-030 to RF-032).
+PACKAGINGS: dict[CadesPackaging | XadesPackaging, str] = {
+    CadesPackaging.DETACHED: N_("CAdES, detached (.p7s)"),
+    CadesPackaging.ENVELOPING: N_("CAdES, enveloping (.p7m)"),
+    XadesPackaging.ENVELOPED: N_("XAdES, enveloped"),
+    XadesPackaging.ENVELOPING: N_("XAdES, enveloping"),
+    XadesPackaging.DETACHED: N_("XAdES, detached (.xsig)"),
+}
+
 SIGNED_BY = N_("Signed by {name}.")
 TIME_CERTIFIED = N_("The time of signing, {time}, is certified by a time-stamping authority.")
 TIME_CLAIMED = N_(
@@ -134,6 +156,11 @@ REPORT_TRUST = N_("Trusted root certificates")
 REPORT_TRUST_OFFICIAL = N_("{count} certificates of the official PKI (IOFE)")
 REPORT_TRUST_USER = N_("{count} certificates, including roots you added yourself")
 REPORT_SIGNATURE = N_("Signature {number} of {total}: {field}")
+REPORT_SIGNATURE_NUMBER = N_("Signature {number} of {total}")
+REPORT_FORMAT = N_("Format")
+REPORT_SCOPE = N_("What was signed")
+REPORT_ARCHIVE_TIMESTAMPS = N_("Archive time-stamps")
+REPORT_SIGNED_FILE = N_("Signed file")
 REPORT_RESULT = N_("Result")
 REPORT_ETSI = N_("ETSI EN 319 102-1 code")
 REPORT_SIGNER = N_("Signer")

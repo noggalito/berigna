@@ -17,6 +17,7 @@ from pyhanko.sign.timestamps import TimeStamper  # noqa: E402
 
 from berigna import __version__  # noqa: E402
 from berigna.core import crashes  # noqa: E402
+from berigna.core.documents import DocumentKind  # noqa: E402
 from berigna.core.errors import TsaError  # noqa: E402
 from berigna.core.files import data_directory  # noqa: E402
 from berigna.core.history import History  # noqa: E402
@@ -35,7 +36,7 @@ from berigna.core.token.transport import PcscTransport  # noqa: E402
 from berigna.core.trust import TrustStore  # noqa: E402
 from berigna.core.trust.cache import Download, TslCache, TslRefresh, refresh  # noqa: E402
 from berigna.core.trust.tsl import extend_store  # noqa: E402
-from berigna.core.validation import PdfVerification, verify_pdf  # noqa: E402
+from berigna.core.verification import Verification, verify_document  # noqa: E402
 from berigna.ui.diagnostics import offer_failure_report  # noqa: E402
 from berigna.ui.i18n import _, choose_language, set_language  # noqa: E402
 from berigna.ui.preferences import PreferencesDialog  # noqa: E402
@@ -253,11 +254,17 @@ class BerignaApplication(Adw.Application):
             log.warning("invalid manual proxy URL; using the proxy of the system")
             apply_proxy(ProxyMode.SYSTEM, system_url=system)
 
-    def verify(self, data: bytes) -> tuple[PdfVerification, TrustStore]:
-        """Verify a PDF now, online unless disabled (called from a worker thread)."""
+    def verify(
+        self, data: bytes, content: bytes | None = None, kind: DocumentKind | None = None
+    ) -> tuple[Verification, TrustStore]:
+        """Verify a signed document now, online unless disabled (called from a worker
+        thread); ``content`` is the file a detached signature signs."""
         store = self._trust_store()
         timeout = float(self.settings.get_uint("network-timeout")) if self.settings else 10.0
-        return verify_pdf(data, store, online=self._online, timeout=timeout), store
+        verification = verify_document(
+            data, store, content=content, online=self._online, timeout=timeout, kind=kind
+        )
+        return verification, store
 
     def _configured_timestamper(self) -> TimeStamper | None:
         """The TSA of the preferences (``tsa-url``); none until one is configured (DP-02)."""

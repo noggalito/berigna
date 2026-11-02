@@ -2,13 +2,13 @@
 # SPDX-FileCopyrightText: 2026 noggalito
 [Desktop Entry]
 Name=berigna
-GenericName=PDF Signer
-Comment=Sign and verify PDF documents with the Peruvian DNIe
-Keywords=sign;signature;verify;PDF;DNIe;RENIEC;
+GenericName=Document Signer
+Comment=Sign and verify documents with the Peruvian DNIe
+Keywords=sign;signature;verify;PDF;XML;CAdES;XAdES;DNIe;RENIEC;
 Exec=berigna %F
 Icon=com.noggalito.Berigna
 Terminal=false
 Type=Application
 Categories=Office;GTK;
-MimeType=application/pdf;
+MimeType=application/pdf;application/pkcs7-signature;application/pkcs7-mime;
 StartupNotify=true

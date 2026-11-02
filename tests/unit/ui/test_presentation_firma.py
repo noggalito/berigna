@@ -12,13 +12,19 @@ from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.x509.oid import NameOID
 
 from berigna.core.documents import DocumentInfo, DocumentKind
+from berigna.core.formats.cades import CadesPackaging
 from berigna.core.formats.pades import SignatureLevel
+from berigna.core.formats.xades import XadesPackaging
 from berigna.core.i18n import Language, translations
 from berigna.core.signing import SignResult
 from berigna.core.validation import SignerCheck
 from berigna.ui import i18n
 from berigna.ui.presentation import (
+    PACKAGING_DESCRIPTIONS,
+    file_details,
+    file_size,
     level_title,
+    packagings_for,
     pin_summary,
     pin_warnings,
     signed_summary,
@@ -135,3 +141,60 @@ def test_certificate_about_to_expire_is_warned_before_the_pin(days_left: int, wa
         f"Tu certificado de firma vence el {date}, dentro de {days_left} {unit}. Renuévalo en "
         "la plataforma Ciudadano Digital de RENIEC para seguir firmando.",
     )
+
+
+# -- Files that are not PDF (CU-05) ----------------------------------------------------------------
+
+FILE = DocumentInfo(Path("documentos/planilla.csv"), DocumentKind.OTHER, 1234567, "ab" * 32)
+
+
+@pytest.mark.parametrize(
+    ("size", "text"),
+    [
+        (0, "0 bytes"),
+        (1, "1 byte"),
+        (999, "999 bytes"),
+        (1024, "1,0 kB (1 024 bytes)"),
+        (1234567, "1,2 MB (1 234 567 bytes)"),
+        (3 * 10**9, "3,0 GB (3 000 000 000 bytes)"),
+    ],
+)
+def test_file_size(size: int, text: str) -> None:
+    assert file_size(size) == text
+
+
+def test_file_details_identify_the_file() -> None:
+    """WYSIWYS (CU-05 step 3): what the user checks before signing what cannot be shown."""
+    rows = {r.label: r.value for r in file_details(FILE, "Hoja de cálculo CSV")}
+    assert rows == {
+        "Nombre": "planilla.csv",
+        "Tamaño": "1,2 MB (1 234 567 bytes)",
+        "Tipo": "Hoja de cálculo CSV",
+        "SHA-256": " ".join(["ABAB"] * 16),
+    }
+
+
+def test_proposed_packagings() -> None:
+    """CU-05 step 2: XAdES enveloped first for XML, CAdES detached first for the rest."""
+    assert packagings_for(DocumentKind.XML)[0] is XadesPackaging.ENVELOPED
+    assert CadesPackaging.DETACHED in packagings_for(DocumentKind.XML)
+    assert packagings_for(DocumentKind.OTHER) == (
+        CadesPackaging.DETACHED,
+        CadesPackaging.ENVELOPING,
+    )
+    assert set(PACKAGING_DESCRIPTIONS) == set(packagings_for(DocumentKind.XML))
+
+
+def test_pin_summary_of_a_file_and_of_a_batch() -> None:
+    rows = {
+        r.label: r.value
+        for r in pin_summary(
+            FILE, _check(), SignatureLevel.B_B, packaging=CadesPackaging.ENVELOPING
+        )
+    }
+    assert rows["Documento"] == "planilla.csv (1,2 MB (1 234 567 bytes))"
+    assert rows["SHA-256"].startswith("ABAB ABAB")
+    assert rows["Formato"] == "CAdES, envolvente (.p7m)"
+    batch = {r.label: r.value for r in pin_summary(4, _check(), SignatureLevel.B_B)}
+    assert batch["Documentos"] == "4 documentos"
+    assert "Formato" not in batch

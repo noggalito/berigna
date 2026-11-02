@@ -235,19 +235,6 @@ def test_every_icon_exists_in_the_theme() -> None:
     assert [name for name in sorted(names) if not theme.has_icon(name)] == []
 
 
-def test_files_that_are_not_pdf(app: BerignaApplication, tmp_path: Path) -> None:
-    path = tmp_path / "datos.xml"
-    path.write_bytes(b"<datos/>")
-
-    def script(app: BerignaApplication) -> Generator[None, None, None]:
-        yield from wait_until(lambda: app.main_window is not None)
-        yield from wait_until(lambda: _visible_title(app) == "datos.xml")
-        page = _window(app)._navigation.get_visible_page().get_child().get_content()
-        assert page.get_description().startswith("<b>berigna</b> todavía no puede firmar")
-
-    drive(app, script, args=[str(path)])
-
-
 @pytest.mark.parametrize(
     ("url", "configured"),
     [("", False), ("https://tsa.example", True), ("ftp://tsa.example", False)],

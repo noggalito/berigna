@@ -10,14 +10,21 @@ from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.x509.oid import NameOID
 
+from berigna.core.formats.cades import CadesPackaging
+from berigna.core.formats.xades import XadesPackaging
 from berigna.core.report.json_report import SCHEMA, dumps, report_data
 from berigna.core.trust import TrustedCertificate, TrustStore
 from berigna.core.validation import (
+    CadesSignatureReport,
+    CadesVerification,
     Indication,
     Modifications,
     PdfSignatureReport,
     PdfVerification,
+    SignedScope,
     TimestampReport,
+    XadesSignatureReport,
+    XadesVerification,
 )
 from support.pki import NOW
 
@@ -129,3 +136,83 @@ def test_dumps_is_valid_utf8_json() -> None:
     text = dumps(report)
     assert "contraseña" in text  # not escaped
     assert json.loads(text) == report
+
+
+def _xades_report(scope: SignedScope | None) -> XadesSignatureReport:
+    archive = TimestampReport(Indication.TOTAL_PASSED, None, NOW, None, None)
+    return XadesSignatureReport(
+        packaging=XadesPackaging.DETACHED,
+        indication=Indication.TOTAL_PASSED,
+        subindication=None,
+        signer=_dnie_like("PNOPE-12345678"),
+        claimed_signing_time=NOW,
+        timestamp=None,
+        archive_timestamps=(archive,),
+        scope=scope,
+        references=("acta.xml",),
+    )
+
+
+def test_report_of_cades_and_xades() -> None:
+    """RF-054 for CAdES and XAdES: the packaging, what was signed (AM-06), the archive
+    time-stamps and the file a detached signature signs."""
+    store = TrustStore([])
+    xades = XadesVerification((_xades_report(SignedScope.EXTERNAL),), NOW)
+    report = report_data(
+        xades,
+        file_name="acta.xml.xsig",
+        file_sha256="ab" * 32,
+        store=store,
+        signed_file=("acta.xml", "cd" * 32),
+    )
+    assert report["signed_file"] == {"name": "acta.xml", "sha256": "cd" * 32}
+    assert report["document_timestamps"] == []
+    [signature] = report["signatures"]
+    assert (signature["id"], signature["format"], signature["packaging"]) == (
+        None,
+        "XAdES",
+        "detached",
+    )
+    assert (signature["scope"], signature["references"]) == ("external", ["acta.xml"])
+    assert signature["archive_timestamps"][0]["indication"] == "TOTAL-PASSED"
+    assert signature["explanation"]["es_PE"].endswith(
+        "El documento no se ha modificado desde que se firmó. La firma cubre un archivo aparte."
+    )
+
+    cades = CadesVerification(
+        (
+            CadesSignatureReport(
+                packaging=CadesPackaging.ENVELOPING,
+                indication=Indication.TOTAL_FAILED,
+                subindication="HASH_FAILURE",
+                signer=_dnie_like(None),
+                claimed_signing_time=None,
+                timestamp=None,
+                archive_timestamps=(),
+            ),
+        ),
+        b"contenido",
+        NOW,
+    )
+    report = report_data(cades, file_name="acta.p7m", file_sha256="ab" * 32, store=store)
+    assert report["signed_file"] is None
+    [signature] = report["signatures"]
+    assert (signature["format"], signature["packaging"]) == ("CAdES", "p7m")
+    assert "scope" not in signature
+    # a failed digest says nothing reassuring about the content
+    assert "no se ha modificado" not in signature["explanation"]["es_PE"]
+
+
+def test_a_signature_over_a_part_never_says_the_document_is_unchanged() -> None:
+    """Review of the increment 6 (AM-06): the rest of the document may have changed."""
+    report = report_data(
+        XadesVerification((_xades_report(SignedScope.PART),), NOW),
+        file_name="acta.xml",
+        file_sha256="ab" * 32,
+        store=TrustStore([]),
+    )
+    explanation = report["signatures"][0]["explanation"]["es_PE"]
+    assert "no se ha modificado" not in explanation
+    assert explanation.endswith(
+        "La firma cubre solo una parte del documento: el resto no está firmado."
+    )

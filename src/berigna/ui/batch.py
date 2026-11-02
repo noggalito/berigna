@@ -1,11 +1,13 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # SPDX-FileCopyrightText: 2026 noggalito
-"""Signing several PDFs with one PIN (CU-04; RF-040 to RF-043; BRG-UX-001 §3.4).
+"""Signing several files with one PIN (CU-04; RF-040 to RF-043; BRG-UX-001 §3.4).
 
 The list the user builds is the confirmation: what is signed is each file as it was when it
-was added (its SHA-256, RF-018), and the PIN dialog says how many documents it covers. The
-core (:func:`berigna.core.batch.sign_pdf_batch`) runs in a worker thread; the user can cancel
-between files. The signatures of a batch are not visible.
+was added (its SHA-256, RF-018), and the PIN dialog says how many documents it covers. Each
+file is signed in the format of its kind (RF-041): PAdES for PDF, XAdES for XML and CAdES for
+the rest, in the packagings the user chooses for XML and for the rest. The core
+(:func:`berigna.core.batch.sign_batch`) runs in a worker thread; the user can cancel between
+files. The signatures of a batch are not visible.
 """
 
 import hashlib
@@ -21,16 +23,21 @@ gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
 from gi.repository import Adw, Gio, GLib, Gtk  # noqa: E402
 
-from berigna.core.batch import BatchItem, Outcome, batch_outputs, sign_pdf_batch  # noqa: E402
+from berigna.core.batch import BatchItem, Outcome, batch_outputs, sign_batch  # noqa: E402
+from berigna.core.documents import DocumentKind, detect_kind  # noqa: E402
 from berigna.core.errors import BerignaError, PinIncorrectError  # noqa: E402
 from berigna.core.files import dated_name, write_atomically  # noqa: E402
+from berigna.core.formats.cades import CadesPackaging  # noqa: E402
 from berigna.core.formats.pades import SignatureLevel  # noqa: E402
+from berigna.core.formats.xades import XadesPackaging  # noqa: E402
 from berigna.core.history import Kind  # noqa: E402
 from berigna.core.report.batch_report import batch_csv  # noqa: E402
 from berigna.core.report.explanations import explain_error  # noqa: E402
-from berigna.core.signing import SigningJob  # noqa: E402
+from berigna.core.signing import Packaging, SigningJob  # noqa: E402
 from berigna.core.token.pin import Pin  # noqa: E402
 from berigna.core.validation import SignerCheck  # noqa: E402
+from berigna.core.verification import DETACHED_SUFFIXES  # noqa: E402
+from berigna.ui import presentation  # noqa: E402
 from berigna.ui.i18n import _, catalogue, current_language, ngettext  # noqa: E402
 from berigna.ui.signing import (  # noqa: E402
     LevelChoice,
@@ -42,7 +49,7 @@ from berigna.ui.signing import (  # noqa: E402
     output_settings,
     signature_entry,
 )
-from berigna.ui.widgets import brand_markup, named  # noqa: E402
+from berigna.ui.widgets import brand_markup, document_filters, label_factory, named  # noqa: E402
 
 if TYPE_CHECKING:
     from berigna.ui.window import MainWindow
@@ -56,8 +63,8 @@ _ICONS = {
 }
 
 
-def is_pdf(path: Path) -> bool:
-    return path.suffix.lower() == ".pdf"
+# Signatures berigna writes: a folder is not asked to sign them again (RF-041).
+SIGNATURE_SUFFIXES = frozenset((*DETACHED_SUFFIXES, ".p7m"))
 
 
 def display_folder(folder: Path) -> str:
@@ -66,17 +73,73 @@ def display_folder(folder: Path) -> str:
     return f"~/{folder.relative_to(home)}" if folder.is_relative_to(home) else str(folder)
 
 
-def collect_pdfs(paths: Iterable[Path], *, recursive: bool) -> list[Path]:
-    """The PDFs among ``paths``: files as given, folders expanded (with their subfolders when
-    ``recursive``), in name order, each once (RF-041)."""
+def is_signature(path: Path) -> bool:
+    """A signature berigna writes, by its extension: verified on its own, never signed again
+    in a batch (review of the increment 6)."""
+    return path.suffix.lower() in SIGNATURE_SUFFIXES
+
+
+def collect_files(paths: Iterable[Path], *, recursive: bool) -> list[Path]:
+    """The files among ``paths``: files as given, folders expanded (with their subfolders when
+    ``recursive``) without hidden files, in name order, each once, and never a signature
+    (RF-041)."""
     found: list[Path] = []
     for path in paths:
         if path.is_dir():
             pattern = path.rglob("*") if recursive else path.glob("*")
-            found += sorted(p for p in pattern if p.is_file() and is_pdf(p))
-        elif is_pdf(path):
+            found += sorted(p for p in pattern if p.is_file() and not p.name.startswith("."))
+        elif path.is_file():
             found.append(path)
-    return list(dict.fromkeys(found))
+    return [path for path in dict.fromkeys(found) if not is_signature(path)]
+
+
+class FormatChoices:
+    """The packaging of the XML documents and of the other files of a batch (RF-041): XAdES
+    enveloped and CAdES detached unless the user chooses otherwise. Each row shows only when
+    the list has files of its kind."""
+
+    XML = (XadesPackaging.ENVELOPED, XadesPackaging.ENVELOPING, XadesPackaging.DETACHED)
+    OTHER = (CadesPackaging.DETACHED, CadesPackaging.ENVELOPING)
+
+    def __init__(self) -> None:
+        self.group = Adw.PreferencesGroup(
+            title=_("Signature Format"),
+            description=_("PDF documents are signed in PAdES."),
+        )
+        self.xml = self._combo(_("XML Documents"), self.XML)
+        self.other = self._combo(_("Other Files"), self.OTHER)
+
+    def _combo(
+        self, title: str, packagings: tuple[CadesPackaging | XadesPackaging, ...]
+    ) -> Adw.ComboRow:
+        labels = [presentation.packaging_title(packaging) for packaging in packagings]
+        combo = Adw.ComboRow(
+            title=title,
+            model=Gtk.StringList.new(labels),
+            factory=label_factory(visible=False),
+            list_factory=label_factory(visible=True),
+            subtitle_lines=0,
+        )
+        combo.connect(
+            "notify::selected", lambda *_a: combo.set_subtitle(labels[combo.get_selected()])
+        )
+        combo.set_subtitle(labels[0])
+        self.group.add(combo)
+        return combo
+
+    def show_for(self, kinds: set[DocumentKind]) -> None:
+        xml, other = DocumentKind.XML in kinds, bool(kinds - {DocumentKind.PDF, DocumentKind.XML})
+        self.xml.set_visible(xml)
+        self.other.set_visible(other)
+        self.group.set_visible(xml or other)
+
+    def packaging(self, kind: DocumentKind) -> Packaging:
+        """How a file of ``kind`` is signed: None (PAdES) for a PDF."""
+        if kind is DocumentKind.PDF:
+            return None
+        if kind is DocumentKind.XML:
+            return self.XML[self.xml.get_selected()]
+        return self.OTHER[self.other.get_selected()]
 
 
 class BatchPage:
@@ -87,7 +150,7 @@ class BatchPage:
     ) -> None:
         self._window = window
         self._services = services
-        self.files: list[tuple[Path, str]] = []  # path and SHA-256 when added
+        self.files: list[tuple[Path, str, DocumentKind]] = []  # path, SHA-256 when added, kind
         self.items: list[BatchItem] | None = None
         self.pin_dialog: PinDialog | None = None
         self._remaining_tries: int | None = None
@@ -126,6 +189,8 @@ class BatchPage:
         self._rows: list[Adw.ActionRow] = []
         panel.add(self.files_group)
 
+        self.formats = FormatChoices()
+        panel.add(self.formats.group)
         self.levels = LevelChoice(self._services)
         panel.add(self.levels.group)
         self.signature_data = SignatureData(self._services.settings)
@@ -134,56 +199,73 @@ class BatchPage:
         return clamp
 
     def add_paths(self, paths: Iterable[Path]) -> None:
-        """Add the PDFs among ``paths``; others, and those already listed, are left out.
+        """Add the files among ``paths``; those already listed, or that cannot be read, are
+        left out.
 
-        Reading and hashing a folder of large PDFs takes a while: it runs in a worker thread,
-        with the Sign button off until it is done."""
+        Reading and hashing a folder of large files takes a while: it runs in a worker
+        thread, with the Sign button off until it is done."""
         paths = list(paths)
         recursive = self.recursive.get_active()
         self._adding += 1
         self._sign.set_sensitive(False)
 
         def work() -> None:
-            hashed: list[tuple[Path, str]] = []
-            left_out = sum(1 for p in paths if not p.is_dir() and not is_pdf(p))
-            for path in collect_pdfs(paths, recursive=recursive):
+            hashed: list[tuple[Path, str, DocumentKind]] = []
+            left_out = sum(1 for p in paths if not p.is_dir() and not p.is_file())
+            signatures = sum(1 for p in paths if p.is_file() and is_signature(p))
+            for path in collect_files(paths, recursive=recursive):
                 try:
-                    hashed.append((path, hashlib.sha256(path.read_bytes()).hexdigest()))
+                    data = path.read_bytes()
                 except OSError:
                     left_out += 1
-            GLib.idle_add(self._added, hashed, left_out)
+                    continue
+                kind, _signatures = detect_kind(data)
+                hashed.append((path, hashlib.sha256(data).hexdigest(), kind))
+            GLib.idle_add(self._added, hashed, left_out, signatures)
 
         threading.Thread(target=work, name="berigna-batch-add", daemon=True).start()
 
-    def _added(self, hashed: list[tuple[Path, str]], left_out: int) -> bool:
+    def _added(
+        self, hashed: list[tuple[Path, str, DocumentKind]], left_out: int, signatures: int = 0
+    ) -> bool:
         self._adding -= 1
-        listed = {path for path, _sha in self.files}
-        for path, sha in hashed:
+        listed = {path for path, _sha, _kind in self.files}
+        for path, sha, kind in hashed:
             if path not in listed:
-                self.files.append((path, sha))
+                self.files.append((path, sha, kind))
                 listed.add(path)
         if left_out:
             self._window.toast(
                 ngettext(
-                    "{n} file is not a PDF or cannot be read; it was left out.",
-                    "{n} files are not PDFs or cannot be read; they were left out.",
+                    "{n} file cannot be read; it was left out.",
+                    "{n} files cannot be read; they were left out.",
                     left_out,
                 ).format(n=left_out)
+            )
+        if signatures:
+            self._window.toast(
+                ngettext(
+                    "{n} signature was left out: open it on its own to verify it.",
+                    "{n} signatures were left out: open them one by one to verify them.",
+                    signatures,
+                ).format(n=signatures)
             )
         self._show_files()
         return GLib.SOURCE_REMOVE
 
     def remove(self, path: Path) -> None:
-        self.files = [(p, sha) for p, sha in self.files if p != path]
+        self.files = [file for file in self.files if file[0] != path]
         self._show_files()
 
     def _show_files(self) -> None:
         for row in self._rows:
             self.files_group.remove(row)
         self._rows = []
-        for path, _sha in self.files:
+        for path, _sha, kind in self.files:
             row = Adw.ActionRow(
-                title=path.name, subtitle=display_folder(path.parent), use_markup=False
+                title=path.name,
+                subtitle=f"{display_folder(path.parent)} · {_format_name(kind)}",
+                use_markup=False,
             )
             remove = named(
                 Gtk.Button(
@@ -198,6 +280,7 @@ class BatchPage:
             self.files_group.add(row)
             self._rows.append(row)
         count = len(self.files)
+        self.formats.show_for({kind for _path, _sha, kind in self.files})
         self.files_group.set_description(
             ngettext(
                 "{n} document. They are signed with a single PIN; the signatures are not visible.",
@@ -211,12 +294,10 @@ class BatchPage:
         self._sign.set_sensitive(count > 0 and not self._adding)
 
     def _choose_files(self) -> None:
-        pdf = Gtk.FileFilter()
-        pdf.set_name(_("PDF documents"))
-        pdf.add_mime_type("application/pdf")
-        filters = Gio.ListStore.new(Gtk.FileFilter)
-        filters.append(pdf)
-        dialog = Gtk.FileDialog(title=_("Add Documents"), filters=filters, default_filter=pdf)
+        filters = document_filters()
+        dialog = Gtk.FileDialog(
+            title=_("Add Documents"), filters=filters, default_filter=filters.get_item(0)
+        )
 
         def chosen(dialog: Gtk.FileDialog, result: Gio.AsyncResult) -> None:
             try:
@@ -288,10 +369,15 @@ class BatchPage:
         self.signature_data.remember()
         options = self.signature_data.options()
         suffix, directory = output_settings(self._services.settings)
-        outputs = batch_outputs([path for path, _sha in self.files], suffix, directory)
+        packagings = [self.formats.packaging(kind) for _path, _sha, kind in self.files]
+        outputs = batch_outputs(
+            [path for path, _sha, _kind in self.files], suffix, directory, packagings
+        )
         jobs = [
-            SigningJob(path, output, sha)
-            for (path, sha), output in zip(self.files, outputs, strict=True)
+            SigningJob(path, output, sha, packaging)
+            for (path, sha, _kind), output, packaging in zip(
+                self.files, outputs, packagings, strict=True
+            )
         ]
         self._cancel.clear()
         self._set_busy(_("Checking your certificate…"))
@@ -300,7 +386,7 @@ class BatchPage:
         def work() -> None:
             try:
                 with services.open_token() as token:
-                    items = sign_pdf_batch(
+                    items = sign_batch(
                         jobs,
                         token=token,
                         store=services.trust_store(),
@@ -461,10 +547,14 @@ class BatchPage:
     def _again(self) -> None:
         """Back to the list: the signed documents leave it, the others stay."""
         signed = {item.job.source for item in self.items or [] if item.outcome is Outcome.SIGNED}
-        self.files = [(path, sha) for path, sha in self.files if path not in signed]
+        self.files = [file for file in self.files if file[0] not in signed]
         self.items = None
         self._show_files()
         self._back_to_form()
+
+
+def _format_name(kind: DocumentKind) -> str:
+    return {DocumentKind.PDF: "PAdES", DocumentKind.XML: "XAdES"}.get(kind, "CAdES")
 
 
 def _local_paths(files: Iterable[Gio.File]) -> list[Path]:

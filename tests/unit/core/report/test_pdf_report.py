@@ -10,6 +10,7 @@ from pathlib import Path
 import pytest
 from pyhanko.pdf_utils.reader import PdfFileReader
 
+from berigna.core.formats.xades import XadesPackaging
 from berigna.core.i18n import Language
 from berigna.core.report import pdf_report as module
 from berigna.core.report.pdf_report import pdf_report
@@ -19,7 +20,10 @@ from berigna.core.validation import (
     Modifications,
     PdfSignatureReport,
     PdfVerification,
+    SignedScope,
     TimestampReport,
+    XadesSignatureReport,
+    XadesVerification,
 )
 from support.pki import NOW, Pki, build_pki
 
@@ -139,3 +143,38 @@ def test_without_dejavu_helvetica_is_used(
     assert module._fonts(tmp_path) == ("Helvetica", "Helvetica-Bold")
     monkeypatch.setattr(module, "_fonts", lambda: ("Helvetica", "Helvetica-Bold"))
     assert "Informe de verificación de firmas" in _text(_report(pki), tmp_path)
+
+
+def test_xades_report_contents(pki: Pki, tmp_path: Path) -> None:
+    """RF-054 for XAdES: the heading without a field, the packaging, what was signed and the
+    file a detached signature signs, with its SHA-256."""
+    stamp = TimestampReport(Indication.TOTAL_PASSED, None, NOW, None, None)
+    report = XadesSignatureReport(
+        packaging=XadesPackaging.DETACHED,
+        indication=Indication.TOTAL_PASSED,
+        subindication=None,
+        signer=pki.ca,
+        claimed_signing_time=NOW,
+        timestamp=None,
+        archive_timestamps=(stamp,),
+        scope=SignedScope.PART,
+        references=("acta.xml",),
+    )
+    pdf = pdf_report(
+        XadesVerification((report,), NOW),
+        file_name="acta.xml.xsig",
+        file_sha256="ab" * 32,
+        store=pki.store,
+        signed_file=("acta.xml", "cd" * 32),
+    )
+    text = " ".join(_text(pdf, tmp_path).split())
+    for expected in (
+        "Firma 1 de 1",
+        "XAdES, separada (.xsig)",
+        "Qué se firmó",
+        "La firma cubre solo una parte del documento",
+        "Sellos de archivo",
+        "Archivo firmado acta.xml",
+        "cdcdcdcd",
+    ):
+        assert expected in text

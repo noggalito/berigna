@@ -19,13 +19,13 @@ from berigna.core.report import messages  # noqa: E402
 from berigna.core.report.explanations import explain_error  # noqa: E402
 from berigna.core.token.monitor import DeviceStatus  # noqa: E402
 from berigna.ui import presentation  # noqa: E402
-from berigna.ui.batch import BatchPage, is_pdf  # noqa: E402
+from berigna.ui.batch import BatchPage  # noqa: E402
 from berigna.ui.diagnostics import DiagnosticsPage  # noqa: E402
 from berigna.ui.history import HistoryPage  # noqa: E402
 from berigna.ui.i18n import _, catalogue, current_language, translate_view  # noqa: E402
 from berigna.ui.signing import SigningPage, SigningServices  # noqa: E402
 from berigna.ui.verification import VerificationPage, Verify  # noqa: E402
-from berigna.ui.widgets import brand_markup  # noqa: E402
+from berigna.ui.widgets import brand_markup, document_filters  # noqa: E402
 
 VIEW = "/com/noggalito/Berigna/ui/window.ui"
 
@@ -102,7 +102,8 @@ class MainWindow:
         self._navigation.replace([self._navigation.find_page("start"), page])
 
     def sign(self, document: DocumentInfo, *, existing_problems: bool = False) -> None:
-        """Open the signing page; over the verification page when the PDF is signed (CU-03)."""
+        """Open the signing page; over the verification page when the document is signed
+        (CU-03)."""
         try:
             self.signing = SigningPage(
                 self, document, self._signing, existing_problems=existing_problems
@@ -153,7 +154,7 @@ class MainWindow:
         if len(files) == 1 and not (paths and paths[0].is_dir()):
             self.open_file(files[0])
         elif paths:
-            self.sign_batch([p for p in paths if p.is_dir() or is_pdf(p)] or paths)
+            self.sign_batch(paths)
         else:  # several files, none on this computer: say so, as for one
             self.toast(_("Only files on this computer can be opened."))
 
@@ -173,12 +174,10 @@ class MainWindow:
         self._toasts.add_toast(Adw.Toast.new(brand_markup(message)))
 
     def _choose_file(self) -> None:
-        pdf = Gtk.FileFilter()
-        pdf.set_name(_("PDF documents"))
-        pdf.add_mime_type("application/pdf")
-        filters = Gio.ListStore.new(Gtk.FileFilter)
-        filters.append(pdf)
-        dialog = Gtk.FileDialog(title=_("Open Document"), filters=filters, default_filter=pdf)
+        filters = document_filters()
+        dialog = Gtk.FileDialog(
+            title=_("Open Document"), filters=filters, default_filter=filters.get_item(0)
+        )
         dialog.open(self.window, None, self._on_file_chosen)
 
     def _on_file_chosen(self, dialog: Gtk.FileDialog, result: Gio.AsyncResult) -> None:
@@ -220,18 +219,13 @@ class MainWindow:
         if isinstance(outcome, DocumentInfo):
             self.document = outcome
             self.verification = self.signing = self.batch = None
-            if outcome.kind is DocumentKind.PDF and outcome.signed:
+            # Signed documents are verified first; anything else is signed: a PDF in PAdES,
+            # an XML in XAdES and any other file in CAdES (CU-05).
+            if outcome.signed or outcome.kind is DocumentKind.CADES:
                 self.verification = VerificationPage(self, outcome, self._verify)
                 self.show_page(self.verification.page)
-            elif outcome.kind is DocumentKind.PDF:
+            else:
                 self.sign(outcome)
-            else:  # CAdES and XAdES come in Phase 4
-                status = Adw.StatusPage(
-                    icon_name="x-office-document-symbolic",
-                    title=path.name,
-                    description=brand_markup(presentation.document_summary(outcome)),
-                )
-                self.show_page(self.page(path.name, "document", status))
         elif isinstance(outcome, BerignaError):
             reason = explain_error(outcome.code, catalogue()) or ""
             self.toast(f"{path.name}: {reason}")
