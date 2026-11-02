@@ -42,6 +42,7 @@ from berigna.core.formats.pades import (
     page_geometry,
     sign_pdf_pades,
 )
+from berigna.core.formats.xades import XadesPackaging, parse_xml, sign_xades
 from berigna.core.net.tsa import probe
 from berigna.core.token.base import HashAlgorithmName, TokenSigner
 from berigna.core.token.pin import Pin
@@ -96,6 +97,24 @@ def cades_output_path(
         directory or source.parent,
         lambda n: f"{source.stem}{n}{source.suffix}.{packaging.value}",
     )
+
+
+def xades_output_path(
+    source: Path,
+    packaging: XadesPackaging,
+    suffix: str,
+    directory: Path | None = None,
+) -> Path:
+    """Where to write the XAdES signature of ``source`` (RF-030 to RF-032, RF-045). The
+    enveloped and enveloping forms are the signed document, ``<name><suffix>.xml``; the
+    detached one is the signature alone, ``<name>.xml.xsig``, with the number before the
+    extension of the file, ``acta-2.xml.xsig``, so that removing ``.xsig`` still gives the
+    name of the document."""
+    if packaging is XadesPackaging.DETACHED:
+        return _free_name(
+            directory or source.parent, lambda n: f"{source.stem}{n}{source.suffix}.xsig"
+        )
+    return output_path(source, suffix, directory)
 
 
 def _visible_stamp(
@@ -384,6 +403,87 @@ def sign_cades_checked(
             packaging=packaging,
             level=level,
             digest=digest,
+            timestamper=timestamper,
+            validation_context=context,
+        ),
+    )
+
+
+# -- XAdES of XML documents (RF-030 to RF-033) -----------------------------------------------------
+
+
+def sign_xades_file(
+    source: Path,
+    output: Path,
+    *,
+    expected_sha256: str,
+    token: TokenSigner,
+    store: TrustStore,
+    ask_pin: AskPin,
+    packaging: XadesPackaging = XadesPackaging.ENVELOPED,
+    level: SignatureLevel = SignatureLevel.B_B,
+    digest: HashAlgorithmName = "sha256",
+    timestamper: TimeStamper | None = None,
+    online: bool = True,
+    ocsp_responses: Sequence[bytes] = (),
+    crls: Sequence[bytes] = (),
+) -> SignResult:
+    """Sign ``source``, an XML document, in XAdES at ``level`` and write the result to
+    ``output``, in the same order of steps as :func:`sign_pdf_file` (module docstring). The
+    source is never modified: enveloped and enveloping write a document that carries the
+    signature and the content, and detached writes the signature, which references the
+    document by its name."""
+    parse_xml(check_source(source, output, expected_sha256))  # not XML: fail before the PIN
+    stamper, check = prepare(
+        token, store, level, timestamper, online=online, ocsp_responses=ocsp_responses, crls=crls
+    )
+    send_pin(token, ask_pin, check)
+    return sign_xades_checked(
+        SigningJob(source, output, expected_sha256),
+        token=token,
+        store=store,
+        check=check,
+        packaging=packaging,
+        level=level,
+        digest=digest,
+        timestamper=stamper,
+        online=online,
+        ocsp_responses=ocsp_responses,
+        crls=crls,
+    )
+
+
+def sign_xades_checked(
+    job: SigningJob,
+    *,
+    token: TokenSigner,
+    store: TrustStore,
+    check: SignerCheck,
+    packaging: XadesPackaging,
+    level: SignatureLevel,
+    digest: HashAlgorithmName,
+    timestamper: TimeStamper | None,
+    online: bool,
+    ocsp_responses: Sequence[bytes] = (),
+    crls: Sequence[bytes] = (),
+) -> SignResult:
+    """Steps 4 and 5 for XAdES, with the PIN already verified (batch signing reuses it)."""
+    return _sign_and_write(
+        job,
+        store=store,
+        check=check,
+        level=level,
+        online=online,
+        ocsp_responses=ocsp_responses,
+        crls=crls,
+        sign=lambda data, context: sign_xades(
+            data,
+            token,
+            check.chain,
+            packaging=packaging,
+            level=level,
+            digest=digest,
+            reference_uri=job.source.name if packaging is XadesPackaging.DETACHED else None,
             timestamper=timestamper,
             validation_context=context,
         ),

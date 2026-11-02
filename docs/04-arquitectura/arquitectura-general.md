@@ -3,9 +3,9 @@
 | Campo | Valor |
 |---|---|
 | Documento | BRG-ARQ-001 |
-| Versión | 0.4.0 |
+| Versión | 0.5.0 |
 | Estado | Borrador |
-| Fecha | 2026-10-30 |
+| Fecha | 2026-11-01 |
 | Responsable | noggalito |
 
 ## 1. Principios
@@ -98,11 +98,11 @@ flowchart TB
 | `core.formats.pades` | Firma y validación PAdES, DSS/VRI, sellos de documento, DocMDP. Firma mediante un `Signer` personalizado de pyHanko que delega en `TokenSigner` | pyHanko 0.25.1 (ADR-0004, ADR-0013); implementada la firma B-B, B-T, B-LT y B-LTA |
 | `core.formats.common` | Lo que comparten los formatos: niveles, `TokenCmsSigner` (firmante de pyHanko que delega en `TokenSigner`) y los fallos de servicio que bajan el nivel en lugar de perder la firma | pyHanko, pyhanko-certvalidator; implementado |
 | `core.formats.cades` | Firma CMS/CAdES separada (`.p7s`) y envuelta (`.p7m`), de B-B a B-LTA; la validación llega en el incremento 3 de la Fase 4 | pyHanko (API CMS genérica), asn1crypto (ADR-0008); implementada la firma B-B a B-LTA |
-| `core.formats.xades` | Firma y validación XAdES | Según SPK-03 (ADR-0008) |
+| `core.formats.xades` | Firma XAdES de documentos XML, envuelta, envolvente y separada (`.xsig`), de B-B a B-LTA; la validación llega en el incremento 5 de la Fase 4 | signxml 4.0.5 más capa propia para T, LT y LTA (ADR-0008); implementada la firma B-B a B-LTA |
 | `core.trust` | Almacén de confianza de la IOFE incluido (anclas como recurso del paquete con manifiesto de huellas), anclas añadidas por el usuario y TSL de INDECOPI (`tsl`, ADR-0014) | cryptography, lxml, signxml; implementado |
 | `core.net` | Clientes HTTP para TSA, OCSP, CRL y AIA, con caché, tiempos de espera y proxy | requests. Implementados `fetchers` (OCSP y CRL para validación previa, firma B-LT y verificación), `tsa` (cliente RFC 3161 sobre el de pyHanko) y `proxy` (proxy del sistema, manual o ninguno en todas las peticiones, RF-064). La caché de la TSL está en `core.trust.cache`; la de OCSP y CRL en disco, prevista |
 | `core.appearance` | Sello de la firma visible (texto, rúbrica, logotipo o QR) dibujado como PDF de una página con las tipografías de la marca, e imágenes precargadas (ADR-0018) | ReportLab, Pillow; pyHanko lo coloca como apariencia estática; implementado |
-| `core.signing` | Orquestación: comprobar que el archivo no cambió, validar el certificado antes del PIN, firmar y escribir de forma atómica; pasos compartidos con el lote | Implementado para PDF, de B-B a B-LTA |
+| `core.signing` | Orquestación: comprobar que el archivo no cambió, validar el certificado antes del PIN, firmar y escribir de forma atómica; pasos compartidos con el lote | Implementado para PDF, CAdES y XAdES, de B-B a B-LTA |
 | `core.batch` | Firma de varios PDF con un solo PIN, tolerante a fallos y cancelable entre archivos (CU-04) | Implementado |
 | `core.documents` | Lectura de un documento abierto: tipo, páginas, firmas, SHA-256 (RF-018) | Implementado |
 | `core.reasons` | Motivos de firma de la lista, en el idioma de la firma | Implementado |
