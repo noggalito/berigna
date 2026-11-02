@@ -11,7 +11,9 @@ from berigna.core.diagnostics import Result as DiagnosisResult
 from berigna.core.diagnostics import Status as DiagnosisStatus
 from berigna.core.diagnostics import Step
 from berigna.core.documents import DocumentInfo, DocumentKind
+from berigna.core.formats.cades import CadesPackaging
 from berigna.core.formats.pades import SignatureLevel
+from berigna.core.formats.xades import XadesPackaging
 from berigna.core.report import messages
 from berigna.core.report.explanations import (
     common_name,
@@ -23,13 +25,19 @@ from berigna.core.report.explanations import (
     mask_numbers,
     masked_id,
 )
-from berigna.core.signing import SignResult
+from berigna.core.signing import Packaging, SignResult
 from berigna.core.token.monitor import DeviceState, DeviceStatus
 from berigna.core.trust import TrustStore
 from berigna.core.trust.cache import TslRefresh
 from berigna.core.trust.store import TrustedCertificate
-from berigna.core.validation import Indication, PdfVerification, SignerCheck
+from berigna.core.validation import (
+    Indication,
+    PdfVerification,
+    SignerCheck,
+    XadesSignatureReport,
+)
 from berigna.core.validation.pdf import PdfSignatureReport, TimestampReport
+from berigna.core.verification import SignatureReport, Verification
 from berigna.ui.i18n import N_, _, catalogue, ngettext
 
 # Every icon the window uses; a test checks they exist in the Adwaita theme.
@@ -43,6 +51,12 @@ ICONS = (
     "view-refresh-symbolic",
     "x-office-document-symbolic",
 )
+
+
+@dataclass(frozen=True)
+class Detail:
+    label: str
+    value: str
 
 
 @dataclass(frozen=True)
@@ -74,16 +88,87 @@ def device_status(status: DeviceStatus | None) -> StatusView:
 
 def document_summary(info: DocumentInfo) -> str:
     """One line about an opened document: kind, pages and signatures."""
-    if info.kind is DocumentKind.OTHER:
-        return _("berigna cannot sign or verify this kind of file yet.")
-    pages = info.pages or 0
-    text = ngettext("PDF document, {n} page", "PDF document, {n} pages", pages).format(n=pages)
-    if not info.signed:
-        return _("{document}, not signed").format(document=text)
     signatures = ngettext("{n} signature", "{n} signatures", info.signatures).format(
         n=info.signatures
     )
+    if info.kind in (DocumentKind.OTHER, DocumentKind.CADES):
+        return _("File to sign in CAdES")
+    if info.kind is DocumentKind.XML:
+        text = _("XML document")
+    else:
+        pages = info.pages or 0
+        text = ngettext("PDF document, {n} page", "PDF document, {n} pages", pages).format(n=pages)
+    if not info.signed:
+        return _("{document}, not signed").format(document=text)
     return _("{document}, {signatures}").format(document=text, signatures=signatures)
+
+
+def file_size(size: int, translations: gettext.NullTranslations | None = None) -> str:
+    """The size as people read it, and exact: "1,2 MB (1 234 567 bytes)" (CU-05 step 3)."""
+    t = translations or catalogue()
+    exact = t.ngettext("{n} byte", "{n} bytes", size).format(n=f"{size:,}".replace(",", " "))
+    if size < 1000:
+        return exact
+    for unit, factor in (("GB", 10**9), ("MB", 10**6), ("kB", 10**3)):
+        if size >= factor:
+            amount = f"{size / factor:.1f}".replace(".", ",")
+            return f"{amount} {unit} ({exact})"
+    return exact  # pragma: no cover - size >= 1000 always meets the kB factor
+
+
+def grouped_digest(digest: str) -> str:
+    """A hex digest in groups of four, to compare by eye with another program's."""
+    return " ".join(digest.upper()[i : i + 4] for i in range(0, len(digest), 4))
+
+
+def file_details(info: DocumentInfo, type_name: str) -> tuple[Detail, ...]:
+    """What the user checks before signing a file that cannot be previewed (WYSIWYS, CU-05
+    step 3): name, size, type and SHA-256. ``type_name`` is the description of the desktop
+    (shared-mime-info), in the language of the interface."""
+    return (
+        Detail(_("Name"), info.path.name),
+        Detail(_("Size"), file_size(info.size)),
+        Detail(_("Type"), type_name),
+        Detail("SHA-256", grouped_digest(info.sha256)),
+    )
+
+
+# Packagings of CAdES and XAdES (CU-05 step 2), with what each one writes.
+PACKAGING_DESCRIPTIONS: dict[CadesPackaging | XadesPackaging, str] = {
+    CadesPackaging.DETACHED: N_(
+        "The signature goes in a separate .p7s file and the original does not change. "
+        "Whoever verifies it needs both files."
+    ),
+    CadesPackaging.ENVELOPING: N_("A .p7m file holds the signature and a copy of the file."),
+    XadesPackaging.ENVELOPED: N_(
+        "The signature goes inside a copy of the XML document. Recommended for XML."
+    ),
+    XadesPackaging.ENVELOPING: N_("The XML document goes inside the signature."),
+    XadesPackaging.DETACHED: N_(
+        "The signature goes in a separate .xsig file that names the document, which does "
+        "not change. Whoever verifies it needs both files."
+    ),
+}
+
+
+def packaging_title(
+    packaging: CadesPackaging | XadesPackaging, translations: gettext.NullTranslations | None = None
+) -> str:
+    return (translations or catalogue()).gettext(messages.PACKAGINGS[packaging])
+
+
+def packagings_for(kind: DocumentKind) -> tuple[CadesPackaging | XadesPackaging, ...]:
+    """The packagings a file of ``kind`` can be signed in, the proposed one first (CU-05
+    step 2): XAdES enveloped for XML, CAdES detached for the rest."""
+    cades = (CadesPackaging.DETACHED, CadesPackaging.ENVELOPING)
+    if kind is DocumentKind.XML:
+        return (
+            XadesPackaging.ENVELOPED,
+            XadesPackaging.ENVELOPING,
+            XadesPackaging.DETACHED,
+            *cades,
+        )
+    return cades
 
 
 # -- Verification (CU-06, BRG-UX-001 §3.4) -------------------------------------------------------
@@ -93,12 +178,6 @@ _INDICATION_ICONS = {
     Indication.TOTAL_FAILED: ("dialog-error-symbolic", "error"),
     Indication.INDETERMINATE: ("dialog-warning-symbolic", "warning"),
 }
-
-
-@dataclass(frozen=True)
-class Detail:
-    label: str
-    value: str
 
 
 @dataclass(frozen=True)
@@ -137,15 +216,50 @@ def _timestamp_text(stamp: TimestampReport | None, t: gettext.NullTranslations) 
     return " · ".join(parts)
 
 
+def _format_details(report: SignatureReport, t: gettext.NullTranslations) -> list[Detail]:
+    if isinstance(report, PdfSignatureReport):
+        return [
+            Detail(t.gettext(messages.REPORT_FORMAT), f"PAdES · {report.subfilter}"),
+            Detail(t.gettext("Signature field"), report.field_name),
+        ]
+    return [Detail(t.gettext(messages.REPORT_FORMAT), packaging_title(report.packaging, t))]
+
+
+def _content_details(report: SignatureReport, t: gettext.NullTranslations) -> list[Detail]:
+    """Changes and signed revision of a PDF; what a XAdES covers (AM-06); archive stamps."""
+    if isinstance(report, PdfSignatureReport):
+        return [
+            Detail(
+                t.gettext(messages.REPORT_CHANGES),
+                t.gettext(messages.MODIFICATIONS[report.modifications]),
+            ),
+            Detail(
+                t.gettext(messages.REPORT_SIGNED_REVISION),
+                t.gettext(messages.REPORT_SIGNED_BYTES).format(
+                    length=report.signed_revision_length
+                ),
+            ),
+        ]
+    details = []
+    if isinstance(report, XadesSignatureReport) and report.scope is not None:
+        details.append(
+            Detail(t.gettext(messages.REPORT_SCOPE), t.gettext(messages.SCOPES[report.scope]))
+        )
+    details += [
+        Detail(t.gettext(messages.REPORT_ARCHIVE_TIMESTAMPS), _timestamp_text(stamp, t))
+        for stamp in report.archive_timestamps
+    ]
+    return details
+
+
 def _signature_view(
-    report: PdfSignatureReport, user_anchor: bool, t: gettext.NullTranslations
+    report: SignatureReport, user_anchor: bool, t: gettext.NullTranslations
 ) -> ResultView:
     icon, style = _INDICATION_ICONS[report.indication]
     signer = report.signer
     details = [
         Detail(t.gettext(messages.REPORT_ETSI), etsi_code(report.indication, report.subindication)),
-        Detail(t.gettext("Format"), f"PAdES · {report.subfilter}"),
-        Detail(t.gettext("Signature field"), report.field_name),
+        *_format_details(report, t),
     ]
     if signer is not None:
         details += [
@@ -161,14 +275,7 @@ def _signature_view(
             else t.gettext(messages.REPORT_NONE),
         ),
         Detail(t.gettext(messages.REPORT_TIMESTAMP), _timestamp_text(report.timestamp, t)),
-        Detail(
-            t.gettext(messages.REPORT_CHANGES),
-            t.gettext(messages.MODIFICATIONS[report.modifications]),
-        ),
-        Detail(
-            t.gettext(messages.REPORT_SIGNED_REVISION),
-            t.gettext(messages.REPORT_SIGNED_BYTES).format(length=report.signed_revision_length),
-        ),
+        *_content_details(report, t),
     ]
     return ResultView(
         title=common_name(signer) if signer is not None else t.gettext("Unknown signer"),
@@ -176,7 +283,9 @@ def _signature_view(
         style=style,
         explanation=explain_signature(report, t, user_anchor=user_anchor) or "",
         details=tuple(details),
-        signed_revision_length=report.signed_revision_length,
+        signed_revision_length=report.signed_revision_length
+        if isinstance(report, PdfSignatureReport)
+        else None,
     )
 
 
@@ -200,8 +309,8 @@ def _timestamp_view(stamp: TimestampReport, t: gettext.NullTranslations) -> Resu
     )
 
 
-def _summary(verification: PdfVerification, t: gettext.NullTranslations) -> str:
-    reports = verification.signatures
+def _summary(verification: Verification, t: gettext.NullTranslations) -> str:
+    reports: tuple[SignatureReport, ...] = verification.signatures
     if not reports:
         return t.gettext(messages.REPORT_NO_SIGNATURES)
     count = Counter(report.indication for report in reports)
@@ -218,7 +327,9 @@ def _summary(verification: PdfVerification, t: gettext.NullTranslations) -> str:
                 "{n} signature could not be verified", "{n} signatures could not be verified", n
             ).format(n=n)
         )
-    last = max(reports, key=lambda report: report.signed_revision_length)
+    if not isinstance(verification, PdfVerification):  # the digest covers all that was signed
+        return " · ".join(parts)
+    last = max(verification.signatures, key=lambda report: report.signed_revision_length)
     if last.document_unchanged_since_signing:
         parts.append(t.gettext("The document was not changed after the last signature."))
     else:
@@ -226,8 +337,15 @@ def _summary(verification: PdfVerification, t: gettext.NullTranslations) -> str:
     return " · ".join(parts)
 
 
+def document_timestamps(verification: Verification) -> tuple[TimestampReport, ...]:
+    """The document time-stamps of a PDF; CAdES and XAdES have none."""
+    if isinstance(verification, PdfVerification):
+        return verification.document_timestamps
+    return ()
+
+
 def verification_view(
-    verification: PdfVerification,
+    verification: Verification,
     store: TrustStore,
     translations: gettext.NullTranslations | None = None,
 ) -> VerificationView:
@@ -237,9 +355,9 @@ def verification_view(
     """
     t = translations or catalogue()
     user_anchor = any(entry.user_added for entry in store.entries)
-    indications = [r.indication for r in verification.signatures] + [
-        stamp.indication for stamp in verification.document_timestamps
-    ]
+    reports: tuple[SignatureReport, ...] = verification.signatures
+    stamps = document_timestamps(verification)
+    indications = [r.indication for r in reports] + [stamp.indication for stamp in stamps]
     if Indication.TOTAL_FAILED in indications:
         icon, style = _INDICATION_ICONS[Indication.TOTAL_FAILED]
     elif Indication.INDETERMINATE in indications or not verification.signatures:
@@ -250,8 +368,8 @@ def verification_view(
         icon=icon,
         style=style,
         summary=_summary(verification, t),
-        signatures=tuple(_signature_view(r, user_anchor, t) for r in verification.signatures),
-        timestamps=tuple(_timestamp_view(stamp, t) for stamp in verification.document_timestamps),
+        signatures=tuple(_signature_view(r, user_anchor, t) for r in reports),
+        timestamps=tuple(_timestamp_view(stamp, t) for stamp in stamps),
         retry=Indication.INDETERMINATE in indications,
     )
 
@@ -312,29 +430,46 @@ def pin_summary(
     check: SignerCheck,
     level: SignatureLevel,
     translations: gettext.NullTranslations | None = None,
+    packaging: Packaging = None,
 ) -> tuple[Detail, ...]:
     """What the PIN dialog shows before the PIN is sent (P-01, BRG-UX-001 §3.3).
 
     ``document`` is the document, or the number of documents of a batch (CU-04), whose list
-    the user has just confirmed. ``translations`` gives it in another language: Quechua users
-    can read it in Spanish.
+    the user has just confirmed; ``packaging`` the format of a document that is not signed in
+    PAdES (CU-05). ``translations`` gives it in another language: Quechua users can read it
+    in Spanish.
     """
     t = translations or catalogue()
     certificate = check.chain[-1]
+    rows = []
     if isinstance(document, int):
-        what = Detail(
-            t.gettext("Documents"),
-            t.ngettext("{n} PDF document", "{n} PDF documents", document).format(n=document),
+        rows.append(
+            Detail(
+                t.gettext("Documents"),
+                t.ngettext("{n} document", "{n} documents", document).format(n=document),
+            )
+        )
+    elif document.kind is DocumentKind.PDF:
+        pages = document.pages or 0
+        rows.append(
+            Detail(
+                t.gettext("Document"),
+                t.ngettext("{name} ({n} page)", "{name} ({n} pages)", pages).format(
+                    name=document.path.name, n=pages
+                ),
+            )
         )
     else:
-        pages = document.pages or 0
-        what = Detail(
-            t.gettext("Document"),
-            t.ngettext("{name} ({n} page)", "{name} ({n} pages)", pages).format(
-                name=document.path.name, n=pages
-            ),
+        rows.append(
+            Detail(
+                t.gettext("Document"),
+                f"{document.path.name} ({file_size(document.size, t)})",
+            )
         )
-    rows = [what, Detail(t.gettext(messages.REPORT_SIGNER), common_name(certificate))]
+        rows.append(Detail("SHA-256", grouped_digest(document.sha256)))
+    if packaging is not None:
+        rows.append(Detail(t.gettext(messages.REPORT_FORMAT), packaging_title(packaging, t)))
+    rows.append(Detail(t.gettext(messages.REPORT_SIGNER), common_name(certificate)))
     identity = masked_id(certificate)
     if identity is not None:
         rows.append(Detail(t.gettext("DNI"), identity))

@@ -8,7 +8,7 @@ import gi
 
 gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
-from gi.repository import Adw, GLib, Gtk  # noqa: E402
+from gi.repository import Adw, Gio, GLib, Gtk  # noqa: E402
 
 from berigna.core.i18n import NAME, Language, translations  # noqa: E402
 from berigna.ui.i18n import N_, _  # noqa: E402
@@ -59,3 +59,27 @@ def show_in_spanish(parent: Gtk.Widget, heading: str, body: str) -> Adw.AlertDia
     dialog.add_response("close", translations(Language.ES_PE).gettext(CLOSE))
     dialog.present(parent)
     return dialog
+
+
+def document_filters() -> Gio.ListStore:
+    """The filters of the open dialogs: every file first, since any file can be signed
+    (CU-05), then PDF, XML and signatures."""
+    filters = Gio.ListStore.new(Gtk.FileFilter)
+    for name, types, patterns in (
+        (_("All files"), (), ("*",)),
+        (_("PDF documents"), ("application/pdf",), ()),
+        (_("XML documents"), ("application/xml", "text/xml"), ("*.xml", "*.xsig")),
+        (
+            _("Signatures (.p7s, .p7m, .xsig)"),
+            ("application/pkcs7-signature", "application/pkcs7-mime"),
+            ("*.p7s", "*.p7m", "*.xsig"),
+        ),
+    ):
+        file_filter = Gtk.FileFilter()
+        file_filter.set_name(name)
+        for mime in types:
+            file_filter.add_mime_type(mime)
+        for pattern in patterns:
+            file_filter.add_pattern(pattern)
+        filters.append(file_filter)
+    return filters

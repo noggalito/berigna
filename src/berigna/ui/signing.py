@@ -1,8 +1,14 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # SPDX-FileCopyrightText: 2026 noggalito
-"""Signing a PDF (CU-01, CU-03; BRG-UX-001 §3.2 and §3.3).
+"""Signing a PDF (CU-01, CU-03; BRG-UX-001 §3.2 and §3.3) or any other file (CU-05).
 
-The core runs in a worker thread (:func:`berigna.core.signing.sign_pdf_file`): it validates the
+A PDF is previewed; any other file, which cannot always be shown, is presented by its name,
+size, type and SHA-256, and as text when it is text (WYSIWYS), and signed in CAdES or, if it
+is XML, in XAdES, in the packaging the user chooses.
+
+The core runs in a worker thread (:func:`berigna.core.signing.sign_pdf_file`,
+:func:`~berigna.core.signing.sign_cades_file`, :func:`~berigna.core.signing.sign_xades_file`):
+it validates the
 certificate and probes the TSA before asking for the PIN through a callback. That callback
 shows :class:`PinDialog` in the main loop and waits for the user. The PIN is sent once per
 explicit confirmation (P-06); after a wrong PIN the user starts again, with the remaining tries
@@ -34,7 +40,12 @@ from berigna.core.appearance import (  # noqa: E402
     render_appearance,
     stored_image,
 )
-from berigna.core.documents import DocumentInfo  # noqa: E402
+from berigna.core.documents import (  # noqa: E402
+    TEXT_PREVIEW_LIMIT,
+    DocumentInfo,
+    DocumentKind,
+    text_preview,
+)
 from berigna.core.errors import (  # noqa: E402
     AppearanceError,
     BerignaError,
@@ -45,13 +56,23 @@ from berigna.core.errors import (  # noqa: E402
     SigningCancelledError,
     TokenError,
 )
+from berigna.core.formats.cades import CadesPackaging  # noqa: E402
 from berigna.core.formats.pades import PadesOptions, SignatureLevel  # noqa: E402
+from berigna.core.formats.xades import XadesPackaging  # noqa: E402
 from berigna.core.history import Entry, History, Kind  # noqa: E402
 from berigna.core.i18n import Language, translations  # noqa: E402
 from berigna.core.reasons import TEXTS as REASON_TEXTS  # noqa: E402
 from berigna.core.reasons import Reason, reason_text  # noqa: E402
 from berigna.core.report.explanations import common_name, explain_error  # noqa: E402
-from berigna.core.signing import SignResult, output_path, sign_pdf_file  # noqa: E402
+from berigna.core.signing import (  # noqa: E402
+    AskPin,
+    Packaging,
+    SignResult,
+    sign_cades_file,
+    sign_pdf_file,
+    sign_xades_file,
+    signed_output_path,
+)
 from berigna.core.token.base import HashAlgorithmName, TokenSigner  # noqa: E402
 from berigna.core.token.pin import Pin  # noqa: E402
 from berigna.core.trust import TrustStore  # noqa: E402
@@ -176,6 +197,13 @@ def preferred_level(settings: Gio.Settings | None) -> SignatureLevel:
     return SignatureLevel(settings.get_string("default-level"))
 
 
+def digest_setting(settings: Gio.Settings | None) -> HashAlgorithmName:
+    """The hash algorithm of the preferences (RF-080)."""
+    return cast(
+        HashAlgorithmName, settings.get_string("digest-algorithm") if settings else "sha256"
+    )
+
+
 def output_settings(settings: Gio.Settings | None) -> tuple[str, Path | None]:
     """Suffix and folder of signed files; a folder that no longer exists (removed, unmounted)
     falls back to the original's."""
@@ -292,12 +320,107 @@ class SignatureData:
             settings.set_strv("recent-locations", recent[:RECENT_LOCATIONS])
 
     def options(self) -> PadesOptions:
-        digest = self._settings.get_string("digest-algorithm") if self._settings else "sha256"
         return PadesOptions(
             reason=self.reason_value(),
             location=self.location_value(),
-            digest=cast(HashAlgorithmName, digest),
+            digest=digest_setting(self._settings),
         )
+
+
+class PackagingChoice:
+    """The packagings of CAdES and XAdES a file can be signed in, the proposed one first
+    (CU-05 step 2). In an XML document that is already signed, the enveloped form is off: it
+    would break the signature there (ERR-312)."""
+
+    def __init__(self, document: DocumentInfo) -> None:
+        self.group = Adw.PreferencesGroup(title=_("Signature Format"))
+        self.buttons: dict[CadesPackaging | XadesPackaging, Gtk.CheckButton] = {}
+        packagings = presentation.packagings_for(document.kind)
+        blocked = {XadesPackaging.ENVELOPED} if document.signed else set()
+        self.packaging = next(p for p in packagings if p not in blocked)
+        first: Gtk.CheckButton | None = None
+        for packaging in packagings:
+            available = packaging not in blocked
+            button = Gtk.CheckButton(group=first, sensitive=available, valign=Gtk.Align.CENTER)
+            first = first or button
+            button.connect("toggled", self._on_toggled, packaging)
+            subtitle = (
+                _(presentation.PACKAGING_DESCRIPTIONS[packaging])
+                if available
+                else explain_error("ERR-312", catalogue()) or ""
+            )
+            row = Adw.ActionRow(
+                title=presentation.packaging_title(packaging),
+                subtitle=subtitle,
+                activatable_widget=button,
+                sensitive=available,
+                use_markup=False,
+            )
+            row.set_subtitle_lines(0)
+            row.add_prefix(button)
+            self.group.add(row)
+            self.buttons[packaging] = button
+        self.buttons[self.packaging].set_active(True)
+
+    def _on_toggled(
+        self, button: Gtk.CheckButton, packaging: CadesPackaging | XadesPackaging
+    ) -> None:
+        if button.get_active():
+            self.packaging = packaging
+
+
+def file_view(document: DocumentInfo, data: bytes) -> Gtk.Widget:
+    """What the user checks before signing a file that is not a PDF (WYSIWYS, CU-05 step 3):
+    name, size, type and SHA-256, and the text when it is a text file."""
+    content_type, _uncertain = Gio.content_type_guess(document.path.name, data[:4096])
+    details = Adw.PreferencesGroup(
+        title=_("File to Sign"), description=presentation.document_summary(document)
+    )
+    for detail in presentation.file_details(
+        document, Gio.content_type_get_description(content_type)
+    ):
+        row = Adw.ActionRow(
+            title=detail.label, subtitle=detail.value, subtitle_selectable=True, use_markup=False
+        )
+        row.add_css_class("property")
+        details.add(row)
+    box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=12, hexpand=True)
+    for side in ("top", "bottom", "start", "end"):
+        getattr(box, f"set_margin_{side}")(12)
+    box.append(details)
+    preview = text_preview(data)
+    if preview is None:
+        notice = Gtk.Label(
+            label=_(
+                "This file cannot be shown. Check its name, size and SHA-256 before signing: "
+                "they identify the file that will be signed."
+            ),
+            wrap=True,
+            xalign=0,
+        )
+        notice.add_css_class("dimmed")
+        box.append(notice)
+        return box
+    if preview.truncated:
+        limit = presentation.file_size(TEXT_PREVIEW_LIMIT)
+        notice = Gtk.Label(
+            label=_("Only the beginning of the file is shown ({size}).").format(size=limit),
+            wrap=True,
+            xalign=0,
+        )
+        notice.add_css_class("dimmed")
+        box.append(notice)
+    buffer = Gtk.TextBuffer(text=preview.text)
+    text = Gtk.TextView(
+        buffer=buffer, editable=False, cursor_visible=False, monospace=True, top_margin=6
+    )
+    for side in ("left", "right", "bottom"):
+        getattr(text, f"set_{side}_margin")(6)
+    text.update_property([Gtk.AccessibleProperty.LABEL], [_("Content of the file")])
+    scrolled = Gtk.ScrolledWindow(child=text, vexpand=True, min_content_height=200)
+    frame = Gtk.Frame(child=scrolled)
+    box.append(frame)
+    return box
 
 
 REVOCATION_UNCHECKED = "revocation-unchecked"  # history detail of RF-006
@@ -411,14 +534,15 @@ class PinDialog(Adw.Dialog):
         level: SignatureLevel,
         remaining_tries: int | None,
         reply: Callable[[Pin | None], None],
+        packaging: Packaging = None,
     ) -> None:
         super().__init__(title=_("Confirm Signature"), content_width=420)
         self._reply = reply
         self._answered = False
-        self._summary = (document, check, level)
+        self._summary = (document, check, level, packaging)
 
         summary = Adw.PreferencesGroup()
-        for detail in presentation.pin_summary(document, check, level):
+        for detail in presentation.pin_summary(document, check, level, packaging=packaging):
             row = Adw.ActionRow(title=detail.label, subtitle=detail.value, use_markup=False)
             row.add_css_class("property")
             summary.add(row)
@@ -487,14 +611,15 @@ class PinDialog(Adw.Dialog):
     def _show_spanish(self) -> None:
         """The summary in Spanish, without changing the language (BRG-UX-001 §4.2)."""
         spanish = translations(Language.ES_PE)
-        document, check, level = self._summary
-        rows = presentation.pin_summary(document, check, level, spanish)
+        document, check, level, packaging = self._summary
+        rows = presentation.pin_summary(document, check, level, spanish, packaging)
         body = "\n".join(f"{row.label}: {row.value}" for row in rows)
         show_in_spanish(self, spanish.gettext("Confirm Signature"), body)
 
 
 class SigningPage:
-    """Preview, level and signature data, and the signing flow."""
+    """Preview, level and signature data of a PDF, or the file and its packaging (CU-05),
+    and the signing flow."""
 
     def __init__(
         self,
@@ -521,6 +646,8 @@ class SigningPage:
         self.result: SignResult | None = None
         self.pin_dialog: PinDialog | None = None
         self._check: SignerCheck | None = None  # set when the PIN is asked
+        self.preview: PdfPreview | None = None  # PDF only
+        self.formats: PackagingChoice | None = None  # any other file (CU-05)
 
         self._sign = Gtk.Button(label=_("_Sign"), use_underline=True)
         self._sign.add_css_class("suggested-action")
@@ -554,21 +681,26 @@ class SigningPage:
                 group.add(row)
             panel.add(group)
 
+        if self.document.kind is not DocumentKind.PDF:  # CU-05
+            self.formats = PackagingChoice(self.document)
+            panel.add(self.formats.group)
         self.levels = LevelChoice(self._services)
         self.level_buttons = self.levels.buttons
         panel.add(self.levels.group)
         self.signature_data = SignatureData(self._services.settings)
         self.reason = self.signature_data.reason
         self.location = self.signature_data.location
-        data = self.signature_data.group
 
-        self.preview = PdfPreview(self.data)
-        self.preview.on_box_changed = lambda _box: self.update_appearance()
-        if self.preview.page_count:
-            panel.add(self._visible_group())
-        panel.add(data)
         layout = Gtk.Box()
-        layout.append(self.preview)
+        if self.formats is not None:  # reason and location are fields of PAdES only
+            layout.append(file_view(self.document, self.data))
+        else:
+            self.preview = PdfPreview(self.data)
+            self.preview.on_box_changed = lambda _box: self.update_appearance()
+            if self.preview.page_count:
+                panel.add(self._visible_group())
+            panel.add(self.signature_data.group)
+            layout.append(self.preview)
         layout.append(Gtk.Separator(orientation=Gtk.Orientation.VERTICAL))
         layout.append(panel)
         return layout
@@ -625,11 +757,16 @@ class SigningPage:
         return stored_image(directory, kind) if directory is not None else None
 
     def _on_visible(self) -> None:
+        if self.preview is None:  # the visible signature is of a PDF
+            return
         active = self.appearance_kind() is not None
         self.preview.set_box(self.preview.box or self.preview.default_box() if active else None)
         self.update_appearance()
 
     def visible_signature(self) -> VisibleSignature | None:
+        # without pages (Poppler could not draw them) there is no appearance list either
+        if self.preview is None or not self.preview.page_count:
+            return None
         box = self.preview.box
         kind = self.appearance_kind()
         if box is None or kind is None:
@@ -656,6 +793,8 @@ class SigningPage:
         label = _(APPEARANCES[self.appearance.get_selected()][1])
         warning = _("Load the image in Preferences → Visible Signature.")
         self.appearance.set_subtitle(f"{label}\n{warning}" if missing else label)
+        if self.preview is None:  # the visible signature is of a PDF
+            return
         if visible is None:
             self.preview.set_appearance(None)
             return
@@ -695,32 +834,30 @@ class SigningPage:
 
     # -- Flow ----------------------------------------------------------------------------------
 
+    def packaging(self) -> Packaging:
+        """The chosen packaging of CAdES or XAdES; None for a PDF (PAdES)."""
+        return self.formats.packaging if self.formats is not None else None
+
     def start(self, level: SignatureLevel | None = None) -> None:
         """Sign at ``level`` (the chosen one by default) in a worker thread."""
         level = level or self.levels.level
-        self.signature_data.remember()
-        options = self.signature_data.options()
+        packaging = self.packaging()
         suffix, directory = output_settings(self._services.settings)
-        output = output_path(self.document.path, suffix, directory)
-        visible = self.visible_signature() if self.preview.page_count else None
+        output = signed_output_path(self.document.path, packaging, suffix, directory)
+        sign = self._signer(packaging)
         self._set_busy(_("Checking your certificate…"))
         services = self._services
 
         def work() -> None:
             try:
                 with services.open_token() as token:
-                    result = sign_pdf_file(
-                        self.document.path,
+                    result = sign(
                         output,
-                        expected_sha256=self.document.sha256,
-                        token=token,
-                        store=services.trust_store(),
-                        ask_pin=lambda check: self._ask_pin(check, level),
-                        options=options,
-                        level=level,
-                        timestamper=services.timestamper(),
-                        online=services.online,
-                        visible=visible,
+                        token,
+                        services.trust_store(),
+                        lambda check: self._ask_pin(check, level, packaging),
+                        level,
+                        services.timestamper(),
                     )
             except BerignaError as exc:
                 GLib.idle_add(self._failed, exc, level)
@@ -734,11 +871,69 @@ class SigningPage:
 
         threading.Thread(target=work, name="berigna-sign", daemon=True).start()
 
-    def _ask_pin(self, check: SignerCheck, level: SignatureLevel) -> Pin | None:
+    def _signer(
+        self, packaging: Packaging
+    ) -> Callable[
+        [Path, TokenSigner, TrustStore, AskPin, SignatureLevel, TimeStamper | None],
+        SignResult,
+    ]:
+        """The core call for ``packaging``, with what the form says, read in the main loop."""
+        path, sha256, online = self.document.path, self.document.sha256, self._services.online
+        if packaging is None:
+            self.signature_data.remember()
+            options = self.signature_data.options()
+            visible = self.visible_signature()
+            return lambda output, token, store, ask_pin, level, stamper: sign_pdf_file(
+                path,
+                output,
+                expected_sha256=sha256,
+                token=token,
+                store=store,
+                ask_pin=ask_pin,
+                options=options,
+                level=level,
+                timestamper=stamper,
+                online=online,
+                visible=visible,
+            )
+        digest = digest_setting(self._services.settings)
+        if isinstance(packaging, CadesPackaging):
+            return lambda output, token, store, ask_pin, level, stamper: sign_cades_file(
+                path,
+                output,
+                expected_sha256=sha256,
+                token=token,
+                store=store,
+                ask_pin=ask_pin,
+                packaging=packaging,
+                level=level,
+                digest=digest,
+                timestamper=stamper,
+                online=online,
+            )
+        return lambda output, token, store, ask_pin, level, stamper: sign_xades_file(
+            path,
+            output,
+            expected_sha256=sha256,
+            token=token,
+            store=store,
+            ask_pin=ask_pin,
+            packaging=packaging,
+            level=level,
+            digest=digest,
+            timestamper=stamper,
+            online=online,
+        )
+
+    def _ask_pin(
+        self, check: SignerCheck, level: SignatureLevel, packaging: Packaging = None
+    ) -> Pin | None:
         self._check = check
 
         def dialog(reply: Callable[[Pin | None], None]) -> PinDialog:
-            self.pin_dialog = PinDialog(self.document, check, level, self._remaining_tries, reply)
+            self.pin_dialog = PinDialog(
+                self.document, check, level, self._remaining_tries, reply, packaging
+            )
             return self.pin_dialog
 
         return ask_pin_in_main_loop(
