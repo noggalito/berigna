@@ -97,6 +97,25 @@ Implementado en la Fase 3, incremento 3; la firma visible, en el incremento 5 (A
 └────────────────────────────────────┴─────────────────────────┘
 ```
 
+Otros archivos (CU-05; Fase 4, incremento 6). Lo que no es PDF no siempre se puede previsualizar, así que en el lugar de la vista previa se muestran el nombre, el tamaño (legible y exacto en bytes), el tipo (la descripción del escritorio, en el idioma de la interfaz) y el SHA-256 en grupos de cuatro, con la vista del texto debajo si el archivo es de texto (UTF-8, UTF-16 con BOM o la codificación que declare un XML; los primeros 64 kB de un archivo grande, con aviso). El panel propone el formato: XAdES envuelta para un XML y CAdES separada (`.p7s`) para el resto; el usuario puede elegir otra variante (XAdES envolvente o separada `.xsig`, o CAdES envolvente `.p7m`; un XML también se puede firmar en CAdES). En un XML que ya tiene firmas, la envuelta aparece desactivada con el motivo (ERR-312). Motivo, ubicación y firma visible son de PAdES y no aparecen. El diálogo del PIN añade el SHA-256 y el formato.
+
+```
+┌──────────────────────────────────────────────────────────────┐
+│ ←  planilla.csv                                  [ Firmar ]  │
+├────────────────────────────────────┬─────────────────────────┤
+│ Archivo para firmar                │ Formato de la firma     │
+│ Archivo para firmar en CAdES       │ ◉ CAdES, separada (.p7s)│
+│  Nombre   planilla.csv             │ ○ CAdES, envolvente     │
+│  Tamaño   1,2 MB (1 234 567 bytes) │   (.p7m)                │
+│  Tipo     Documento CSV            ├─────────────────────────┤
+│  SHA-256  ABCD 1234 …              │ Nivel de firma          │
+│ ┌────────────────────────────────┐ │ ◉ Validación a largo    │
+│ │ nombre;monto                   │ │   plazo (B-LT)          │
+│ │ Rosa Quispe;100                │ │ …                       │
+│ └────────────────────────────────┘ │                         │
+└────────────────────────────────────┴─────────────────────────┘
+```
+
 ### 3.3 Resumen y PIN
 
 Implementado en la Fase 3, incremento 3, con `Gtk.PasswordEntry` (P-05). Tras un PIN incorrecto el diálogo vuelve a aparecer con los intentos restantes (P-07) y el usuario debe escribir y confirmar de nuevo (P-06); con 0 intentos se explica el bloqueo. El campo se vacía en cuanto se toma el PIN.
@@ -121,6 +140,8 @@ Implementado en la Fase 3, incremento 3, con `Gtk.PasswordEntry` (P-05). Tras un
 ### 3.4 Resultado de la verificación
 
 Implementado en la Fase 3, incremento 2. Diferencias con el boceto: la explicación de cada firma va bajo su firmante y los detalles técnicos en una fila desplegable; "Verificar de nuevo" es un botón de la barra de título, visible si algún resultado es indeterminado; cada firma permite guardar la versión del documento que dejó (CU-06).
+
+En la Fase 4, incremento 6, la misma página verifica firmas CAdES (`.p7s`, `.p7m`) y documentos XML con firmas XAdES (`.xml`, `.xsig`); el formato se reconoce por el contenido, no por la extensión. Para una firma separada se busca el archivo firmado junto a ella: el que nombra una XAdES (solo el nombre, nunca otra carpeta), el mismo nombre sin la extensión (`acta.xml` para `acta.xml.p7s`) o sin el número que berigna añade cuando el nombre está ocupado (`acta.xml` para `acta-2.xml.p7s`); en CAdES se prefiere el que tiene el resumen firmado. Si no está, la página lo pide ("Elegir archivo…"). El resumen muestra el archivo firmado, que se puede cambiar, y en un `.p7m` la fila "Guardar el contenido firmado" (RF-051). Los detalles técnicos dicen el formato y, en XAdES, qué cubre la firma (todo el documento, una parte, el contenido dentro de la firma o un archivo aparte; AM-06), y cada sello de archivo. Los informes JSON y PDF llevan lo mismo y el nombre y SHA-256 del archivo firmado. "Firmar" sigue disponible en un XML firmado; no aparece en CAdES, porque la cofirma (RF-023) llega después de la 1.0, ni en una firma separada, porque firmaría el archivo de la firma y no el documento.
 
 ```
 ┌──────────────────────────────────────────────────────────────┐
@@ -158,7 +179,7 @@ Implementado en la Fase 3, incremento 2. Diferencias con el boceto: la explicaci
 └──────────────────────────────────────────────────────────────┘
 ```
 
-Implementado en la Fase 3, incremento 6, solo con PDF (los demás formatos llegan en la Fase 4). Se entra con "Firmar varios documentos…" en la pantalla inicial, abriendo o arrastrando varios archivos a la vez, o una carpeta. La lista se construye en la misma página (añadir documentos, añadir una carpeta con o sin subcarpetas, quitar); lo que se firma es cada archivo tal como estaba al añadirlo (su SHA-256). El nivel y los datos de la firma son los de la firma individual. Diferencias con el boceto: la confirmación es el diálogo del PIN, que indica el número de documentos; las firmas del lote no son visibles; los archivos que fallan las comprobaciones previas se informan sin pedir el PIN por ellos; dos archivos del mismo nombre en una misma carpeta de salida se numeran. Resultado: una fila por archivo y los botones "Exportar el informe…" (CSV), "Mostrar en la carpeta" y "Firmar otros documentos", que deja en la lista los que no se firmaron.
+Implementado en la Fase 3, incremento 6, con PDF; los demás formatos llegaron en la Fase 4, incremento 6 (RF-041): PAdES para los PDF, XAdES para los XML y CAdES para el resto, según el contenido de cada archivo y no su extensión, con un grupo "Formato de la firma" que deja elegir la variante de los XML y la de los demás archivos (aparece solo si la lista los tiene). Las firmas (`.p7s`, `.p7m`, `.xsig`) nunca entran en un lote, para no firmarlas de nuevo: se avisa de que se verifican una a una. Al añadir una carpeta se dejan fuera también los archivos ocultos; un archivo que no se puede leer se avisa y no entra. Cada fila dice su carpeta y su formato. Se entra con "Firmar varios documentos…" en la pantalla inicial, abriendo o arrastrando varios archivos a la vez, o una carpeta. La lista se construye en la misma página (añadir documentos, añadir una carpeta con o sin subcarpetas, quitar); lo que se firma es cada archivo tal como estaba al añadirlo (su SHA-256). El nivel y los datos de la firma son los de la firma individual. Diferencias con el boceto: la confirmación es el diálogo del PIN, que indica el número de documentos; las firmas del lote no son visibles; los archivos que fallan las comprobaciones previas se informan sin pedir el PIN por ellos; dos archivos del mismo nombre en una misma carpeta de salida se numeran. Resultado: una fila por archivo y los botones "Exportar el informe…" (CSV), "Mostrar en la carpeta" y "Firmar otros documentos", que deja en la lista los que no se firmaron.
 
 ## 4. Textos de los niveles (borrador)
 
