@@ -22,6 +22,12 @@ from berigna.core.validation.preflight import (
     check_signer,
     signing_validation_context,
 )
+from berigna.core.validation.xades import (
+    SignedScope,
+    XadesSignatureReport,
+    XadesVerification,
+    verify_xades,
+)
 
 __all__ = [
     "CadesSignatureReport",
@@ -31,11 +37,15 @@ __all__ = [
     "PdfSignatureReport",
     "PdfVerification",
     "RevocationNote",
+    "SignedScope",
     "SignerCheck",
     "TimestampReport",
+    "XadesSignatureReport",
+    "XadesVerification",
     "cades_content",
     "check_signer",
     "signing_validation_context",
     "verify_cades",
     "verify_pdf",
+    "verify_xades",
 ]

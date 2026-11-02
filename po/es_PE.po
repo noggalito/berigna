@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: berigna\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-01 20:33-0500\n"
+"POT-Creation-Date: 2026-11-02 01:25-0500\n"
 "PO-Revision-Date: 2026-10-27 23:38-0500\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -692,8 +692,8 @@ msgid "The file is not a document that berigna can read, or it is damaged."
 msgstr "El archivo no es un documento que berigna pueda leer, o está dañado."
 
 #: src/berigna/core/report/messages.py:240
-msgid "The signature cannot be read, or it is not a CAdES signature."
-msgstr "La firma no se puede leer, o no es una firma CAdES."
+msgid "The signature cannot be read, or it is not a CAdES or XAdES signature."
+msgstr "La firma no se puede leer, o no es una firma CAdES ni XAdES."
 
 #: src/berigna/core/report/messages.py:246
 msgid "Folder"
@@ -1962,6 +1962,9 @@ msgstr "Solo se pueden abrir archivos de este equipo."
 #: src/berigna/ui/window.py:181
 msgid "Open Document"
 msgstr "Abrir documento"
+
+#~ msgid "The signature cannot be read, or it is not a CAdES signature."
+#~ msgstr "La firma no se puede leer, o no es una firma CAdES."
 
 #~ msgid ""
 #~ "Drag on the page to place it; drag the box to move it. In a box taller "

@@ -12,7 +12,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: berigna\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-01 20:33-0500\n"
+"POT-Creation-Date: 2026-11-02 01:25-0500\n"
 "PO-Revision-Date: 2026-10-27 23:37-0500\n"
 "Last-Translator: noggalito <berigna@noggalito.com>\n"
 "Language-Team: none\n"
@@ -695,8 +695,8 @@ msgstr ""
 "Archivoqa manan berignaq ñawinchayta atisqan qillqachu, utaq p'akisqa kashan."
 
 #: src/berigna/core/report/messages.py:240
-msgid "The signature cannot be read, or it is not a CAdES signature."
-msgstr "Firmaqa manan ñawinchayta atinchu, utaq mana CAdES firmanchu."
+msgid "The signature cannot be read, or it is not a CAdES or XAdES signature."
+msgstr "Firmaqa manan ñawinchayta atinchu, utaq mana CAdES firmanchu nitaq XAdES firmanchu."
 
 #: src/berigna/core/report/messages.py:246
 msgid "Folder"
@@ -1944,3 +1944,6 @@ msgstr "Kay computadorapi kaq archivokunallam kichakunman."
 #: src/berigna/ui/window.py:181
 msgid "Open Document"
 msgstr "Qillqata kichay"
+
+#~ msgid "The signature cannot be read, or it is not a CAdES signature."
+#~ msgstr "Firmaqa manan ñawinchayta atinchu, utaq mana CAdES firmanchu."

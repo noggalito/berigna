@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # SPDX-FileCopyrightText: 2026 noggalito
-"""Settings of the ETSI EN 319 102-1 processes shared by the PDF and CAdES verifiers.
+"""Settings of the ETSI EN 319 102-1 processes shared by the PDF, CAdES and XAdES verifiers.
 
 The indication of a signature and its subindication (§5.2), the report of a time-stamp
 (§5.4) and the chain diagnosis that names the error pyHanko folds into
@@ -192,13 +192,24 @@ def diagnose_chain(
     on its own to see which error comes out. If it passes this time, the first failure was
     transient (a service that did not answer): TRY_LATER as well.
     """
+    embedded = [c.chosen for c in signed_data["certificates"] if c.name == "certificate"]
+    return diagnose_path(signer_cert, embedded, spec, timing)
+
+
+def diagnose_path(
+    signer_cert: asn1_x509.Certificate,
+    intermediates: Sequence[asn1_x509.Certificate],
+    spec: SignatureValidationSpec,
+    timing: ValidationTimingInfo,
+) -> str:
+    """:func:`diagnose_chain` for a signature that is not a CMS (XAdES): the certificates the
+    signature carries are given as ``intermediates``."""
     handlers = bootstrap_validation_data_handlers(spec, timing_info=timing)
     validation_context = spec.cert_validation_policy.build_validation_context(
         timing_info=timing, handlers=handlers
     )
-    embedded = [c.chosen for c in signed_data["certificates"] if c.name == "certificate"]
     validator = CertificateValidator(
-        signer_cert, intermediate_certs=embedded, validation_context=validation_context
+        signer_cert, intermediate_certs=list(intermediates), validation_context=validation_context
     )
     try:
         asyncio.run(validator.async_validate_usage({"non_repudiation"}))  # type: ignore[no-untyped-call]
