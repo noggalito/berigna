@@ -104,7 +104,7 @@ Algunos documentos públicos citan identificadores cuyo detalle está en la docu
 | Distribución | Paquete `.deb` para Debian 13 en un repositorio APT propio (ADR-0006) y entrada en el archivo oficial de Debian desde la v1.0 (ADR-0020); Flatpak en la 1.1 |
 | Titular e identificador | noggalito; `com.noggalito.Berigna` (ADR-0019); contacto `berigna@noggalito.com` |
 | Licencia | GPL-3.0-or-later (ADR-0005), con un permiso adicional para distribuir por tiendas de aplicaciones (ADR-0021) |
-| Otras plataformas | Windows, macOS, Android e iOS, y la lectura del DNIe por NFC, en estudio para la versión 1.1 (SPK-07) |
+| Otras plataformas | Windows, macOS, Android e iOS, y la lectura del DNIe por NFC, en estudio para la versión 1.1 (SPK-07); firma desde la web, también en la 1.1 (SPK-08) |
 
 ## 7. Estado de implementación (2026-11-02)
 
@@ -153,6 +153,7 @@ La cofirma CAdES (RF-023, "Podría") queda para después de la v1.0.
 | Perfiles con nombre de la firma visible | Versión 1.1 (decisión del 2026-10-29); en la v1.0, una sola apariencia, la de Preferencias | RF-081 | — |
 | Extensión de LibreOffice "Firmar con berigna" | Versión 1.2 (decisión del 2026-10-27) | RF-074 | — |
 | Lectura del DNIe por NFC y teléfono (berigna en Android o el teléfono como puente) | Versión 1.1 (decisión del 2026-10-29); investigación en SPK-07 | ADR-0003, ADR-0012 | — |
+| Firma desde la web: verificador web, invocador (extensión del navegador y puente nativo, con "documento completo") y compatibilidad con los sistemas integrados con Firma Perú | Versión 1.1 (decisión del 2026-11-02; antes estaba después de la 1.1); sin lector, el teléfono por NFC como puente (SPK-07); investigación en SPK-08 | ADR-0002 | — |
 | Windows, macOS, Android e iOS | Versión 1.1 (decisión del 2026-10-29); el núcleo es independiente de la interfaz (ADR-0002) | ADR-0021 | — |
 
 Verificación local: `scripts/verificar.sh` (ruff, mypy estricto, pytest con cobertura mínima del 80 %; al 2026-11-01, 100 % del núcleo y 95 % del total con 598 pruebas, incluidas las de la interfaz con Xvfb; las 5 con hardware se omiten sin `BERIGNA_HIL=1`). Pruebas con hardware: `BERIGNA_HIL=1 pytest -m hil` (sin PIN) y los *scripts* manuales de `tests/hil/` (con PIN, según el protocolo).

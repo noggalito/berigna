@@ -3,9 +3,9 @@
 | Campo | Valor |
 |---|---|
 | Documento | BRG-INV-007 |
-| Versión | 0.1.0 |
+| Versión | 0.2.0 |
 | Estado | Pendiente |
-| Fecha | 2026-10-29 |
+| Fecha | 2026-11-02 |
 | Responsable | noggalito |
 
 ## 1. Contexto
@@ -51,7 +51,11 @@ Cada opción lleva su propia ampliación del modelo de amenazas (BRG-SEG-001) an
 
 No se publica ningún dato personal de las tarjetas usadas.
 
-## 6. Criterio de cierre
+## 6. Relación con la firma desde la web (SPK-08)
+
+La firma desde la web (versión 1.1, SPK-08) no depende de cómo llega berigna a la tarjeta: la extensión y el puente nativo hablan con berigna, y berigna con el DNIe. Quien no tenga lector puede firmar desde la web con el teléfono como puente (opción C), con las mismas condiciones de §4. La opción C sirve así a la vez para la firma en el escritorio y para la firma desde la web, lo que se tiene en cuenta al recomendar una opción (§7).
+
+## 7. Criterio de cierre
 
 - Para cada versión del DNIe: si admite NFC, con qué protocolo de acceso y con qué secuencia de firma.
 - Una recomendación entre las opciones A, B y C para la versión 1.1, con su costo estimado y el análisis de amenazas de §4.
