@@ -10,11 +10,11 @@ validated against the document it names. Each file is also verified offline by b
 own ``verify_xades`` (increment 5, RF-052): the last column, to compare with DSS.
 
 The "difficult documents" of the review of 2026-11-01 are signed too, as BRG-CAL-006 §3.3
-asks: comments inside and outside the root, ISO-8859-1, a name with spaces and tildes
-(percent-encoded in the URI), and a detached signature over a document that already carries
-one. A document with a processing instruction outside the root goes in the two forms that
-cover it: enveloped with an Id on the root, and enveloping (the enveloped and detached
-forms are refused with ERR-313).
+asks: comments inside and outside the root, ``xml:lang`` on the root (2026-11-02),
+ISO-8859-1, a name with spaces and tildes (percent-encoded in the URI), and a detached
+signature over a document that already carries one. A document with a processing instruction
+outside the root goes in the two forms that cover it: enveloped with an Id on the root, and
+enveloping (the enveloped and detached forms are refused with ERR-313).
 
     .venv/bin/python tests/interop/matriz_xades.py /tmp/matriz
 """
@@ -44,7 +44,7 @@ CONTENT = (
 DIFFICULT = (
     '<?xml version="1.0" encoding="ISO-8859-1"?>'
     "<!-- comentario de fuera -->"
-    '<Declaracion texto="café"><!-- nota de dentro -->'
+    '<Declaracion texto="café" xml:lang="es-PE"><!-- nota de dentro -->'
     "<Texto>acta de sesión de ñandú (matriz XAdES)</Texto></Declaracion>"
     "<!-- final -->"
 ).encode("ISO-8859-1")
