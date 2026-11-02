@@ -20,7 +20,7 @@ Al participar aceptas el [código de conducta](CODE_OF_CONDUCT.md).
 
 1. Crea una rama desde `main`: `feat/…`, `fix/…` o `docs/…`.
 2. Haz commits según [Conventional Commits](https://www.conventionalcommits.org/es/v1.0.0/), firmados con el DCO (`git commit -s`, ver abajo).
-3. Antes de abrir el PR, ejecuta `scripts/verificar.sh`: ruff, mypy estricto y pytest, con una cobertura mínima del 80 %.
+3. Antes de abrir el PR, ejecuta `scripts/verificar.sh`: ruff, mypy estricto, la documentación y pytest, con una cobertura mínima del 80 %. Como *hook* de `pre-push`, para no olvidarlo: `git config core.hooksPath scripts/hooks` (una vez por clon).
 4. Abre el PR contra `main` y completa la plantilla. La CI debe quedar en verde.
 
 Los cambios en `core/token`, `core/formats`, `core/trust` o que afecten a la seguridad necesitan una revisión adicional.

@@ -2,13 +2,14 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # SPDX-FileCopyrightText: 2026 noggalito
 # Local quality gate: the same checks the CI runs. Never runs HIL tests (no card, no PIN).
-# Optional pre-push hook:  ln -s ../../scripts/verificar.sh .git/hooks/pre-push
+# pre-push hook (R-DES-06), versioned in the repository:  git config core.hooksPath scripts/hooks
 set -eu
 cd "$(git rev-parse --show-toplevel)"
 PY=${PYTHON:-.venv/bin}
 "$PY/ruff" format --check src tests
 "$PY/ruff" check src tests
 "$PY/mypy"
+"$PY/python" scripts/verificar-documentacion.py
 scripts/traducciones.sh compilar
 # Views and settings schema of the interface (ADR-0010); the tests read them from build/meson.
 [ -d build/meson ] || meson setup build/meson

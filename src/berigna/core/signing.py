@@ -19,6 +19,7 @@ from collections.abc import Callable, Sequence
 from dataclasses import dataclass, replace
 from pathlib import Path
 from typing import Protocol
+from urllib.parse import quote
 
 from pyhanko.sign.timestamps import TimeStamper
 from pyhanko_certvalidator import ValidationContext
@@ -42,7 +43,7 @@ from berigna.core.formats.pades import (
     page_geometry,
     sign_pdf_pades,
 )
-from berigna.core.formats.xades import XadesPackaging, parse_xml, sign_xades
+from berigna.core.formats.xades import XadesPackaging, check_xml_signable, sign_xades
 from berigna.core.net.tsa import probe
 from berigna.core.token.base import HashAlgorithmName, TokenSigner
 from berigna.core.token.pin import Pin
@@ -432,8 +433,10 @@ def sign_xades_file(
     ``output``, in the same order of steps as :func:`sign_pdf_file` (module docstring). The
     source is never modified: enveloped and enveloping write a document that carries the
     signature and the content, and detached writes the signature, which references the
-    document by its name."""
-    parse_xml(check_source(source, output, expected_sha256))  # not XML: fail before the PIN
+    document by its name. An XML that cannot be signed (not XML, with a DTD, or already
+    signed in the enveloped form) is rejected before the PIN, as a PDF that cannot be signed
+    is (review of 2026-11-01)."""
+    check_xml_signable(check_source(source, output, expected_sha256), packaging)
     stamper, check = prepare(
         token, store, level, timestamper, online=online, ocsp_responses=ocsp_responses, crls=crls
     )
@@ -483,7 +486,9 @@ def sign_xades_checked(
             packaging=packaging,
             level=level,
             digest=digest,
-            reference_uri=job.source.name if packaging is XadesPackaging.DETACHED else None,
+            # a file name is not a URI: percent-encoded, as RFC 3986 says a valid URI must
+            # be, so that validators can find the document (review of 2026-11-01)
+            reference_uri=quote(job.source.name) if packaging is XadesPackaging.DETACHED else None,
             timestamper=timestamper,
             validation_context=context,
         ),

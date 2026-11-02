@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: berigna\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-30 22:32-0500\n"
+"POT-Creation-Date: 2026-11-01 20:33-0500\n"
 "PO-Revision-Date: 2026-10-27 23:38-0500\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -352,13 +352,13 @@ msgid "Signature verification report"
 msgstr "Informe de verificación de firmas"
 
 #: src/berigna/core/report/messages.py:130
-#: src/berigna/core/report/messages.py:231
-#: src/berigna/core/report/messages.py:250
+#: src/berigna/core/report/messages.py:245
+#: src/berigna/core/report/messages.py:264
 msgid "File"
 msgstr "Archivo"
 
 #: src/berigna/core/report/messages.py:131
-#: src/berigna/core/report/messages.py:251
+#: src/berigna/core/report/messages.py:265
 msgid "SHA-256 of the file"
 msgstr "SHA-256 del archivo"
 
@@ -386,8 +386,8 @@ msgid "Signature {number} of {total}: {field}"
 msgstr "Firma {number} de {total}: {field}"
 
 #: src/berigna/core/report/messages.py:137
-#: src/berigna/core/report/messages.py:233
-#: src/berigna/core/report/messages.py:257
+#: src/berigna/core/report/messages.py:247
+#: src/berigna/core/report/messages.py:271
 msgid "Result"
 msgstr "Resultado"
 
@@ -396,7 +396,7 @@ msgid "ETSI EN 319 102-1 code"
 msgstr "Código ETSI EN 319 102-1"
 
 #: src/berigna/core/report/messages.py:139
-#: src/berigna/core/report/messages.py:255
+#: src/berigna/core/report/messages.py:269
 msgid "Signer"
 msgstr "Firmante"
 
@@ -642,7 +642,40 @@ msgstr ""
 msgid "Not signed: the batch was cancelled before this file."
 msgstr "No se firmó: el lote se canceló antes de llegar a este archivo."
 
-#: src/berigna/core/report/messages.py:221
+#: src/berigna/core/report/messages.py:220
+msgid "This file is not an XML document, or it is damaged."
+msgstr "Este archivo no es un documento XML, o está dañado."
+
+#: src/berigna/core/report/messages.py:222
+msgid ""
+"This XML document declares a DTD (DOCTYPE). berigna does not sign it, "
+"because a DTD can hide attacks with entities. Save a copy without the "
+"DOCTYPE and sign that."
+msgstr ""
+"Este documento XML declara un DTD (DOCTYPE). berigna no lo firma, porque un "
+"DTD puede ocultar ataques con entidades. Guarda una copia sin el DOCTYPE y "
+"firma esa."
+
+#: src/berigna/core/report/messages.py:226
+msgid ""
+"This XML document is already signed. An enveloped signature would break the "
+"signature it already has: use a detached or enveloping signature instead."
+msgstr ""
+"Este documento XML ya está firmado. Una firma envuelta rompería la firma que "
+"ya tiene: usa una firma separada o envolvente."
+
+#: src/berigna/core/report/messages.py:230
+msgid ""
+"This XML document has processing instructions outside the root element (for "
+"example <?xml-stylesheet?>). The enveloped and detached forms would not "
+"cover them, and the signature would not check out: use the enveloping form "
+"instead."
+msgstr ""
+"Este documento XML tiene instrucciones de procesamiento fuera del elemento "
+"raíz (por ejemplo <?xml-stylesheet?>). Las formas envuelta y separada no las "
+"cubrirían y la firma no saldría bien: usa la forma envolvente."
+
+#: src/berigna/core/report/messages.py:235
 msgid ""
 "The author certified this document so that it cannot be changed: it does not "
 "accept more signatures."
@@ -650,82 +683,82 @@ msgstr ""
 "El autor certificó este documento para que no se pueda modificar: no admite "
 "más firmas."
 
-#: src/berigna/core/report/messages.py:224
+#: src/berigna/core/report/messages.py:238
 msgid "The document could not be verified."
 msgstr "No se pudo verificar el documento."
 
-#: src/berigna/core/report/messages.py:225
+#: src/berigna/core/report/messages.py:239
 msgid "The file is not a document that berigna can read, or it is damaged."
 msgstr "El archivo no es un documento que berigna pueda leer, o está dañado."
 
-#: src/berigna/core/report/messages.py:226
+#: src/berigna/core/report/messages.py:240
 msgid "The signature cannot be read, or it is not a CAdES signature."
 msgstr "La firma no se puede leer, o no es una firma CAdES."
 
-#: src/berigna/core/report/messages.py:232
+#: src/berigna/core/report/messages.py:246
 msgid "Folder"
 msgstr "Carpeta"
 
-#: src/berigna/core/report/messages.py:234
-#: src/berigna/core/report/messages.py:252
+#: src/berigna/core/report/messages.py:248
+#: src/berigna/core/report/messages.py:266
 msgid "Signed file"
 msgstr "Archivo firmado"
 
-#: src/berigna/core/report/messages.py:235
-#: src/berigna/core/report/messages.py:254 src/berigna/ui/presentation.py:341
+#: src/berigna/core/report/messages.py:249
+#: src/berigna/core/report/messages.py:268 src/berigna/ui/presentation.py:341
 msgid "Level"
 msgstr "Nivel"
 
-#: src/berigna/core/report/messages.py:236
-#: src/berigna/core/report/messages.py:253
+#: src/berigna/core/report/messages.py:250
+#: src/berigna/core/report/messages.py:267
 msgid "SHA-256 of the signed file"
 msgstr "SHA-256 del archivo firmado"
 
-#: src/berigna/core/report/messages.py:237
+#: src/berigna/core/report/messages.py:251
 msgid "Code"
 msgstr "Código"
 
-#: src/berigna/core/report/messages.py:238
+#: src/berigna/core/report/messages.py:252
 msgid "Explanation"
 msgstr "Explicación"
 
-#: src/berigna/core/report/messages.py:241
+#: src/berigna/core/report/messages.py:255
 msgid "Signed"
 msgstr "Firmado"
 
-#: src/berigna/core/report/messages.py:242
+#: src/berigna/core/report/messages.py:256
 msgid "Not signed"
 msgstr "No firmado"
 
-#: src/berigna/core/report/messages.py:243
+#: src/berigna/core/report/messages.py:257
 msgid "Skipped"
 msgstr "Omitido"
 
-#: src/berigna/core/report/messages.py:248
+#: src/berigna/core/report/messages.py:262
 msgid "Date (UTC)"
 msgstr "Fecha (UTC)"
 
-#: src/berigna/core/report/messages.py:249
+#: src/berigna/core/report/messages.py:263
 msgid "Operation"
 msgstr "Operación"
 
-#: src/berigna/core/report/messages.py:256
+#: src/berigna/core/report/messages.py:270
 msgid "Certificate serial number"
 msgstr "Número de serie del certificado"
 
-#: src/berigna/core/report/messages.py:258
+#: src/berigna/core/report/messages.py:272
 msgid "Detail"
 msgstr "Detalle"
 
-#: src/berigna/core/report/messages.py:261
+#: src/berigna/core/report/messages.py:275
 msgid "Signature"
 msgstr "Firma"
 
-#: src/berigna/core/report/messages.py:262
+#: src/berigna/core/report/messages.py:276
 msgid "Signature in a batch"
 msgstr "Firma en un lote"
 
-#: src/berigna/core/report/messages.py:263
+#: src/berigna/core/report/messages.py:277
 msgid "Verification"
 msgstr "Verificación"
 
@@ -1657,44 +1690,44 @@ msgstr "Raíz"
 msgid "{role} · valid until {date}"
 msgstr "{role} · vigente hasta el {date}"
 
-#: src/berigna/ui/preview.py:89
+#: src/berigna/ui/preview.py:102
 msgid "No preview"
 msgstr "Sin vista previa"
 
-#: src/berigna/ui/preview.py:90
+#: src/berigna/ui/preview.py:103
 msgid "This PDF cannot be shown, but it can still be signed."
 msgstr "Este PDF no se puede mostrar, pero se puede firmar igualmente."
 
-#: src/berigna/ui/preview.py:117
+#: src/berigna/ui/preview.py:130
 msgid "Zoom Out"
 msgstr "Alejar"
 
-#: src/berigna/ui/preview.py:119
+#: src/berigna/ui/preview.py:132
 msgid "Fit the Page"
 msgstr "Ajustar a la página"
 
-#: src/berigna/ui/preview.py:121
+#: src/berigna/ui/preview.py:134
 msgid "Zoom In"
 msgstr "Acercar"
 
-#: src/berigna/ui/preview.py:131
+#: src/berigna/ui/preview.py:144
 msgid "Previous Page"
 msgstr "Página anterior"
 
-#: src/berigna/ui/preview.py:133
+#: src/berigna/ui/preview.py:146
 msgid "Next Page"
 msgstr "Página siguiente"
 
-#: src/berigna/ui/preview.py:140 src/berigna/ui/preview.py:142
+#: src/berigna/ui/preview.py:153 src/berigna/ui/preview.py:155
 msgid "Page Number"
 msgstr "Número de página"
 
-#: src/berigna/ui/preview.py:144
+#: src/berigna/ui/preview.py:157
 #, python-brace-format
 msgid "of {total}"
 msgstr "de {total}"
 
-#: src/berigna/ui/preview.py:185
+#: src/berigna/ui/preview.py:204
 msgid "Fit"
 msgstr "Ajustar"
 

@@ -9,12 +9,15 @@ from pathlib import Path
 import pytest
 
 from berigna.core.errors import (
+    AlreadySignedError,
     CertificateRevokedError,
     LevelNotAvailableError,
     OutputExistsError,
     SigningCancelledError,
     SourceChangedError,
-    UnreadableDocumentError,
+    XmlDtdError,
+    XmlFormatError,
+    XmlPrologueError,
 )
 from berigna.core.formats.common import SignatureLevel
 from berigna.core.formats.xades import NS, XadesPackaging, parse_xml, signature_element
@@ -199,11 +202,13 @@ def test_a_level_above_b_b_needs_a_tsa(pki: Pki, document: tuple[Path, str]) -> 
 
 
 def test_a_document_that_is_not_xml_is_rejected_before_the_pin(pki: Pki, tmp_path: Path) -> None:
+    """With a signing code (ERR-30x), as a PDF that cannot be signed is, not the
+    verification code of ERR-401 (review of 2026-11-01)."""
     source = tmp_path / "carta.docx"
     content = b"PK\x03\x04 un documento que no es XML" * 30
     source.write_bytes(content)
     prompt = PinPrompt()
-    with pytest.raises(UnreadableDocumentError):
+    with pytest.raises(XmlFormatError):
         _sign(
             pki,
             (source, hashlib.sha256(content).hexdigest()),
@@ -212,6 +217,94 @@ def test_a_document_that_is_not_xml_is_rejected_before_the_pin(pki: Pki, tmp_pat
             prompt=prompt,
         )
     assert prompt.shown == []
+
+
+def test_a_document_with_a_dtd_is_rejected_before_the_pin(pki: Pki, tmp_path: Path) -> None:
+    """A DTD can hide entity attacks: refused with its own message, before the PIN (review
+    of 2026-11-01)."""
+    source = tmp_path / "con-dtd.xml"
+    content = b'<?xml version="1.0"?><!DOCTYPE Acta [<!ENTITY x "y">]><Acta>&x;</Acta>'
+    source.write_bytes(content)
+    prompt = PinPrompt()
+    with pytest.raises(XmlDtdError):
+        _sign(
+            pki,
+            (source, hashlib.sha256(content).hexdigest()),
+            source.with_name("x.xsig"),
+            packaging=XadesPackaging.DETACHED,
+            prompt=prompt,
+        )
+    assert prompt.shown == []
+
+
+def test_a_document_with_instructions_outside_the_root_is_rejected_before_the_pin(
+    pki: Pki, tmp_path: Path
+) -> None:
+    """The detached digest covers the root element alone and a validator digests the
+    instructions outside it: refused before the PIN, with the enveloping form left to
+    choose (review of 2026-11-01)."""
+    source = tmp_path / "con-estilo.xml"
+    content = (
+        b'<?xml version="1.0"?>'
+        b'<?xml-stylesheet type="text/xsl" href="estilo.xsl"?>'
+        b"<Acta>sesion de prueba</Acta>"
+    )
+    source.write_bytes(content)
+    prompt = PinPrompt()
+    with pytest.raises(XmlPrologueError):
+        _sign(
+            pki,
+            (source, hashlib.sha256(content).hexdigest()),
+            source.with_name("x.xsig"),
+            packaging=XadesPackaging.DETACHED,
+            prompt=prompt,
+        )
+    assert prompt.shown == []
+
+
+def test_an_already_signed_document_refuses_the_enveloped_form_before_the_pin(
+    pki: Pki, document: tuple[Path, str]
+) -> None:
+    """An enveloped signature over a signed document would break the signature it already
+    has: refused before the PIN costs nothing, and the detached form still signs it (review
+    of 2026-11-01)."""
+    source, _sha = document
+    output = xades_output_path(source, XadesPackaging.ENVELOPED, SUFFIX)
+    _sign(pki, document, output)  # the document now carries a signature
+    signed = (output, hashlib.sha256(output.read_bytes()).hexdigest())
+    prompt = PinPrompt()
+    with pytest.raises(AlreadySignedError):
+        _sign(pki, signed, output.with_name("acta-firmado-2.xml"), prompt=prompt)
+    assert prompt.shown == []  # refused before the PIN
+    detached, _instructions = _sign(
+        pki, signed, output.with_suffix(".xml.xsig"), packaging=XadesPackaging.DETACHED
+    )
+    assert detached.level is SignatureLevel.B_B
+    assert hashlib.sha256(output.read_bytes()).hexdigest() == signed[1]  # untouched
+
+
+def test_the_detached_signature_quotes_the_uri_of_the_document(pki: Pki, tmp_path: Path) -> None:
+    """A name with spaces and tildes is percent-encoded in the URI, as RFC 3986 says a
+    valid URI must be, so that a validator can find the document (review of 2026-11-01)."""
+    content = (
+        '<?xml version="1.0" encoding="UTF-8"?><Acta>sesión de prueba áéíóúñ</Acta>'
+    ).encode()
+    source = tmp_path / "acta de sesión.xml"
+    source.write_bytes(content)
+    output = tmp_path / "acta de sesión.xml.xsig"
+    _sign(
+        pki,
+        (source, hashlib.sha256(content).hexdigest()),
+        output,
+        packaging=XadesPackaging.DETACHED,
+    )
+    signature = signature_element(parse_xml(output.read_bytes()))
+    [reference] = [
+        r
+        for r in signature.findall("ds:SignedInfo/ds:Reference", NS)
+        if not r.get("URI").startswith("#")  # it names the document it travels with
+    ]
+    assert reference.get("URI") == "acta%20de%20sesi%C3%B3n.xml"
 
 
 def test_xades_output_path_never_reuses_a_name(tmp_path: Path) -> None:

@@ -1,7 +1,7 @@
 # ADR-0015: Idiomas de la v1.0, español del Perú y quechua sureño
 
 - Estado: Aceptado
-- Fecha: 2026-10-27
+- Fecha: 2026-11-02
 - Origen: DP-14
 - Modifica: ADR-0011 (puntos 2, 3 y 5 en lo que se refiere a en_US; los idiomas de la v1.0)
 

@@ -217,6 +217,20 @@ ERRORS: dict[str, str] = {
         "image in Preferences."
     ),
     "ERR-309": N_("Not signed: the batch was cancelled before this file."),
+    "ERR-310": N_("This file is not an XML document, or it is damaged."),
+    "ERR-311": N_(
+        "This XML document declares a DTD (DOCTYPE). berigna does not sign it, because a "
+        "DTD can hide attacks with entities. Save a copy without the DOCTYPE and sign that."
+    ),
+    "ERR-312": N_(
+        "This XML document is already signed. An enveloped signature would break the "
+        "signature it already has: use a detached or enveloping signature instead."
+    ),
+    "ERR-313": N_(
+        "This XML document has processing instructions outside the root element (for "
+        "example <?xml-stylesheet?>). The enveloped and detached forms would not cover them, "
+        "and the signature would not check out: use the enveloping form instead."
+    ),
     "ERR-307": N_(
         "The author certified this document so that it cannot be changed: "
         "it does not accept more signatures."
