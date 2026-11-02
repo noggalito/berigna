@@ -3,9 +3,9 @@
 | Campo | Valor |
 |---|---|
 | Documento | BRG-INV-000 |
-| Versión | 0.3.0 |
+| Versión | 0.4.0 |
 | Estado | En curso |
-| Fecha | 2026-10-29 |
+| Fecha | 2026-11-02 |
 | Responsable | noggalito |
 
 Los *spikes* se ejecutan en la Fase 0, antes de escribir código de producto. Cada uno tiene una pregunta, un método, un criterio de cierre y una plantilla de resultados. Sus conclusiones actualizan las decisiones pendientes y los ADR.
@@ -19,3 +19,4 @@ Los *spikes* se ejecutan en la Fase 0, antes de escribir código de producto. Ca
 | [SPK-05](SPK-05-dependencias-en-debian.md) | ¿Qué dependencias Python están en Debian 13 y cuáles hay que empaquetar? | DP-06 | Media | Cerrado (2026-10-27) |
 | [SPK-06](SPK-06-dnie-1-0-y-3-0.md) | ¿Qué chip, aplicaciones y ruta de firma tienen el DNIe 1.0 y el DNIe 3.0? | RNF-COM-05 (versión 1.1) | Alta | Pendiente: se necesita acceso a las tarjetas |
 | [SPK-07](SPK-07-nfc-y-telefono.md) | ¿Se puede leer el DNIe sin contacto (NFC) y firmar desde un lector NFC, un teléfono Android o con el teléfono como puente? | Plataformas de la versión 1.1 | Media | Pendiente: se necesita un lector sin contacto y un teléfono con NFC |
+| [SPK-08](SPK-08-firma-desde-la-web.md) | ¿Cómo firma berigna un documento que pide una página web, con extensión del navegador y puente nativo, también sin lector y con el teléfono como puente? | Plataformas de la versión 1.1 | Media | Pendiente: prototipo de una semana |
