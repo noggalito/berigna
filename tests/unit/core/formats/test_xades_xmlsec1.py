@@ -30,6 +30,12 @@ CONTENT = (
     b"<Declaracion><!-- nota de dentro --><Titular>PRUEBA FIRMANTE</Titular>"
     b"<Texto>Documento XML de prueba de berigna</Texto><!-- otra nota --></Declaracion>"
 )
+# xml: attributes on the root: an inclusive C14N of the signature would inherit them, which
+# lxml, signxml and DSS 6.2 do not agree on; berigna signs with the exclusive one (2026-11-02)
+WITH_XML_LANG = (
+    b'<?xml version="1.0" encoding="UTF-8"?>'
+    b'<Declaracion xml:lang="es-PE" xml:space="preserve"><Titular>PRUEBA</Titular></Declaracion>'
+)
 
 
 @pytest.fixture(scope="module")
@@ -71,6 +77,7 @@ def _sign(
     pki: Pki,
     packaging: XadesPackaging,
     level: SignatureLevel = SignatureLevel.B_B,
+    content: bytes = CONTENT,
 ) -> bytes:
     card, leaf = make_card(pki, f"FIRMANTE XMLSEC1 {packaging.value}")
     stamper, tsa_cert = make_timestamper(pki)
@@ -83,7 +90,7 @@ def _sign(
     with DnieV2Token(card) as token:
         token.verify_pin(Pin("123456"))
         return sign_xades(
-            CONTENT,
+            content,
             token,
             (pki.root, pki.ca, leaf),
             packaging=packaging,
@@ -128,3 +135,13 @@ def test_xmlsec1_rejects_a_document_changed_after_signing(
         check=False,
     )
     assert result.returncode != 0
+
+
+def test_xmlsec1_verifies_a_signature_under_a_root_with_xml_lang(
+    pki: Pki, anchors: Path, tmp_path: Path
+) -> None:
+    """The references and SignatureValue (xmlsec1 does not check the time-stamps)."""
+    tmp_path.joinpath("firma.xml").write_bytes(
+        _sign(pki, XadesPackaging.ENVELOPED, content=WITH_XML_LANG)
+    )
+    _verify(_xmlsec1(), anchors, tmp_path, "firma.xml")

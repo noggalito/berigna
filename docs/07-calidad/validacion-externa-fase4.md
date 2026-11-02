@@ -3,7 +3,7 @@
 | Campo | Valor |
 |---|---|
 | Documento | BRG-CAL-006 |
-| Versión | 0.5.0 |
+| Versión | 0.6.0 |
 | Estado | En curso |
 | Fecha | 2026-11-02 |
 | Responsable | noggalito |
@@ -163,10 +163,15 @@ Un documento XML de prueba firmado con Firma Perú y un DNIe real: XAdES-BASELIN
 | berigna con un precio del documento cambiado | TOTAL-FAILED / HASH_FAILURE |
 | DSS 6.2, con ECERNEP PERU CA ROOT 3 como ancla y revocación en línea | XAdES-BASELINE-B, TOTAL_PASSED |
 
-PR-INT-05 se cumple con Firma Perú. Falta una firma XAdES de ReFirma.
+PR-INT-05 se cumple con Firma Perú. ReFirma PDF no firma XML: al abrir el documento responde "El documento seleccionado no tiene la extensión PDF" (2026-11-02), así que en XAdES no hay firma de ReFirma que contrastar; ReFirma se contrasta en PAdES.
+
+### 3.8 Raíz con `xml:lang`: firma con C14N exclusiva (2026-11-02)
+
+Al desarrollar el incremento 5 apareció que la firma envuelta de berigna sobre una raíz con `xml:lang`, `xml:space` o `xml:base` salía inválida, también en DSS 6.2: con la C14N 1.0 inclusiva, las referencias a `SignedProperties` y `KeyInfo` y el propio `SignedInfo` heredan esos atributos, y lxml, signxml y DSS no coinciden en cómo. Primero se probó a heredarlos en la firma, como pide C14N 1.0: DSS aceptó la referencia a `SignedProperties` pero no la de `KeyInfo` ni el valor de la firma. La corrección es firmar con C14N exclusiva `SignedInfo`, `SignedProperties`, `KeyInfo` y el sello de archivo, como DSS y Firma Perú, y dejar la C14N 1.0 en la referencia al objeto de datos, que no hereda nada y así cubre las declaraciones de espacios de nombres usadas solo dentro de valores (ADR-0008, seguimiento del 2026-11-02).
+
+Resultado: la matriz se repitió con `xml:lang` en la raíz de los documentos difíciles, y DSS 6.2 da TOTAL_PASSED en las 18 B-LT y B-LTA, con los sellos de archivo PASSED y sin ningún HASH_FAILURE. Las 36 concuerdan con `verify_xades`, y xmlsec1 verifica en la CI una envuelta sobre una raíz con `xml:lang` y `xml:space`. DSS da también TOTAL_PASSED en B-LTA a un documento con `xsi:type="ns:Tipo"`, y en berigna cambiar después ese prefijo da HASH_FAILURE.
 
 ## 4. Pendiente
 
 - La misma matriz con el DNIe real y PIN, y en Firma Perú (incremento 8).
-- PR-INT-05 con una firma XAdES de ReFirma.
-- Firma XAdES envuelta de un documento cuya raíz lleva `xml:lang` (u otro atributo `xml:`): la firma de berigna sale inválida, con HASH_FAILURE en DSS 6.2 y en `verify_xades` (2026-11-02). signxml canonicaliza con lxml, que no hereda los atributos `xml:` de los antepasados en la C14N inclusiva de un subconjunto (`SignedProperties` y `KeyInfo`, dentro de la raíz). La envolvente y la separada no se ven afectadas. Necesita una corrección aparte en `core.formats.xades`.
+- La firma con `xml:lang` en la raíz, corregida (§3.8), en Firma Perú, junto con el resto de la matriz (incremento 8).

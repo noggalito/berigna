@@ -588,6 +588,38 @@ def test_a_signature_wrapped_in_a_container_keeps_its_packaging(
     assert report.scope is scope
 
 
+@pytest.mark.parametrize("level", [SignatureLevel.B_B, SignatureLevel.B_LTA])
+def test_berigna_signs_a_root_with_xml_attributes(pki: Pki, level: SignatureLevel) -> None:
+    """The enveloped signature of a root with xml:lang came out invalid, also in DSS:
+    berigna now signs with exclusive C14N, where nothing is inherited (2026-11-02)."""
+    document = (
+        b'<?xml version="1.0" encoding="UTF-8"?>'
+        b'<Declaracion xml:lang="es-PE" xml:space="preserve" xml:base="http://ejemplo/">'
+        b"<Titular>PRUEBA FIRMANTE</Titular></Declaracion>"
+    )
+    signed, leaf, tsa = _sign(pki, level, content=document)
+    report = _verify(signed, pki, ocsp_responses=[pki.ocsp(leaf), pki.ocsp(tsa)], crls=[pki.arl()])
+    assert (report.indication, report.subindication) == (Indication.TOTAL_PASSED, None)
+    assert all(a.indication is Indication.TOTAL_PASSED for a in report.archive_timestamps)
+
+
+def test_a_prefix_used_only_in_a_value_cannot_be_rebound(pki: Pki) -> None:
+    """The data object is digested with C14N 1.0: a namespace declaration used only inside a
+    value (xsi:type="ns:Tipo", as in UBL) is covered, and rebinding it after signing breaks
+    the signature (review of the fix of 2026-11-02)."""
+    document = (
+        b'<?xml version="1.0" encoding="UTF-8"?>'
+        b'<Declaracion xmlns:ns="urn:berigna:prueba" '
+        b'xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">'
+        b'<Titular xsi:type="ns:Tipo">PRUEBA FIRMANTE</Titular></Declaracion>'
+    )
+    signed, _, _ = _sign(pki, content=document)
+    rebound = signed.replace(b'xmlns:ns="urn:berigna:prueba"', b'xmlns:ns="urn:atacante"')
+    assert rebound != signed
+    report = _verify(rebound, pki)
+    assert (report.indication, report.subindication) == (Indication.TOTAL_FAILED, "HASH_FAILURE")
+
+
 # -- revocation and time (PR-VAL-02, PR-VAL-03, RF-056) --------------------------------------------
 
 
