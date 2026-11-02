@@ -1,7 +1,7 @@
 # ADR-0008: Bibliotecas para CAdES y XAdES
 
 - Estado: Aceptado (2026-10-27): opción A, validada en SPK-03
-- Fecha: 2026-10-27
+- Fecha: 2026-11-02
 
 ## Contexto
 
@@ -45,4 +45,9 @@ SPK-03 validó la opción A con DSS 6.2: CAdES (separada y envuelta) y XAdES (en
 - Opción A: donde dice "un firmante que delega en PKCS#11", debe entenderse "un firmante que delega en el *token* a través de `TokenSigner`". Para el DNIe v2 es el driver APDU (ADR-0012); para otros *tokens*, PKCS#11.
 - Criterio de aceptación 1: donde dice "Firma con un *token* PKCS#11 (SoftHSM)", debe entenderse "Firma a través de un *token* sin exportar la clave". SPK-03 usó un *token* simulado con la misma interfaz que el *applet* del DNIe v2 y después el DNIe real (SPK-03 §2 y §7).
 - Criterio de aceptación 3 (validar XAdES producidas por ReFirma y por DSS): sigue pendiente (PR-INT-05, PR-INT-06); la aceptación se basó en los criterios 1, 2 y 4.
+
+## Seguimiento (2026-11-02)
+
+- Criterio de aceptación 3: cumplido con DSS (PR-INT-06: las doce firmas XAdES que genera DSS 6.2, en las tres variantes y los cuatro niveles, concuerdan con DSS en `verify_xades`) y con Firma Perú (PR-INT-05: una firma real, TOTAL-PASSED como en DSS); falta una de ReFirma (BRG-CAL-006 §3.6 y §3.7).
+- La verificación XAdES no usa el verificador de signxml: berigna procesa XMLDSig y XAdES con su propio código sobre lxml, con una lista permitida de transformadas, porque las firmas de Firma Perú y DSS usan XPath Filter 2.0 y base64, y porque ETSI EN 319 102-1 pide indicaciones que signxml no da (`core.validation.xades`).
 - Cobertura validada: la matriz final de SPK-03 es de 20 de 20 firmas, con XAdES envuelta y envolvente de B-B a B-LTA.
