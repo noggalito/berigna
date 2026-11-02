@@ -3,9 +3,9 @@
 | Campo | Valor |
 |---|---|
 | Documento | BRG-CAL-006 |
-| Versión | 0.3.0 |
+| Versión | 0.4.0 |
 | Estado | En curso |
-| Fecha | 2026-11-01 |
+| Fecha | 2026-11-02 |
 | Responsable | noggalito |
 
 ## 1. Objetivo
@@ -91,6 +91,15 @@ Conclusiones:
 - En las B-LTA, DSS valida aparte los dos sellos en el informe detallado: `SIGNATURE_TIMESTAMP=PASSED` y `ARCHIVE_TIMESTAMP=PASSED` en las tres variantes.
 - B-B y B-T no llevan datos de revocación, así que ningún validador puede dar más que INDETERMINATE sin consultar la red, con las mismas subindicaciones que CAdES (§3.1). Es el resultado esperado.
 - RF-032 (XAdES separada) entra en la v1.0 por decisión del titular (2026-11-01); SPK-03 la había dejado sin probar y la matriz la cubre.
+
+### 3.4 Documentos difíciles, tras las correcciones (2026-11-02)
+
+La revisión del 2026-11-01 halló que las pruebas usaban un único XML sin comentarios, sin prólogo y sin firmas previas. La matriz se amplió con las correcciones de esa revisión y las 44 combinaciones se validaron de nuevo con DSS 6.2:
+
+- Un documento con comentarios dentro y fuera de la raíz y codificación ISO-8859-1, firmado en las tres variantes y los cuatro niveles; la separada viaja con un nombre con espacios y tildes (`acta de sesión.xml`) y la URI del documento va codificada por ciento. TOTAL_PASSED en B-LT y B-LTA, sin ningún HASH_FAILURE: los resúmenes y los sellos excluyen los comentarios, como XMLDSig.
+- La separada sobre un documento que ya lleva una firma envuelta: la primera firma sigue siendo válida y DSS da TOTAL_PASSED en B-LT y B-LTA.
+- Un documento con una instrucción de procesamiento fuera de la raíz (`<?xml-stylesheet?>`): envuelta con `Id` en la raíz y envolvente, TOTAL_PASSED en B-LT y B-LTA. La envuelta sin `Id` y la separada se rechazan antes del PIN (ERR-313): DSS da HASH_FAILURE de ellas, porque digiere el documento completo y el resumen de la referencia cubre solo el elemento raíz.
+- xmlsec1 1.2.41 (Debian) verifica aparte, en la CI, los resúmenes y el valor de la firma de las tres variantes, con los comentarios dentro del documento: un verificador que no comparte código con berigna.
 
 ## 4. Pendiente
 

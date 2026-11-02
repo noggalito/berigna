@@ -3,9 +3,9 @@
 | Campo | Valor |
 |---|---|
 | Documento | BRG-GEN-000 |
-| Versión | 0.10.0 |
+| Versión | 0.11.0 |
 | Estado | Borrador |
-| Fecha | 2026-11-01 |
+| Fecha | 2026-11-02 |
 | Responsable | noggalito |
 
 ## 1. Propósito
@@ -106,7 +106,7 @@ Algunos documentos públicos citan identificadores cuyo detalle está en la docu
 | Licencia | GPL-3.0-or-later (ADR-0005), con un permiso adicional para distribuir por tiendas de aplicaciones (ADR-0021) |
 | Otras plataformas | Windows, macOS, Android e iOS, y la lectura del DNIe por NFC, en estudio para la versión 1.1 (SPK-07) |
 
-## 7. Estado de implementación (2026-10-29)
+## 7. Estado de implementación (2026-11-02)
 
 Fases 0, 1 y 2 cerradas. Fase 3: funcionalmente completa (incrementos 1 a 7 hechos); su cierre formal depende de la prueba de usabilidad con al menos 5 personas (BRG-CAL-005), que no bloquea seguir con la Fase 4. Los problemas de gravedad 3 y 4 que salgan de ella se corrigen antes de cerrarla.
 
@@ -115,10 +115,10 @@ Fase 4 (CAdES y XAdES), iniciada el 2026-10-29, en ocho incrementos:
 1. Registro local de fallos (R-DES-11). Hecho.
 2. Firma CAdES `.p7s` y `.p7m`, de B-B a B-LTA (`core.formats.cades`; RF-020 a RF-022). Hecho: válida en DSS 6.2 (BRG-CAL-006).
 3. Verificación CAdES con indicaciones ETSI (`core.validation.cades`, `verify_cades`, RF-051). Hecha: contrastada con DSS 6.2 en la matriz (BRG-CAL-006). La interfaz (CU-05) y las pruebas por propiedades llegan con los incrementos 6 y 7.
-4. Firma XAdES envuelta y envolvente, de B-B a B-LTA (`core.formats.xades`; RF-030, RF-031 y RF-033); la separada (RF-032), si cabe. Hecha: las tres variantes, de B-B a B-LTA, incluida la separada, que entra en la v1.0 por decisión del titular (2026-11-01); DSS 6.2 reconoce las doce combinaciones, con TOTAL_PASSED en B-LT y B-LTA y los sellos de firma y de archivo PASSED (BRG-CAL-006 §3.3).
+4. Firma XAdES envuelta y envolvente, de B-B a B-LTA (`core.formats.xades`; RF-030, RF-031 y RF-033); la separada (RF-032), si cabe. Hecha: las tres variantes, de B-B a B-LTA, incluida la separada, que entra en la v1.0 por decisión del titular (2026-11-01); DSS 6.2 reconoce las doce combinaciones, con TOTAL_PASSED en B-LT y B-LTA y los sellos de firma y de archivo PASSED (BRG-CAL-006 §3.3). Corregida tras la revisión del 2026-11-01: los sellos excluyen los comentarios, la transformada envuelta quita solo su firma, la envuelta sobre un documento ya firmado y el DTD se rechazan antes del PIN, la URI de la separada va codificada, y la envuelta conserva prólogo y codificación; los "documentos difíciles" (comentarios, ISO-8859-1, nombre con espacios y tildes, firma previa) entran en la matriz de DSS, y xmlsec1 verifica los resúmenes en la CI como segundo verificador.
 5. Verificación XAdES (RF-052), también de las firmas de ReFirma y DSS (PR-INT-05, PR-INT-06), con pruebas por propiedades sobre XML.
 6. Interfaz: firmar otros archivos (CU-05, con nombre, tamaño, tipo, SHA-256 y vista de texto), verificar `.p7s`, `.p7m` y `.xml`, y lotes mixtos (RF-041).
-7. Práctica de desarrollo: vigilancia semanal, SBOM, comprobación de la documentación, gancho `pre-push`, CI contra la última pyHanko y medidas de rendimiento (R-DES-01 a R-DES-03, R-DES-05, R-DES-06, R-DES-08, R-DES-10).
+7. Práctica de desarrollo: vigilancia semanal, SBOM, CI contra la última pyHanko y medidas de rendimiento (R-DES-01 a R-DES-03, R-DES-08, R-DES-10). La comprobación de la documentación (R-DES-05) y el gancho `pre-push` (R-DES-06) ya están hechos: adelantados el 2026-11-02 por la revisión del 2026-11-01, que los echaba en falta.
 8. Matriz externa formato × nivel con DSS 6.2 y Firma Perú, y prueba con el DNIe real y PIN: el criterio de salida de la fase.
 
 La cofirma CAdES (RF-023, "Podría") queda para después de la v1.0.
@@ -144,7 +144,7 @@ La cofirma CAdES (RF-023, "Podría") queda para después de la v1.0.
 | `core.diagnostics` y `core.logs` | Implementado (Fase 3, incremento 6): diagnóstico en orden con acción sugerida e informe copiable; registro técnico rotativo con números enmascarados | RF-007, RF-083 | Tarjeta simulada y PKI de pruebas; pruebas de la interfaz con Xvfb |
 | `core.history`, historial y vista del almacén de confianza | Implementado (Fase 3, incremento 6): historial SQLite 0600 con búsqueda, CSV y borrado; certificados de confianza por origen en Preferencias | RF-060, RF-082 | Pruebas de la interfaz con firma y verificación reales (tarjeta simulada) |
 | `core.formats.cades` y `core.signing.sign_cades_file` | Implementado (Fase 4, incremento 2): firma CAdES separada (`.p7s`) y envuelta (`.p7m`) de cualquier archivo, de B-B a B-LTA, con el mismo orden de seguridad que PAdES; la verificación CAdES está en `core.validation.cades` (incremento 3, contrastada con DSS 6.2) | RF-020 a RF-022 | Tarjeta simulada y TSA de pruebas: las 8 combinaciones reconocidas por DSS 6.2, B-LT y B-LTA con TOTAL_PASSED (`07-calidad/validacion-externa-fase4.md`); las 8 verificadas por `verify_cades` con la misma indicación que DSS |
-| `core.formats.xades` y `core.signing.sign_xades_file` | Implementado (Fase 4, incremento 4): firma XAdES de documentos XML envuelta (la firma dentro del documento), envolvente (el documento dentro de `ds:Object`) y separada (`.xsig`, que referencia al documento por su nombre), de B-B a B-LTA, con signxml 4.0.5 más capa propia para T, LT y LTA (C14N 1.0 inclusiva y `SigningCertificate` solo con el firmante, ADR-0008) y el mismo orden de seguridad que PAdES y CAdES; un documento que no es XML se rechaza antes del PIN | RF-030 a RF-033 | Tarjeta simulada y TSA de pruebas: las doce combinaciones reconocidas por DSS 6.2, B-LT y B-LTA con TOTAL_PASSED y los sellos PASSED (`07-calidad/validacion-externa-fase4.md` §3.3); la verificación XAdES llega con el incremento 5 |
+| `core.formats.xades` y `core.signing.sign_xades_file` | Implementado (Fase 4, incremento 4, corregido el 2026-11-02): firma XAdES de documentos XML envuelta (la firma dentro del documento), envolvente (el documento dentro de `ds:Object`) y separada (`.xsig`, que referencia al documento por su nombre, URI codificada), de B-B a B-LTA, con signxml 4.0.5 más capa propia para T, LT y LTA (C14N 1.0 inclusiva y `SigningCertificate` solo con el firmante, ADR-0008) y el mismo orden de seguridad que PAdES y CAdES; antes del PIN se rechaza lo que no se puede firmar: lo que no es XML, el DTD, un documento ya firmado en la forma envuelta y las instrucciones de procesamiento fuera de la raíz en las formas que no las cubren | RF-030 a RF-033 | Tarjeta simulada y TSA de pruebas: las doce combinaciones más los documentos difíciles de la revisión del 2026-11-01 (comentarios, ISO-8859-1, nombre con espacios y tildes, firma previa), 44 archivos con TOTAL_PASSED en B-LT y B-LTA y ningún HASH_FAILURE (`07-calidad/validacion-externa-fase4.md` §3.3); xmlsec1 verifica los resúmenes en la CI; la verificación XAdES llega con el incremento 5 |
 | Extensión de Nautilus y empaquetado `.deb` | Fase 5 | RF-070 a RF-073, ADR-0006, ADR-0013 | — |
 | PIN pad (PC/SC parte 10) | Aplazado a la versión 1.1 (decisión del 2026-10-27; requiere un lector de clase 2) | RF-005, P-08 | — |
 | *Backend* PKCS#11 + SoftHSM | Aplazado a la versión 1.1 (decisión del 2026-10-27; el DNIe v2 no lo necesita) | ADR-0003 | — |
