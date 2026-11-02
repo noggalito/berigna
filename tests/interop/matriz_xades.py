@@ -6,13 +6,22 @@ Signs one test XML document per packaging (enveloped, enveloping, detached .xsig
 (B-B to B-LTA) with berigna's own code, a simulated DNIe, the test PKI and a test TSA. The
 output folder gets the signed document (datos.xml) and the test root, so that
 tests/interop/matriz_dss.sh (DSS 6.2) can validate them; a detached signature (.xsig) is
-validated against datos.xml. berigna's own XAdES verification arrives with increment 5.
+validated against the document it names. berigna's own XAdES verification arrives with
+increment 5.
+
+The "difficult documents" of the review of 2026-11-01 are signed too, as BRG-CAL-006 §3.3
+asks: comments inside and outside the root, ISO-8859-1, a name with spaces and tildes
+(percent-encoded in the URI), and a detached signature over a document that already carries
+one. A document with a processing instruction outside the root goes in the two forms that
+cover it: enveloped with an Id on the root, and enveloping (the enveloped and detached
+forms are refused with ERR-313).
 
     .venv/bin/python tests/interop/matriz_xades.py /tmp/matriz
 """
 
 import sys
 from pathlib import Path
+from urllib.parse import quote
 
 from cryptography.hazmat.primitives import serialization
 
@@ -31,10 +40,29 @@ CONTENT = (
     b'<?xml version="1.0" encoding="UTF-8"?>'
     b"<Declaracion><Texto>Documento XML de prueba de berigna (matriz XAdES)</Texto></Declaracion>"
 )
+DIFFICULT = (
+    '<?xml version="1.0" encoding="ISO-8859-1"?>'
+    "<!-- comentario de fuera -->"
+    '<Declaracion texto="café"><!-- nota de dentro -->'
+    "<Texto>acta de sesión de ñandú (matriz XAdES)</Texto></Declaracion>"
+    "<!-- final -->"
+).encode("ISO-8859-1")
+DIFFICULT_NAME = "acta de sesión.xml"
+WITH_PI = (
+    '<?xml version="1.0" encoding="UTF-8"?>'
+    '<?xml-stylesheet type="text/xsl" href="estilo.xsl"?>'
+    '<Declaracion Id="documento"><Texto>matriz XAdES con instrucción</Texto></Declaracion>'
+)
+FIRST = "xades-dificil-envuelta-B-B.xml"  # what the over-signed cases travel with
 FILENAMES = {
     XadesPackaging.ENVELOPED: "xades-envuelta-{level}.xml",
     XadesPackaging.ENVELOPING: "xades-envolvente-{level}.xml",
     XadesPackaging.DETACHED: "xades-separada-{level}.xsig",
+}
+DIFFICULT_FILENAMES = {
+    XadesPackaging.ENVELOPED: "xades-dificil-envuelta-{level}.xml",
+    XadesPackaging.ENVELOPING: "xades-dificil-envolvente-{level}.xml",
+    XadesPackaging.DETACHED: "xades-dificil-separada-{level}.xsig",
 }
 
 
@@ -47,33 +75,65 @@ def main() -> int:
     pki = build_pki()
     (out / "raiz-pruebas.pem").write_bytes(pki.root.public_bytes(serialization.Encoding.PEM))
     (out / "datos.xml").write_bytes(CONTENT)
+    (out / DIFFICULT_NAME).write_bytes(DIFFICULT)
     print("| Archivo | Nivel pedido | Nivel alcanzado |")
     print("|---|---|---|")
-    for packaging in XadesPackaging:
-        for level in SignatureLevel:
-            card, leaf = make_card(pki, f"FIRMANTE XADES {level.value}")
-            stamper, tsa = make_timestamper(pki)
-            context = signing_validation_context(
-                pki.store,
-                online=False,
-                ocsp_responses=[pki.ocsp(leaf), pki.ocsp(tsa)],
-                crls=[pki.arl()],
+
+    def matrix(
+        content: bytes, name: str, packaging: XadesPackaging, template: str, level: SignatureLevel
+    ) -> None:
+        """Sign ``content`` at ``level``, detached under ``name``, as ``template`` says."""
+        card, leaf = make_card(pki, f"FIRMANTE XADES {level.value}")
+        stamper, tsa = make_timestamper(pki)
+        context = signing_validation_context(
+            pki.store,
+            online=False,
+            ocsp_responses=[pki.ocsp(leaf), pki.ocsp(tsa)],
+            crls=[pki.arl()],
+        )
+        with DnieV2Token(card) as token:
+            token.verify_pin(Pin("123456"))  # simulated card: no real PIN involved
+            result = sign_xades(
+                content,
+                token,
+                (pki.root, pki.ca, leaf),
+                packaging=packaging,
+                level=level,
+                reference_uri=quote(name) if packaging is XadesPackaging.DETACHED else None,
+                timestamper=None if level is SignatureLevel.B_B else stamper,
+                validation_context=context,
             )
-            with DnieV2Token(card) as token:
-                token.verify_pin(Pin("123456"))  # simulated card: no real PIN involved
-                result = sign_xades(
-                    CONTENT,
-                    token,
-                    (pki.root, pki.ca, leaf),
-                    packaging=packaging,
-                    level=level,
-                    reference_uri="datos.xml",
-                    timestamper=None if level is SignatureLevel.B_B else stamper,
-                    validation_context=context,
-                )
-            name = FILENAMES[packaging].format(level=level.value)
-            (out / name).write_bytes(result.data)
-            print(f"| {name} | {level.value} | {result.level.value} |")
+        written = template.format(level=level.value)
+        (out / written).write_bytes(result.data)
+        print(f"| {written} | {level.value} | {result.level.value} |")
+
+    cases = [
+        *((packaging, FILENAMES[packaging], CONTENT, "datos.xml") for packaging in XadesPackaging),
+        *(
+            (packaging, DIFFICULT_FILENAMES[packaging], DIFFICULT, DIFFICULT_NAME)
+            for packaging in XadesPackaging
+        ),
+    ]
+    for packaging, template, content, name in cases:
+        for level in SignatureLevel:
+            matrix(content, name, packaging, template, level)
+    # a document with an instruction outside the root, in the two forms that cover it
+    for packaging, template in (
+        (XadesPackaging.ENVELOPED, "xades-con-pi-envuelta-{level}.xml"),
+        (XadesPackaging.ENVELOPING, "xades-con-pi-envolvente-{level}.xml"),
+    ):
+        for level in SignatureLevel:
+            matrix(WITH_PI.encode(), "datos.xml", packaging, template, level)
+    # a document that already carries a signature: detached, which does not touch it
+    already = (out / FIRST).read_bytes()
+    for level in SignatureLevel:
+        matrix(
+            already,
+            FIRST,
+            XadesPackaging.DETACHED,
+            "xades-separada-sobre-firma-{level}.xsig",
+            level,
+        )
     return 0
 
 
