@@ -3,7 +3,7 @@
 | Campo | Valor |
 |---|---|
 | Documento | BRG-DES-002 |
-| Versión | 0.4.0 |
+| Versión | 0.5.0 |
 | Estado | Borrador |
 | Fecha | 2026-11-02 |
 | Responsable | noggalito |
@@ -24,6 +24,7 @@ Punto de partida: el proyecto ya tiene ADR, trazabilidad de requisitos a pruebas
 | R-DES-04 | Plantillas de incidencia y de PR en `.github/` (BRG-MAN-001 §8 y §12) | Prometidas y aún inexistentes; piden la versión, el lector y el informe de diagnóstico, y avisan de no adjuntar PDF firmados ni el DNI | Trivial |
 | R-DES-05 | Comprobación automática de la documentación en `scripts/verificar.sh`: tabla de cabecera completa, Fecha no anterior a la del último cambio (regla de BRG-GES-001 §2), identificadores citados (RF, RNF, CU, ADR, DP, ERR) que existen. **Adoptado el 2026-11-02** (`scripts/verificar-documentacion.py`, adelantado del incremento 7 por la revisión del 2026-11-01) | Los desajustes del informe de revisión 0018 (cabeceras, una cita a RF-082 por RF-007) son de los que un *script* corto detecta siempre; y detectó la Fecha de ADR-0015, tres días anterior a su último cambio | Bajo |
 | R-DES-06 | Gancho `pre-push` con `scripts/verificar.sh`, versionado en el repositorio (`git config core.hooksPath scripts/hooks`). **Adoptado el 2026-11-02** (`scripts/hooks/pre-push`, adelantado del incremento 7 por la revisión del 2026-11-01) | Un gancho opcional no se usa. No `pre-commit` (el programa): añadiría una dependencia de PyPI sin ganar nada | Trivial |
+| R-DES-18 | Resultado ETSI, no "error inesperado", cuando pyHanko 0.25.1 lanza `AttributeError` ante un sello de tiempo cuyo algoritmo de resumen no conoce (`get_pyca_cryptography_hash` lo busca con `getattr`). Opciones: A) añadir `AttributeError` a `MALFORMED` (`core.validation.spec`), con registro en el log técnico; B) comprobar los algoritmos de resumen de la firma y de sus sellos contra una lista propia antes de llamar a pyHanko; C) sustituir esa función de pyHanko en tiempo de ejecución; D) reportarlo a pyHanko con una corrección, como la incidencia n.º 903; E) pruebas por mutación de CAdES y PDF como las de XAdES. Propuesta: A + D + E. **Decisión aplazada por el titular el 2026-11-02**; tomarla antes del incremento 8 | Hallado por las pruebas por mutación del incremento 5 y comprobado el 2026-11-02 en `verify_cades` y `verify_pdf` (en `verify_xades` ya se trata como FORMAT_FAILURE): la verificación termina en ERR-000 y no muestra ninguna de las firmas del archivo, también las válidas. Nunca da un falso válido; es robustez ante archivos hostiles (AM-05) | Bajo (A) a medio (B) |
 
 ## 3. Antes de la versión 1.0
 
