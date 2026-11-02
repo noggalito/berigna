@@ -3,9 +3,9 @@
 | Campo | Valor |
 |---|---|
 | Documento | BRG-DES-002 |
-| Versión | 0.3.0 |
+| Versión | 0.4.0 |
 | Estado | Borrador |
-| Fecha | 2026-10-30 |
+| Fecha | 2026-11-02 |
 | Responsable | noggalito |
 
 ## 1. Propósito
@@ -22,8 +22,8 @@ Punto de partida: el proyecto ya tiene ADR, trazabilidad de requisitos a pruebas
 | R-DES-02 | Vigilancia de vulnerabilidades adaptada a Debian: `debsecan` en el contenedor y las alertas de GitHub (GHSA y OSV) para pyHanko 0.25.1 | `pip-audit` sobre paquetes de Debian da falsos positivos (Debian corrige sin cambiar la versión de origen); lo único que llega de PyPI en producción es pyHanko | Bajo |
 | R-DES-03 | Lista de componentes (SBOM, CycloneDX) generada en la CI | El expediente pide declarar los componentes de terceros y sus licencias; generada es más fiable que escrita a mano | Bajo |
 | R-DES-04 | Plantillas de incidencia y de PR en `.github/` (BRG-MAN-001 §8 y §12) | Prometidas y aún inexistentes; piden la versión, el lector y el informe de diagnóstico, y avisan de no adjuntar PDF firmados ni el DNI | Trivial |
-| R-DES-05 | Comprobación automática de la documentación en `scripts/verificar.sh`: tabla de cabecera completa, Fecha no anterior a la del último cambio (regla de BRG-GES-001 §2), identificadores citados (RF, RNF, CU, ADR, DP, ERR) que existen | Los desajustes del informe de revisión 0018 (cabeceras, una cita a RF-082 por RF-007) son de los que un *script* corto detecta siempre | Bajo |
-| R-DES-06 | Gancho `pre-push` con `scripts/verificar.sh`, versionado en el repositorio (`git config core.hooksPath scripts/hooks`) | Un gancho opcional no se usa. No `pre-commit` (el programa): añadiría una dependencia de PyPI sin ganar nada | Trivial |
+| R-DES-05 | Comprobación automática de la documentación en `scripts/verificar.sh`: tabla de cabecera completa, Fecha no anterior a la del último cambio (regla de BRG-GES-001 §2), identificadores citados (RF, RNF, CU, ADR, DP, ERR) que existen. **Adoptado el 2026-11-02** (`scripts/verificar-documentacion.py`, adelantado del incremento 7 por la revisión del 2026-11-01) | Los desajustes del informe de revisión 0018 (cabeceras, una cita a RF-082 por RF-007) son de los que un *script* corto detecta siempre; y detectó la Fecha de ADR-0015, tres días anterior a su último cambio | Bajo |
+| R-DES-06 | Gancho `pre-push` con `scripts/verificar.sh`, versionado en el repositorio (`git config core.hooksPath scripts/hooks`). **Adoptado el 2026-11-02** (`scripts/hooks/pre-push`, adelantado del incremento 7 por la revisión del 2026-11-01) | Un gancho opcional no se usa. No `pre-commit` (el programa): añadiría una dependencia de PyPI sin ganar nada | Trivial |
 
 ## 3. Antes de la versión 1.0
 
