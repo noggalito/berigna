@@ -2,8 +2,9 @@
 # SPDX-FileCopyrightText: 2026 noggalito
 """XAdES through the DNIe v2 driver (simulator) and a test TSA: PR-XAD-01 to PR-XAD-12,
 RF-030 to RF-033. The checks recomputed here (digest of the references, imprint of both
-time-stamps) do not use the module's own helpers. The external validation with DSS 6.2 is
-tests/interop/matriz_xades.py."""
+time-stamps) do not use the module's own helpers: the octets follow EN 319 132-1 §5.4.2,
+with C14N 1.0 without comments, as XMLDSig digests ``URI=""`` and ``#id`` references
+(review of 2026-11-01). The external validation with DSS 6.2 is tests/interop/matriz_xades.py."""
 
 import asyncio
 import base64
@@ -21,12 +22,20 @@ from lxml import etree
 from pyhanko_certvalidator.policy_decl import RevocationCheckingPolicy, RevocationCheckingRule
 
 from berigna.core.certs import to_asn1
-from berigna.core.errors import TsaError, UnreadableDocumentError
+from berigna.core.errors import (
+    AlreadySignedError,
+    TsaError,
+    XmlDtdError,
+    XmlFormatError,
+    XmlPrologueError,
+)
 from berigna.core.formats.common import SignatureLevel
 from berigna.core.formats.xades import (
     DS,
+    ENVELOPED,
     EXC_C14N,
     NS,
+    XADES,
     XADES141,
     XadesPackaging,
     XadesResult,
@@ -51,6 +60,38 @@ CONTENT = (
     b'<?xml version="1.0" encoding="UTF-8"?>'
     b"<Declaracion><Titular>PRUEBA FIRMANTE</Titular>"
     b"<Texto>Documento XML de prueba de berigna</Texto></Declaracion>"
+)
+# Difficult documents (review of 2026-11-01): comments inside and outside the root, a
+# processing instruction in the prologue, a DTD, an encoding other than UTF-8. The one with
+# the instruction can only be signed enveloping, or enveloped with an Id on the root: DSS
+# digests the instructions, and the enveloped (URI="") and detached reference digests cover
+# the root element alone.
+WITH_COMMENTS = (
+    b'<?xml version="1.0" encoding="UTF-8"?>'
+    b"<Declaracion><!-- nota de dentro --><Titular>PRUEBA FIRMANTE</Titular>"
+    b"<Texto>Documento XML de prueba de berigna</Texto><!-- otra nota --></Declaracion>"
+)
+DIFFICULT = (
+    '<?xml version="1.0" encoding="ISO-8859-1"?>'
+    "<!-- comentario de fuera -->"
+    '<Declaracion texto="café"><!-- nota de dentro --><Titular>PRUEBA FIRMANTE</Titular>'
+    "<Texto>acta de sesión de ñandú</Texto></Declaracion>"
+    "<!-- final -->"
+).encode("ISO-8859-1")
+WITH_PI = (
+    '<?xml version="1.0" encoding="UTF-8"?>'
+    '<?xml-stylesheet type="text/xsl" href="estilo.xsl"?>'
+    "<Declaracion><Texto>con instrucción de procesamiento</Texto></Declaracion>"
+)
+WITH_PI_AND_ID = (
+    '<?xml version="1.0" encoding="UTF-8"?>'
+    '<?xml-stylesheet type="text/xsl" href="estilo.xsl"?>'
+    '<Declaracion Id="documento"><Texto>con instrucción de procesamiento</Texto></Declaracion>'
+)
+WITH_DTD = (
+    b'<?xml version="1.0" encoding="UTF-8"?>'
+    b'<!DOCTYPE Declaracion [<!ENTITY saludo "hola">]>'
+    b"<Declaracion>&saludo;</Declaracion>"
 )
 _HASHES: dict[str, Any] = {
     "sha256": hashes.SHA256,
@@ -94,6 +135,7 @@ def _sign(
     level: SignatureLevel,
     packaging: XadesPackaging = XadesPackaging.ENVELOPED,
     *,
+    content: bytes = CONTENT,
     fail_on: frozenset[int] = frozenset(),
     revinfo: bool = True,
     digest: HashAlgorithmName = "sha256",
@@ -109,7 +151,7 @@ def _sign(
     with DnieV2Token(card) as token:
         token.verify_pin(Pin("123456"))
         result = sign_xades(
-            CONTENT,
+            content,
             token,
             (pki.root, pki.ca, leaf),
             packaging=packaging,
@@ -134,30 +176,50 @@ def _verify_the_signature_value(signed: Signed, digest: HashAlgorithmName = "sha
     assert isinstance(key, rsa.RSAPublicKey)
     key.verify(
         value,
-        etree.tostring(signed_info, method="c14n", exclusive=False),
+        etree.tostring(signed_info, method="c14n", exclusive=False, with_comments=False),
         padding.PKCS1v15(),
         _HASHES[digest](),
     )
 
 
-def _reference_digest_matches(signed: Signed, digest: HashAlgorithmName = "sha256") -> None:
+def _without_its_own_signature(document: Any, signature: Any) -> Any:
+    """A copy of ``document`` without ``signature`` — only that one: the enveloped transform
+    of a signature does not excise the signatures the document already carried."""
+    without = copy.deepcopy(document)
+    copies = without.findall(".//ds:Signature", NS)
+    own = copies[document.findall(".//ds:Signature", NS).index(signature)]
+    own.getparent().remove(own)
+    return without
+
+
+def _reference_digest_matches(
+    signed: Signed, digest: HashAlgorithmName = "sha256", *, content: bytes = CONTENT
+) -> None:
     """Every data-object reference still digests to its DigestValue, whatever was added."""
-    document, signature = signed.document, signed.signature()
+    document = signed.document
+    signature = signature_element(document)  # from the same parse: the enveloped transform
+    # excises this signature, and only this one
     for reference in signature.findall("ds:SignedInfo/ds:Reference", NS):
         uri = reference.get("URI")
         transforms = [
             t.get("Algorithm") for t in reference.findall("ds:Transforms/ds:Transform", NS)
         ]
         if uri == "":
-            without = copy.deepcopy(document)
-            for element in without.findall(".//ds:Signature", NS):
-                element.getparent().remove(element)
-            octets = etree.tostring(without, method="c14n", exclusive=EXC_C14N in transforms)
+            octets = etree.tostring(
+                _without_its_own_signature(document, signature),
+                method="c14n",
+                exclusive=EXC_C14N in transforms,
+                with_comments=False,
+            )
         elif uri.startswith("#"):
             [target] = signature.getroottree().getroot().xpath(f"//*[@Id='{uri[1:]}']")
-            octets = etree.tostring(target, method="c14n", exclusive=False)
+            if ENVELOPED in transforms:  # #id on the root: without the signature it carries
+                target = _without_its_own_signature(target, signature)
+            octets = etree.tostring(target, method="c14n", exclusive=False, with_comments=False)
         else:
-            octets = etree.tostring(parse_xml(CONTENT), method="c14n", exclusive=False)
+            octets = etree.tostring(
+                parse_xml(content), method="c14n", exclusive=False, with_comments=False
+            )
         expected = base64.b64encode(hashlib.new(digest, octets).digest()).decode()
         assert reference.find("ds:DigestValue", NS).text == expected, uri
 
@@ -209,7 +271,9 @@ def test_b_t_carries_a_signature_timestamp(pki: Pki) -> None:
     assert time_stamp.find("ds:CanonicalizationMethod", NS).get("Algorithm") == EXC_C14N
     value = signed.signature().find("ds:SignatureValue", NS)
     imprint = hashlib.sha256(
-        etree.tostring(value, method="c14n", exclusive=True)  # what the property says it covers
+        etree.tostring(  # what the property says it covers
+            value, method="c14n", exclusive=True, with_comments=False
+        )
     ).digest()
     assert _token_of(time_stamp)["message_imprint"]["hashed_message"].native == imprint
     assert signed.result.data.count(b"CertificateValues") == 0  # validation data only from B-LT
@@ -246,32 +310,49 @@ def test_b_lt_embeds_the_certificates_and_the_revocation_data(pki: Pki) -> None:
     _verify_the_signature_value(signed)  # the signature itself is untouched by the additions
 
 
-def _archive_imprint(signed: Signed, digest: HashAlgorithmName) -> bytes:
-    """EN 319 132-1 §5.4.2, recomputed independently of the module."""
-    document, signature = signed.document, signed.signature()
+def _archive_imprint(
+    signed: Signed, digest: HashAlgorithmName, *, content: bytes = CONTENT
+) -> bytes:
+    """EN 319 132-1 §5.4.2, recomputed independently of the module: the data objects with
+    the enveloped transform (only its own signature excised), C14N 1.0 without comments."""
+    document = signed.document
+    signature = signature_element(document)  # from the same parse, as above
     h = hashlib.new(digest)
     for reference in signature.findall("ds:SignedInfo/ds:Reference", NS):
         uri = reference.get("URI")
+        transforms = [
+            t.get("Algorithm") for t in reference.findall("ds:Transforms/ds:Transform", NS)
+        ]
         if uri == "":
-            without = copy.deepcopy(document)
-            for element in without.findall(".//ds:Signature", NS):
-                element.getparent().remove(element)
-            h.update(etree.tostring(without, method="c14n", exclusive=False))
+            h.update(
+                etree.tostring(
+                    _without_its_own_signature(document, signature),
+                    method="c14n",
+                    exclusive=False,
+                    with_comments=False,
+                )
+            )
         elif uri.startswith("#"):
             [target] = signature.getroottree().getroot().xpath(f"//*[@Id='{uri[1:]}']")
-            h.update(etree.tostring(target, method="c14n", exclusive=False))
+            if ENVELOPED in transforms:  # #id on the root: without the signature it carries
+                target = _without_its_own_signature(target, signature)
+            h.update(etree.tostring(target, method="c14n", exclusive=False, with_comments=False))
         else:
-            h.update(etree.tostring(parse_xml(CONTENT), method="c14n", exclusive=False))
+            h.update(
+                etree.tostring(
+                    parse_xml(content), method="c14n", exclusive=False, with_comments=False
+                )
+            )
     for path in ("ds:SignedInfo", "ds:SignatureValue", "ds:KeyInfo"):
         element = signature.find(path, NS)
         if element is not None:
-            h.update(etree.tostring(element, method="c14n", exclusive=False))
+            h.update(etree.tostring(element, method="c14n", exclusive=False, with_comments=False))
     for element in signed.unsigned():
         if _name(element) != "ArchiveTimeStamp":  # the time-stamp does not cover itself
-            h.update(etree.tostring(element, method="c14n", exclusive=False))
+            h.update(etree.tostring(element, method="c14n", exclusive=False, with_comments=False))
     for obj in signature.findall("ds:Object", NS):
         if obj.find("xades:QualifyingProperties", NS) is None:
-            h.update(etree.tostring(obj, method="c14n", exclusive=False))
+            h.update(etree.tostring(obj, method="c14n", exclusive=False, with_comments=False))
     return h.digest()
 
 
@@ -359,10 +440,183 @@ def test_detached_needs_the_uri_of_the_document(pki: Pki) -> None:
 
 
 def test_a_document_that_is_not_xml_is_rejected(pki: Pki) -> None:
+    """At signing, ERR-30x as in PDF, not the verification code of ERR-401 (review of
+    2026-11-01)."""
     card, leaf = make_card(pki, "FIRMANTE")
-    with DnieV2Token(card) as token, pytest.raises(UnreadableDocumentError):
+    with DnieV2Token(card) as token, pytest.raises(XmlFormatError):
         sign_xades(b"esto no es XML", token, (pki.root, pki.ca, leaf))
     assert card.instructions().count(INS_PSO) == 0
+
+
+def test_a_document_with_a_dtd_is_rejected(pki: Pki) -> None:
+    """A DTD can hide entity attacks; it is refused with a message of its own, before the
+    card signs (review of 2026-11-01)."""
+    card, leaf = make_card(pki, "FIRMANTE")
+    with DnieV2Token(card) as token, pytest.raises(XmlDtdError):
+        sign_xades(WITH_DTD, token, (pki.root, pki.ca, leaf))
+    assert card.instructions().count(INS_PSO) == 0
+
+
+def test_an_already_signed_document_refuses_the_enveloped_form(pki: Pki) -> None:
+    """A second enveloped signature would end up inside what the first one covers, and its
+    digest would stop matching: refused before the card signs. The detached and enveloping
+    forms do not touch the document and stay available (review of 2026-11-01)."""
+    first = _sign(pki, SignatureLevel.B_B)
+    card, leaf = make_card(pki, "OTRO FIRMANTE")
+    with DnieV2Token(card) as token, pytest.raises(AlreadySignedError):
+        sign_xades(first.result.data, token, (pki.root, pki.ca, leaf))
+    assert card.instructions().count(INS_PSO) == 0
+
+
+def test_a_detached_signature_over_an_already_signed_document_keeps_the_first(
+    pki: Pki,
+) -> None:
+    """The detached form signs the file as it is, previous signature included: the first
+    signature still digests to its DigestValue (review of 2026-11-01)."""
+    first = _sign(pki, SignatureLevel.B_B)
+    second = _sign(
+        pki, SignatureLevel.B_B, packaging=XadesPackaging.DETACHED, content=first.result.data
+    )
+    assert second.result.level is SignatureLevel.B_B
+    _reference_digest_matches(second, content=first.result.data)
+    _reference_digest_matches(first)  # untouched by the second signature
+
+
+def test_a_document_with_comments_is_archived_without_them(pki: Pki) -> None:
+    """XMLDSig digests ``URI=""`` and ``#id`` references with C14N without comments, but
+    lxml includes them unless it is told not to: with a comment in the document, the sealed
+    octets and the imprint must be the ones a validator recomputes (review of 2026-11-01)."""
+    signed = _sign(pki, SignatureLevel.B_LTA, content=WITH_COMMENTS)
+    [archive] = [element for element in signed.unsigned() if _name(element) == "ArchiveTimeStamp"]
+    info = _token_of(archive)
+    assert info["message_imprint"]["hashed_message"].native == _archive_imprint(
+        signed, "sha256", content=WITH_COMMENTS
+    )
+    _reference_digest_matches(signed, content=WITH_COMMENTS)
+
+
+def test_the_enveloped_output_keeps_the_prologue_and_the_encoding(pki: Pki) -> None:
+    """The enveloped form is the original document plus the signature, not a rewritten
+    root: the comments outside the root and the ISO-8859-1 encoding of the original survive
+    (review of 2026-11-01)."""
+    signed = _sign(pki, SignatureLevel.B_LTA, content=DIFFICULT)
+    data = signed.result.data
+    assert data.startswith(b"<?xml version='1.0' encoding='ISO-8859-1'?>")
+    outside = data.index(b"<!-- comentario de fuera -->")
+    assert outside < data.index(b"<Declaracion") < data.index(b"<!-- final -->")
+    assert "acta de sesión de ñandú".encode("ISO-8859-1") in data  # still ISO-8859-1
+    root = parse_xml(data)
+    assert root.get("texto") == "café"
+    assert root.find(".//ds:Signature", NS) is not None
+    _reference_digest_matches(signed, content=DIFFICULT)
+    [archive] = [element for element in signed.unsigned() if _name(element) == "ArchiveTimeStamp"]
+    assert _token_of(archive)["message_imprint"]["hashed_message"].native == _archive_imprint(
+        signed, "sha256", content=DIFFICULT
+    )
+
+
+@pytest.mark.parametrize("packaging", [XadesPackaging.ENVELOPED, XadesPackaging.DETACHED])
+def test_instructions_outside_the_root_refuse_the_forms_that_digest_the_document(
+    pki: Pki, packaging: XadesPackaging
+) -> None:
+    """A validator digests the whole document, instructions outside the root included, but
+    the enveloped (URI="") and detached reference digests cover the root element alone: the
+    signature would not check out, so those forms are refused, before the card signs. DSS
+    6.2 says HASH_FAILURE of them (review of 2026-11-01)."""
+    card, leaf = make_card(pki, "FIRMANTE")
+    with DnieV2Token(card) as token, pytest.raises(XmlPrologueError):
+        sign_xades(
+            WITH_PI.encode(),
+            token,
+            (pki.root, pki.ca, leaf),
+            packaging=packaging,
+            reference_uri="datos.xml" if packaging is XadesPackaging.DETACHED else None,
+        )
+    assert card.instructions().count(INS_PSO) == 0
+
+
+def test_an_id_on_the_root_signs_a_document_with_instructions(pki: Pki) -> None:
+    """With an Id on the root the reference points at the element, so the instruction
+    outside it is genuinely outside the signed data and the signature checks out; the
+    reference carries the enveloped transform, which the octets of the archive time-stamp
+    apply (DSS 6.2, review of 2026-11-01)."""
+    signed = _sign(pki, SignatureLevel.B_LTA, content=WITH_PI_AND_ID.encode())
+    signature = signed.signature()
+    [reference] = [
+        r
+        for r in signature.findall("ds:SignedInfo/ds:Reference", NS)
+        if r.get("URI") == "#documento"
+    ]
+    assert ENVELOPED in [
+        t.get("Algorithm") for t in reference.findall("ds:Transforms/ds:Transform", NS)
+    ]
+    assert b'<?xml-stylesheet type="text/xsl" href="estilo.xsl"?>' in signed.result.data
+    _reference_digest_matches(signed, content=WITH_PI_AND_ID.encode())
+    [archive] = [element for element in signed.unsigned() if _name(element) == "ArchiveTimeStamp"]
+    assert _token_of(archive)["message_imprint"]["hashed_message"].native == _archive_imprint(
+        signed, "sha256", content=WITH_PI_AND_ID.encode()
+    )
+
+
+def test_the_enveloping_form_signs_a_document_with_instructions(pki: Pki) -> None:
+    """The enveloping form embeds the document inside ds:Object: the instructions outside
+    its root never enter the signature, and it is the form to offer for them (review of
+    2026-11-01)."""
+    signed = _sign(
+        pki, SignatureLevel.B_LTA, content=WITH_PI.encode(), packaging=XadesPackaging.ENVELOPING
+    )
+    assert signed.result.level is SignatureLevel.B_LTA
+    assert signed.document.find(".//ds:Object//Texto", NS).text == (
+        "con instrucción de procesamiento"
+    )
+    _reference_digest_matches(signed, content=WITH_PI.encode())
+
+
+def test_the_archive_transform_removes_only_its_own_signature(pki: Pki) -> None:
+    """The octets of a ``URI=""`` reference keep the signatures the document already
+    carried: the enveloped transform excises only the signature it belongs to, as a
+    validator does when recomputing the digest of the first signature (review of
+    2026-11-01)."""
+    signed = _sign(pki, SignatureLevel.B_B, content=WITH_COMMENTS)
+    document = parse_xml(signed.result.data)
+    second = etree.fromstring(
+        f"<ds:Signature xmlns:ds='{DS}' xmlns:xades='{XADES}' Id='segunda'>"
+        "<ds:SignedInfo>"
+        "<ds:Reference URI=''><ds:DigestValue>eHg=</ds:DigestValue></ds:Reference>"
+        "</ds:SignedInfo>"
+        "<ds:SignatureValue>dmFsb3I=</ds:SignatureValue>"
+        "<ds:KeyInfo/>"
+        "<ds:Object><xades:QualifyingProperties Target='#segunda'>"
+        "<xades:UnsignedProperties><xades:UnsignedSignatureProperties/>"
+        "</xades:UnsignedProperties></xades:QualifyingProperties></ds:Object>"
+        "</ds:Signature>"
+    )
+    document.append(second)
+    stamper, _tsa = make_timestamper(pki)
+    asyncio.run(
+        _add_archive_timestamp(document, second, parse_xml(WITH_COMMENTS), stamper, "sha256")
+    )
+    [archive] = [
+        element for element in _unsigned_properties(second) if _name(element) == "ArchiveTimeStamp"
+    ]
+    h = hashlib.sha256()
+    h.update(
+        etree.tostring(
+            _without_its_own_signature(document, second),
+            method="c14n",
+            exclusive=False,
+            with_comments=False,
+        )
+    )
+    for path in ("ds:SignedInfo", "ds:SignatureValue", "ds:KeyInfo"):
+        h.update(etree.tostring(second.find(path, NS), method="c14n", with_comments=False))
+    for element in _unsigned_properties(second):
+        if _name(element) != "ArchiveTimeStamp":  # the time-stamp does not cover itself
+            h.update(etree.tostring(element, method="c14n", with_comments=False))
+    for obj in second.findall("ds:Object", NS):
+        if obj.find("xades:QualifyingProperties", NS) is None:  # none: it has only this one
+            h.update(etree.tostring(obj, method="c14n", with_comments=False))
+    assert _token_of(archive)["message_imprint"]["hashed_message"].native == h.digest()
 
 
 def test_repeated_revocation_data_is_embedded_once(pki: Pki) -> None:
@@ -407,6 +661,15 @@ def test_a_key_with_an_unexpected_digest_refuses(pki: Pki) -> None:
     key = _TokenKey(card, leaf.public_key(), "sha256")
     with pytest.raises(ValueError, match="unexpected digest algorithm"):
         key.sign(b"data", padding=None, algorithm=hashes.SHA512())
+
+
+def test_a_key_with_another_padding_refuses(pki: Pki) -> None:
+    """XAdES with RSA is PKCS#1 v1.5 or nothing: the key checks it, not just the digest
+    (review of 2026-11-01)."""
+    card, leaf = make_card(pki, "FIRMANTE")
+    key = _TokenKey(card, leaf.public_key(), "sha256")
+    with pytest.raises(ValueError, match="unexpected padding"):
+        key.sign(b"data", padding=None, algorithm=hashes.SHA256())
 
 
 def test_unsigned_properties_need_qualifying_properties() -> None:

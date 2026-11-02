@@ -217,6 +217,37 @@ class BatchCancelledError(SigningError):
     code = "ERR-309"
 
 
+class XmlFormatError(SigningError):
+    """The XML document cannot be signed: it is not XML, or it is damaged (RF-033)."""
+
+    code = "ERR-310"
+
+
+class XmlDtdError(SigningError):
+    """The XML document declares a DTD (DOCTYPE); berigna does not sign it, because entity
+    declarations can hide attacks (review of 2026-11-01). Checked before the PIN."""
+
+    code = "ERR-311"
+
+
+class XmlPrologueError(SigningError):
+    """The XML document carries processing instructions outside the root element (for example
+    ``<?xml-stylesheet?>``). The enveloped and detached digests cover the root element alone,
+    so a validator, which digests the whole document, would not confirm the signature; the
+    enveloping form, which embeds the document, does work (review of 2026-11-01). Checked
+    before the PIN."""
+
+    code = "ERR-313"
+
+
+class AlreadySignedError(SigningError):
+    """The XML document already carries a ``ds:Signature``, so an enveloped signature would
+    break the one it already has; use the detached or enveloping form (review of 2026-11-01).
+    Checked before the PIN."""
+
+    code = "ERR-312"
+
+
 class CertifiedDocumentError(PdfFormatError):
     """The author certified the document so that no change, not even a signature, is allowed
     (DocMDP P=1, CU-03)."""
