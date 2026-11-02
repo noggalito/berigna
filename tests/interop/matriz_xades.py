@@ -6,8 +6,8 @@ Signs one test XML document per packaging (enveloped, enveloping, detached .xsig
 (B-B to B-LTA) with berigna's own code, a simulated DNIe, the test PKI and a test TSA. The
 output folder gets the signed document (datos.xml) and the test root, so that
 tests/interop/matriz_dss.sh (DSS 6.2) can validate them; a detached signature (.xsig) is
-validated against the document it names. berigna's own XAdES verification arrives with
-increment 5.
+validated against the document it names. Each file is also verified offline by berigna's
+own ``verify_xades`` (increment 5, RF-052): the last column, to compare with DSS.
 
 The "difficult documents" of the review of 2026-11-01 are signed too, as BRG-CAL-006 §3.3
 asks: comments inside and outside the root, ISO-8859-1, a name with spaces and tildes
@@ -32,6 +32,7 @@ from berigna.core.formats.xades import XadesPackaging, sign_xades
 from berigna.core.token.dnie_v2 import DnieV2Token
 from berigna.core.token.pin import Pin
 from berigna.core.validation import signing_validation_context
+from berigna.core.validation.xades import verify_xades
 from support.cards import make_card
 from support.pki import build_pki
 from support.tsa import make_timestamper
@@ -76,8 +77,8 @@ def main() -> int:
     (out / "raiz-pruebas.pem").write_bytes(pki.root.public_bytes(serialization.Encoding.PEM))
     (out / "datos.xml").write_bytes(CONTENT)
     (out / DIFFICULT_NAME).write_bytes(DIFFICULT)
-    print("| Archivo | Nivel pedido | Nivel alcanzado |")
-    print("|---|---|---|")
+    print("| Archivo | Nivel pedido | Nivel alcanzado | verify_xades |")
+    print("|---|---|---|---|")
 
     def matrix(
         content: bytes, name: str, packaging: XadesPackaging, template: str, level: SignatureLevel
@@ -105,7 +106,14 @@ def main() -> int:
             )
         written = template.format(level=level.value)
         (out / written).write_bytes(result.data)
-        print(f"| {written} | {level.value} | {result.level.value} |")
+        detached = content if packaging is XadesPackaging.DETACHED else None
+        [report] = verify_xades(result.data, pki.store, content=detached, online=False).signatures
+        verified = f"{report.indication.name}/{report.subindication or '-'}"
+        stamps = [report.timestamp] if report.timestamp else []
+        stamps += list(report.archive_timestamps)
+        if stamps:
+            verified += " (sellos: " + ", ".join(s.indication.name for s in stamps) + ")"
+        print(f"| {written} | {level.value} | {result.level.value} | {verified} |")
 
     cases = [
         *((packaging, FILENAMES[packaging], CONTENT, "datos.xml") for packaging in XadesPackaging),
