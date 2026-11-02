@@ -36,7 +36,7 @@ Recomendación preliminar: opción A, si SPK-03 confirma que es viable. Si no lo
 
 SPK-03 validó la opción A con DSS 6.2: CAdES (separada y envuelta) y XAdES (envuelta y envolvente) dan TOTAL_PASSED de B-B a B-LTA, con todos los sellos de tiempo verificados uno a uno, firmando a través de un "token" que imita el DNIe v2. Código propio: B-LT y B-LTA de CAdES (`ats-hash-index-v3` y `archive-time-stamp-v3`) y B-T, B-LT y B-LTA de XAdES (unas 150 líneas de prototipo). Reglas obligatorias:
 
-- XAdES: `c14n_algorithm` = C14N 1.0 inclusiva; `SigningCertificate` solo con el certificado del firmante.
+- XAdES: `c14n_algorithm` = C14N 1.0 inclusiva; `SigningCertificate` solo con el certificado del firmante. Sustituida en parte el 2026-11-02: véase el seguimiento.
 - CAdES B-LTA: `hashIndAlgorithm` codificado de forma explícita en `ats-hash-index-v3`.
 - B-LT con el DNIe: embeber respuestas OCSP, no CRL (SPK-02).
 
@@ -48,6 +48,7 @@ SPK-03 validó la opción A con DSS 6.2: CAdES (separada y envuelta) y XAdES (en
 
 ## Seguimiento (2026-11-02)
 
-- Criterio de aceptación 3: cumplido con DSS (PR-INT-06: las doce firmas XAdES que genera DSS 6.2, en las tres variantes y los cuatro niveles, concuerdan con DSS en `verify_xades`) y con Firma Perú (PR-INT-05: una firma real, TOTAL-PASSED como en DSS); falta una de ReFirma (BRG-CAL-006 §3.6 y §3.7).
+- Criterio de aceptación 3: cumplido con DSS (PR-INT-06: las doce firmas XAdES que genera DSS 6.2, en las tres variantes y los cuatro niveles, concuerdan con DSS en `verify_xades`) y con Firma Perú (PR-INT-05: una firma real, TOTAL-PASSED como en DSS). ReFirma PDF no firma XML ("El documento seleccionado no tiene la extensión PDF"), así que en XAdES el criterio se cumple sin ella (BRG-CAL-006 §3.6 y §3.7).
+- Canonicalización (2026-11-02): `SignedInfo`, las referencias a `SignedProperties` y `KeyInfo` (ahora con la transformada explícita) y el sello de archivo pasan a C14N exclusiva; la referencia al objeto de datos sigue con C14N 1.0. Con la inclusiva, esos subconjuntos heredan los atributos `xml:` de la raíz de una envuelta (`xml:lang`); lxml y signxml no los heredan y DSS 6.2 tampoco de forma uniforme, así que esas firmas salían inválidas también en DSS. La exclusiva no hereda nada y es la que usan DSS y Firma Perú. En el objeto de datos, en cambio, la exclusiva dejaría fuera del resumen las declaraciones de espacios de nombres usadas solo dentro de valores (`xsi:type="ns:Tipo"`, como en UBL), que se podrían cambiar después de firmar; ese objeto no tiene antepasados de los que heredar. berigna fija las dos cosas sobrescribiendo dos ganchos privados de signxml 4.0.5 (`_unpack` y `_add_reference_to_signed_info`), comprobados al importar y por las pruebas. La verificación sigue leyendo C14N 1.0 y 1.1, con la herencia de los atributos `xml:`.
 - La verificación XAdES no usa el verificador de signxml: berigna procesa XMLDSig y XAdES con su propio código sobre lxml, con una lista permitida de transformadas, porque las firmas de Firma Perú y DSS usan XPath Filter 2.0 y base64, y porque ETSI EN 319 102-1 pide indicaciones que signxml no da (`core.validation.xades`).
 - Cobertura validada: la matriz final de SPK-03 es de 20 de 20 firmas, con XAdES envuelta y envolvente de B-B a B-LTA.

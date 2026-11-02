@@ -3,9 +3,9 @@
 | Campo | Valor |
 |---|---|
 | Documento | BRG-ARQ-002 |
-| Versión | 0.3.0 |
+| Versión | 0.4.0 |
 | Estado | Borrador |
-| Fecha | 2026-11-01 |
+| Fecha | 2026-11-02 |
 | Responsable | noggalito |
 
 ## 1. Firma PAdES (nivel seleccionable)
@@ -82,10 +82,10 @@ Mismo orden de pasos que PAdES (`core.signing.sign_xades_file`), con estas difer
 
 - El archivo es un documento XML; si no lo es, se rechaza con `UnreadableDocumentError` antes del PIN. Nunca se modifica.
 - Tres variantes (RF-030 a RF-032): envuelta, la firma dentro del documento; envolvente, el documento dentro de `ds:Object` de la firma; separada, la firma en un archivo propio que referencia al documento. La salida de la envuelta y de la envolvente es el documento firmado, `<nombre><sufijo>.xml` (como el PDF firmado); la de la separada es solo la firma, `<nombre>.xml.xsig`, con el número antes de la extensión del archivo (`acta-2.xml.xsig`), para que al quitar `.xsig` quede el nombre del documento (RF-045). La separada referencia al documento por su nombre, sin ruta.
-- B-B: signxml 4.0.5 (Debian 13) con C14N 1.0 inclusiva y `SigningCertificate` solo con el certificado del firmante (ADR-0008); la operación de clave privada va al chip a través de `TokenSigner` (RNF-SEG-01).
+- B-B: signxml 4.0.5 (Debian 13) con C14N 1.0 en la referencia al objeto de datos y C14N exclusiva en `SignedInfo` y en las referencias a `SignedProperties` y `KeyInfo`, explícita en cada una (desde el 2026-11-02; antes, C14N 1.0 inclusiva en todo), y `SigningCertificate` solo con el certificado del firmante (ADR-0008); la operación de clave privada va al chip a través de `TokenSigner` (RNF-SEG-01).
 - B-T: `xades:SignatureTimeStamp` sobre la C14N exclusiva de `ds:SignatureValue` (EN 319 132-1 §5.4.1). Si la TSA falla aquí, `TsaError` y no queda archivo escrito.
 - B-LT: `CertificateValues` y `RevocationValues` con los certificados de las rutas del firmante y de la TSA (sin las anclas), las CRL y las respuestas OCSP, cada una una sola vez (EN 319 132-1 §5.4.3; con el DNIe, OCSP, SPK-02). Un fallo de los servicios baja al B-T alcanzado, con el motivo.
-- B-LTA: `xades141:ArchiveTimeStamp` sobre los objetos de datos (las referencias, con el *transform* envuelto aplicado), `SignedInfo`, `SignatureValue`, `KeyInfo`, las propiedades no firmadas y los demás `ds:Object` (todos menos el de `QualifyingProperties`, también los referenciados; EN 319 132-1 §5.4.2, SPK-03 §4). Un fallo baja al B-LT, con el motivo.
+- B-LTA: `xades141:ArchiveTimeStamp` sobre los objetos de datos (las referencias, con el *transform* envuelto aplicado), `SignedInfo`, `SignatureValue`, `KeyInfo`, las propiedades no firmadas y los demás `ds:Object` (todos menos el de `QualifyingProperties`, también los referenciados; con C14N exclusiva; EN 319 132-1 §5.4.2, SPK-03 §4). Un fallo baja al B-LT, con el motivo.
 - Validación externa: BRG-CAL-006 §3.3.
 
 ## 2. Firma por lotes
