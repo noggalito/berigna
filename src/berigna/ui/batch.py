@@ -101,11 +101,17 @@ class FormatChoices:
             factory=label_factory(visible=False),
             list_factory=label_factory(visible=True),
             subtitle_lines=0,
+            use_markup=False,  # translated free text in the subtitle
         )
-        combo.connect(
-            "notify::selected", lambda *_a: combo.set_subtitle(labels[combo.get_selected()])
-        )
-        combo.set_subtitle(labels[0])
+
+        def describe(*_args: object) -> None:
+            selected = combo.get_selected()
+            # the label, and how the variant differs from Firma Perú (BRG-UX-001 §3.2)
+            note = presentation.packaging_note(packagings[selected])
+            combo.set_subtitle(f"{labels[selected]}\n{note}" if note else labels[selected])
+
+        combo.connect("notify::selected", describe)
+        describe()
         self.group.add(combo)
         return combo
 

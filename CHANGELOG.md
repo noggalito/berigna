@@ -95,6 +95,7 @@ Práctica de desarrollo (Fase 4, incremento 7):
 
 ### Cambiado
 
+- Al elegir el formato de una firma, la CAdES envolvente (`.p7m`) y la XAdES separada (`.xsig`) avisan de cómo difieren de Firma Perú. Su validador web no reconoce la extensión `.p7m`: el mismo archivo renombrado `.p7s` es válido allí, subiendo antes el archivo original. Tampoco valida `.xsig`. berigna mantiene los nombres estándar (BRG-CAL-006 §3.10).
 - Lo que comparten PAdES y CAdES pasa a `berigna.core.formats.common` (niveles, firmante que delega en la tarjeta); los pasos de seguridad de `core.signing` son uno solo para los dos formatos (`prepare`), y `check_source` ya no comprueba el PDF, lo hacen quienes firman PDF.
 - Los CSV del historial y del lote se proponen con la fecha y la hora delante: "2026-10-29_00h55_historial-berigna.csv".
 - Antes de firmar, el diálogo del PIN avisa si el certificado de firma vence en menos de un mes, con la fecha y dónde renovarlo (Ciudadano Digital).

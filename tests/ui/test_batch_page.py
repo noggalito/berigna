@@ -143,7 +143,12 @@ def test_a_mixed_batch(app: BerignaApplication, card: DnieV2Simulator, tmp_path:
         assert page.formats.xml.get_visible()
         assert page.formats.other.get_visible()
         assert page.formats.packaging(DocumentKind.XML) is XadesPackaging.ENVELOPED
+        assert "Firma Perú" not in page.formats.other.get_subtitle()
         page.formats.other.set_selected(FormatChoices.OTHER.index(CadesPackaging.ENVELOPING))
+        assert "Firma Perú no reconoce la extensión .p7m" in page.formats.other.get_subtitle()
+        page.formats.xml.set_selected(FormatChoices.XML.index(XadesPackaging.DETACHED))
+        assert "Firma Perú no valida firmas .xsig" in page.formats.xml.get_subtitle()
+        page.formats.xml.set_selected(FormatChoices.XML.index(XadesPackaging.ENVELOPED))
         page._sign.emit("clicked")
         yield from wait_until(lambda: page.pin_dialog is not None, 10)
         dialog = page.pin_dialog

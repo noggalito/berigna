@@ -3,7 +3,7 @@
 | Campo | Valor |
 |---|---|
 | Documento | BRG-GEN-000 |
-| Versión | 0.13.0 |
+| Versión | 0.14.0 |
 | Estado | Borrador |
 | Fecha | 2026-11-02 |
 | Responsable | noggalito |
@@ -119,7 +119,12 @@ Fase 4 (CAdES y XAdES), iniciada el 2026-10-29, en ocho incrementos:
 5. Verificación XAdES (RF-052), también de las firmas de ReFirma y DSS (PR-INT-05, PR-INT-06), con pruebas por propiedades sobre XML. Hecha (`core.validation.xades`, `verify_xades`): las 36 firmas de la matriz y las 12 que genera DSS concuerdan con DSS 6.2 en la indicación principal (PR-INT-06), y una firma real de Firma Perú da TOTAL-PASSED como en DSS (PR-INT-05; ReFirma PDF no firma XML, así que en XAdES no aplica). Pruebas por propiedades sobre XML generado (ida y vuelta firma-verificación, y mutaciones) y corpus de ataques de envoltura (PR-VAL-08) (BRG-CAL-006 §3.5 a §3.7).
 6. Interfaz: firmar otros archivos (CU-05, con nombre, tamaño, tipo, SHA-256 y vista de texto), verificar `.p7s`, `.p7m` y `.xml`, y lotes mixtos (RF-041). Hecha: el formato se reconoce por el contenido (`core.documents`), un solo verificador elige PAdES, CAdES o XAdES (`core.verification`) y busca o pide el archivo de una firma separada, el contenido de un `.p7m` se puede guardar, los informes JSON y PDF llevan el formato y el alcance de lo firmado, y los lotes mezclan los tres formatos con un PIN (`core.batch.sign_batch`; BRG-UX-001 §3.2, §3.4 y §3.5).
 7. Práctica de desarrollo: vigilancia semanal, SBOM, CI contra la última pyHanko y medidas de rendimiento (R-DES-01 a R-DES-03, R-DES-08, R-DES-10). La comprobación de la documentación (R-DES-05) y el gancho `pre-push` (R-DES-06) ya están hechos: adelantados el 2026-11-02 por la revisión del 2026-11-01, que los echaba en falta. Hecha: vigilancia semanal en Debian *stable* y *testing* y de la TSL, las ARL y el OCSP de RENIEC (`.github/workflows/vigilancia.yml`), OSV para pyHanko y `debsecan` para Debian, SBOM CycloneDX en cada CI, la suite contra la última pyHanko y medidas de rendimiento con aviso si empeoran más de un 50 % (BRG-DES-001 §5, BRG-MAN-001 §5).
-8. Matriz externa formato × nivel con DSS 6.2 y Firma Perú, y prueba con el DNIe real y PIN: el criterio de salida de la fase. En curso: la matriz simulada, repetida el 2026-11-02 con el código actual, da en DSS 6.2 los mismos resultados (BRG-CAL-006 §3.9); DP-20 (opciones A y E) hecha, con pruebas por mutación de CAdES y PDF; falta la matriz con el DNIe real y PIN en Firma Perú (`tests/hil/firmar_matriz_con_pin.py`) y el envío de la incidencia a pyHanko (opción D).
+8. Matriz externa formato × nivel con DSS 6.2 y Firma Perú, y prueba con el DNIe real y PIN: el criterio de salida de la fase. Hecha (2026-11-02):
+   - la matriz simulada, repetida con el código actual, da en DSS 6.2 los mismos resultados (BRG-CAL-006 §3.9);
+   - DP-20, opciones A y E, con pruebas por mutación de CAdES y PDF;
+   - con el DNIe real y un PIN, las 7 variantes B-B son válidas en DSS 6.2 y en berigna, y Firma Perú da válidas las 5 que admite (su validador web no reconoce `.p7m` ni `.xsig`; BRG-CAL-006 §3.10).
+
+   Quedan fuera del incremento: los niveles B-T a B-LTA con el DNIe real, que esperan una TSA acreditada (DP-02), y el envío de la incidencia a pyHanko (opción D de DP-20), que espera la decisión del titular.
 
 La cofirma CAdES (RF-023, "Podría") queda para después de la v1.0.
 

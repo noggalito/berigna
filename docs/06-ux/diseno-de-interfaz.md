@@ -3,9 +3,9 @@
 | Campo | Valor |
 |---|---|
 | Documento | BRG-UX-001 |
-| Versión | 0.6.0 |
+| Versión | 0.7.0 |
 | Estado | Borrador (bocetos de baja fidelidad) |
-| Fecha | 2026-11-02 |
+| Fecha | 2026-11-03 |
 | Responsable | noggalito |
 
 ## 1. Principios de UX
@@ -97,7 +97,7 @@ Implementado en la Fase 3, incremento 3; la firma visible, en el incremento 5 (A
 └────────────────────────────────────┴─────────────────────────┘
 ```
 
-Otros archivos (CU-05; Fase 4, incremento 6). Lo que no es PDF no siempre se puede previsualizar, así que en el lugar de la vista previa se muestran el nombre, el tamaño (legible y exacto en bytes), el tipo (la descripción del escritorio, en el idioma de la interfaz) y el SHA-256 en grupos de cuatro, con la vista del texto debajo si el archivo es de texto (UTF-8, UTF-16 con BOM o la codificación que declare un XML; los primeros 64 kB de un archivo grande, con aviso). El panel propone el formato: XAdES envuelta para un XML y CAdES separada (`.p7s`) para el resto; el usuario puede elegir otra variante (XAdES envolvente o separada `.xsig`, o CAdES envolvente `.p7m`; un XML también se puede firmar en CAdES). En un XML que ya tiene firmas, la envuelta aparece desactivada con el motivo (ERR-312). Motivo, ubicación y firma visible son de PAdES y no aparecen. El diálogo del PIN añade el SHA-256 y el formato.
+Otros archivos (CU-05; Fase 4, incremento 6). Lo que no es PDF no siempre se puede previsualizar, así que en el lugar de la vista previa se muestran el nombre, el tamaño (legible y exacto en bytes), el tipo (la descripción del escritorio, en el idioma de la interfaz) y el SHA-256 en grupos de cuatro, con la vista del texto debajo si el archivo es de texto (UTF-8, UTF-16 con BOM o la codificación que declare un XML; los primeros 64 kB de un archivo grande, con aviso). El panel propone el formato: XAdES envuelta para un XML y CAdES separada (`.p7s`) para el resto; el usuario puede elegir otra variante (XAdES envolvente o separada `.xsig`, o CAdES envolvente `.p7m`; un XML también se puede firmar en CAdES). En un XML que ya tiene firmas, la envuelta aparece desactivada con el motivo (ERR-312). Cuando una variante estándar choca con Firma Perú, el validador oficial, berigna mantiene el estándar y lo avisa en la descripción de la variante (decisión del titular, 2026-11-03; BRG-CAL-006 §3.10): la CAdES envolvente `.p7m` dice que Firma Perú no reconoce esa extensión y que, para validarla allí, hay que cambiarla a `.p7s` y subir antes el archivo original (que berigna puede guardar desde el `.p7m`); la XAdES separada `.xsig` dice que Firma Perú no la valida y que otros validadores, como DSS, sí. En un lote, el mismo aviso aparece bajo la variante elegida. Motivo, ubicación y firma visible son de PAdES y no aparecen. El diálogo del PIN añade el SHA-256 y el formato.
 
 ```
 ┌──────────────────────────────────────────────────────────────┐
