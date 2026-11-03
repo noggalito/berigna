@@ -21,9 +21,12 @@ from berigna.core.validation import SignerCheck
 from berigna.ui import i18n
 from berigna.ui.presentation import (
     PACKAGING_DESCRIPTIONS,
+    PACKAGING_NOTES,
     file_details,
     file_size,
     level_title,
+    packaging_description,
+    packaging_note,
     packagings_for,
     pin_summary,
     pin_warnings,
@@ -183,6 +186,18 @@ def test_proposed_packagings() -> None:
         CadesPackaging.ENVELOPING,
     )
     assert set(PACKAGING_DESCRIPTIONS) == set(packagings_for(DocumentKind.XML))
+
+
+def test_the_differences_with_firma_peru_are_said() -> None:
+    """The standard names are kept, and the user is told where Firma Perú differs: it does
+    not recognize .p7m nor validate .xsig (BRG-CAL-006 §3.10, decision of 2026-11-03)."""
+    assert set(PACKAGING_NOTES) == {CadesPackaging.ENVELOPING, XadesPackaging.DETACHED}
+    assert packaging_note(CadesPackaging.DETACHED) is None
+    enveloping = packaging_description(CadesPackaging.ENVELOPING)
+    assert enveloping.startswith("Un archivo .p7m contiene la firma")
+    assert ".p7s" in enveloping
+    assert "Firma Perú" in enveloping
+    assert "Firma Perú" not in packaging_description(XadesPackaging.ENVELOPED)
 
 
 def test_pin_summary_of_a_file_and_of_a_batch() -> None:

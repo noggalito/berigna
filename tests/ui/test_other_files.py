@@ -105,6 +105,9 @@ def test_any_file_is_signed_in_cades_and_verified(app: BerignaApplication, tmp_p
         assert page.formats is not None
         assert page.packaging() is CadesPackaging.DETACHED
         assert list(page.formats.buttons) == [CadesPackaging.DETACHED, CadesPackaging.ENVELOPING]
+        rows = _rows(page.formats.group)
+        assert "Firma Perú no reconoce la extensión .p7m" in rows["CAdES, envolvente (.p7m)"]
+        assert "Firma Perú" not in rows["CAdES, separada (.p7s)"]
         details = _rows(page.page)
         assert details["Nombre"] == "planilla.csv"
         assert details["Tamaño"] == f"{len(CSV)} bytes"

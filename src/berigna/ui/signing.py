@@ -345,7 +345,7 @@ class PackagingChoice:
             first = first or button
             button.connect("toggled", self._on_toggled, packaging)
             subtitle = (
-                _(presentation.PACKAGING_DESCRIPTIONS[packaging])
+                presentation.packaging_description(packaging)
                 if available
                 else explain_error("ERR-312", catalogue()) or ""
             )
