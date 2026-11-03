@@ -3,7 +3,7 @@
 | Campo | Valor |
 |---|---|
 | Documento | BRG-GEN-000 |
-| Versión | 0.11.0 |
+| Versión | 0.12.0 |
 | Estado | Borrador |
 | Fecha | 2026-11-02 |
 | Responsable | noggalito |
@@ -118,7 +118,7 @@ Fase 4 (CAdES y XAdES), iniciada el 2026-10-29, en ocho incrementos:
 4. Firma XAdES envuelta y envolvente, de B-B a B-LTA (`core.formats.xades`; RF-030, RF-031 y RF-033); la separada (RF-032), si cabe. Hecha: las tres variantes, de B-B a B-LTA, incluida la separada, que entra en la v1.0 por decisión del titular (2026-11-01); DSS 6.2 reconoce las doce combinaciones, con TOTAL_PASSED en B-LT y B-LTA y los sellos de firma y de archivo PASSED (BRG-CAL-006 §3.3). Corregida tras la revisión del 2026-11-01: los sellos excluyen los comentarios, la transformada envuelta quita solo su firma, la envuelta sobre un documento ya firmado y el DTD se rechazan antes del PIN, la URI de la separada va codificada, y la envuelta conserva prólogo y codificación; los "documentos difíciles" (comentarios, ISO-8859-1, nombre con espacios y tildes, firma previa) entran en la matriz de DSS, y xmlsec1 verifica los resúmenes en la CI como segundo verificador.
 5. Verificación XAdES (RF-052), también de las firmas de ReFirma y DSS (PR-INT-05, PR-INT-06), con pruebas por propiedades sobre XML. Hecha (`core.validation.xades`, `verify_xades`): las 36 firmas de la matriz y las 12 que genera DSS concuerdan con DSS 6.2 en la indicación principal (PR-INT-06), y una firma real de Firma Perú da TOTAL-PASSED como en DSS (PR-INT-05; ReFirma PDF no firma XML, así que en XAdES no aplica). Pruebas por propiedades sobre XML generado (ida y vuelta firma-verificación, y mutaciones) y corpus de ataques de envoltura (PR-VAL-08) (BRG-CAL-006 §3.5 a §3.7).
 6. Interfaz: firmar otros archivos (CU-05, con nombre, tamaño, tipo, SHA-256 y vista de texto), verificar `.p7s`, `.p7m` y `.xml`, y lotes mixtos (RF-041). Hecha: el formato se reconoce por el contenido (`core.documents`), un solo verificador elige PAdES, CAdES o XAdES (`core.verification`) y busca o pide el archivo de una firma separada, el contenido de un `.p7m` se puede guardar, los informes JSON y PDF llevan el formato y el alcance de lo firmado, y los lotes mezclan los tres formatos con un PIN (`core.batch.sign_batch`; BRG-UX-001 §3.2, §3.4 y §3.5).
-7. Práctica de desarrollo: vigilancia semanal, SBOM, CI contra la última pyHanko y medidas de rendimiento (R-DES-01 a R-DES-03, R-DES-08, R-DES-10). La comprobación de la documentación (R-DES-05) y el gancho `pre-push` (R-DES-06) ya están hechos: adelantados el 2026-11-02 por la revisión del 2026-11-01, que los echaba en falta.
+7. Práctica de desarrollo: vigilancia semanal, SBOM, CI contra la última pyHanko y medidas de rendimiento (R-DES-01 a R-DES-03, R-DES-08, R-DES-10). La comprobación de la documentación (R-DES-05) y el gancho `pre-push` (R-DES-06) ya están hechos: adelantados el 2026-11-02 por la revisión del 2026-11-01, que los echaba en falta. Hecha: vigilancia semanal en Debian *stable* y *testing* y de la TSL, las ARL y el OCSP de RENIEC (`.github/workflows/vigilancia.yml`), OSV para pyHanko y `debsecan` para Debian, SBOM CycloneDX en cada CI, la suite contra la última pyHanko y medidas de rendimiento con aviso si empeoran más de un 50 % (BRG-DES-001 §5, BRG-MAN-001 §5).
 8. Matriz externa formato × nivel con DSS 6.2 y Firma Perú, y prueba con el DNIe real y PIN: el criterio de salida de la fase.
 
 La cofirma CAdES (RF-023, "Podría") queda para después de la v1.0.

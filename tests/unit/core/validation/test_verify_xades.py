@@ -206,6 +206,10 @@ def test_an_altered_document_fails_the_hash_check(pki: Pki) -> None:
     assert report.indication is Indication.TOTAL_FAILED
     assert report.subindication == "HASH_FAILURE"
     assert report.signer == leaf  # identified before the digests
+    # what was read before the digests is still reported, as Firma Perú does (increment 6)
+    assert report.claimed_signing_time is not None
+    assert report.scope is SignedScope.DOCUMENT
+    assert report.references == ("",)
 
 
 def test_altered_enveloping_content_fails_the_hash_check(pki: Pki) -> None:

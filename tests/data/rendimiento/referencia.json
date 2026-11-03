@@ -1,0 +1,14 @@
+{
+  "segundos": {
+    "firmar_pdf_10_mb": 0.058,
+    "firmar_lote_20_pdf": 0.3299,
+    "verificar_pdf_b_lta": 0.0318,
+    "leer_carpeta_200_pdf": 0.0265
+  },
+  "relativo": {
+    "firmar_pdf_10_mb": 1.1798,
+    "firmar_lote_20_pdf": 6.715,
+    "verificar_pdf_b_lta": 0.6468,
+    "leer_carpeta_200_pdf": 0.5398
+  }
+}

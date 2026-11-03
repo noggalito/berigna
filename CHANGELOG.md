@@ -85,6 +85,14 @@ Interfaz de CAdES y XAdES (Fase 4, incremento 6):
 - Lotes mixtos (RF-041; `core.batch.sign_batch`, que sustituye a `sign_pdf_batch`): PAdES para los PDF, XAdES para los XML y CAdES para el resto, con un PIN, eligiendo la variante de los XML y la de los demás archivos; las firmas (`.p7s`, `.p7m`, `.xsig`) nunca entran en un lote, y al añadir una carpeta tampoco los archivos ocultos. Un `.p7m` de un PDF se reconoce como firma, no como PDF. `core.signing.signed_output_path` nombra la salida de cualquier formato sin repetir un nombre del lote (RF-045).
 - El diálogo "Abrir" muestra todos los archivos, con filtros para PDF, XML y firmas; la entrada de escritorio pasa a "Firmador de documentos" y abre también `.p7s` y `.p7m`.
 
+Práctica de desarrollo (Fase 4, incremento 7):
+
+- Vigilancia semanal (`.github/workflows/vigilancia.yml`, BRG-MAN-001 §5; R-DES-01): `scripts/verificar.sh` en Debian 13 y en *testing*; la TSL de INDECOPI, cada espejo de las ARL de las CA y el OCSP de RENIEC (`scripts/vigilar-servicios.py`, R-17); OSV para pyHanko y `debsecan` para los paquetes de Debian (R-DES-02). Si algo falla, abre una incidencia. Dependabot, solo para las *actions*.
+- Lista de componentes CycloneDX 1.6 generada en cada CI (`scripts/sbom.py`, R-DES-03): las dependencias de ejecución con su versión, su licencia y el paquete de Debian que las instaló, los componentes de sistema y las fuentes incluidas.
+- La suite completa con la última pyHanko de PyPI, cada semana y sin bloquear (R-DES-08), para medir cuánto costará salir de la 0.25.1 (R-15).
+- Medidas de rendimiento con la tarjeta simulada en cada CI (`scripts/rendimiento.py`, R-DES-10): firmar un PDF de 10 MB y un lote de 20, verificar un PDF B-LTA y leer una carpeta de 200 PDF; un aviso si una empeora más de un 50 % respecto de `tests/data/rendimiento/referencia.json`.
+- `core.batch.read_files`, `collect_files` e `is_signature`: la lectura de la lista de un lote pasa al núcleo, donde se mide; la interfaz la sigue haciendo en un hilo aparte.
+
 ### Cambiado
 
 - Lo que comparten PAdES y CAdES pasa a `berigna.core.formats.common` (niveles, firmante que delega en la tarjeta); los pasos de seguridad de `core.signing` son uno solo para los dos formatos (`prepare`), y `check_source` ya no comprueba el PDF, lo hacen quienes firman PDF.
@@ -111,6 +119,7 @@ Interfaz de CAdES y XAdES (Fase 4, incremento 6):
 
 ### Corregido
 
+- Ante una firma XAdES que no pasa la comprobación de los resúmenes (HASH_FAILURE), el resultado decía "Hora declarada por el firmante: Ninguno" y no decía qué cubre la firma, aunque las dos cosas estaban en la firma: berigna dejaba de leerlas al primer fallo. Ahora el informe conserva lo leído antes del fallo (firmante, hora declarada, alcance y referencias), como Firma Perú, que sí muestra la hora (prueba con el DNIe real del incremento 6).
 - La firma XAdES envuelta de un documento cuya raíz lleva `xml:lang`, `xml:space` o `xml:base` salía inválida, también en DSS 6.2: con la C14N 1.0 inclusiva, `SignedInfo` y las referencias a `SignedProperties` y `KeyInfo` heredan esos atributos, y lxml, signxml y DSS no coinciden en cómo. berigna firma ahora esos tres con C14N exclusiva, explícita en cada referencia, como DSS y Firma Perú, y también el sello de archivo; el objeto de datos (el documento, el `ds:Object` de la envolvente o el archivo de la separada) sigue con C14N 1.0, que cubre las declaraciones de espacios de nombres usadas solo dentro de valores (`xsi:type="ns:Tipo"`, como en UBL) (ADR-0008). DSS 6.2 da TOTAL_PASSED a la matriz con `xml:lang` en la raíz y xmlsec1 lo comprueba en la CI.
 - Si la ruta de certificación de la TSA no se podía construir al añadir los datos de B-LT (`PathBuildingError` de pyhanko-certvalidator, que no es un `ValidationError`), la excepción escapaba después de que la tarjeta hubiera firmado y la firma autorizada con el PIN se perdía. Ahora es un fallo de servicio más: se escribe la firma con el nivel alcanzado y el motivo, en PAdES y en CAdES.
 - Con la interfaz en quechua, el resultado de la verificación ofrece "Leer en español": muestra el resumen, la explicación y los detalles técnicos de cada firma y sello en español, sin cambiar de idioma. El diálogo del PIN usa el mismo botón, que se distingue del "Ver en español" del aviso, el que cambia el idioma (BRG-UX-001 §4.2).

@@ -9,18 +9,14 @@ from typing import Any
 import pytest
 import requests
 from asn1crypto import crl as asn1_crl
-from asn1crypto import keys as asn1_keys
 from asn1crypto import ocsp as asn1_ocsp
-from asn1crypto import x509 as asn1_x509
 from cryptography import x509
-from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
 from pyhanko.pdf_utils import generic
 from pyhanko.pdf_utils.incremental_writer import IncrementalPdfFileWriter
 from pyhanko.pdf_utils.reader import PdfFileReader
 from pyhanko.sign import signers
 from pyhanko.sign.fields import SigSeedSubFilter
-from pyhanko.sign.timestamps.dummy_client import DummyTimeStamper
 from pyhanko.sign.validation.dss import DocumentSecurityStore
 from pyhanko.sign.validation.pdf_embedded import EmbeddedPdfSignature
 from pyhanko_certvalidator import CertificateValidator, ValidationContext
@@ -32,6 +28,7 @@ from pyhanko_certvalidator.errors import (
 )
 from pyhanko_certvalidator.registry import SimpleCertificateStore
 
+from berigna.core.certs import to_asn1
 from berigna.core.errors import UnreadableDocumentError
 from berigna.core.formats.pades import sign_pdf_basic
 from berigna.core.token.dnie_v2 import DnieV2Token
@@ -41,25 +38,12 @@ from berigna.core.validation import Indication, Modifications, verify_pdf
 from berigna.core.validation.pdf import _modifications
 from support.cards import make_card
 from support.pki import NOW, Pki, build_pki, minimal_pdf
+from support.signed import asn1_key, pades
 
 
 @pytest.fixture(scope="module")
 def pki() -> Pki:
     return build_pki()
-
-
-def _asn1(cert: x509.Certificate) -> asn1_x509.Certificate:
-    return asn1_x509.Certificate.load(cert.public_bytes(serialization.Encoding.DER))
-
-
-def _asn1_key(key: rsa.RSAPrivateKey) -> asn1_keys.PrivateKeyInfo:
-    return asn1_keys.PrivateKeyInfo.load(
-        key.private_bytes(
-            serialization.Encoding.DER,
-            serialization.PrivateFormat.PKCS8,
-            serialization.NoEncryption(),
-        )
-    )
 
 
 def _sign(pki: Pki, pdf: bytes, cn: str = "FIRMANTE") -> tuple[bytes, x509.Certificate]:
@@ -187,13 +171,13 @@ def test_legacy_adobe_signature_with_archived_revocation_data(pki: Pki) -> None:
     key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
     leaf = pki.leaf("FIRMANTE ADOBE", key=key)
     registry = SimpleCertificateStore()  # type: ignore[no-untyped-call]
-    registry.register(_asn1(pki.ca))
+    registry.register(to_asn1(pki.ca))
     signer = signers.SimpleSigner(
-        signing_cert=_asn1(leaf), signing_key=_asn1_key(key), cert_registry=registry
+        signing_cert=to_asn1(leaf), signing_key=asn1_key(key), cert_registry=registry
     )
     context = ValidationContext(
-        trust_roots=[_asn1(pki.root)],
-        other_certs=[_asn1(pki.ca)],
+        trust_roots=[to_asn1(pki.root)],
+        other_certs=[to_asn1(pki.ca)],
         ocsps=[asn1_ocsp.OCSPResponse.load(pki.ocsp(leaf))],
         crls=[asn1_crl.CertificateList.load(pki.arl())],
         allow_fetching=False,
@@ -212,53 +196,8 @@ def test_legacy_adobe_signature_with_archived_revocation_data(pki: Pki) -> None:
     assert report.indication is Indication.TOTAL_PASSED
 
 
-def _pades(
-    pki: Pki,
-    level: str,
-    *,
-    leaf_days: tuple[int, int] = (-1, 365),
-    tsa_pki: Pki | None = None,
-) -> tuple[bytes, x509.Certificate]:
-    """B-T, B-LT or B-LTA made with pyHanko and a test TSA (berigna's own TSA client is next)."""
-    key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
-    leaf = pki.leaf("FIRMANTE " + level, key=key, days=leaf_days)
-    issuer = tsa_pki or pki
-    tsa_cert, tsa_key = issuer.tsa()
-    registry = SimpleCertificateStore()  # type: ignore[no-untyped-call]
-    registry.register(_asn1(pki.ca))
-    tsa_registry = SimpleCertificateStore()  # type: ignore[no-untyped-call]
-    tsa_registry.register(_asn1(issuer.ca))
-    signer = signers.SimpleSigner(
-        signing_cert=_asn1(leaf), signing_key=_asn1_key(key), cert_registry=registry
-    )
-    timestamper = DummyTimeStamper(
-        tsa_cert=_asn1(tsa_cert), tsa_key=_asn1_key(tsa_key), certs_to_embed=tsa_registry
-    )
-    embed = level in ("B-LT", "B-LTA")
-    context = ValidationContext(
-        trust_roots=[_asn1(pki.root), _asn1(issuer.root)],
-        other_certs=[_asn1(pki.ca), _asn1(issuer.ca)],
-        ocsps=[
-            asn1_ocsp.OCSPResponse.load(pki.ocsp(leaf)),
-            asn1_ocsp.OCSPResponse.load(issuer.ocsp(tsa_cert)),
-        ],
-        crls=[asn1_crl.CertificateList.load(c) for c in {pki.arl(), issuer.arl()}],
-        allow_fetching=False,
-    )
-    metadata = signers.PdfSignatureMetadata(
-        field_name="Firma",
-        subfilter=SigSeedSubFilter.PADES,
-        embed_validation_info=embed,
-        use_pades_lta=level == "B-LTA",
-        validation_context=context if embed else None,
-    )
-    writer = IncrementalPdfFileWriter(io.BytesIO(minimal_pdf()))
-    signed = signers.sign_pdf(writer, metadata, signer=signer, timestamper=timestamper)
-    return signed.getvalue(), tsa_cert
-
-
 def test_b_lt_signature_reports_its_timestamp(pki: Pki) -> None:
-    result = verify_pdf(_pades(pki, "B-LT")[0], pki.store, online=False)
+    result = verify_pdf(pades(pki, "B-LT")[0], pki.store, online=False)
     [report] = result.signatures
     assert report.indication is Indication.TOTAL_PASSED
     assert report.timestamp is not None
@@ -270,7 +209,7 @@ def test_b_lt_signature_reports_its_timestamp(pki: Pki) -> None:
 
 
 def test_b_lta_document_timestamp_is_verified(pki: Pki) -> None:
-    result = verify_pdf(_pades(pki, "B-LTA")[0], pki.store, online=False)
+    result = verify_pdf(pades(pki, "B-LTA")[0], pki.store, online=False)
     [report] = result.signatures
     [stamp] = result.document_timestamps
     assert report.indication is Indication.TOTAL_PASSED
@@ -286,7 +225,7 @@ def test_expired_certificate_passes_with_proof_of_existence(pki: Pki) -> None:
     The last document time-stamp is validated at the verification moment, so its TSA needs
     revocation data from then: supplied here, fetched online in real use.
     """
-    data, tsa_cert = _pades(pki, "B-LTA", leaf_days=(-10, 1))
+    data, tsa_cert = pades(pki, "B-LTA", leaf_days=(-10, 1))
     moment = NOW + dt.timedelta(days=3)
     result = verify_pdf(
         data,
@@ -309,7 +248,7 @@ def test_expired_certificate_without_timestamp_is_indeterminate(pki: Pki) -> Non
 
 def test_timestamp_from_an_untrusted_tsa_is_reported(pki: Pki) -> None:
     other = build_pki()
-    result = verify_pdf(_pades(pki, "B-LT", tsa_pki=other)[0], pki.store, online=False)
+    result = verify_pdf(pades(pki, "B-LT", tsa_pki=other)[0], pki.store, online=False)
     [report] = result.signatures
     assert report.timestamp is not None
     assert report.timestamp.indication is Indication.INDETERMINATE
@@ -319,7 +258,7 @@ def test_timestamp_from_an_untrusted_tsa_is_reported(pki: Pki) -> None:
 def test_unprocessable_document_timestamp_is_a_format_failure(
     pki: Pki, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    data, _ = _pades(pki, "B-LTA")
+    data, _ = pades(pki, "B-LTA")
 
     def broken(self: EmbeddedPdfSignature) -> bytes:
         raise ValueError("bad byte range")
@@ -453,9 +392,9 @@ def test_obsolete_algorithms_are_not_accepted(
     key = rsa.generate_private_key(public_exponent=65537, key_size=key_size)
     leaf = pki.leaf(f"FIRMANTE RSA{key_size} {digest}", key=key)
     registry = SimpleCertificateStore()  # type: ignore[no-untyped-call]
-    registry.register(_asn1(pki.ca))
+    registry.register(to_asn1(pki.ca))
     signer = signers.SimpleSigner(
-        signing_cert=_asn1(leaf), signing_key=_asn1_key(key), cert_registry=registry
+        signing_cert=to_asn1(leaf), signing_key=asn1_key(key), cert_registry=registry
     )
     metadata = signers.PdfSignatureMetadata(
         field_name="Firma", md_algorithm=digest, subfilter=SigSeedSubFilter.PADES
@@ -500,7 +439,7 @@ def test_hostile_cms_past_the_digest_is_a_format_failure(
 
     monkeypatch.setattr(pdf, stage, broken)
     if stage == "_validate_timestamp":
-        result = verify_pdf(_pades(pki, "B-LTA")[0], pki.store, online=False)
+        result = verify_pdf(pades(pki, "B-LTA")[0], pki.store, online=False)
         [stamp] = result.document_timestamps
         assert stamp.subindication == "FORMAT_FAILURE"
         return

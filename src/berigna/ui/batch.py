@@ -10,7 +10,6 @@ the rest, in the packagings the user chooses for XML and for the rest. The core
 files. The signatures of a batch are not visible.
 """
 
-import hashlib
 import logging
 import threading
 from collections.abc import Callable, Iterable, Sequence
@@ -23,8 +22,16 @@ gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
 from gi.repository import Adw, Gio, GLib, Gtk  # noqa: E402
 
-from berigna.core.batch import BatchItem, Outcome, batch_outputs, sign_batch  # noqa: E402
-from berigna.core.documents import DocumentKind, detect_kind  # noqa: E402
+from berigna.core.batch import (  # noqa: E402
+    BatchItem,
+    Outcome,
+    batch_outputs,
+    collect_files,
+    is_signature,
+    read_files,
+    sign_batch,
+)
+from berigna.core.documents import DocumentKind  # noqa: E402
 from berigna.core.errors import BerignaError, PinIncorrectError  # noqa: E402
 from berigna.core.files import dated_name, write_atomically  # noqa: E402
 from berigna.core.formats.cades import CadesPackaging  # noqa: E402
@@ -36,7 +43,6 @@ from berigna.core.report.explanations import explain_error  # noqa: E402
 from berigna.core.signing import Packaging, SigningJob  # noqa: E402
 from berigna.core.token.pin import Pin  # noqa: E402
 from berigna.core.validation import SignerCheck  # noqa: E402
-from berigna.core.verification import DETACHED_SUFFIXES  # noqa: E402
 from berigna.ui import presentation  # noqa: E402
 from berigna.ui.i18n import _, catalogue, current_language, ngettext  # noqa: E402
 from berigna.ui.signing import (  # noqa: E402
@@ -63,34 +69,10 @@ _ICONS = {
 }
 
 
-# Signatures berigna writes: a folder is not asked to sign them again (RF-041).
-SIGNATURE_SUFFIXES = frozenset((*DETACHED_SUFFIXES, ".p7m"))
-
-
 def display_folder(folder: Path) -> str:
     """The folder as the user knows it: "~/Documentos" rather than "/home/rosa/Documentos"."""
     home = Path.home()
     return f"~/{folder.relative_to(home)}" if folder.is_relative_to(home) else str(folder)
-
-
-def is_signature(path: Path) -> bool:
-    """A signature berigna writes, by its extension: verified on its own, never signed again
-    in a batch (review of the increment 6)."""
-    return path.suffix.lower() in SIGNATURE_SUFFIXES
-
-
-def collect_files(paths: Iterable[Path], *, recursive: bool) -> list[Path]:
-    """The files among ``paths``: files as given, folders expanded (with their subfolders when
-    ``recursive``) without hidden files, in name order, each once, and never a signature
-    (RF-041)."""
-    found: list[Path] = []
-    for path in paths:
-        if path.is_dir():
-            pattern = path.rglob("*") if recursive else path.glob("*")
-            found += sorted(p for p in pattern if p.is_file() and not p.name.startswith("."))
-        elif path.is_file():
-            found.append(path)
-    return [path for path in dict.fromkeys(found) if not is_signature(path)]
 
 
 class FormatChoices:
@@ -210,17 +192,9 @@ class BatchPage:
         self._sign.set_sensitive(False)
 
         def work() -> None:
-            hashed: list[tuple[Path, str, DocumentKind]] = []
-            left_out = sum(1 for p in paths if not p.is_dir() and not p.is_file())
             signatures = sum(1 for p in paths if p.is_file() and is_signature(p))
-            for path in collect_files(paths, recursive=recursive):
-                try:
-                    data = path.read_bytes()
-                except OSError:
-                    left_out += 1
-                    continue
-                kind, _signatures = detect_kind(data)
-                hashed.append((path, hashlib.sha256(data).hexdigest(), kind))
+            hashed, left_out = read_files(collect_files(paths, recursive=recursive))
+            left_out += sum(1 for p in paths if not p.is_dir() and not p.is_file())
             GLib.idle_add(self._added, hashed, left_out, signatures)
 
         threading.Thread(target=work, name="berigna-batch-add", daemon=True).start()

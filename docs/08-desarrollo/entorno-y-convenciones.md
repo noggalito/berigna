@@ -3,7 +3,7 @@
 | Campo | Valor |
 |---|---|
 | Documento | BRG-DES-001 |
-| Versión | 0.5.0 |
+| Versión | 0.6.0 |
 | Estado | Borrador |
 | Fecha | 2026-11-02 |
 | Responsable | noggalito |
@@ -18,13 +18,20 @@ berigna/
 ├── meson.build                   # aplicación GTK (ADR-0010): vistas, esquema, catálogos, lanzador
 ├── bin/berigna.in                # lanzador instalado
 ├── LICENSE, README.md, SECURITY.md, CHANGELOG.md
-├── .github/workflows/verificar.yml  # CI: scripts/verificar.sh en Debian 13
+├── .github/workflows/verificar.yml  # CI: scripts/verificar.sh en Debian 13, SBOM y rendimiento
+├── .github/workflows/vigilancia.yml # semanal: Debian stable y testing, servicios, última pyHanko
+├── .github/dependabot.yml        # solo las actions de GitHub, cada mes (BRG-MAN-001 §5)
 ├── scripts/verificar.sh          # verificación local, incluida la documentación (R-DES-05)
 ├── scripts/verificar-documentacion.py  # cabeceras, fechas e identificadores de docs/
 ├── scripts/hooks/pre-push        # gancho de pre-push con verificar.sh (R-DES-06)
 ├── scripts/traducciones.sh       # plantilla, catálogos y compilación a build/locale (gettext)
 ├── scripts/fusionar-incremento.sh  # rama → commit con DCO → push → PR → CI → fusión
 ├── scripts/ejecutar.sh           # lanza la interfaz desde el árbol de trabajo
+├── scripts/ci-entorno.sh         # entorno de la CI: paquetes de Debian y .venv (las dos CI)
+├── scripts/sbom.py               # lista de componentes CycloneDX 1.6 (R-DES-03)
+├── scripts/rendimiento.py        # medidas con la tarjeta simulada y comparación (R-DES-10)
+├── scripts/vigilar-servicios.py  # TSL de INDECOPI, CRL y OCSP de RENIEC, OSV de pyHanko
+├── scripts/vulnerabilidades-debian.py  # debsecan sobre los paquetes de Debian del SBOM (R-DES-02)
 ├── src/berigna/
 │   ├── core/
 │   │   ├── errors.py             # jerarquía de errores ERR-xxx
@@ -133,6 +140,20 @@ El script `scripts/verificar.sh` ejecuta exactamente esas comprobaciones (nunca 
 ## 5. Integración continua
 
 Estado (2026-10-28): GitHub Actions ejecuta `scripts/verificar.sh` (`.github/workflows/verificar.yml`) en cada PR y en cada *push* a `main`, dentro de un contenedor `debian:trixie` con los paquetes Python de Debian; de PyPI solo vienen pyHanko 0.25.1 (sin dependencias) y las herramientas de desarrollo, con las mismas versiones que el entorno local (§2.1). Desde la Fase 3 también compila las vistas con Meson y prueba la aplicación real con Xvfb. Cubre el paso 1 y las pruebas unitarias del paso 2; faltan SoftHSM (aplazado con el *backend* PKCS#11 a la versión 1.1), DSS (hoy con los *scripts* de `tests/interop/`) y el *fuzzing*.
+
+Desde el 2026-11-02 (Fase 4, incremento 7), las dos CI preparan el mismo entorno con `scripts/ci-entorno.sh`, y la de cada PR además:
+
+- genera la lista de componentes (`scripts/sbom.py`, CycloneDX 1.6) con lo que instaló y la guarda con la ejecución como artefacto `sbom` (R-DES-03). Contiene las dependencias Python de ejecución (las de `pyproject.toml` y las suyas, sin extras ni herramientas de desarrollo), con el paquete de Debian que las instaló cuando viene de Debian, los componentes de sistema del `Depends` previsto (BRG-DSP-001) y las fuentes incluidas;
+- mide el rendimiento con la tarjeta simulada (`scripts/rendimiento.py`, R-DES-10): firmar un PDF de 10 MB, un lote de 20 PDF, verificar un PDF B-LTA y leer una carpeta de 200 PDF de 200 kB. Cada tiempo se divide por una carga de calibración medida en la misma máquina, y se compara con `tests/data/rendimiento/referencia.json`; si una medida es más de un 50 % más lenta, la CI deja un aviso, nunca un fallo. La referencia se rehace con `--actualizar` cuando un cambio justifica el nuevo tiempo.
+
+La vigilancia semanal (`.github/workflows/vigilancia.yml`, BRG-MAN-001 §5, R-DES-01) corre los lunes y no bloquea ningún PR:
+
+- `scripts/verificar.sh` completo en Debian 13 (*stable*) y en *testing* (forky). *Testing* no abre incidencias: desde el 2026-11-02 su `python3-pyhanko-certvalidator` 0.30.2 rompe pyHanko 0.25.1 al importarlo (`pyhanko_certvalidator._asyncio_compat` ya no existe), y *testing* no trae pyHanko. Es el coste conocido de Debian 14 (R-15): habrá que empaquetar una pyHanko más nueva, y lo mide el trabajo siguiente;
+- `scripts/vigilar-servicios.py`: la TSL de INDECOPI (descarga, firma y días hasta su NextUpdate, aviso con menos de 7), cada espejo de las ARL de las CA del almacén (firma de su CA y vigencia), el OCSP de RENIEC y las vulnerabilidades publicadas en OSV de lo que no viene de Debian (hoy solo pyHanko, R-DES-02);
+- `scripts/vulnerabilidades-debian.py`: `debsecan` sobre los paquetes de Debian del SBOM, solo informativo (R-DES-02);
+- la suite completa con la última pyHanko de PyPI y sus dependencias (R-DES-08). Mide cuánto costará salir de la 0.25.1 (R-15) y nunca abre una incidencia.
+
+Si falla Debian o un servicio, la vigilancia abre una incidencia o comenta en la que siga abierta.
 
 Pasos mínimos del *pipeline*:
 1. `ruff` (incluidas las reglas `S` de flake8-bandit, que sustituyen a ejecutar bandit por separado) y `mypy --strict`.

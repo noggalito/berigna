@@ -1,0 +1,134 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# SPDX-FileCopyrightText: 2026 noggalito
+# Weekly watch (BRG-MAN-001 §5; R-DES-01, R-DES-02, R-DES-08): what can break berigna
+# without a change of its own. Never blocks a PR; when a check fails, it opens an issue (or
+# comments on the one still open). Never uses a DNIe or a PIN.
+name: vigilancia
+
+on:
+  schedule:
+    - cron: "17 11 * * 1"  # Mondays, 06:17 in Lima
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  # Debian stable (the target of the v1.0): updates of Debian that would break berigna,
+  # before they reach the users.
+  debian:
+    runs-on: ubuntu-24.04
+    container: debian:trixie
+    timeout-minutes: 30
+    steps:
+      - name: git
+        run: &git |
+          echo 'Acquire::Retries "5";' > /etc/apt/apt.conf.d/80-retries
+          apt-get update && apt-get install -y --no-install-recommends ca-certificates git
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Paquetes de Debian 13 y entorno virtual
+        run: scripts/ci-entorno.sh
+      - name: Formato, lint, tipos y pruebas
+        run: scripts/verificar.sh
+
+  # Debian testing (the next stable), in a job of its own that avisar does not wait for: it
+  # never opens an issue. Since 2026-11-02 its pyhanko-certvalidator 0.30 breaks pyHanko
+  # 0.25.1 on import, a known cost of Debian 14 (R-15) that pyhanko-reciente measures.
+  debian-testing:
+    runs-on: ubuntu-24.04
+    container: debian:forky
+    timeout-minutes: 30
+    continue-on-error: true
+    steps:
+      - name: git
+        run: *git
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Paquetes de Debian testing y entorno virtual
+        run: scripts/ci-entorno.sh
+      - name: Formato, lint, tipos y pruebas
+        run: scripts/verificar.sh
+
+  # The trusted list of INDECOPI, the CRLs and the OCSP of RENIEC (R-17), and OSV for
+  # pyHanko, the only component that does not come from Debian (R-DES-02).
+  servicios:
+    runs-on: ubuntu-24.04
+    container: debian:trixie
+    timeout-minutes: 15
+    steps:
+      - name: git
+        run: *git
+      - uses: actions/checkout@v4
+      - name: Paquetes de Debian 13 y entorno virtual
+        run: scripts/ci-entorno.sh
+      - name: Lista de componentes (SBOM)
+        run: .venv/bin/python scripts/sbom.py -o build/sbom.cdx.json
+      - name: Servicios externos y vulnerabilidades de pyHanko
+        run: .venv/bin/python scripts/vigilar-servicios.py --sbom build/sbom.cdx.json
+      # Informative: Debian leaves many CVEs open that berigna does not reach (R-DES-02).
+      # Also when a service failed, and never a reason for an issue.
+      - name: Vulnerabilidades de los paquetes de Debian
+        if: ${{ !cancelled() }}
+        continue-on-error: true
+        run: |
+          DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends debsecan
+          scripts/vulnerabilidades-debian.py --sbom build/sbom.cdx.json
+
+  # R-DES-08: how far berigna is from the latest pyHanko (R-15, ADR-0013). Never an issue:
+  # it measures the cost of leaving 0.25.1, it is not a defect.
+  pyhanko-reciente:
+    runs-on: ubuntu-24.04
+    container: debian:trixie
+    timeout-minutes: 30
+    continue-on-error: true
+    steps:
+      - name: git
+        run: *git
+      - uses: actions/checkout@v4
+      - name: Paquetes de Debian 13 y la última pyHanko
+        run: scripts/ci-entorno.sh reciente
+      - name: Pruebas con la última pyHanko
+        run: |
+          set +e
+          meson setup build/meson >/dev/null && meson compile -C build/meson >/dev/null
+          scripts/traducciones.sh compilar
+          env -u WAYLAND_DISPLAY BERIGNA_TEST_DISPLAY=1 GDK_BACKEND=x11 \
+            BERIGNA_LOCALEDIR="$PWD/build/locale" xvfb-run --auto-servernum \
+            .venv/bin/pytest -q -p no:cacheprovider --continue-on-collection-errors \
+            > build/pyhanko-reciente.txt 2>&1
+          status=$?
+          {
+            echo "## Pruebas con la última pyHanko (R-DES-08)"
+            echo
+            .venv/bin/pip list --format=freeze | grep -i -e '^pyhanko' -e '^cryptography' | sed 's/^/- /'
+            echo
+            echo '```'
+            tail -n 25 build/pyhanko-reciente.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+          exit $status
+
+  avisar:
+    needs: [debian, servicios]
+    if: failure()
+    runs-on: ubuntu-24.04
+    permissions:
+      issues: write
+    steps:
+      - name: Abrir o actualizar la incidencia
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RUN: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          title="Vigilancia semanal: hay comprobaciones que fallan"
+          body="La vigilancia semanal (BRG-MAN-001 §5) falló el $(date -u +%F): $RUN"
+          number=$(gh issue list --state open --search "in:title \"$title\"" --json number --jq '.[0].number')
+          if [ -n "$number" ]; then
+            gh issue comment "$number" --body "$body"
+          else
+            gh issue create --title "$title" --body "$body"
+          fi

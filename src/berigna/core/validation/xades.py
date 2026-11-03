@@ -852,17 +852,27 @@ def _revocation_values(sig: etree._Element) -> tuple[list[Any], list[Any]]:
     return ocsps, crls
 
 
-def _failed(packaging: XadesPackaging, result: _Result) -> XadesSignatureReport:
+def _failed(
+    packaging: XadesPackaging,
+    result: _Result,
+    signer: x509.Certificate | None = None,
+    claimed: dt.datetime | None = None,
+    scope: SignedScope | None = None,
+    references: tuple[str, ...] = (),
+) -> XadesSignatureReport:
+    """A signature that did not pass, with what was read of it before the failure: the
+    signer, the declared time and the scope still help the user, as Firma Perú shows them
+    on a HASH_FAILURE (real DNIe test of the increment 6)."""
     return XadesSignatureReport(
         packaging=packaging,
         indication=result.indication,
         subindication=result.subindication,
-        signer=None,
-        claimed_signing_time=None,
+        signer=signer,
+        claimed_signing_time=claimed,
         timestamp=None,
         archive_timestamps=(),
-        scope=None,
-        references=(),
+        scope=scope,
+        references=references,
     )
 
 
@@ -879,6 +889,9 @@ def _verify_signature(
     } - {""}
     octets = _Octets(sig, tree, external if len(outside) <= 1 else None)
     signer: x509.Certificate | None = None
+    claimed: dt.datetime | None = None
+    scope: SignedScope | None = None
+    references: tuple[str, ...] = ()
     try:
         signed = _signed_properties(sig, tree)
         carried = _certificates_of(sig)
@@ -919,10 +932,9 @@ def _verify_signature(
             )
         )
     except _Result as result:
-        report = _failed(packaging, result)
-        return report if signer is None else _with_signer(report, signer)
+        return _failed(packaging, result, signer, claimed, scope, references)
     except _UNREADABLE as exc:
-        return _failed(packaging, _format(str(exc)))
+        return _failed(packaging, _format(str(exc)), signer, claimed, scope, references)
     return XadesSignatureReport(
         packaging=packaging,
         indication=indicate,
@@ -933,21 +945,6 @@ def _verify_signature(
         archive_timestamps=archives,
         scope=scope,
         references=references,
-    )
-
-
-def _with_signer(report: XadesSignatureReport, signer: x509.Certificate) -> XadesSignatureReport:
-    """A failed report still names the signer when the certificate was identified."""
-    return XadesSignatureReport(
-        packaging=report.packaging,
-        indication=report.indication,
-        subindication=report.subindication,
-        signer=signer,
-        claimed_signing_time=report.claimed_signing_time,
-        timestamp=report.timestamp,
-        archive_timestamps=report.archive_timestamps,
-        scope=report.scope,
-        references=report.references,
     )
 
 

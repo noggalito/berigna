@@ -9,13 +9,13 @@ from pathlib import Path
 
 import pytest
 
-from berigna.core.batch import Outcome
+from berigna.core.batch import Outcome, collect_files
 from berigna.core.documents import DocumentKind, inspect_document
 from berigna.core.formats.cades import CadesPackaging
 from berigna.core.formats.xades import XadesPackaging
 from berigna.core.token.dnie_v2 import INS_VERIFY
 from berigna.ui.application import BerignaApplication
-from berigna.ui.batch import BatchPage, FormatChoices, collect_files, display_folder
+from berigna.ui.batch import BatchPage, FormatChoices, display_folder
 from conftest import drive, wait_until
 from sim.dnie_v2 import DnieV2Simulator
 from support.pki import minimal_pdf
