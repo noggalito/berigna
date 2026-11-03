@@ -3,9 +3,9 @@
 | Campo | Valor |
 |---|---|
 | Documento | BRG-CAL-006 |
-| Versión | 0.8.0 |
+| Versión | 0.8.1 |
 | Estado | En curso |
-| Fecha | 2026-11-02 |
+| Fecha | 2026-11-03 |
 | Responsable | noggalito |
 
 ## 1. Objetivo
@@ -201,7 +201,7 @@ Conclusiones:
 
 - Las siete firmas con el DNIe real son válidas en DSS 6.2 y en berigna. Firma Perú da válidas seis, con la cadena hasta ECERNEP PERU CA ROOT 3 y la raíz en la TSL; la séptima es la XAdES separada, que su validador no admite.
 - El validador web de Firma Perú solo acepta firmas separadas `*.p7s`: con una `.xsig` o una `.p7m` dice "sin firma embebida" y pide una `.p7s`. Al validar contra una firma que no es la del archivo da HASH_FAILURE, que es lo correcto.
-- La `.p7m` es un CMS *signed-data* DER estándar con el contenido incrustado. `openssl cms -verify` también la verifica y extrae el original. El mismo archivo, sin tocar un byte y con la extensión cambiada a `.p7s`, es válido en Firma Perú subiendo antes el original: solo falla la extensión.
+- La `.p7m` es un CMS *signed-data* DER estándar con el contenido incrustado. `openssl cms -verify` también la verifica y extrae el original. El mismo archivo, sin tocar un byte y con la extensión cambiada a `.p7s`, es válido en Firma Perú subiendo antes el original: solo falla la extensión. Decisión del titular (2026-11-03): berigna mantiene la extensión estándar `.p7m` y avisa de la diferencia al elegir esa variante, igual que con la `.xsig` (BRG-UX-001 §3.2).
 - Contraste con el firmador de Firma Perú: su CAdES *enveloping* lleva el contenido dentro, pero el firmador la nombra `.p7s`, y su validador web la da por válida solo si se sube antes el original, como una separada. En el ecosistema de Firma Perú toda CAdES se llama `.p7s` y se valida con el original; la extensión `.p7m` no se reconoce. berigna verifica esa firma del firmador de Firma Perú: reconoce por el contenido que es envuelta, no pide el original, da TOTAL-PASSED en línea y extrae el contenido idéntico.
 - Por encima de B-B hace falta una TSA (DP-02). Con el DNIe real la matriz queda en B-B; de B-T a B-LTA está validada con tarjeta simulada y TSA de pruebas (§3.9). Cuando haya una TSA acreditada, se repetirá con el mismo *script* (`--nivel`, `--tsa`).
 
