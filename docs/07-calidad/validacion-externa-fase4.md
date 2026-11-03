@@ -3,7 +3,7 @@
 | Campo | Valor |
 |---|---|
 | Documento | BRG-CAL-006 |
-| Versión | 0.6.0 |
+| Versión | 0.7.0 |
 | Estado | En curso |
 | Fecha | 2026-11-02 |
 | Responsable | noggalito |
@@ -20,7 +20,7 @@ Criterio de salida de la Fase 4 (hoja de ruta): la matriz completa de formato ×
 4. Verificación propia de berigna (incrementos 3 y 5): la misma matriz CAdES se relee con `berigna.core.validation.cades.verify_cades` (RF-051) y la XAdES con `berigna.core.validation.xades.verify_xades` (RF-052), sin red, y sus indicaciones y subindicaciones quedan junto a las de DSS. `matriz_xades.py` añade la verificación propia como última columna de su tabla.
 5. Firmas de terceros (incremento 5): `tests/interop/firmas_dss.py` hace que DSS 6.2 firme el mismo documento en las tres variantes y los cuatro niveles (`brg.Sign` del arnés, con una clave de la PKI de pruebas, la TSA de pruebas por HTTP y los datos de revocación como archivos) y compara la verificación de berigna con la validación de DSS (PR-INT-06). `tests/interop/verificar_firma_peru.py` verifica una firma real de Firma Perú o ReFirma con el almacén propio y la TSL de INDECOPI, en línea (PR-INT-05); la firma y el documento quedan en la documentación interna, porque llevan los datos de una persona.
 
-Para repetirlo: `.venv/bin/python tests/interop/matriz_cades.py DIR` y `.venv/bin/python tests/interop/matriz_xades.py DIR`, y `tests/interop/matriz_dss.sh DIR [dssval]`. El arnés se prepara con `spikes/preparar-entorno.sh`; si el sistema solo tiene el entorno de ejecución de Java 21, el JDK 8 compila `Validate.java` con las bibliotecas de DSS 6.2.
+Para repetirlo: `.venv/bin/python tests/interop/matriz_cades.py DIR` y `.venv/bin/python tests/interop/matriz_xades.py DIR`, y `tests/interop/matriz_dss.sh DIR [dssval]`, con una carpeta distinta para cada *script*: cada uno escribe la raíz de su PKI de pruebas en `raiz-pruebas.pem`, y en una carpeta común la última pisa a las otras y DSS da NO_CERTIFICATE_CHAIN_FOUND a las firmas de las demás (comprobado el 2026-11-02). El arnés se prepara con `spikes/preparar-entorno.sh`; si el sistema solo tiene el entorno de ejecución de Java 21, el JDK 8 compila `Validate.java` con las bibliotecas de DSS 6.2.
 
 ## 3. Resultados
 
@@ -171,7 +171,18 @@ Al desarrollar el incremento 5 apareció que la firma envuelta de berigna sobre 
 
 Resultado: la matriz se repitió con `xml:lang` en la raíz de los documentos difíciles, y DSS 6.2 da TOTAL_PASSED en las 18 B-LT y B-LTA, con los sellos de archivo PASSED y sin ningún HASH_FAILURE. Las 36 concuerdan con `verify_xades`, y xmlsec1 verifica en la CI una envuelta sobre una raíz con `xml:lang` y `xml:space`. DSS da también TOTAL_PASSED en B-LTA a un documento con `xsi:type="ns:Tipo"`, y en berigna cambiar después ese prefijo da HASH_FAILURE.
 
+### 3.9 Repetición con el código del incremento 8 (2026-11-02)
+
+Tras los cambios de los incrementos 6 a 8 (verificación unificada, lotes mixtos, la hora declarada ante HASH_FAILURE y la robustez de DP-20), la matriz completa se repitió con tarjeta simulada: 8 PAdES, 8 CAdES y 36 XAdES, de B-B a B-LTA. Los resultados de DSS 6.2 son idénticos a los de §3.1, §3.3 y §3.8: B-LT y B-LTA dan TOTAL_PASSED en los tres formatos, y B-B y B-T, sin datos de revocación, INDETERMINATE (CERTIFICATE_CHAIN_GENERAL_FAILURE en DSS, TRY_LATER en berigna). `verify_xades` concuerda con DSS en las 36 XAdES.
+
+Robustez (DP-20, R-DES-18): pruebas por mutación de CAdES y de PDF, como las de XAdES del incremento 5. Además de las de la CI (150 casos cada una), una ronda de 3000 mutaciones de una `.p7m` B-T y B-LTA y de 10 000 de un PDF B-B con DSS y B-LTA. Encontraron siete casos más que llegaban al usuario como ERR-000, todos por lecturas perezosas de asn1crypto o pyHanko fuera de la parte protegida. La revisión de código halló un octavo que las mutaciones al azar no alcanzaban: un certificado con la versión alterada (`InvalidVersion` de cryptography, que no es un `ValueError`), ya tratado en XAdES pero no en CAdES ni en PDF. Los tres verificadores comparten ahora una sola lista de excepciones de archivo hostil (`MALFORMED`, `core.validation.spec`). Además se hizo un barrido sistemático: cada byte de una `.p7m` B-B con cuatro valores (18 000 casos) y uno de cada dos bytes del CMS de un PDF B-T con dos (unos 5000). Tras las correcciones, ninguna de estas mutaciones da una excepción inesperada:
+
+- en CAdES, la estructura del CMS (contenido, certificados, lista de firmantes) y las respuestas OCSP y CRL que lleva;
+- en PDF, el certificado del firmante, la fecha `/M`, un DSS dañado y los `assert` de pyHanko al leer el campo de firma;
+- en los tres formatos, un certificado con la versión alterada.
+
+Las respuestas OCSP que trae una CAdES se leen con el CMS, de modo que una dañada es ERR-402 para ese archivo; una dañada entre las que aporta quien llama no culpa al archivo.
+
 ## 4. Pendiente
 
-- La misma matriz con el DNIe real y PIN, y en Firma Perú (incremento 8).
-- La firma con `xml:lang` en la raíz, corregida (§3.8), en Firma Perú, junto con el resto de la matriz (incremento 8).
+- La misma matriz con el DNIe real y PIN, y en Firma Perú (incremento 8): `tests/hil/firmar_matriz_con_pin.py` firma con un solo PIN un PDF en PAdES, un texto en CAdES `.p7s` y `.p7m`, un XML en XAdES envuelta, envolvente y separada, y un XML con `xml:lang` en la raíz (§3.8). Por encima de B-B hace falta una TSA (DP-02).
