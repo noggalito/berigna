@@ -3,7 +3,7 @@
 | Campo | Valor |
 |---|---|
 | Documento | BRG-CAL-006 |
-| Versión | 0.7.0 |
+| Versión | 0.8.0 |
 | Estado | En curso |
 | Fecha | 2026-11-02 |
 | Responsable | noggalito |
@@ -183,6 +183,28 @@ Robustez (DP-20, R-DES-18): pruebas por mutación de CAdES y de PDF, como las de
 
 Las respuestas OCSP que trae una CAdES se leen con el CMS, de modo que una dañada es ERR-402 para ese archivo; una dañada entre las que aporta quien llama no culpa al archivo.
 
+### 3.10 Matriz con el DNIe real y PIN (incremento 8, 2026-11-02)
+
+El titular ejecutó `tests/hil/firmar_matriz_con_pin.py` con su DNIe v2 real, con un lector Alcor Micro AU9540. Con un solo PIN, el script firmó en B-B, SHA-256, un lote de 7 archivos, tras la validación previa en línea contra RENIEC. Las firmas y los informes llevan sus datos personales, así que quedan en la documentación interna, con sus SHA-256 (PR-INT-05).
+
+| Variante | Firma Perú (validador web 1.1.0) | DSS 6.2 (ancla ROOT 3, revocación en línea) | berigna (en línea) |
+|---|---|---|---|
+| PAdES | Válido, PAdES_BASELINE_B | PAdES-BASELINE-B, TOTAL_PASSED | TOTAL-PASSED |
+| CAdES separada (`.p7s`) | Válido, CAdES_BASELINE_B | CAdES-BASELINE-B, TOTAL_PASSED | TOTAL-PASSED |
+| CAdES envuelta (`.p7m`) | Válido, CAdES_BASELINE_B, con la extensión cambiada a `.p7s` (con `.p7m` no la reconoce) | CAdES-BASELINE-B, TOTAL_PASSED | TOTAL-PASSED |
+| XAdES envuelta | Válido, XAdES_BASELINE_B | XAdES-BASELINE-B, TOTAL_PASSED | TOTAL-PASSED |
+| XAdES envolvente | Válido, XAdES_BASELINE_B | XAdES-BASELINE-B, TOTAL_PASSED | TOTAL-PASSED |
+| XAdES separada (`.xsig`) | No la admite | XAdES-BASELINE-B, TOTAL_PASSED | TOTAL-PASSED |
+| XAdES envuelta, raíz con `xml:lang` (§3.8) | Válido, XAdES_BASELINE_B | XAdES-BASELINE-B, TOTAL_PASSED | TOTAL-PASSED |
+
+Conclusiones:
+
+- Las siete firmas con el DNIe real son válidas en DSS 6.2 y en berigna. Firma Perú da válidas seis, con la cadena hasta ECERNEP PERU CA ROOT 3 y la raíz en la TSL; la séptima es la XAdES separada, que su validador no admite.
+- El validador web de Firma Perú solo acepta firmas separadas `*.p7s`: con una `.xsig` o una `.p7m` dice "sin firma embebida" y pide una `.p7s`. Al validar contra una firma que no es la del archivo da HASH_FAILURE, que es lo correcto.
+- La `.p7m` es un CMS *signed-data* DER estándar con el contenido incrustado. `openssl cms -verify` también la verifica y extrae el original. El mismo archivo, sin tocar un byte y con la extensión cambiada a `.p7s`, es válido en Firma Perú subiendo antes el original: solo falla la extensión.
+- Contraste con el firmador de Firma Perú: su CAdES *enveloping* lleva el contenido dentro, pero el firmador la nombra `.p7s`, y su validador web la da por válida solo si se sube antes el original, como una separada. En el ecosistema de Firma Perú toda CAdES se llama `.p7s` y se valida con el original; la extensión `.p7m` no se reconoce. berigna verifica esa firma del firmador de Firma Perú: reconoce por el contenido que es envuelta, no pide el original, da TOTAL-PASSED en línea y extrae el contenido idéntico.
+- Por encima de B-B hace falta una TSA (DP-02). Con el DNIe real la matriz queda en B-B; de B-T a B-LTA está validada con tarjeta simulada y TSA de pruebas (§3.9). Cuando haya una TSA acreditada, se repetirá con el mismo *script* (`--nivel`, `--tsa`).
+
 ## 4. Pendiente
 
-- La misma matriz con el DNIe real y PIN, y en Firma Perú (incremento 8): `tests/hil/firmar_matriz_con_pin.py` firma con un solo PIN un PDF en PAdES, un texto en CAdES `.p7s` y `.p7m`, un XML en XAdES envuelta, envolvente y separada, y un XML con `xml:lang` en la raíz (§3.8). Por encima de B-B hace falta una TSA (DP-02).
+- La matriz con el DNIe real de B-T a B-LTA, cuando haya una TSA acreditada (DP-02): `tests/hil/firmar_matriz_con_pin.py --nivel B-LTA --tsa URL`.
