@@ -108,7 +108,7 @@ jobs:
             echo '```'
             tail -n 25 build/pyhanko-reciente.txt
             echo '```'
-          } >> "$GITHUB_STEP_SUMMARY"
+          } | tee -a "$GITHUB_STEP_SUMMARY"  # also in the log: gh run view --log
           exit $status
 
   avisar:

@@ -16,6 +16,8 @@ from asn1crypto import crl as asn1_crl
 from cryptography import x509
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
+from hypothesis import given, settings
+from hypothesis import strategies as st
 
 from berigna.core.errors import UnreadableSignatureError
 from berigna.core.formats.cades import CadesPackaging, sign_cades
@@ -362,3 +364,115 @@ def test_online_verification_with_unreachable_services(
     ).signatures
     assert report.indication is Indication.INDETERMINATE
     assert urls  # the services named in the certificate were tried
+
+
+# -- hostile time-stamps and any mutation (R-DES-18, DP-20 options A and E) ------------------------
+
+UNKNOWN_DIGEST = "2.16.840.1.101.3.4.2.127"  # under the NIST hashes, assigned to none
+
+
+def _with_unknown_tst_digest(signature: bytes) -> bytes:
+    """The signature time-stamp with a digest algorithm pyHanko 0.25.1 does not know: its
+    ``get_pyca_cryptography_hash`` raised AttributeError, and verify_cades ended in ERR-000
+    hiding every signature of the file (R-DES-18)."""
+    info = cms.ContentInfo.load(signature)
+    attributes = info["content"]["signer_infos"][0]["unsigned_attrs"]
+    stamp = next(a for a in attributes if a["type"].native == "signature_time_stamp_token")
+    token = stamp["values"][0]
+    token["content"]["signer_infos"][0]["digest_algorithm"]["algorithm"] = UNKNOWN_DIGEST
+    return bytes(info.dump(force=True))
+
+
+def test_a_timestamp_with_an_unknown_digest_is_a_format_failure(
+    pki: Pki, caplog: pytest.LogCaptureFixture
+) -> None:
+    signature, leaf, tsa = _sign(pki, SignatureLevel.B_T)
+    with caplog.at_level("WARNING", logger="berigna.core.validation.spec"):
+        [report] = verify_cades(
+            _with_unknown_tst_digest(signature),
+            pki.store,
+            content=CONTENT,
+            online=False,
+            ocsp_responses=[pki.ocsp(leaf), pki.ocsp(tsa)],
+            crls=[pki.arl()],
+        ).signatures
+    assert report.indication is Indication.TOTAL_FAILED
+    assert report.subindication == "FORMAT_FAILURE"
+    assert any(r.exc_info and r.exc_info[0] is AttributeError for r in caplog.records)
+
+
+@pytest.fixture(scope="module")
+def signed_b_t(pki: Pki) -> tuple[bytes, x509.Certificate, x509.Certificate]:
+    return _sign(pki, SignatureLevel.B_T, CadesPackaging.ENVELOPING)
+
+
+@settings(max_examples=150, deadline=None)
+@given(position=st.integers(min_value=0), byte=st.integers(0, 255))
+def test_any_mutation_of_a_cms_is_a_result_or_a_reading_error(
+    pki: Pki, signed_b_t: tuple[bytes, x509.Certificate, x509.Certificate], position: int, byte: int
+) -> None:
+    """A .p7m B-T with any byte changed: an ETSI result or ERR-4xx, never an unexpected
+    exception (AM-05), as the XAdES mutations of the increment 5."""
+    signature, leaf, tsa = signed_b_t
+    index = position % len(signature)
+    mutated = signature[:index] + bytes([byte]) + signature[index + 1 :]
+    try:
+        reports = verify_cades(
+            mutated,
+            pki.store,
+            online=False,
+            ocsp_responses=[pki.ocsp(leaf), pki.ocsp(tsa)],
+            crls=[pki.arl()],
+        ).signatures
+    except UnreadableSignatureError:
+        return
+    for report in reports:
+        assert isinstance(report.indication, Indication)
+
+
+@pytest.mark.parametrize("hook", ["_certificates", "_ocsp_crls"])
+def test_a_cms_whose_structure_breaks_late_is_a_reading_error(
+    pki: Pki, monkeypatch: pytest.MonkeyPatch, hook: str
+) -> None:
+    """asn1crypto parses lazily: a damaged certificate set, revocation data or OCSP response
+    fails only when read. It is a CMS that cannot be read (ERR-402), never ERR-000."""
+    from berigna.core.validation import cades as module
+
+    def broken(*_args: object) -> object:
+        raise ValueError("hostile")
+
+    monkeypatch.setattr(module, hook, broken)
+    signature, _, _ = _sign(pki, SignatureLevel.B_B, CadesPackaging.ENVELOPING)
+    with pytest.raises(UnreadableSignatureError) as info:
+        verify_cades(signature, pki.store, online=False)
+    assert info.value.code == "ERR-402"
+
+
+def test_a_damaged_embedded_ocsp_response_is_a_reading_error(
+    pki: Pki, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """The OCSP responses a B-LT carries (RFC 5940) are read with the CMS: a damaged one is
+    ERR-402 for this file, not an error while validating (mutation tests)."""
+    from berigna.core.validation import cades as module
+
+    class Broken:
+        @staticmethod
+        def load_multi(_response: object) -> object:
+            raise KeyError("14")
+
+    signature, _, _ = _sign(pki, SignatureLevel.B_LT, CadesPackaging.ENVELOPING)
+    monkeypatch.setattr(module, "OCSPContainer", Broken)
+    with pytest.raises(UnreadableSignatureError) as info:
+        verify_cades(signature, pki.store, online=False)
+    assert info.value.code == "ERR-402"
+
+
+def test_a_certificate_with_a_mutated_version_is_a_reading_error(pki: Pki) -> None:
+    """cryptography's InvalidVersion is not a ValueError: it reached the user as ERR-000
+    (review of the increment 8)."""
+    signature, _, _ = _sign(pki, SignatureLevel.B_B, CadesPackaging.ENVELOPING)
+    version = b"\xa0\x03\x02\x01\x02"  # [0] EXPLICIT INTEGER 2 (v3) of a TBSCertificate
+    assert version in signature
+    mutated = signature.replace(version, b"\xa0\x03\x02\x01\x07", 1)
+    with pytest.raises(UnreadableSignatureError):
+        verify_cades(mutated, pki.store, online=False)

@@ -49,6 +49,7 @@ from pyhanko.sign.general import extract_certificate_info, find_unique_cms_attri
 from pyhanko.sign.validation import ades, generic_cms
 from pyhanko.sign.validation.policy_decl import SignatureValidationSpec
 from pyhanko_certvalidator.ltv.types import ValidationTimingInfo
+from pyhanko_certvalidator.revinfo.archival import OCSPContainer
 
 from berigna.core.certs import to_cryptography
 from berigna.core.errors import UnreadableSignatureError
@@ -69,6 +70,7 @@ from berigna.core.validation.spec import (
     TimestampReport,
     diagnose_chain,
     indication,
+    log_malformed,
     timestamp_report,
     validate_timestamp,
     validation_spec,
@@ -270,7 +272,8 @@ def _validate_archive(
         result = validate_timestamp(
             token, hashlib.new(algorithm, imprint).digest(), spec, context.timing
         )
-    except MALFORMED:
+    except MALFORMED as exc:
+        log_malformed(exc)
         return TimestampReport(Indication.TOTAL_FAILED, "FORMAT_FAILURE", None, None)
     return timestamp_report(result)
 
@@ -347,7 +350,8 @@ def _verify_signer_info(
         )
         claimed = generic_cms.extract_self_reported_ts(signer_info)
         signer = to_cryptography(signer_certificate(signed_data))
-    except MALFORMED:
+    except MALFORMED as exc:
+        log_malformed(exc)
         # A hostile or broken CMS that pyHanko or asn1crypto cannot process: ETSI result.
         return _failed_format(packaging)
     return CadesSignatureReport(
@@ -385,8 +389,23 @@ def verify_cades(
     """
     when = moment or dt.datetime.now(dt.UTC)
     signed_data = signed_data_of(signature)
-    encapsulated = signed_data["encap_content_info"]["content"]
-    embedded: bytes | None = None if isinstance(encapsulated, core.Void) else bytes(encapsulated)
+    try:
+        # asn1crypto parses lazily: a damaged structure fails only when it is read, and
+        # past signed_data_of it is still a CMS that cannot be read (ERR-402, review of the
+        # increment 8: mutations of a .p7m reached the user as ERR-000)
+        encapsulated = signed_data["encap_content_info"]["content"]
+        embedded: bytes | None = (
+            None if isinstance(encapsulated, core.Void) else bytes(encapsulated)
+        )
+        certificates = _certificates(signed_data)
+        own_ocsps, own_crls = _ocsp_crls(signed_data)
+        # read the OCSP responses of the CMS now, as validation_spec will: a damaged one is
+        # this file's fault, a damaged one of the caller is not (review of the increment 8)
+        for response in own_ocsps:
+            OCSPContainer.load_multi(response)
+        signer_infos = list(signed_data["signer_infos"])
+    except MALFORMED as error:
+        raise UnreadableSignatureError(f"cannot read this CMS: {error}") from error
     packaging = CadesPackaging.ENVELOPING if embedded is not None else CadesPackaging.DETACHED
     checked = embedded if embedded is not None else content
     if checked is None:
@@ -407,14 +426,12 @@ def verify_cades(
         online=online,
         timeout=timeout,
     )
-    own_ocsps, own_crls = _ocsp_crls(signed_data)
     spec = validation_spec(
         context,
-        [*store.intermediates, *_certificates(signed_data)],
+        [*store.intermediates, *certificates],
         [*own_ocsps, *context.extra_ocsps],
         [*own_crls, *context.extra_crls],
     )
-    signer_infos = list(signed_data["signer_infos"])
     if not signer_infos:  # an empty CMS has no signature: ETSI has nothing to say about it
         raise UnreadableSignatureError("the CMS has no SignerInfo")
     return CadesVerification(

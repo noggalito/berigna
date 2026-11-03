@@ -68,6 +68,7 @@ from berigna.core.validation.spec import (
     Indication,
     TimestampReport,
     indication,
+    log_malformed,
     timestamp_report,
 )
 from berigna.core.validation.spec import diagnose_chain as _diagnose_cms_chain
@@ -256,7 +257,8 @@ def _verify_signature(
         integrity = sig.summarise_integrity_info()
         digest = sig.compute_digest()
         *_, start2, len2 = (int(n) for n in sig.byte_range)
-    except _MALFORMED:
+    except _MALFORMED as exc:
+        log_malformed(exc)
         return _failed_format(sig, subfilter)
 
     coverage = integrity.get("coverage", SignatureCoverageLevel.UNCLEAR)
@@ -270,15 +272,20 @@ def _verify_signature(
         if subindication == GENERIC_CHAIN_FAILURE and sig.attached_timestamp_data is None:
             # Basic process only: under the LTA process the cause may be in the past validation.
             subindication = _diagnose_chain(sig, spec, context)
-    except _MALFORMED:
+        # pyHanko reads both lazily: a damaged certificate or /M fails here (review of the
+        # increment 8, mutation tests)
+        signer = to_cryptography(sig.signer_cert)
+        claimed = sig.self_reported_timestamp
+    except _MALFORMED as exc:
+        log_malformed(exc)
         # A hostile or broken CMS that pyHanko or asn1crypto cannot process past the digest.
         return _failed_format(sig, subfilter)
     return PdfSignatureReport(
         field_name=sig.field_name,
         indication=indication,
         subindication=subindication,
-        signer=to_cryptography(sig.signer_cert),
-        claimed_signing_time=sig.self_reported_timestamp,
+        signer=signer,
+        claimed_signing_time=claimed,
         subfilter=subfilter,
         covers_whole_document=coverage == SignatureCoverageLevel.ENTIRE_FILE,
         modifications=_modifications(integrity),
@@ -295,7 +302,8 @@ def _verify_document_timestamp(
         result = _validate_timestamp(
             sig.signed_data, imprint, _spec(context, dss, ([], [])), context
         )
-    except _MALFORMED:
+    except _MALFORMED as exc:
+        log_malformed(exc)
         return TimestampReport(
             Indication.TOTAL_FAILED, "FORMAT_FAILURE", None, None, sig.field_name
         )
@@ -325,7 +333,10 @@ def verify_pdf(
         reader = PdfFileReader(io.BytesIO(data), strict=False)
         embedded = list(reader.embedded_signatures)
         dss = _dss_contents(reader)
-    except (PdfError, ValueError, KeyError, TypeError) as exc:
+    # also a damaged DSS, and pyHanko's own asserts on a damaged signature field (mutations;
+    # without asserts, under python -O, pyHanko fails later and one of the others is raised)
+    except (*_MALFORMED, AssertionError) as exc:
+        log_malformed(exc)
         raise UnreadableDocumentError(f"cannot read this PDF: {exc}") from exc
 
     context = Context(
