@@ -1,0 +1,12 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# SPDX-FileCopyrightText: 2026 noggalito
+# Only the GitHub actions (BRG-MAN-001 §5, R-DES-01): the Python packages come from Debian,
+# and pyHanko is pinned on purpose (ADR-0013); R-DES-08 measures the newer ones instead.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    commit-message:
+      prefix: ci
