@@ -4,14 +4,18 @@
 
 import datetime as dt
 import io
+from dataclasses import dataclass
 from typing import Any
 
 import pytest
 import requests
+from asn1crypto import cms
 from asn1crypto import crl as asn1_crl
 from asn1crypto import ocsp as asn1_ocsp
 from cryptography import x509
 from cryptography.hazmat.primitives.asymmetric import rsa
+from hypothesis import given, settings
+from hypothesis import strategies as st
 from pyhanko.pdf_utils import generic
 from pyhanko.pdf_utils.incremental_writer import IncrementalPdfFileWriter
 from pyhanko.pdf_utils.reader import PdfFileReader
@@ -450,3 +454,110 @@ def test_hostile_cms_past_the_digest_is_a_format_failure(
         [report] = verify_pdf(_signed_with_revinfo(pki)[0], pki.store, online=False).signatures
     assert report.indication is Indication.TOTAL_FAILED
     assert report.subindication == "FORMAT_FAILURE"
+
+
+# -- hostile time-stamps and any mutation (R-DES-18, DP-20 options A and E) ------------------------
+
+UNKNOWN_DIGEST = "2.16.840.1.101.3.4.2.127"  # under the NIST hashes, assigned to none
+
+
+def _with_unknown_tst_digest(pdf: bytes) -> bytes:
+    """The signature time-stamp of the PDF with a digest algorithm pyHanko 0.25.1 does not
+    know (same encoded length, so /Contents keeps its size): it raised AttributeError, and
+    verify_pdf ended in ERR-000 hiding every signature of the file (R-DES-18)."""
+    start = pdf.index(b"/Contents <") + len(b"/Contents <")
+    end = pdf.index(b">", start)
+    info = cms.ContentInfo.load(bytes.fromhex(pdf[start:end].decode()))
+    attributes = info["content"]["signer_infos"][0]["unsigned_attrs"]
+    stamp = next(a for a in attributes if a["type"].native == "signature_time_stamp_token")
+    stamp["values"][0]["content"]["signer_infos"][0]["digest_algorithm"]["algorithm"] = (
+        UNKNOWN_DIGEST
+    )
+    contents = info.dump(force=True).hex().encode().ljust(end - start, b"0")
+    assert len(contents) == end - start
+    return pdf[:start] + contents + pdf[end:]
+
+
+def test_a_timestamp_with_an_unknown_digest_is_a_format_failure(pki: Pki) -> None:
+    data, _ = pades(pki, "B-T")
+    [report] = verify_pdf(_with_unknown_tst_digest(data), pki.store, online=False).signatures
+    assert report.indication is Indication.TOTAL_FAILED
+    assert report.subindication == "FORMAT_FAILURE"
+
+
+@dataclass(frozen=True)
+class _Lta:
+    data: bytes
+    contents: tuple[int, int]  # the hex of /Contents, not signed
+    signed_revision: int  # bytes covered by the signature; the DSS and the stamp come after
+
+
+@pytest.fixture(scope="module")
+def lta_pdf(pki: Pki) -> _Lta:
+    """Parsed once: the property test runs 150 times (review of the increment 8)."""
+    data = pades(pki, "B-LTA")[0]
+    start = data.index(b"/Contents <") + len(b"/Contents <")
+    signature = next(iter(PdfFileReader(io.BytesIO(data)).embedded_signatures))
+    _, _, start2, length2 = (int(n) for n in signature.byte_range)
+    return _Lta(data, (start, data.index(b">", start)), start2 + length2)
+
+
+@settings(max_examples=150, deadline=None)
+@given(position=st.integers(min_value=0), byte=st.integers(0, 255), inside=st.booleans())
+def test_any_mutation_of_a_pdf_is_a_result_or_a_reading_error(
+    pki: Pki, lta_pdf: _Lta, position: int, byte: int, inside: bool
+) -> None:
+    """A PDF B-LTA with any byte changed, half of them inside the CMS of the signature: an
+    ETSI result or ERR-401, never an unexpected exception (AM-05). A change of the signed
+    bytes (the signed revision, outside /Contents) is never TOTAL-PASSED."""
+    data, (start, end) = lta_pdf.data, lta_pdf.contents
+    index = start + position % (end - start) if inside else position % len(data)
+    if inside:
+        byte = b"0123456789abcdef"[byte % 16]
+    mutated = data[:index] + bytes([byte]) + data[index + 1 :]
+    try:
+        reports = verify_pdf(mutated, pki.store, online=False).signatures
+    except UnreadableDocumentError:
+        return
+    for report in reports:
+        assert isinstance(report.indication, Indication)
+    signed_bytes = index < lta_pdf.signed_revision and not start <= index < end
+    if signed_bytes and mutated != data and reports:
+        assert reports[0].indication is not Indication.TOTAL_PASSED
+
+
+def test_a_damaged_dss_is_a_reading_error(pki: Pki, monkeypatch: pytest.MonkeyPatch) -> None:
+    """A /DSS entry that is not a stream (NullObject) raised AttributeError: ERR-401."""
+    from berigna.core.validation import pdf as module
+
+    def broken(*_args: object) -> object:
+        raise AttributeError("'NullObject' object has no attribute 'data'")
+
+    monkeypatch.setattr(module, "_dss_contents", broken)
+    with pytest.raises(UnreadableDocumentError):
+        verify_pdf(pades(pki, "B-LT")[0], pki.store, online=False)
+
+
+def test_an_unreadable_signing_time_is_a_format_failure(
+    pki: Pki, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """pyHanko reads /M lazily: a damaged date fails past the digest (mutation tests)."""
+
+    def broken(_self: object) -> object:
+        raise TypeError("cannot use a string pattern on a bytes-like object")
+
+    monkeypatch.setattr(EmbeddedPdfSignature, "self_reported_timestamp", property(broken))
+    [report] = verify_pdf(pades(pki, "B-T")[0], pki.store, online=False).signatures
+    assert (report.indication, report.subindication) == (Indication.TOTAL_FAILED, "FORMAT_FAILURE")
+
+
+def test_a_signer_certificate_with_a_mutated_version_is_a_format_failure(pki: Pki) -> None:
+    """cryptography's InvalidVersion is not a ValueError (review of the increment 8)."""
+    data, _ = pades(pki, "B-T")
+    start = data.index(b"/Contents <") + len(b"/Contents <")
+    end = data.index(b">", start)
+    contents = data[start:end].replace(b"A003020102", b"A003020107")
+    assert contents != data[start:end]
+    mutated = data[:start] + contents + data[end:]
+    [report] = verify_pdf(mutated, pki.store, online=False).signatures
+    assert report.indication is Indication.TOTAL_FAILED

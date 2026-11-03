@@ -77,6 +77,7 @@ from berigna.core.validation.spec import (
     Indication,
     TimestampReport,
     diagnose_path,
+    log_malformed,
     timestamp_report,
     validate_timestamp,
     validation_spec,
@@ -154,17 +155,8 @@ _FURTHER_WITH_TIME = frozenset(
         "OUT_OF_BOUNDS_NO_POE",
     )
 )
-# What a hostile signature raises past the parser: also cryptography's InvalidVersion (a
-# certificate with a mutated version) and pyHanko's AttributeError (a time-stamp token whose
-# digest OID it does not know; ``get_pyca_cryptography_hash`` looks it up with getattr).
-_UNREADABLE = (
-    *MALFORMED,
-    binascii.Error,
-    etree.LxmlError,
-    IndexError,
-    x509.InvalidVersion,
-    AttributeError,
-)
+# What a hostile signature raises past the parser: MALFORMED and the XML-specific ones.
+_UNREADABLE = (*MALFORMED, binascii.Error, etree.LxmlError)
 
 
 class SignedScope(enum.Enum):
@@ -934,6 +926,7 @@ def _verify_signature(
     except _Result as result:
         return _failed(packaging, result, signer, claimed, scope, references)
     except _UNREADABLE as exc:
+        log_malformed(exc)
         return _failed(packaging, _format(str(exc)), signer, claimed, scope, references)
     return XadesSignatureReport(
         packaging=packaging,

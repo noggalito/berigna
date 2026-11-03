@@ -12,6 +12,7 @@ data (RF-053, RF-063).
 import asyncio
 import datetime as dt
 import enum
+import logging
 from collections.abc import Sequence
 from dataclasses import dataclass
 from typing import Any
@@ -78,9 +79,34 @@ class TimestampReport:
 
 
 GENERIC_CHAIN_FAILURE = "CERTIFICATE_CHAIN_GENERAL_FAILURE"
-# What pyHanko and asn1crypto raise on a signature they cannot process (AM-05). The PDF
-# verifier adds the PDF-specific exceptions.
-MALFORMED = (SignatureValidationError, ValueError, KeyError, TypeError)
+log = logging.getLogger(__name__)
+# What pyHanko, asn1crypto and cryptography raise on a signature they cannot process (AM-05),
+# one list for the three verifiers (review of the increment 8: CAdES and PDF lacked what
+# XAdES had); each verifier adds the exceptions of its own parser. AttributeError: pyHanko
+# 0.25.1 looks a digest algorithm up with getattr (``get_pyca_cryptography_hash``), so an
+# OID it does not know in a time-stamp raises it (R-DES-18, DP-20 option A). IndexError comes
+# from asn1crypto's lazy parsing, InvalidVersion from a certificate with a mutated version.
+MALFORMED = (
+    SignatureValidationError,
+    ValueError,
+    KeyError,
+    TypeError,
+    AttributeError,
+    IndexError,
+    x509.InvalidVersion,
+)
+
+
+def log_malformed(exc: BaseException) -> None:
+    """Keep in the technical log why a signature is TOTAL-FAILED/FORMAT_FAILURE. An
+    AttributeError may also be a defect of berigna: its traceback goes to the log, so that it
+    is not hidden; the result is a failure either way, never a false valid (DP-20)."""
+    log.warning(
+        "signature that cannot be processed: %s: %s",
+        type(exc).__name__,
+        exc,
+        exc_info=isinstance(exc, AttributeError),
+    )
 
 
 @dataclass(frozen=True)
