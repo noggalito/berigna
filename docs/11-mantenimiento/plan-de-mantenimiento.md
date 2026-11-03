@@ -3,9 +3,9 @@
 | Campo | Valor |
 |---|---|
 | Documento | BRG-MAN-001 |
-| Versión | 0.1.1 |
+| Versión | 0.2.0 |
 | Estado | Borrador |
-| Fecha | 2026-10-29 |
+| Fecha | 2026-11-02 |
 | Responsable | noggalito |
 
 ## 1. Propósito y alcance
@@ -64,14 +64,17 @@ Quién vigila cada origen se asigna en la documentación interna.
 
 | Comprobación | Frecuencia | Qué detecta |
 |---|---|---|
-| CI de cada PR (`scripts/verificar.sh` en Debian 13, con Xvfb) | Cada cambio | Formato, tipos, pruebas y cobertura |
+| CI de cada PR (`scripts/verificar.sh` en Debian 13, con Xvfb), lista de componentes (SBOM) y medidas de rendimiento | Cada cambio | Formato, tipos, pruebas y cobertura; los componentes y sus licencias; un empeoramiento de más del 50 % (aviso) |
 | CI programada contra Debian *stable* y *testing* | Semanal | Roturas por actualizaciones de Debian antes de que lleguen a los usuarios |
-| Descarga y verificación de la TSL real de INDECOPI | Semanal | Rotación del firmante, cambio de formato, lista caducada |
-| Respuesta de los OCSP y de las CRL de RENIEC y de la TSA configurada | Semanal | Direcciones cambiadas o servicios caídos (R-17) |
-| `pip-audit` sobre el entorno de desarrollo y `debsecan` sobre el contenedor | Semanal | Vulnerabilidades conocidas en las dependencias |
+| Descarga y verificación de la TSL real de INDECOPI | Semanal | Rotación del firmante, cambio de formato, lista caducada o a menos de 7 días de su NextUpdate |
+| Respuesta del OCSP de RENIEC y de cada espejo de las ARL de las CA del almacén | Semanal | Direcciones cambiadas, listas vencidas o servicios caídos (R-17) |
+| OSV para lo que no viene de Debian (hoy solo pyHanko) y `debsecan` sobre los paquetes de Debian del SBOM | Semanal | Vulnerabilidades conocidas en las dependencias; `debsecan`, solo informativo |
+| Suite completa con la última pyHanko de PyPI | Semanal | Cuánto costará salir de pyHanko 0.25.1 (R-15); nunca abre una incidencia |
 | Dependabot para las *actions* de GitHub | Mensual | *Actions* desactualizadas |
 
-Las comprobaciones de red no bloquean la CI de los PR: abren una incidencia cuando fallan. Ninguna comprobación automática usa un DNIe real ni un PIN.
+Todo está en `.github/workflows/vigilancia.yml` (los lunes) y en la CI de cada PR, con los *scripts* de `scripts/` (BRG-DES-001 §5). Las comprobaciones semanales no bloquean la CI de los PR: abren una incidencia cuando fallan, o comentan en la que siga abierta. Ninguna comprobación automática usa un DNIe real ni un PIN.
+
+No se usa `pip-audit`: compara versiones de PyPI, y Debian corrige sin cambiar la versión de origen, así que daría falsos positivos en los paquetes de Debian (R-DES-02). La TSA configurada se comprobará cuando haya una de producción (DP-02).
 
 ## 6. Proceso de cada versión
 
@@ -137,6 +140,5 @@ Se revisan en cada versión menor:
 
 - Plantillas de incidencia y `security.txt` en el sitio.
 - Activar los avisos de seguridad privados en GitHub (Settings → Code security).
-- CI programada contra *stable* y *testing*, y comprobaciones semanales de la TSL y de los servicios de RENIEC.
 - Inventario de credenciales y segunda persona mantenedora (documentación interna).
 - Política de rotación de la clave del repositorio APT, cuando exista (Fase 5).
