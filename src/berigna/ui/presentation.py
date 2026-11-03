@@ -151,6 +151,33 @@ PACKAGING_DESCRIPTIONS: dict[CadesPackaging | XadesPackaging, str] = {
 }
 
 
+# Where a standard packaging and Firma Perú, the official validator, differ (BRG-CAL-006
+# §3.10): berigna keeps the standard and says so (decision of the holder, 2026-11-03).
+PACKAGING_NOTES: dict[CadesPackaging | XadesPackaging, str] = {
+    CadesPackaging.ENVELOPING: N_(
+        "Firma Perú does not recognize the .p7m extension: to validate this signature there, "
+        "change the extension to .p7s and upload the original file first (berigna can save "
+        "it from the .p7m)."
+    ),
+    XadesPackaging.DETACHED: N_(
+        "Firma Perú does not validate .xsig signatures; other validators, such as DSS, do."
+    ),
+}
+
+
+def packaging_note(packaging: CadesPackaging | XadesPackaging) -> str | None:
+    """The difference with Firma Perú of ``packaging``, if any, in the interface language."""
+    note = PACKAGING_NOTES.get(packaging)
+    return _(note) if note is not None else None
+
+
+def packaging_description(packaging: CadesPackaging | XadesPackaging) -> str:
+    """What ``packaging`` writes and, if any, how Firma Perú differs (CU-05 step 2)."""
+    note = packaging_note(packaging)
+    described = _(PACKAGING_DESCRIPTIONS[packaging])
+    return f"{described} {note}" if note else described
+
+
 def packaging_title(
     packaging: CadesPackaging | XadesPackaging, translations: gettext.NullTranslations | None = None
 ) -> str:
