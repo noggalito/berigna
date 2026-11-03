@@ -23,8 +23,10 @@ import datetime as dt
 import json
 import os
 import sys
+import time
 from collections.abc import Callable
 from pathlib import Path
+from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
@@ -42,7 +44,22 @@ RENIEC_OCSP = "http://ocsp.reniec.gob.pe"  # authorityInfoAccess of the DNIe v2 
 OSV = "https://api.osv.dev/v1/query"
 TSL_MARGIN = dt.timedelta(days=7)  # warn when the list is about to expire
 
+RETRY_AFTER = 30.0  # one more try: a single timeout is not a service down (R-17, run 41571496609)
+
 Check = tuple[str, bool, str]  # what, passed, detail
+
+
+def _request(method: str, url: str, **kwargs: Any) -> requests.Response:
+    """``requests.request`` with one retry after :data:`RETRY_AFTER` seconds, as berigna
+    itself retries RENIEC (``core.net.fetchers``); raises the error of the second try."""
+    try:
+        answer = requests.request(method, url, timeout=TIMEOUT, **kwargs)
+        answer.raise_for_status()
+    except requests.RequestException:
+        time.sleep(RETRY_AFTER)
+        answer = requests.request(method, url, timeout=TIMEOUT, **kwargs)
+        answer.raise_for_status()
+    return answer
 
 
 def _tsl() -> list[Check]:
@@ -79,8 +96,7 @@ def _crls(store: TrustStore) -> list[Check]:
     now = dt.datetime.now(dt.UTC)
     for url in urls:
         try:
-            answer = requests.get(url, timeout=TIMEOUT)
-            answer.raise_for_status()
+            answer = _request("GET", url)
             crl = x509.load_der_x509_crl(answer.content)
             issuer = issuers.get(crl.issuer.public_bytes())
             signed = issuer is not None and crl.is_signature_valid(issuer.public_key())  # type: ignore[arg-type]
@@ -111,13 +127,12 @@ def _ocsp(store: TrustStore) -> list[Check]:
         ocsp.OCSPRequestBuilder().add_certificate(subject, issuer, hashes.SHA1()).build()  # noqa: S303 - CertID of RFC 6960
     )
     try:
-        answer = requests.post(
+        answer = _request(
+            "POST",
             RENIEC_OCSP,
             data=request.public_bytes(serialization.Encoding.DER),
             headers={"Content-Type": "application/ocsp-request"},
-            timeout=TIMEOUT,
         )
-        answer.raise_for_status()
         status = ocsp.load_der_ocsp_response(answer.content).response_status
     except (requests.RequestException, ValueError) as exc:
         return [(f"OCSP {RENIEC_OCSP}", False, f"{type(exc).__name__}: {exc}")]
@@ -139,8 +154,7 @@ def _osv(sbom: Path | None) -> list[Check]:
         }
         what = f"OSV {component['name']} {component['version']}"
         try:
-            answer = requests.post(OSV, json=query, timeout=TIMEOUT)
-            answer.raise_for_status()
+            answer = _request("POST", OSV, json=query)
             found = [v["id"] for v in answer.json().get("vulns", [])]
         except (requests.RequestException, ValueError) as exc:
             checks.append((what, False, f"{type(exc).__name__}: {exc}"))

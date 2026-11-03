@@ -87,7 +87,7 @@ Interfaz de CAdES y XAdES (Fase 4, incremento 6):
 
 Práctica de desarrollo (Fase 4, incremento 7):
 
-- Vigilancia semanal (`.github/workflows/vigilancia.yml`, BRG-MAN-001 §5; R-DES-01): `scripts/verificar.sh` en Debian 13 y en *testing*; la TSL de INDECOPI, cada espejo de las ARL de las CA y el OCSP de RENIEC (`scripts/vigilar-servicios.py`, R-17); OSV para pyHanko y `debsecan` para los paquetes de Debian (R-DES-02). Si algo falla, abre una incidencia. Dependabot, solo para las *actions*.
+- Vigilancia semanal (`.github/workflows/vigilancia.yml`, BRG-MAN-001 §5; R-DES-01): `scripts/verificar.sh` en Debian 13 y en *testing*; la TSL de INDECOPI, cada espejo de las ARL de las CA y el OCSP de RENIEC (`scripts/vigilar-servicios.py`, R-17, con un reintento a los 30 s antes de dar un servicio por caído); OSV para pyHanko y `debsecan` para los paquetes de Debian (R-DES-02). Si algo falla, abre una incidencia. Dependabot, solo para las *actions*.
 - Lista de componentes CycloneDX 1.6 generada en cada CI (`scripts/sbom.py`, R-DES-03): las dependencias de ejecución con su versión, su licencia y el paquete de Debian que las instaló, los componentes de sistema y las fuentes incluidas.
 - La suite completa con la última pyHanko de PyPI, cada semana y sin bloquear (R-DES-08), para medir cuánto costará salir de la 0.25.1 (R-15).
 - Medidas de rendimiento con la tarjeta simulada en cada CI (`scripts/rendimiento.py`, R-DES-10): firmar un PDF de 10 MB y un lote de 20, verificar un PDF B-LTA y leer una carpeta de 200 PDF; un aviso si una empeora más de un 50 % respecto de `tests/data/rendimiento/referencia.json`.
