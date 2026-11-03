@@ -9,7 +9,7 @@ from pathlib import Path
 
 import pytest
 
-from berigna.core.batch import BatchItem, Outcome, batch_outputs, sign_batch
+from berigna.core.batch import BatchItem, Outcome, batch_outputs, read_files, sign_batch
 from berigna.core.documents import DocumentKind, inspect_document
 from berigna.core.errors import CardRemovedError, SigningCancelledError
 from berigna.core.formats.cades import CadesPackaging
@@ -306,3 +306,18 @@ def test_an_unexpected_error_in_one_file_does_not_stop_the_others(
     assert items[1].code == "ERR-000"
     assert items[1].detail is not None
     assert "StopIteration" in items[1].detail
+
+
+def test_read_files_gives_digest_and_kind(tmp_path: Path) -> None:
+    """What the batch page lists when a folder is added (RF-041): each file with its SHA-256
+    and its kind; a file that cannot be read is counted, not listed."""
+    pdf = tmp_path / "acta.pdf"
+    pdf.write_bytes(minimal_pdf())
+    xml = tmp_path / "factura.xml"
+    xml.write_bytes(b"<factura/>")
+    found, unreadable = read_files([pdf, xml, tmp_path / "no-existe.pdf"])
+    assert found == [
+        (pdf, hashlib.sha256(pdf.read_bytes()).hexdigest(), DocumentKind.PDF),
+        (xml, hashlib.sha256(b"<factura/>").hexdigest(), DocumentKind.XML),
+    ]
+    assert unreadable == 1

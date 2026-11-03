@@ -21,12 +21,14 @@ Closing the token session (power off the card) is the caller's ``with`` block.
 """
 
 import enum
-from collections.abc import Callable, Sequence
+import hashlib
+from collections.abc import Callable, Iterable, Sequence
 from dataclasses import dataclass
 from pathlib import Path
 
 from pyhanko.sign.timestamps import TimeStamper
 
+from berigna.core.documents import DocumentKind, detect_kind
 from berigna.core.errors import BatchCancelledError, BerignaError, TokenError
 from berigna.core.formats.cades import CadesPackaging
 from berigna.core.formats.pades import PadesOptions, SignatureLevel, check_pdf_signable
@@ -47,6 +49,47 @@ from berigna.core.signing import (
 from berigna.core.token.base import TokenSigner
 from berigna.core.trust import TrustStore
 from berigna.core.validation import SignerCheck
+from berigna.core.verification import DETACHED_SUFFIXES
+
+# Signatures berigna writes: a folder is not asked to sign them again (RF-041).
+SIGNATURE_SUFFIXES = frozenset((*DETACHED_SUFFIXES, ".p7m"))
+
+
+def is_signature(path: Path) -> bool:
+    """A signature berigna writes, by its extension: verified on its own, never signed again
+    in a batch (review of the increment 6)."""
+    return path.suffix.lower() in SIGNATURE_SUFFIXES
+
+
+def collect_files(paths: Iterable[Path], *, recursive: bool) -> list[Path]:
+    """The files among ``paths``: files as given, folders expanded (with their subfolders when
+    ``recursive``) without hidden files, in name order, each once, and never a signature
+    (RF-041)."""
+    found: list[Path] = []
+    for path in paths:
+        if path.is_dir():
+            pattern = path.rglob("*") if recursive else path.glob("*")
+            found += sorted(p for p in pattern if p.is_file() and not p.name.startswith("."))
+        elif path.is_file():
+            found.append(path)
+    return [path for path in dict.fromkeys(found) if not is_signature(path)]
+
+
+def read_files(paths: Iterable[Path]) -> tuple[list[tuple[Path, str, DocumentKind]], int]:
+    """Each readable file of ``paths`` with its SHA-256 and kind, for the list the user
+    confirms (RF-041, RF-018), and how many could not be read. What the batch page does when a
+    folder is added; measured by R-DES-10."""
+    found: list[tuple[Path, str, DocumentKind]] = []
+    unreadable = 0
+    for path in paths:
+        try:
+            data = path.read_bytes()
+        except OSError:
+            unreadable += 1
+            continue
+        kind, _signatures = detect_kind(data)
+        found.append((path, hashlib.sha256(data).hexdigest(), kind))
+    return found, unreadable
 
 
 class Outcome(enum.Enum):
