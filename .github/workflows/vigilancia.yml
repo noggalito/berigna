@@ -25,7 +25,7 @@ jobs:
         run: &git |
           echo 'Acquire::Retries "5";' > /etc/apt/apt.conf.d/80-retries
           apt-get update && apt-get install -y --no-install-recommends ca-certificates git
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
       - name: Paquetes de Debian 13 y entorno virtual
@@ -44,7 +44,7 @@ jobs:
     steps:
       - name: git
         run: *git
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
       - name: Paquetes de Debian testing y entorno virtual
@@ -61,7 +61,7 @@ jobs:
     steps:
       - name: git
         run: *git
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Paquetes de Debian 13 y entorno virtual
         run: scripts/ci-entorno.sh
       - name: Lista de componentes (SBOM)
@@ -87,7 +87,7 @@ jobs:
     steps:
       - name: git
         run: *git
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Paquetes de Debian 13 y la última pyHanko
         run: scripts/ci-entorno.sh reciente
       - name: Pruebas con la última pyHanko
