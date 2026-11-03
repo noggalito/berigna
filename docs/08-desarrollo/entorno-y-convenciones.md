@@ -3,9 +3,9 @@
 | Campo | Valor |
 |---|---|
 | Documento | BRG-DES-001 |
-| Versión | 0.6.0 |
+| Versión | 0.6.1 |
 | Estado | Borrador |
-| Fecha | 2026-11-02 |
+| Fecha | 2026-11-03 |
 | Responsable | noggalito |
 
 ## 1. Estructura del repositorio
@@ -134,6 +134,7 @@ El script `scripts/verificar.sh` ejecuta exactamente esas comprobaciones (nunca 
 
 - Rama principal `main`, siempre publicable. Ramas `feat/…`, `fix/…`, `docs/…`.
 - Commits según Conventional Commits, con DCO (`Signed-off-by`).
+- Excepción: los PR de Dependabot, que solo actualizan las *actions* de GitHub (`.github/dependabot.yml`), se fusionan con el commit del bot, sin firma SSH ni `Signed-off-by`; el commit de fusión es del titular. Antes de fusionar, el PR se pone al día con `main` (`@dependabot rebase`, o `@dependabot recreate` si alguien más tocó la rama) y pasa la CI (decisión del titular, 2026-11-03).
 - Toda integración en `main` pasa por una revisión y por la CI en verde.
 - Los cambios que afectan a `core/token`, `core/formats`, `core/trust` o a la seguridad requieren una revisión adicional y una entrada en el registro de cambios de seguridad.
 
