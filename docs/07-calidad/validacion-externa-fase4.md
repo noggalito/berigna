@@ -201,7 +201,8 @@ Conclusiones:
 
 - Las siete firmas con el DNIe real son válidas en DSS 6.2 y en berigna, y Firma Perú da válidas las cinco que admite, con la cadena hasta ECERNEP PERU CA ROOT 3 y la raíz en la TSL.
 - El validador web de Firma Perú solo acepta firmas separadas `*.p7s`: con una `.xsig` o una `.p7m` dice "sin firma embebida" y pide una `.p7s`. Al validar contra una firma que no es la del archivo da HASH_FAILURE, que es lo correcto.
-- La `.p7m` es un CMS *signed-data* DER estándar con el contenido incrustado. `openssl cms -verify` también la verifica y extrae el original. No se comprobó si una `.p7m` del firmador de Firma Perú corre la misma suerte en su validador.
+- La `.p7m` es un CMS *signed-data* DER estándar con el contenido incrustado. `openssl cms -verify` también la verifica y extrae el original.
+- Contraste con el firmador de Firma Perú: su CAdES *enveloping* lleva el contenido dentro, pero el firmador la nombra `.p7s`, y su validador web la da por válida solo si se sube antes el original, como una separada. En el ecosistema de Firma Perú toda CAdES se llama `.p7s` y se valida con el original; la extensión `.p7m` no se reconoce. berigna verifica esa firma del firmador de Firma Perú: reconoce por el contenido que es envuelta, no pide el original, da TOTAL-PASSED en línea y extrae el contenido idéntico.
 - Por encima de B-B hace falta una TSA (DP-02). Con el DNIe real la matriz queda en B-B; de B-T a B-LTA está validada con tarjeta simulada y TSA de pruebas (§3.9). Cuando haya una TSA acreditada, se repetirá con el mismo *script* (`--nivel`, `--tsa`).
 
 ## 4. Pendiente
