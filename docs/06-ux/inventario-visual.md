@@ -3,9 +3,9 @@
 | Campo | Valor |
 |---|---|
 | Documento | BRG-UX-002 |
-| Versión | 0.3.0 |
+| Versión | 0.4.0 |
 | Estado | Borrador |
-| Fecha | 2026-10-30 |
+| Fecha | 2026-11-04 |
 | Responsable | noggalito |
 
 Iconos, ilustraciones y demás piezas gráficas que necesita berigna, para adelantar su diseño. Complementa el diseño de interfaz (BRG-UX-001) y la identidad visual (`data/brand/`).
@@ -122,7 +122,7 @@ Decisión del 2026-10-28: la interfaz usa el color de acento que el usuario elig
 
 | Pieza | Formato | Para |
 |---|---|---|
-| Capturas para AppStream | PNG 16:9 (por ejemplo, 1280×800), estilo claro, datos ficticios | GNOME Software (Fase 5) y Flathub (1.1) |
+| Capturas para AppStream | PNG 16:9 (por ejemplo, 1280×800), estilo claro, datos ficticios | Hechas (Fase 5, incremento 1, 2026-11-04): `scripts/capturas-metainfo.sh` las regenera (firma y verificación); se suben a `https://berigna.noggalito.com/screenshots/`, las URL que referencia la metainfo |
 | Colores de marca para AppStream | `<branding>` con un color para el modo claro y otro para el oscuro | Cabecera de berigna en GNOME Software y Flathub |
 | Imagen social del repositorio | PNG 1280×640 | Vista previa al compartir el enlace de GitHub |
 | Cabecera de la página del repositorio APT | Logotipo horizontal | Página de instalación |
