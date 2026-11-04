@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-03 00:25-0500\n"
+"POT-Creation-Date: 2026-11-04 17:47-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -19,19 +19,93 @@ msgstr ""
 "Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
 
 #: data/com.noggalito.Berigna.desktop.in:4
+#: data/com.noggalito.Berigna.metainfo.xml.in:5
 msgid "berigna"
 msgstr ""
 
 #: data/com.noggalito.Berigna.desktop.in:5
-msgid "Document Signer"
+msgid "Firmador de documentos"
 msgstr ""
 
 #: data/com.noggalito.Berigna.desktop.in:6
-msgid "Sign and verify documents with the Peruvian DNIe"
+msgid "Firma y verifica documentos con el DNIe peruano"
 msgstr ""
 
 #: data/com.noggalito.Berigna.desktop.in:7
-msgid "sign;signature;verify;PDF;XML;CAdES;XAdES;DNIe;RENIEC;"
+msgid "firmar;firma;verificar;PDF;XML;CAdES;XAdES;DNIe;RENIEC;firma digital;"
+msgstr ""
+
+#: data/com.noggalito.Berigna.metainfo.xml.in:6
+msgid "Firma y verifica documentos con el DNI electrónico (DNIe) peruano"
+msgstr ""
+
+#: data/com.noggalito.Berigna.metainfo.xml.in:10
+msgid "noggalito"
+msgstr ""
+
+#: data/com.noggalito.Berigna.metainfo.xml.in:13
+msgid ""
+"Firma documentos con los certificados digitales del DNI electrónico peruano "
+"desde el lector de tarjetas del equipo, en PAdES (PDF), CAdES y XAdES, de la "
+"firma básica (B-B) a la firma de archivo a largo plazo (B-LTA), con el sello "
+"de tiempo de una autoridad acreditada en la IOFE."
+msgstr ""
+
+#: data/com.noggalito.Berigna.metainfo.xml.in:14
+msgid ""
+"Verifica documentos firmados con las indicaciones ETSI, genera informes en "
+"JSON y PDF, firma por lotes con un solo PIN y añade una firma visible con "
+"texto, rúbrica, logotipo o código QR. En español del Perú y quechua sureño. "
+"Software libre (GPL-3.0-or-later)."
+msgstr ""
+
+#: data/com.noggalito.Berigna.metainfo.xml.in:22
+msgid "firma"
+msgstr ""
+
+#: data/com.noggalito.Berigna.metainfo.xml.in:23
+msgid "firma digital"
+msgstr ""
+
+#: data/com.noggalito.Berigna.metainfo.xml.in:24
+#: src/berigna/ui/presentation.py:587
+msgid "DNIe"
+msgstr ""
+
+#: data/com.noggalito.Berigna.metainfo.xml.in:25
+msgid "DNI electrónico"
+msgstr ""
+
+#: data/com.noggalito.Berigna.metainfo.xml.in:26
+msgid "PDF"
+msgstr ""
+
+#: data/com.noggalito.Berigna.metainfo.xml.in:27
+msgid "PAdES"
+msgstr ""
+
+#: data/com.noggalito.Berigna.metainfo.xml.in:28
+msgid "CAdES"
+msgstr ""
+
+#: data/com.noggalito.Berigna.metainfo.xml.in:29
+msgid "XAdES"
+msgstr ""
+
+#: data/com.noggalito.Berigna.metainfo.xml.in:30
+msgid "verificar"
+msgstr ""
+
+#: data/com.noggalito.Berigna.metainfo.xml.in:31
+msgid "RENIEC"
+msgstr ""
+
+#: data/com.noggalito.Berigna.metainfo.xml.in:41
+msgid "Firma un PDF con el DNIe"
+msgstr ""
+
+#: data/com.noggalito.Berigna.metainfo.xml.in:45
+msgid "Verifica un documento firmado"
 msgstr ""
 
 #: data/ui/window.blp:31
@@ -1550,10 +1624,6 @@ msgstr ""
 
 #: src/berigna/ui/presentation.py:586
 msgid "Card Reader"
-msgstr ""
-
-#: src/berigna/ui/presentation.py:587
-msgid "DNIe"
 msgstr ""
 
 #: src/berigna/ui/presentation.py:588

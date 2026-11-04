@@ -18,3 +18,4 @@ src/berigna/ui/widgets.py
 src/berigna/ui/window.py
 data/ui/window.blp
 data/com.noggalito.Berigna.desktop.in
+data/com.noggalito.Berigna.metainfo.xml.in

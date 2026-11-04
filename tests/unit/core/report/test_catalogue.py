@@ -101,6 +101,7 @@ def test_template_is_up_to_date(tmp_path: Path) -> None:
     python = [s for s in sources if s.endswith(".py")]
     views = [s for s in sources if s.endswith(".blp")]
     desktop = [s for s in sources if s.endswith(".desktop.in")]
+    metainfo = [s for s in sources if s.endswith(".metainfo.xml.in")]
     for language, keywords, files, extra in (
         ("Python", ["--keyword=N_", "--keyword=_"], python, []),
         ("C", ["--keyword=_", "--keyword=C_:1c,2"], views, ["--join-existing"]),
@@ -115,6 +116,21 @@ def test_template_is_up_to_date(tmp_path: Path) -> None:
                 *extra,
                 f"--output={fresh}",
                 *files,
+            ],
+            cwd=REPOSITORY,
+            check=True,
+        )
+    if metainfo:
+        # AppStream metainfo: extracted with the ITS rules of gettext, like in
+        # scripts/traducciones.sh (the "gettext" package ships metainfo.its).
+        subprocess.run(  # noqa: S603 - fixed arguments
+            [  # noqa: S607 - the system's xgettext
+                "xgettext",
+                "--its=/usr/share/gettext/its/metainfo.its",
+                "--from-code=UTF-8",
+                "--join-existing",
+                f"--output={fresh}",
+                *metainfo,
             ],
             cwd=REPOSITORY,
             check=True,
