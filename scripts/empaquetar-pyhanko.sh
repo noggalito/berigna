@@ -4,6 +4,7 @@
 # Builds python3-pyhanko 0.25.1 against Debian 13 (DP-06, ADR-0013; SPK-05):
 # downloads the pinned sdist, verifies its SHA-256, adds packaging/python3-pyhanko/debian
 # and builds reproducibly with debcraft (in ephemeral containers) or debuild.
+# Needs curl, and for the builders: debcraft (with Podman or Docker) or devscripts.
 #
 #   scripts/empaquetar-pyhanko.sh [debcraft|debuild] [comprobar]
 #
