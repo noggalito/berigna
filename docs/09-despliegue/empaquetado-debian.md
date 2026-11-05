@@ -3,9 +3,9 @@
 | Campo | Valor |
 |---|---|
 | Documento | BRG-DSP-001 |
-| Versión | 0.2.1 |
+| Versión | 0.3.0 |
 | Estado | Borrador |
-| Fecha | 2026-10-29 |
+| Fecha | 2026-11-04 |
 | Responsable | noggalito |
 
 ## 1. Paquetes binarios
@@ -82,12 +82,24 @@ El campo `Maintainer` debe ser una dirección que lea una persona (`berigna@nogg
 
 ## 5. Compilación reproducible y verificación
 
-Herramienta candidata (a evaluar en la Fase 5): [Debcraft](https://optimizedbyotto.com/post/debcraft-1-0-released/) construye el `.deb` en contenedores efímeros (Podman o Docker), aislados de la red durante la compilación, con la distribución de `debian/changelog` y las dependencias de `debian/control`, y compara los artefactos entre compilaciones. Debian 13 ofrece la versión 0.5.0 (`apt install debcraft`); la 1.0 es posterior. No publica repositorios APT: para eso hará falta otra herramienta (por ejemplo, reprepro o aptly).
+Evaluadas en el incremento 2 (2026-11-04) para `python3-pyhanko`, con el procedimiento
+escrito en `scripts/empaquetar-pyhanko.sh`:
 
-- Compilación en un entorno limpio con `sbuild` (o `debuild` en un *chroot*), con `SOURCE_DATE_EPOCH` fijado.
-- Verificación con `reprotest`.
-- `lintian --pedantic` sin errores ni avisos injustificados.
-- `piuparts` para comprobar la instalación, la actualización y la purga.
+- [Debcraft](https://optimizedbyotto.com/post/debcraft-1-0-released/) 0.5.0 (en Debian 13,
+  `apt install debcraft`) construye el `.deb` en contenedores efímeros (Podman o Docker),
+  con la distribución de `debian/changelog` y las Build-Depends de `debian/control`
+  instaladas dentro del contenedor, y compara los artefactos entre dos compilaciones.
+  Para un directorio de fuentes sin git se usa `debcraft build --skip-sources`: el tarball
+  orig del formato `3.0 (quilt)` no es visible dentro del contenedor.
+- `debuild` (de `devscripts`) produce además el paquete fuente completo (`.dsc`, orig y
+  `.debian.tar.xz`), que es lo que se subirá a Debian (ADR-0020); requiere las
+  Build-Depends instaladas en el equipo y el tarball orig con nombre Debian junto al árbol.
+- `SOURCE_DATE_EPOCH` se fija con la fecha del empaquetado en el repositorio.
+
+Resultados con `python3-pyhanko` 0.25.1: `lintian --pedantic` sin errores (un aviso
+esperado, `initial-upload-closes-no-bugs`, hasta que la subida a Debian cierre el ITP
+#1062808); `piuparts` pasa en un trixie mínimo; el paquete se instala con las dependencias
+de Debian y funciona (`import pyhanko`, el CLI y su página de manual).
 
 ## 6. Futuro: Fedora y similares
 
