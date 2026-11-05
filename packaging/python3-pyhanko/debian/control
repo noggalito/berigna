@@ -1,0 +1,45 @@
+Source: pyhanko
+Section: python
+Priority: optional
+Maintainer: noggalito <berigna@noggalito.com>
+Build-Depends: debhelper-compat (= 13),
+ dh-sequence-python3,
+ python3-all,
+ python3-setuptools (>= 67.4),
+ python3-wheel
+Standards-Version: 4.7.0
+Rules-Requires-Root: no
+Homepage: https://github.com/MatthiasValvekens/pyHanko
+Vcs-Git: https://github.com/noggalito/berigna.git
+Vcs-Browser: https://github.com/noggalito/berigna
+
+Package: python3-pyhanko
+Architecture: all
+# The versions are those pyHanko 0.25.1 declares (pyproject.toml); everything
+# comes from Debian 13 (SPK-05, DP-06, ADR-0013).
+Depends: ${misc:Depends},
+ ${python3:Depends},
+ python3-asn1crypto (>= 1.5.1),
+ python3-qrcode (>= 7.3.1),
+ python3-tzlocal (>= 4.3),
+ python3-pyhanko-certvalidator (>= 0.26.2),
+ python3-pyhanko-certvalidator (<< 0.27),
+ python3-click (>= 8.1.3),
+ python3-requests (>= 2.31),
+ python3-yaml (>= 6.0),
+ python3-cryptography (>= 42.0.1)
+# The optional extras that Debian 13 can satisfy (the rest, uharfbuzz and
+# xsdata, are not in Debian); berigna does not need them.
+Suggests: python3-aiohttp,
+ python3-barcode,
+ python3-defusedxml,
+ python3-fonttools,
+ python3-pil,
+ python3-pkcs11
+Description: tools for stamping and signing PDF files
+ pyHanko reads and writes PDF files with PAdES digital signatures,
+ including invisible and visible signatures, encryption and signature
+ validation.
+ .
+ This is the version berigna is packaged with (ADR-0013): 0.25.1, the last
+ one compatible with the Python libraries of Debian 13 (SPK-05).
