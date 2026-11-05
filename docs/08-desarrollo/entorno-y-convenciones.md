@@ -3,9 +3,9 @@
 | Campo | Valor |
 |---|---|
 | Documento | BRG-DES-001 |
-| Versión | 0.6.1 |
+| Versión | 0.7.0 |
 | Estado | Borrador |
-| Fecha | 2026-11-03 |
+| Fecha | 2026-11-04 |
 | Responsable | noggalito |
 
 ## 1. Estructura del repositorio
@@ -63,6 +63,7 @@ berigna/
 │   ├── interop/                  # matriz PAdES contra un validador externo (DSS 6.2)
 │   └── integration/, fuzz/       # (previstos)
 ├── spikes/                       # prototipos de la Fase 0 (no es código de producto)
+├── packaging/                    # empaquetado de terceros: python3-pyhanko (Fase 5, incremento 2)
 ├── nautilus/                     # (previsto, Fase 5)
 ├── debian/                       # (previsto, Fase 5)
 └── docs/                         # esta documentación

@@ -1,0 +1,35 @@
+.TH PYHANKO 1 "November 2026" "pyHanko 0.25.1" "User Commands"
+.SH NAME
+pyhanko \- tools for stamping and signing PDF files
+.SH SYNOPSIS
+.B pyhanko
+.RI [ options ] " command"
+.SH DESCRIPTION
+.B pyhanko
+reads and writes PDF files with PAdES digital signatures, including invisible
+and visible signatures, encryption and signature validation.
+.SH COMMANDS
+A summary of the available commands follows.
+.TP
+.B sign
+create signatures with different backends.
+.TP
+.B validate
+validate signatures in PDF files.
+.TP
+.B stamp
+apply QR codes and stamps.
+.TP
+.B crypt
+manage the encryption of PDF files.
+.TP
+.B fields
+inspect the form fields of PDF files.
+.SH OPTIONS
+Every command accepts the
+.B \-\-help
+option, which documents its own options.
+.SH SEE ALSO
+The full documentation is at
+.UR https://pyhanko.readthedocs.io/
+.UE

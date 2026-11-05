@@ -1,0 +1,7 @@
+pyhanko (0.25.1-1) trixie; urgency=medium
+
+  * Initial package for the berigna repository: pyHanko 0.25.1, the last
+    version compatible with the Python libraries of Debian 13 (SPK-05,
+    DP-06, ADR-0013).
+
+ -- noggalito <berigna@noggalito.com>  Wed, 04 Nov 2026 12:00:00 -0500
