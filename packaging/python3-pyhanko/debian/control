@@ -4,6 +4,7 @@ Priority: optional
 Maintainer: noggalito <berigna@noggalito.com>
 Build-Depends: debhelper-compat (= 13),
  dh-sequence-python3,
+ pybuild-plugin-pyproject,
  python3-all,
  python3-setuptools (>= 67.4),
  python3-wheel
