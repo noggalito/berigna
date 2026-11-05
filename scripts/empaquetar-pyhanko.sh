@@ -46,7 +46,7 @@ case "$BUILDER" in
 esac
 cd - >/dev/null
 
-DEB=$(find build -name 'python3-pyhanko_*.deb' -print | head -1)
+DEB=$(find build -name 'python3-pyhanko_*.deb' -printf '%T@ %p\n' | sort -rn | head -1 | cut -d' ' -f2-)
 [ -n "$DEB" ] || { echo "no se encontró el .deb" >&2; exit 1; }
 echo "paquete: $DEB"
 
