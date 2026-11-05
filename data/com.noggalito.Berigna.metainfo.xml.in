@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- SPDX-License-Identifier: FSFAP -->
+<component type="desktop-application">
+  <id>com.noggalito.Berigna</id>
+  <name>berigna</name>
+  <summary>Firma y verifica documentos con el DNI electrónico (DNIe) peruano</summary>
+  <metadata_license>FSFAP</metadata_license>
+  <project_license>GPL-3.0-or-later</project_license>
+  <developer id="com.noggalito">
+    <name>noggalito</name>
+  </developer>
+  <description>
+    <p>Firma documentos con los certificados digitales del DNI electrónico peruano desde el lector de tarjetas del equipo, en PAdES (PDF), CAdES y XAdES, de la firma básica (B-B) a la firma de archivo a largo plazo (B-LTA), con el sello de tiempo de una autoridad acreditada en la IOFE.</p>
+    <p>Verifica documentos firmados con las indicaciones ETSI, genera informes en JSON y PDF, firma por lotes con un solo PIN y añade una firma visible con texto, rúbrica, logotipo o código QR. En español del Perú y quechua sureño. Software libre (GPL-3.0-or-later).</p>
+  </description>
+  <launchable type="desktop-id">com.noggalito.Berigna.desktop</launchable>
+  <translation type="gettext">berigna</translation>
+  <categories>
+    <category>Office</category>
+  </categories>
+  <keywords>
+    <keyword>firma</keyword>
+    <keyword>firma digital</keyword>
+    <keyword>DNIe</keyword>
+    <keyword>DNI electrónico</keyword>
+    <keyword>PDF</keyword>
+    <keyword>PAdES</keyword>
+    <keyword>CAdES</keyword>
+    <keyword>XAdES</keyword>
+    <keyword>verificar</keyword>
+    <keyword>RENIEC</keyword>
+  </keywords>
+  <url type="homepage">https://berigna.noggalito.com</url>
+  <url type="bugtracker">https://github.com/noggalito/berigna/issues</url>
+  <content_rating type="oars-1.1"/>
+  <releases>
+    <release version="0.3.0-rc.1" date="2026-10-29"/>
+  </releases>
+  <screenshots>
+    <screenshot type="default">
+      <caption>Firma un PDF con el DNIe</caption>
+      <image width="1280" height="800">https://berigna.noggalito.com/screenshots/berigna-firma.png</image>
+    </screenshot>
+    <screenshot type="default">
+      <caption>Verifica un documento firmado</caption>
+      <image width="1280" height="800">https://berigna.noggalito.com/screenshots/berigna-verificacion.png</image>
+    </screenshot>
+  </screenshots>
+</component>

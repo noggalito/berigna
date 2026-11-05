@@ -3,9 +3,9 @@
 | Campo | Valor |
 |---|---|
 | Documento | BRG-GEN-000 |
-| Versión | 0.14.0 |
+| Versión | 0.16.0 |
 | Estado | Borrador |
-| Fecha | 2026-11-02 |
+| Fecha | 2026-11-04 |
 | Responsable | noggalito |
 
 ## 1. Propósito
@@ -108,9 +108,9 @@ Algunos documentos públicos citan identificadores cuyo detalle está en la docu
 
 ## 7. Estado de implementación (2026-11-02)
 
-Fases 0, 1 y 2 cerradas. Fase 3: funcionalmente completa (incrementos 1 a 7 hechos); su cierre formal depende de la prueba de usabilidad con al menos 5 personas (BRG-CAL-005), que no bloquea seguir con la Fase 4. Los problemas de gravedad 3 y 4 que salgan de ella se corrigen antes de cerrarla.
+Fases 0, 1 y 2 cerradas. Fase 4: cerrada el 2026-11-04. Fase 3: funcionalmente completa (incrementos 1 a 7 hechos); su cierre formal depende de la prueba de usabilidad con al menos 5 personas (BRG-CAL-005). Los problemas de gravedad 3 y 4 que salgan de ella se corrigen antes de cerrarla.
 
-Fase 4 (CAdES y XAdES), iniciada el 2026-10-29, en ocho incrementos:
+Fase 4 (CAdES y XAdES), iniciada el 2026-10-29 y cerrada el 2026-11-04, en ocho incrementos:
 
 1. Registro local de fallos (R-DES-11). Hecho.
 2. Firma CAdES `.p7s` y `.p7m`, de B-B a B-LTA (`core.formats.cades`; RF-020 a RF-022). Hecho: válida en DSS 6.2 (BRG-CAL-006).
@@ -119,12 +119,15 @@ Fase 4 (CAdES y XAdES), iniciada el 2026-10-29, en ocho incrementos:
 5. Verificación XAdES (RF-052), también de las firmas de ReFirma y DSS (PR-INT-05, PR-INT-06), con pruebas por propiedades sobre XML. Hecha (`core.validation.xades`, `verify_xades`): las 36 firmas de la matriz y las 12 que genera DSS concuerdan con DSS 6.2 en la indicación principal (PR-INT-06), y una firma real de Firma Perú da TOTAL-PASSED como en DSS (PR-INT-05; ReFirma PDF no firma XML, así que en XAdES no aplica). Pruebas por propiedades sobre XML generado (ida y vuelta firma-verificación, y mutaciones) y corpus de ataques de envoltura (PR-VAL-08) (BRG-CAL-006 §3.5 a §3.7).
 6. Interfaz: firmar otros archivos (CU-05, con nombre, tamaño, tipo, SHA-256 y vista de texto), verificar `.p7s`, `.p7m` y `.xml`, y lotes mixtos (RF-041). Hecha: el formato se reconoce por el contenido (`core.documents`), un solo verificador elige PAdES, CAdES o XAdES (`core.verification`) y busca o pide el archivo de una firma separada, el contenido de un `.p7m` se puede guardar, los informes JSON y PDF llevan el formato y el alcance de lo firmado, y los lotes mezclan los tres formatos con un PIN (`core.batch.sign_batch`; BRG-UX-001 §3.2, §3.4 y §3.5).
 7. Práctica de desarrollo: vigilancia semanal, SBOM, CI contra la última pyHanko y medidas de rendimiento (R-DES-01 a R-DES-03, R-DES-08, R-DES-10). La comprobación de la documentación (R-DES-05) y el gancho `pre-push` (R-DES-06) ya están hechos: adelantados el 2026-11-02 por la revisión del 2026-11-01, que los echaba en falta. Hecha: vigilancia semanal en Debian *stable* y *testing* y de la TSL, las ARL y el OCSP de RENIEC (`.github/workflows/vigilancia.yml`), OSV para pyHanko y `debsecan` para Debian, SBOM CycloneDX en cada CI, la suite contra la última pyHanko y medidas de rendimiento con aviso si empeoran más de un 50 % (BRG-DES-001 §5, BRG-MAN-001 §5).
-8. Matriz externa formato × nivel con DSS 6.2 y Firma Perú, y prueba con el DNIe real y PIN: el criterio de salida de la fase. Hecha (2026-11-02):
+8. Matriz externa formato × nivel con DSS 6.2 y Firma Perú, y prueba con el DNIe real y PIN: el criterio de salida de la fase. Hecha (2026-11-03, PR #56 a #58):
    - la matriz simulada, repetida con el código actual, da en DSS 6.2 los mismos resultados (BRG-CAL-006 §3.9);
    - DP-20, opciones A y E, con pruebas por mutación de CAdES y PDF;
-   - con el DNIe real y un PIN, las 7 variantes B-B son válidas en DSS 6.2 y en berigna, y Firma Perú da válidas las 5 que admite (su validador web no reconoce `.p7m` ni `.xsig`; BRG-CAL-006 §3.10).
+   - con el DNIe real y un PIN, las 7 variantes B-B son válidas en DSS 6.2 y en berigna; en Firma Perú, 5 de las 7 tal cual, y la `.p7m` lo es cambiando su extensión a `.p7s` (su validador web llama `.p7s` a toda CAdES y no admite `.xsig`; BRG-CAL-006 §3.10);
+   - decisión del titular (2026-11-03): se mantienen los nombres estándar y berigna avisa de las diferencias con Firma Perú al elegir el formato.
 
-   Quedan fuera del incremento: los niveles B-T a B-LTA con el DNIe real, que esperan una TSA acreditada (DP-02), y el envío de la incidencia a pyHanko (opción D de DP-20), que espera la decisión del titular.
+   Quedan fuera del incremento: los niveles B-T a B-LTA con el DNIe real, que esperan una TSA acreditada (DP-02), y el envío de la incidencia a pyHanko (opción D de DP-20), que espera el aviso del titular.
+
+Con el incremento 8, la Fase 4 queda cerrada el 2026-11-04.
 
 La cofirma CAdES (RF-023, "Podría") queda para después de la v1.0.
 
@@ -145,6 +148,7 @@ La cofirma CAdES (RF-023, "Podría") queda para después de la v1.0.
 | TSA de producción | Pendiente de DP-02 (aún no hay TSA acreditada contratada) | RF-062 | — |
 | Proxy y caché de la TSL | Implementado (Fase 3, incremento 4): `core.net.proxy` y `core.trust.cache` | RF-061, RF-064 | Descarga real de la TSL de INDECOPI (secuencia 25, 68 CA) y lectura desde la caché |
 | `ui` (interfaz gráfica) | Fase 3, funcionalmente completa. Incremento 1: aplicación `com.noggalito.Berigna` con Meson, ventana principal, estado del DNIe, apertura de archivos (botón, arrastrar y argumentos), esquema de GSettings, cambio de idioma sin reiniciar y aviso de traducción sin revisar. Incremento 2: verificación de PDF (CU-06) con resumen, detalles técnicos, informes JSON y PDF y versión firmada. Incremento 3: firma de PDF (CU-01, CU-03) con vista previa (Poppler, ADR-0016), nivel, diálogo del PIN y documentos certificados (ERR-307). Incremento 4: Preferencias (CU-08), TSL de INDECOPI en uso con caché y proxy. Incremento 5: firma visible (CU-02) con texto, rúbrica, logotipo o QR, en horizontal o vertical. Incremento 6: lotes, diagnóstico, registro técnico, historial y certificados de confianza. Incremento 7: quechua completo. Fase 4, incremento 6: firma de otros archivos en CAdES o XAdES (CU-05) con nombre, tamaño, tipo, SHA-256 y vista de texto; verificación de `.p7s`, `.p7m`, `.xml` y `.xsig` con el archivo de una firma separada buscado o pedido, y guardado del contenido de un `.p7m` | RF-001 a RF-007, RF-010 a RF-014, RF-018, RF-020 a RF-022, RF-030 a RF-033, RF-040 a RF-045, RF-050 a RF-056, RF-060, RF-061, RF-064, RF-080, RF-082, RF-083, RF-090, RF-092 | Pruebas de la aplicación real con Xvfb, también en la CI; PDF real firmado con el DNIe verificado en línea (TOTAL-PASSED) |
+| Metainfo de AppStream y entrada de escritorio | Implementado (Fase 5, incremento 1): `data/com.noggalito.Berigna.metainfo.xml.in` con nombre, resumen, descripción, palabras clave y capturas en es-PE y quz-PE, fusionada con los catálogos y validada con `appstreamcli validate`; la entrada de escritorio con los MIME de firma y XML, con los textos de respaldo en es_PE (ADR-0015) | RF-071, BRG-DSP-001 §2 y §3 | `appstreamcli validate` y `desktop-file-validate` en la CI; capturas regenerables con `scripts/capturas-metainfo.sh` (inventario visual §10) |
 | `core.batch` y firma por lotes en la interfaz | Implementado (Fase 3, incremento 6): un PIN por lote, lista confirmada, tolerancia a fallos, cancelación entre archivos, informe CSV (`core.report.batch_report`). Lotes mixtos desde la Fase 4, incremento 6 (`sign_batch`): PAdES, XAdES o CAdES según el contenido de cada archivo, con la variante elegida para los XML y para el resto | RF-040 a RF-043 | Tarjeta simulada: un solo VERIFY para todo el lote; pruebas de la interfaz con Xvfb |
 | `core.crashes` (registro local de fallos) | Implementado (Fase 4, incremento 1): excepciones no capturadas en cualquier hilo y fallos de código nativo (`faulthandler`) al registro técnico y a un informe pendiente, con los números enmascarados; en el siguiente arranque, un aviso único con "Copiar el informe"; nada se envía solo | R-DES-11, RNF-SEG-07 | Pruebas del núcleo y de la interfaz con Xvfb |
 | `core.diagnostics` y `core.logs` | Implementado (Fase 3, incremento 6): diagnóstico en orden con acción sugerida e informe copiable; registro técnico rotativo con números enmascarados | RF-007, RF-083 | Tarjeta simulada y PKI de pruebas; pruebas de la interfaz con Xvfb |

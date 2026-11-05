@@ -2,13 +2,13 @@
 # SPDX-FileCopyrightText: 2026 noggalito
 [Desktop Entry]
 Name=berigna
-GenericName=Document Signer
-Comment=Sign and verify documents with the Peruvian DNIe
-Keywords=sign;signature;verify;PDF;XML;CAdES;XAdES;DNIe;RENIEC;
+GenericName=Firmador de documentos
+Comment=Firma y verifica documentos con el DNIe peruano
+Keywords=firmar;firma;verificar;PDF;XML;CAdES;XAdES;DNIe;RENIEC;firma digital;
 Exec=berigna %F
 Icon=com.noggalito.Berigna
 Terminal=false
 Type=Application
 Categories=Office;GTK;
-MimeType=application/pdf;application/pkcs7-signature;application/pkcs7-mime;
+MimeType=application/pdf;application/pkcs7-signature;application/pkcs7-mime;application/xml;
 StartupNotify=true

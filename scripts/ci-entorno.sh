@@ -20,6 +20,7 @@ DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
   python3-pyhanko-certvalidator python3-signxml python3-requests python3-reportlab \
   python3-qrcode python3-tzlocal python3-click python3-yaml python3-pil \
   meson ninja-build blueprint-compiler desktop-file-utils libglib2.0-bin libglib2.0-dev-bin xvfb xauth \
+  appstream \
   python3-gi python3-gi-cairo gir1.2-gtk-4.0 gir1.2-adw-1 gir1.2-poppler-0.18 adwaita-icon-theme
 
 git config --global --add safe.directory "$PWD"

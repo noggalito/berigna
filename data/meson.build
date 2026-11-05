@@ -35,7 +35,8 @@ install_data(
 )
 
 # The desktop entry: GNOME matches the window to it by the application ID, and takes the
-# name and the icon from it (dock, overview, alt+tab).
+# name and the icon from it (dock, overview, alt+tab). The base strings are es_PE, which is
+# the fallback without a language tag; the Quechua ones come from po/ (ADR-0015).
 i18n.merge_file(
   input: application_id + '.desktop.in',
   output: application_id + '.desktop',
@@ -47,6 +48,21 @@ i18n.merge_file(
 desktop_file_validate = find_program('desktop-file-validate', required: false)
 if desktop_file_validate.found()
   test('desktop', desktop_file_validate, args: [meson.current_build_dir() / application_id + '.desktop'])
+endif
+
+# The AppStream metainfo, also merged with the catalogues (name, summary, description,
+# keywords and captions in es-PE and quz-PE; ADR-0015).
+i18n.merge_file(
+  input: application_id + '.metainfo.xml.in',
+  output: application_id + '.metainfo.xml',
+  type: 'xml',
+  po_dir: meson.project_source_root() / 'po',
+  install: true,
+  install_dir: get_option('datadir') / 'metainfo',
+)
+appstreamcli = find_program('appstreamcli', required: false)
+if appstreamcli.found()
+  test('metainfo', appstreamcli, args: ['validate', '--no-net', meson.current_build_dir() / application_id + '.metainfo.xml'])
 endif
 
 install_data(

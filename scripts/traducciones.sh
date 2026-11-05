@@ -23,6 +23,11 @@ update() {
     # Desktop entry: Name, GenericName, Comment and Keywords.
     grep -v '^#' po/POTFILES | grep '\.desktop\.in$' | xgettext --files-from=- --language=Desktop \
         --from-code=UTF-8 --sort-by-file --join-existing --output=po/$DOMAIN.pot
+    # Metainfo de AppStream: name, summary, description, keywords y captions, con las reglas
+    # ITS de gettext (paquete "gettext" de Debian: /usr/share/gettext/its/metainfo.its).
+    grep -v '^#' po/POTFILES | grep '\.metainfo\.xml\.in$' | xgettext --files-from=- \
+        --its=/usr/share/gettext/its/metainfo.its --from-code=UTF-8 --sort-by-file \
+        --join-existing --output=po/$DOMAIN.pot
     for lang in $LINGUAS; do
         if [ -f "po/$lang.po" ]; then
             msgmerge --quiet --update --backup=none --no-fuzzy-matching "po/$lang.po" po/$DOMAIN.pot
