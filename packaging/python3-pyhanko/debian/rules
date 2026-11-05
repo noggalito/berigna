@@ -10,3 +10,9 @@
 # against this package in its CI (R-DES-08).
 override_dh_auto_test:
 	@true
+
+# dh_installman is not part of the default sequence: install the man page for
+# the CLI alongside the docs.
+override_dh_installdocs:
+	dh_installdocs
+	dh_installman
