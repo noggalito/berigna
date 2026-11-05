@@ -25,6 +25,9 @@ mkdir -p build
 TARBALL="build/pyhanko-$VERSION.tar.gz"
 [ -f "$TARBALL" ] || curl -fsSL -o "$TARBALL" "$URL"
 echo "$SHA256  $TARBALL" | sha256sum -c -
+# The source format 3.0 (quilt) needs the upstream tarball under its Debian name,
+# next to the unpacked tree.
+cp "$TARBALL" "build/pyhanko_${VERSION}.orig.tar.gz"
 
 SRC="build/pyhanko-$VERSION"
 rm -rf "$SRC"
