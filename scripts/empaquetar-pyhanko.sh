@@ -38,7 +38,9 @@ cd "$SRC"
 # Reproducible: the timestamp of the packaging in this repository.
 export SOURCE_DATE_EPOCH=$(git -C "$OLDPWD" log -1 --format=%ct -- packaging/python3-pyhanko)
 case "$BUILDER" in
-    debcraft) debcraft build ;;
+    # --skip-sources: only the .deb, no source package (the 3.0 (quilt) orig tarball is
+    # not visible inside the build container); debuild below does produce it.
+    debcraft) debcraft build --skip-sources ;;
     debuild) dpkg-buildpackage -us -uc ;;
     *) echo "uso: $0 [debcraft|debuild] [comprobar]" >&2; exit 2 ;;
 esac
