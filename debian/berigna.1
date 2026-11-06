@@ -1,0 +1,39 @@
+.TH BERIGNA 1 "November 2026" "berigna 0.1.0" "User Commands"
+.SH NAME
+berigna \- sign and verify documents with the Peruvian DNIe
+.SH SYNOPSIS
+.B berigna
+.RI [ file ...]
+.SH DESCRIPTION
+.B berigna
+signs and verifies documents with the certificates of the Peruvian
+electronic identity card (DNIe), read from a smart card reader.
+It signs PDF documents in PAdES and other files in CAdES and XAdES,
+from the basic signature (B\-B) to the long\-term archival signature
+(B\-LTA), with a timestamp from an IOFE accredited authority.
+.
+It verifies signed documents with the ETSI indications, signs batches
+of documents with a single PIN, draws a visible signature with text,
+a rubrica, a logo or a QR code, and writes verification reports in
+JSON and PDF. The interface is in Peruvian Spanish and Southern
+Quechua.
+.SH OPTIONS
+.TP
+.I file
+Open the file: berigna signs it or verifies it, depending on whether
+it already carries a signature. Several files at once open the batch
+mode. Files can also be dragged onto the window.
+.SH SINGLE INSTANCE
+Opening a file while berigna is already running delivers it to the
+running instance instead of starting a new one (RF\-073).
+.SH FILES
+.TP
+.I ~/.local/share/berigna/
+cache of the INDECOPI trusted list and the history database.
+.TP
+.I ~/.local/state/berigna/
+technical log and pending failure reports.
+.SH SEE ALSO
+.BR pyhanko (1)
+.SH AUTHORS
+noggalito <berigna@noggalito.com>.

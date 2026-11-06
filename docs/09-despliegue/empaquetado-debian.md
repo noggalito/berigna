@@ -3,14 +3,14 @@
 | Campo | Valor |
 |---|---|
 | Documento | BRG-DSP-001 |
-| Versión | 0.3.0 |
+| Versión | 0.4.0 |
 | Estado | Borrador |
-| Fecha | 2026-11-04 |
+| Fecha | 2026-11-05 |
 | Responsable | noggalito |
 
 ## 1. Paquetes binarios
 
-| Paquete | Contenido | Depends (preliminar) | Recommends |
+| Paquete | Contenido | Depends | Recommends |
 |---|---|---|---|
 | `berigna` | Aplicación, recursos, almacén de confianza, traducciones, manual | `python3 (>= 3.12)`, `python3-gi`, `python3-gi-cairo`, `gir1.2-gtk-4.0`, `gir1.2-adw-1`, `gir1.2-poppler-0.18`, `python3-pyhanko (>= 0.25.1), python3-pyhanko (<< 0.26)` (\*), `python3-pyhanko-certvalidator`, `python3-pyscard`, `python3-cryptography`, `python3-asn1crypto`, `python3-lxml`, `python3-signxml`, `python3-requests`, `python3-pil`, `python3-reportlab`, `fonts-dejavu-core`, `pcscd` | `berigna-nautilus`, `libccid`, `opensc-pkcs11` (*backend* PKCS#11, ADR-0012) |
 | `berigna-nautilus` | Extensión de Nautilus | `berigna (= ${binary:Version})`, `python3-nautilus` | — |
@@ -20,7 +20,7 @@ Un paquete separado `python3-berigna-core` es una alternativa abierta (arquitect
 
 (\*) No está en Debian 13. Se empaqueta en el repositorio del proyecto (DP-06, ADR-0013).
 
-Los tres paquetes son `Architecture: all` (DP-08). `python3-pkcs11` se añadirá en la versión 1.1, con el *backend* PKCS#11 (ADR-0003, DP-15); `python3-babel` se quitó el 2026-10-29: berigna no lo usa.
+Los tres paquetes son `Architecture: all` (DP-08). La lista de `Depends` quedó confirmada con el incremento 3 (2026-11-05): el paquete `berigna` se construye, se instala y se verifica en Debian 13 con ella (§7). `berigna-nautilus` llega con el incremento 4; mientras no exista en el repositorio, la instalación con `--no-install-recommends` no lo pide (apt ignora los `Recommends` ausentes). `python3-pkcs11` se añadirá en la versión 1.1, con el *backend* PKCS#11 (ADR-0003, DP-15); `python3-babel` se quitó el 2026-10-29: berigna no lo usa.
 
 ## 2. Archivos instalados
 
@@ -106,3 +106,22 @@ de Debian y funciona (`import pyhanko`, el CLI y su página de manual).
 - `berigna.spec` sobre el mismo `meson.build`. Dependencias equivalentes: `pcsc-lite`, `pcsc-lite-ccid`, `opensc`, `python3-gobject`, `gtk4`, `libadwaita`, `nautilus-python`.
 - Distribución inicial mediante COPR.
 - Flatpak, a partir de la versión 1.1 (ADR-0006): hace falta acceso al *socket* de `pcscd` (`--socket=pcsc`) y comprobar la disponibilidad del módulo PKCS#11 dentro del *sandbox*. La extensión de Nautilus no puede ir dentro del Flatpak.
+
+## 7. El paquete `berigna` (incremento 3, 2026-11-05)
+
+`debian/` vive en la raíz del repositorio (como preveía BRG-DES-001 §1):
+
+| Archivo | Contenido |
+|---|---|
+| `debian/control` | Fuente 3.0 (quilt); `Build-Depends` para Meson con dh-python (`debhelper-compat (= 13)`, `meson`, `ninja-build`, `blueprint-compiler` con los typelibs `gir1.2-gtk-4.0` y `gir1.2-adw-1` que las vistas importan, `gettext`, `libglib2.0-dev`, `gtk-update-icon-cache`, `desktop-file-utils`, `appstream`, `python3`); el `Depends` de §1 |
+| `debian/rules` | `dh $@ --with python3 --buildsystem=meson`; `dh_auto_test` ejecuta las pruebas de Meson (`desktop-file-validate` y `appstreamcli validate`); `dh_installdocs` añade la página de manual, como en `python3-pyhanko` |
+| `debian/copyright` | DEP-5: GPL-3.0-or-later para el código y la marca, SIL OFL 1.1 con el texto completo para las 4 tipografías (Arvo y Source Sans 3, con los nombres reservados de cada licencia) y los certificados públicos de la IOFE (RENIEC e INDECOPI) como datos públicos con su origen |
+| `debian/changelog` | `berigna (0.1.0~dev0-1) trixie`: la forma Debian de la versión de `meson.build` (`0.1.0.dev0`) |
+| `debian/berigna.1` | Página de manual: sinopsis, opciones, instancia única (RF-073) y carpetas de datos |
+
+Decisión de las tipografías (ADR-0020, requisito 2): se mantienen las copias incluidas de Arvo y Source Sans 3 en TrueType y se justifican en `debian/copyright`. Debian trae Source Sans 3 solo en OpenType/CFF (`fonts-adobe-sourcesans3`), que ReportLab no incrusta, y no trae Arvo. Para el archivo oficial de Debian la decisión se revisa con el patrocinador, como dice ADR-0020; si el titular prefiere el paquete `fonts-berigna`, se abre DP-21.
+
+Compilación reproducible con `scripts/empaquetar-berigna.sh`, el mismo procedimiento que el de pyHanko (§5): exporta el árbol de git como tarball *orig* (sin `debian/`, como exige el formato 3.0 (quilt)), añade `debian/` y construye con debcraft (`--skip-sources`) o debuild, con `SOURCE_DATE_EPOCH` fijado en el último cambio del empaquetado. Resultados en Debian 13: `lintian --pedantic` sin errores (un aviso esperado, `initial-upload-closes-no-bugs`); `piuparts`, como en §5, en la VM:
+`sudo piuparts -d trixie -b /var/cache/piuparts/base.tar.xz build/berigna_0.1.0~dev0-1_all.deb`.
+
+Verificación con el paquete instalado: en un Debian 13 recién instalado, `apt install ./python3-pyhanko_0.25.1-1_all.deb ./berigna_0.1.0~dev0-1_all.deb` resuelve todas las dependencias con los paquetes de Debian más pyHanko del repositorio propio. La aplicación instalada se comprueba con las pruebas de la interfaz (Xvfb) contra el paquete instalado, incluidos el arrastrar y soltar (RF-072) y la apertura como argumento (RF-073), y en una sesión real la segunda invocación entrega el archivo a la instancia en marcha y termina (instancia única por D-Bus, RF-073). El icono, la entrada de escritorio con sus MIME (RF-071), la metainfo y los catálogos quedan instalados y validados (las pruebas de Meson de §3).

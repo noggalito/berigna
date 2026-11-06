@@ -3,9 +3,9 @@
 | Campo | Valor |
 |---|---|
 | Documento | BRG-DES-001 |
-| Versión | 0.7.0 |
+| Versión | 0.8.0 |
 | Estado | Borrador |
-| Fecha | 2026-11-04 |
+| Fecha | 2026-11-05 |
 | Responsable | noggalito |
 
 ## 1. Estructura del repositorio
@@ -26,6 +26,7 @@ berigna/
 ├── scripts/hooks/pre-push        # gancho de pre-push con verificar.sh (R-DES-06)
 ├── scripts/traducciones.sh       # plantilla, catálogos y compilación a build/locale (gettext)
 ├── scripts/fusionar-incremento.sh  # rama → commit con DCO → push → PR → CI → fusión
+├── scripts/empaquetar-{pyhanko,berigna}.sh  # .deb reproducibles con debcraft o debuild (Fase 5)
 ├── scripts/ejecutar.sh           # lanza la interfaz desde el árbol de trabajo
 ├── scripts/ci-entorno.sh         # entorno de la CI: paquetes de Debian y .venv (las dos CI)
 ├── scripts/sbom.py               # lista de componentes CycloneDX 1.6 (R-DES-03)
@@ -65,7 +66,7 @@ berigna/
 ├── spikes/                       # prototipos de la Fase 0 (no es código de producto)
 ├── packaging/                    # empaquetado de terceros: python3-pyhanko (Fase 5, incremento 2)
 ├── nautilus/                     # (previsto, Fase 5)
-├── debian/                       # (previsto, Fase 5)
+├── debian/                       # paquete berigna: control, rules, copyright, berigna(1) (Fase 5, incremento 3)
 └── docs/                         # esta documentación
 ```
 

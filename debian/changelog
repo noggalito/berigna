@@ -1,0 +1,7 @@
+berigna (0.1.0~dev0-1) trixie; urgency=medium
+
+  * Initial package for the berigna repository: the application, its
+    resources, the trust store, the catalogues and the brand typefaces
+    (BRG-DSP-001, Fase 5, incremento 3).
+
+ -- noggalito <berigna@noggalito.com>  Thu, 05 Nov 2026 12:00:00 -0500
