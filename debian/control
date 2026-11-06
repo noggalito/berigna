@@ -1,0 +1,67 @@
+Source: berigna
+Section: gnome
+Priority: optional
+Maintainer: noggalito <berigna@noggalito.com>
+Build-Depends: debhelper-compat (= 13),
+ dh-python,
+ meson (>= 1.7.0),
+ ninja-build,
+ blueprint-compiler,
+ gir1.2-gtk-4.0,
+ gir1.2-adw-1,
+ gettext,
+ libglib2.0-dev,
+ gtk-update-icon-cache,
+ desktop-file-utils,
+ appstream,
+ python3
+Standards-Version: 4.7.0
+Rules-Requires-Root: no
+Homepage: https://berigna.noggalito.com
+Vcs-Git: https://github.com/noggalito/berigna.git
+Vcs-Browser: https://github.com/noggalito/berigna
+
+Package: berigna
+Architecture: all
+# The versions of Debian 13 (SPK-05, DP-06, ADR-0013); pyHanko comes from the
+# project's own repository (ADR-0013), everything else from Debian (BRG-DSP-001 §1).
+Depends: ${misc:Depends},
+ ${python3:Depends},
+ python3 (>= 3.12),
+ python3-gi,
+ python3-gi-cairo,
+ gir1.2-gtk-4.0,
+ gir1.2-adw-1,
+ gir1.2-poppler-0.18,
+ python3-pyhanko (>= 0.25.1),
+ python3-pyhanko (<< 0.26),
+ python3-pyhanko-certvalidator,
+ python3-pyscard,
+ python3-cryptography,
+ python3-asn1crypto,
+ python3-lxml,
+ python3-signxml,
+ python3-requests,
+ python3-pil,
+ python3-reportlab,
+ fonts-dejavu-core,
+ pcscd
+# berigna-nautilus arrives with the Fase 5 incremento 4; libccid and opensc-pkcs11
+# are the reader driver and the PKCS#11 modules (ADR-0012).
+Recommends: berigna-nautilus,
+ libccid,
+ opensc-pkcs11
+Description: sign and verify documents with the Peruvian DNIe
+ berigna signs and verifies documents with the certificates of the
+ Peruvian electronic identity card (DNIe), read from a smart card
+ reader: PAdES for PDF, CAdES and XAdES for other files, from the
+ basic signature (B-B) to the long-term archival signature (B-LTA),
+ with a timestamp from an IOFE accredited authority.
+ .
+ It verifies signed documents with the ETSI indications, signs batches
+ of documents with a single PIN, draws a visible signature and writes
+ verification reports in JSON and PDF. The interface is in Peruvian
+ Spanish and Southern Quechua. Free software (GPL-3.0-or-later).
+ .
+ The card is accessed through a dedicated APDU driver over PC/SC
+ (ADR-0012): the private key never leaves the card.
