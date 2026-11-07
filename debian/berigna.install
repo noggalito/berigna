@@ -1,0 +1,12 @@
+# The files of the berigna package. Incremento 4 added a second binary package
+# (berigna-nautilus); from then on dh_install no longer falls back to putting
+# everything into the first package, so this list is explicit. The extension
+# file under usr/share/nautilus-python goes to berigna-nautilus.
+usr/bin/berigna
+usr/lib/python3/dist-packages/berigna
+usr/share/berigna
+usr/share/applications
+usr/share/metainfo
+usr/share/glib-2.0
+usr/share/icons
+usr/share/locale

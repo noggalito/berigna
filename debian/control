@@ -65,3 +65,20 @@ Description: sign and verify documents with the Peruvian DNIe
  .
  The card is accessed through a dedicated APDU driver over PC/SC
  (ADR-0012): the private key never leaves the card.
+
+Package: berigna-nautilus
+Architecture: all
+# No ${python3:Depends}: dh_python3 does not scan the extension (it is not a
+# dist-packages module), and python3-nautilus already depends on python3-gi.
+Depends: ${misc:Depends},
+ berigna (= ${binary:Version}),
+ python3-nautilus
+Description: Nautilus extension to sign and verify with berigna
+ "Firmar con berigna" and "Verificar firma" in the context menu of
+ Nautilus (GNOME Files): the selected files open in berigna, which
+ reads the Peruvian DNIe and signs or verifies them. Several files, or
+ a folder, open the batch mode.
+ .
+ The extension launches berigna with the selection and never reads the
+ files itself; the running instance receives them through D-Bus
+ (RF-070, RF-073).

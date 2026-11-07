@@ -93,6 +93,10 @@ Práctica de desarrollo (Fase 4, incremento 7):
 - Medidas de rendimiento con la tarjeta simulada en cada CI (`scripts/rendimiento.py`, R-DES-10): firmar un PDF de 10 MB y un lote de 20, verificar un PDF B-LTA y leer una carpeta de 200 PDF; un aviso si una empeora más de un 50 % respecto de `tests/data/rendimiento/referencia.json`.
 - `core.batch.read_files`, `collect_files` e `is_signature`: la lectura de la lista de un lote pasa al núcleo, donde se mide; la interfaz la sigue haciendo en un hilo aparte.
 
+Escritorio y empaquetado (Fase 5):
+
+- Extensión de Nautilus (RF-070; `src/berigna_nautilus.py`, paquete `berigna-nautilus`): "Firmar con berigna" y "Verificar firma" en el menú contextual; varios archivos, o una carpeta, abren el lote (CU-04). Lanza berigna con la selección, que la instancia en marcha recibe por D-Bus (RF-073), y nunca lee los archivos. Las etiquetas se traducen con el catálogo de berigna (es_PE y quechua).
+
 ### Cambiado
 
 - Al elegir el formato de una firma, la CAdES envolvente (`.p7m`) y la XAdES separada (`.xsig`) avisan de cómo difieren de Firma Perú. Su validador web no reconoce la extensión `.p7m`: el mismo archivo renombrado `.p7s` es válido allí, subiendo antes el archivo original. Tampoco valida `.xsig`. berigna mantiene los nombres estándar (BRG-CAL-006 §3.10).
@@ -119,6 +123,8 @@ Práctica de desarrollo (Fase 4, incremento 7):
 - Volver a abrir el historial o el diagnóstico desde el menú lleva a la página ya abierta, en lugar de apilar otra igual.
 
 ### Corregido
+
+- La extensión de Nautilus recibía el elemento de menú como primer argumento del manejador de "activate" (así emite GObject la señal) y su firma esperaba solo los archivos: las acciones del menú contextual no hacían nada. Ahora `_launch` recibe ambos, y las pruebas emiten la señal como Nautilus (`callback(item, files)`), de modo que no vuelva a pasar (RF-070).
 
 - Un sello de tiempo con un algoritmo de resumen que pyHanko 0.25.1 no conoce hacía terminar la verificación de una CAdES o de un PDF en "error inesperado" (ERR-000) y ocultaba todas las firmas del archivo, también las válidas (R-DES-18, DP-20). Ahora esa firma es TOTAL-FAILED/FORMAT_FAILURE, como ya pasaba en XAdES, y el log técnico guarda la causa con su traza. Las nuevas pruebas por mutación de CAdES y de PDF encontraron siete casos más del mismo tipo (estructura del CMS dañada, respuestas OCSP incrustadas, certificado del firmante o fecha `/M` ilegibles, DSS dañado), también corregidos, igual que un certificado con la versión alterada: dan un resultado ETSI o "no se puede leer el archivo" (ERR-401, ERR-402). Los tres verificadores comparten una sola lista de excepciones de archivo hostil.
 - Ante una firma XAdES que no pasa la comprobación de los resúmenes (HASH_FAILURE), el resultado decía "Hora declarada por el firmante: Ninguno" y no decía qué cubre la firma, aunque las dos cosas estaban en la firma: berigna dejaba de leerlas al primer fallo. Ahora el informe conserva lo leído antes del fallo (firmante, hora declarada, alcance y referencias), como Firma Perú, que sí muestra la hora (prueba con el DNIe real del incremento 6).

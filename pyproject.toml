@@ -57,7 +57,7 @@ select = ["E", "F", "W", "I", "B", "UP", "S", "SIM", "RUF", "PT"]
 python_version = "3.12"
 strict = true
 mypy_path = "src"
-packages = ["berigna"]
+packages = ["berigna", "berigna_nautilus"]
 
 [[tool.mypy.overrides]]
 module = ["smartcard.*", "asn1crypto.*", "requests.*", "lxml.*", "signxml.*", "reportlab.*"]
@@ -70,12 +70,12 @@ module = ["gi", "gi.*"]
 ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
-module = ["berigna.ui.*"]
+module = ["berigna.ui.*", "berigna_nautilus"]
 disallow_subclassing_any = false
 warn_return_any = false
 
 [tool.coverage.run]
-source = ["berigna"]
+source = ["berigna", "berigna_nautilus"]
 branch = true
 
 [tool.coverage.report]

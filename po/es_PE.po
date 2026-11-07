@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: berigna\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-04 17:47-0500\n"
+"POT-Creation-Date: 2026-11-06 18:58-0500\n"
 "PO-Revision-Date: 2026-10-27 23:38-0500\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -49,7 +49,11 @@ msgid ""
 "desde el lector de tarjetas del equipo, en PAdES (PDF), CAdES y XAdES, de la "
 "firma básica (B-B) a la firma de archivo a largo plazo (B-LTA), con el sello "
 "de tiempo de una autoridad acreditada en la IOFE."
-msgstr "Firma documentos con los certificados digitales del DNI electrónico peruano desde el lector de tarjetas del equipo, en PAdES (PDF), CAdES y XAdES, de la firma básica (B-B) a la firma de archivo a largo plazo (B-LTA), con el sello de tiempo de una autoridad acreditada en la IOFE."
+msgstr ""
+"Firma documentos con los certificados digitales del DNI electrónico peruano "
+"desde el lector de tarjetas del equipo, en PAdES (PDF), CAdES y XAdES, de la "
+"firma básica (B-B) a la firma de archivo a largo plazo (B-LTA), con el sello "
+"de tiempo de una autoridad acreditada en la IOFE."
 
 #: data/com.noggalito.Berigna.metainfo.xml.in:14
 msgid ""
@@ -57,7 +61,11 @@ msgid ""
 "JSON y PDF, firma por lotes con un solo PIN y añade una firma visible con "
 "texto, rúbrica, logotipo o código QR. En español del Perú y quechua sureño. "
 "Software libre (GPL-3.0-or-later)."
-msgstr "Verifica documentos firmados con las indicaciones ETSI, genera informes en JSON y PDF, firma por lotes con un solo PIN y añade una firma visible con texto, rúbrica, logotipo o código QR. En español del Perú y quechua sureño. Software libre (GPL-3.0-or-later)."
+msgstr ""
+"Verifica documentos firmados con las indicaciones ETSI, genera informes en "
+"JSON y PDF, firma por lotes con un solo PIN y añade una firma visible con "
+"texto, rúbrica, logotipo o código QR. En español del Perú y quechua sureño. "
+"Software libre (GPL-3.0-or-later)."
 
 #: data/com.noggalito.Berigna.metainfo.xml.in:22
 msgid "firma"
@@ -2242,6 +2250,14 @@ msgstr "Solo se pueden abrir archivos de este equipo."
 #: src/berigna/ui/window.py:179
 msgid "Open Document"
 msgstr "Abrir documento"
+
+#: src/berigna_nautilus.py:60
+msgid "Firmar con berigna"
+msgstr "Firmar con berigna"
+
+#: src/berigna_nautilus.py:62
+msgid "Verificar firma"
+msgstr "Verificar firma"
 
 #~ msgid "Document Signer"
 #~ msgstr "Firmador de documentos"
