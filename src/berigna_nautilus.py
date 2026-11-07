@@ -34,8 +34,11 @@ def _is_local(file: Any) -> bool:
     return file.get_uri_scheme() == "file"
 
 
-def _launch(files: Sequence[Any]) -> bool:
-    """Open berigna with ``files``; False when its desktop entry is missing."""
+def _launch(_menu: Any, files: Sequence[Any]) -> bool:
+    """Open berigna with ``files``; False when its desktop entry is missing.
+
+    Connected to the "activate" signal, so GObject passes the menu item first.
+    """
     app_info = Gio.DesktopAppInfo.new(APP_INFO_ID)
     if app_info is None:  # berigna is not installed: the package depends on it
         log.error("the berigna desktop entry was not found: %s", APP_INFO_ID)

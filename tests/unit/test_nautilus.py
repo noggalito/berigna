@@ -113,9 +113,15 @@ def _items(extension: Any, files: list[_FakeFile]) -> list[_FakeMenuItem]:
     return extension.BerignaMenuProvider().get_file_items(files)
 
 
+def _activate(item: _FakeMenuItem) -> None:
+    """Fire the signal as Nautilus does: the menu item goes first, then the user data."""
+    for _signal, callback, args in item.connected:
+        callback(item, *args)
+
+
 def test_launch_opens_berigna_with_the_selection(extension: Any) -> None:
     files = [_FakeFile("file:///home/prueba/a.pdf"), _FakeFile("file:///home/prueba/b.pdf")]
-    assert extension._launch(files) is True
+    assert extension._launch(None, files) is True
     assert _FakeGio.DesktopAppInfo.new_calls == [extension.APP_INFO_ID]
     assert _FakeDesktopAppInfo.launched == [
         ["file:///home/prueba/a.pdf", "file:///home/prueba/b.pdf"]
@@ -124,7 +130,7 @@ def test_launch_opens_berigna_with_the_selection(extension: Any) -> None:
 
 def test_launch_without_a_desktop_entry(extension: Any) -> None:
     _FakeGio.DesktopAppInfo.result = None
-    assert extension._launch([_FakeFile()]) is False
+    assert extension._launch(None, [_FakeFile()]) is False
     assert _FakeDesktopAppInfo.launched == []
 
 
@@ -134,7 +140,7 @@ def test_only_local_files_count(extension: Any) -> None:
 
 
 def test_menu_for_a_single_file(extension: Any) -> None:
-    files = [_FakeFile()]
+    files = [_FakeFile("file:///home/prueba/acta.pdf")]
     items = _items(extension, files)
     assert [item.kwargs["name"] for item in items] == [
         "BerignaMenuProvider::firmar",
@@ -144,6 +150,12 @@ def test_menu_for_a_single_file(extension: Any) -> None:
     assert [item.kwargs["tip"] for item in items] == ["Firmar con berigna", "Verificar firma"]
     assert all(item.kwargs["icon"] == extension.ICON for item in items)
     assert all(item.connected == [("activate", extension._launch, (files,))] for item in items)
+    _activate(items[0])
+    _activate(items[1])
+    assert _FakeDesktopAppInfo.launched == [
+        ["file:///home/prueba/acta.pdf"],
+        ["file:///home/prueba/acta.pdf"],
+    ]
 
 
 def test_menu_for_several_files_offers_only_the_batch(extension: Any) -> None:
@@ -151,12 +163,18 @@ def test_menu_for_several_files_offers_only_the_batch(extension: Any) -> None:
     items = _items(extension, files)
     assert [item.kwargs["name"] for item in items] == ["BerignaMenuProvider::firmar"]
     assert items[0].connected == [("activate", extension._launch, (files,))]
+    _activate(items[0])
+    assert _FakeDesktopAppInfo.launched == [
+        ["file:///home/prueba/a.pdf", "file:///home/prueba/b.pdf"]
+    ]
 
 
 def test_menu_for_a_folder_offers_only_the_batch(extension: Any) -> None:
-    files = [_FakeFile(directory=True)]
+    files = [_FakeFile("file:///home/prueba/carpeta", directory=True)]
     items = _items(extension, files)
     assert [item.kwargs["name"] for item in items] == ["BerignaMenuProvider::firmar"]
+    _activate(items[0])
+    assert _FakeDesktopAppInfo.launched == [["file:///home/prueba/carpeta"]]
 
 
 def test_no_items_without_local_files(extension: Any) -> None:
