@@ -9,9 +9,8 @@
 #   scripts/empaquetar-pyhanko.sh [debcraft|debuild] [comprobar]
 #
 # "comprobar" runs lintian --pedantic over the built package. piuparts needs root and a
-# base image of trixie (a root filesystem tarball, for instance
-# debian-13-generic-amd64.tar.xz from https://cdimage.debian.org/images/cloud/trixie/;
-# the genericcloud one is a disk image and does not work as a base): in the Debian 13 VM,
+# base of trixie; it creates it with debootstrap on the first run if the file does not
+# exist (the cloud tarballs of cdimage are disk images and do not serve as a base):
 #   sudo piuparts -d trixie -b /var/cache/piuparts/base.tar.xz build/pyhanko_0.25.1-1_all.deb
 set -eu
 cd "$(git rev-parse --show-toplevel)"
