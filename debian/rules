@@ -10,3 +10,11 @@
 override_dh_installdocs:
 	dh_installdocs
 	dh_installman
+
+# The Nautilus extension is not in a private directory dh_python3 scans by
+# default: a second call with the directory byte-compiles it and adds the
+# py3compile/py3clean maintainer scripts (BRG-DSP-001 §8; without it, piuparts
+# warns "py-file-not-bytecompiled" through adequate).
+override_dh_python3:
+	dh_python3
+	dh_python3 usr/share/nautilus-python/extensions
