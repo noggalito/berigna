@@ -10,8 +10,9 @@
 #   scripts/empaquetar-berigna.sh [debcraft|debuild] [comprobar]
 #
 # "comprobar" runs lintian --pedantic over the built package. piuparts needs root and a
-# base image of trixie (for instance debian-13-genericcloud-amd64.tar.xz from
-# https://cdimage.debian.org/images/cloud/trixie/): in the Debian 13 VM,
+# base image of trixie (a root filesystem tarball, for instance
+# debian-13-generic-amd64.tar.xz from https://cdimage.debian.org/images/cloud/trixie/;
+# the genericcloud one is a disk image and does not work as a base): in the Debian 13 VM,
 #   sudo piuparts -d trixie -b /var/cache/piuparts/base.tar.xz build/berigna_0.1.0~dev0-1_all.deb
 set -eu
 cd "$(git rev-parse --show-toplevel)"
