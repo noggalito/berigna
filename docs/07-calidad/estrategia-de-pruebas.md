@@ -3,9 +3,9 @@
 | Campo | Valor |
 |---|---|
 | Documento | BRG-CAL-001 |
-| Versión | 0.4.1 |
+| Versión | 0.4.2 |
 | Estado | Borrador |
-| Fecha | 2026-11-02 |
+| Fecha | 2026-11-07 |
 | Responsable | noggalito |
 
 ## 1. Objetivos
@@ -124,6 +124,7 @@ Cada celda se ejecuta en tres entornos: (a) SoftHSM en CI, (b) validación con D
 | PR-INT-05 | Firmas generadas por Firma Perú y por ReFirma, validadas en berigna (ReFirma PDF solo firma PDF: en CAdES y XAdES, solo Firma Perú) | Mismo resultado que en Firma Perú |
 | PR-INT-06 | Firmas generadas por DSS, validadas en berigna | Mismo resultado que en DSS |
 | PR-INT-07 | Matriz completa validada en el validador oficial Firma Perú (https://apps.firmaperu.gob.pe/web/validador.xhtml; usa DSS y la TSL peruana) | "Resultado válido" con el formato y nivel correctos. Primera evidencia: PAdES B-B del DNIe real, 2026-10-27 |
+| PR-INT-08 | Firmas reales de terceros validadas en berigna y contrastadas con el validador oficial de Firma Perú. Primera evidencia: firma Adobe heredada de 2022 (`adbe.pkcs7.detached`), certificado del firmante vencido y sin sello de tiempo | Mismo veredicto que Firma Perú: INDETERMINADO (berigna: `OUT_OF_BOUNDS_NO_POE`) |
 
 ## 7. Pruebas de seguridad
 
