@@ -95,6 +95,9 @@ Práctica de desarrollo (Fase 4, incremento 7):
 
 Escritorio y empaquetado (Fase 5):
 
+- Metainfo de AppStream y entrada de escritorio (RF-071, incremento 1): `data/com.noggalito.Berigna.metainfo.xml.in` con nombre, resumen, descripción, palabras clave y capturas en es_PE y quechua sureño, y `data/com.noggalito.Berigna.desktop.in` con los MIME de firma y XML y los textos de respaldo en es_PE (ADR-0015); validados con `appstreamcli validate` y `desktop-file-validate` en `meson test`; capturas regenerables con `scripts/capturas-metainfo.sh`.
+- Paquete `python3-pyhanko` 0.25.1 (incremento 2, DP-06, BRG-DSP-001 §5): `packaging/python3-pyhanko/` con la versión compatible con las dependencias de Debian 13 y `scripts/empaquetar-pyhanko.sh`, que compila reproducible con debcraft o debuild; `lintian --pedantic` sin errores y `piuparts` en Debian 13.
+- Paquete `berigna` (incremento 3, BRG-DSP-001 §7): `debian/` con control, rules (Meson y dh-python) y copyright DEP-5 (incluidas las 4 tipografías con la OFL 1.1 completa y los certificados públicos de la IOFE), página de manual berigna(1) y `scripts/empaquetar-berigna.sh` reproducible; RF-072 (arrastrar y soltar) y RF-073 (instancia única y apertura como argumento) verificadas con el paquete instalado.
 - Extensión de Nautilus (RF-070; `src/berigna_nautilus.py`, paquete `berigna-nautilus`): "Firmar con berigna" y "Verificar firma" en el menú contextual; varios archivos, o una carpeta, abren el lote (CU-04). Lanza berigna con la selección, que la instancia en marcha recibe por D-Bus (RF-073), y nunca lee los archivos. Las etiquetas se traducen con el catálogo de berigna (es_PE y quechua).
 
 ### Cambiado
