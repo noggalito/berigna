@@ -93,6 +93,10 @@ Práctica de desarrollo (Fase 4, incremento 7):
 - Medidas de rendimiento con la tarjeta simulada en cada CI (`scripts/rendimiento.py`, R-DES-10): firmar un PDF de 10 MB y un lote de 20, verificar un PDF B-LTA y leer una carpeta de 200 PDF; un aviso si una empeora más de un 50 % respecto de `tests/data/rendimiento/referencia.json`.
 - `core.batch.read_files`, `collect_files` e `is_signature`: la lectura de la lista de un lote pasa al núcleo, donde se mide; la interfaz la sigue haciendo en un hilo aparte.
 
+Escritorio y empaquetado (Fase 5):
+
+- Extensión de Nautilus (RF-070; `src/berigna_nautilus.py`, paquete `berigna-nautilus`): "Firmar con berigna" y "Verificar firma" en el menú contextual; varios archivos, o una carpeta, abren el lote (CU-04). Lanza berigna con la selección, que la instancia en marcha recibe por D-Bus (RF-073), y nunca lee los archivos. Las etiquetas se traducen con el catálogo de berigna (es_PE y quechua).
+
 ### Cambiado
 
 - Al elegir el formato de una firma, la CAdES envolvente (`.p7m`) y la XAdES separada (`.xsig`) avisan de cómo difieren de Firma Perú. Su validador web no reconoce la extensión `.p7m`: el mismo archivo renombrado `.p7s` es válido allí, subiendo antes el archivo original. Tampoco valida `.xsig`. berigna mantiene los nombres estándar (BRG-CAL-006 §3.10).

@@ -3,9 +3,9 @@
 | Campo | Valor |
 |---|---|
 | Documento | BRG-UX-001 |
-| Versión | 0.7.0 |
+| Versión | 0.8.0 |
 | Estado | Borrador (bocetos de baja fidelidad) |
-| Fecha | 2026-11-03 |
+| Fecha | 2026-11-06 |
 | Responsable | noggalito |
 
 ## 1. Principios de UX
@@ -141,7 +141,7 @@ Implementado en la Fase 3, incremento 3, con `Gtk.PasswordEntry` (P-05). Tras un
 
 Implementado en la Fase 3, incremento 2. Diferencias con el boceto: la explicación de cada firma va bajo su firmante y los detalles técnicos en una fila desplegable; "Verificar de nuevo" es un botón de la barra de título, visible si algún resultado es indeterminado; cada firma permite guardar la versión del documento que dejó (CU-06).
 
-En la Fase 4, incremento 6, la misma página verifica firmas CAdES (`.p7s`, `.p7m`) y documentos XML con firmas XAdES (`.xml`, `.xsig`); el formato se reconoce por el contenido, no por la extensión. Para una firma separada se busca el archivo firmado junto a ella: el que nombra una XAdES (solo el nombre, nunca otra carpeta), el mismo nombre sin la extensión (`acta.xml` para `acta.xml.p7s`) o sin el número que berigna añade cuando el nombre está ocupado (`acta.xml` para `acta-2.xml.p7s`); en CAdES se prefiere el que tiene el resumen firmado. Si no está, la página lo pide ("Elegir archivo…"). El resumen muestra el archivo firmado, que se puede cambiar, y en un `.p7m` la fila "Guardar el contenido firmado" (RF-051). Los detalles técnicos dicen el formato y, en XAdES, qué cubre la firma (todo el documento, una parte, el contenido dentro de la firma o un archivo aparte; AM-06), y cada sello de archivo. Los informes JSON y PDF llevan lo mismo y el nombre y SHA-256 del archivo firmado. "Firmar" sigue disponible en un XML firmado; no aparece en CAdES, porque la cofirma (RF-023) llega después de la 1.0, ni en una firma separada, porque firmaría el archivo de la firma y no el documento.
+En la Fase 4, incremento 6, la misma página verifica firmas CAdES (`.p7s`, `.p7m`) y documentos XML con firmas XAdES (`.xml`, `.xsig`); el formato se reconoce por el contenido, no por la extensión. Para una firma separada se busca el archivo firmado junto a ella: el que nombra una XAdES (solo el nombre, nunca otra carpeta), el mismo nombre sin la extensión (`acta.xml` para `acta.xml.p7s`) o sin el número que berigna añade cuando el nombre está ocupado (`acta.xml` para `acta-2.xml.p7s`); en CAdES se prefiere el que tiene el resumen firmado. Si no está, la página lo pide ("Elegir archivo…"). El resumen muestra el archivo firmado, que se puede cambiar, y en un `.p7m` la fila "Guardar el contenido firmado" (RF-051). Los detalles técnicos dicen el formato y, en XAdES, qué cubre la firma (todo el documento, una parte, el contenido dentro de la firma o un archivo aparte; AM-06), y cada sello de archivo. Los informes JSON y PDF llevan lo mismo y el nombre y SHA-256 del archivo firmado. "Firmar" sigue disponible en un XML firmado; no aparece en CAdES, porque la cofirma (RF-023) llega en la versión 1.1, ni en una firma separada, porque firmaría el archivo de la firma y no el documento.
 
 ```
 ┌──────────────────────────────────────────────────────────────┐

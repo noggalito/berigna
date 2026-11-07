@@ -9,3 +9,10 @@ package_files = run_command(
 ).stdout().strip().split('\n')
 
 python.install_sources(package_files, preserve_path: true, pure: true)
+
+# The Nautilus extension (RF-070, package berigna-nautilus, BRG-DSP-001 §2): nautilus-python
+# looks for extensions in this directory; no Python import path is involved.
+install_data(
+  'berigna_nautilus.py',
+  install_dir: get_option('datadir') / 'nautilus-python' / 'extensions',
+)

@@ -3,9 +3,9 @@
 | Campo | Valor |
 |---|---|
 | Documento | BRG-GEN-000 |
-| Versión | 0.18.0 |
+| Versión | 0.20.0 |
 | Estado | Borrador |
-| Fecha | 2026-11-05 |
+| Fecha | 2026-11-06 |
 | Responsable | noggalito |
 
 ## 1. Propósito
@@ -106,9 +106,9 @@ Algunos documentos públicos citan identificadores cuyo detalle está en la docu
 | Licencia | GPL-3.0-or-later (ADR-0005), con un permiso adicional para distribuir por tiendas de aplicaciones (ADR-0021) |
 | Otras plataformas | Windows, macOS, Android e iOS, y la lectura del DNIe por NFC, en estudio para la versión 1.1 (SPK-07); firma desde la web, también en la 1.1 (SPK-08) |
 
-## 7. Estado de implementación (2026-11-05)
+## 7. Estado de implementación (2026-11-06)
 
-Fases 0, 1 y 2 cerradas. Fase 4: cerrada el 2026-11-04. Fase 3: funcionalmente completa (incrementos 1 a 7 hechos); su cierre formal depende de la prueba de usabilidad con al menos 5 personas (BRG-CAL-005). Los problemas de gravedad 3 y 4 que salgan de ella se corrigen antes de cerrarla. Fase 5 (escritorio y empaquetado): en curso; incrementos 1 a 3 hechos (metainfo de AppStream y entrada de escritorio; paquete `python3-pyhanko`; paquete `berigna`).
+Fases 0, 1 y 2 cerradas. Fase 4: cerrada el 2026-11-04. Fase 3: funcionalmente completa (incrementos 1 a 7 hechos); su cierre formal depende de la prueba de usabilidad con al menos 5 personas (BRG-CAL-005). Los problemas de gravedad 3 y 4 que salgan de ella se corrigen antes de cerrarla. Fase 5 (escritorio y empaquetado): en curso; incrementos 1 a 4 hechos (metainfo de AppStream y entrada de escritorio; paquete `python3-pyhanko`; paquete `berigna`; extensión de Nautilus).
 
 Fase 4 (CAdES y XAdES), iniciada el 2026-10-29 y cerrada el 2026-11-04, en ocho incrementos:
 
@@ -129,7 +129,7 @@ Fase 4 (CAdES y XAdES), iniciada el 2026-10-29 y cerrada el 2026-11-04, en ocho 
 
 Con el incremento 8, la Fase 4 queda cerrada el 2026-11-04.
 
-La cofirma CAdES (RF-023, "Podría") queda para después de la v1.0.
+La cofirma CAdES (RF-023, "Podría") queda para la versión 1.1 (decisión del titular, 2026-11-06).
 
 | Módulo | Estado | Requisitos | Evidencia |
 |---|---|---|---|
@@ -157,7 +157,7 @@ La cofirma CAdES (RF-023, "Podría") queda para después de la v1.0.
 | `core.history`, historial y vista del almacén de confianza | Implementado (Fase 3, incremento 6): historial SQLite 0600 con búsqueda, CSV y borrado; certificados de confianza por origen en Preferencias | RF-060, RF-082 | Pruebas de la interfaz con firma y verificación reales (tarjeta simulada) |
 | `core.formats.cades` y `core.signing.sign_cades_file` | Implementado (Fase 4, incremento 2): firma CAdES separada (`.p7s`) y envuelta (`.p7m`) de cualquier archivo, de B-B a B-LTA, con el mismo orden de seguridad que PAdES; la verificación CAdES está en `core.validation.cades` (incremento 3, contrastada con DSS 6.2) | RF-020 a RF-022 | Tarjeta simulada y TSA de pruebas: las 8 combinaciones reconocidas por DSS 6.2, B-LT y B-LTA con TOTAL_PASSED (`07-calidad/validacion-externa-fase4.md`); las 8 verificadas por `verify_cades` con la misma indicación que DSS |
 | `core.formats.xades` y `core.signing.sign_xades_file` | Implementado (Fase 4, incremento 4, corregido el 2026-11-02): firma XAdES de documentos XML envuelta (la firma dentro del documento), envolvente (el documento dentro de `ds:Object`) y separada (`.xsig`, que referencia al documento por su nombre, URI codificada), de B-B a B-LTA, con signxml 4.0.5 más capa propia para T, LT y LTA (C14N 1.0 en los datos y exclusiva en `SignedInfo`, `SignedProperties` y `KeyInfo` desde el 2026-11-02, y `SigningCertificate` solo con el firmante, ADR-0008) y el mismo orden de seguridad que PAdES y CAdES; antes del PIN se rechaza lo que no se puede firmar: lo que no es XML, el DTD, un documento ya firmado en la forma envuelta y las instrucciones de procesamiento fuera de la raíz en las formas que no las cubren | RF-030 a RF-033 | Tarjeta simulada y TSA de pruebas: las doce combinaciones más los documentos difíciles de la revisión del 2026-11-01 (comentarios, ISO-8859-1, nombre con espacios y tildes, firma previa), 44 archivos con TOTAL_PASSED en B-LT y B-LTA y ningún HASH_FAILURE (`07-calidad/validacion-externa-fase4.md` §3.3); xmlsec1 verifica los resúmenes en la CI; la verificación XAdES está en `core.validation.xades` (incremento 5) |
-| Extensión de Nautilus (paquete `berigna-nautilus`) | Fase 5 | RF-070 | — |
+| Extensión de Nautilus (paquete `berigna-nautilus`) | Implementado (Fase 5, incremento 4): `src/berigna_nautilus.py`, instalado en `/usr/share/nautilus-python/extensions/` con las acciones "Firmar con berigna" (archivos y carpetas; varios, o una carpeta, abren el lote, CU-04) y "Verificar firma" (un solo archivo, que berigna verifica o firma según su contenido), con las etiquetas del catálogo de berigna (ADR-0011, ADR-0015) y el icono simbólico; lanza berigna con la selección y la instancia en marcha la recibe por D-Bus (RF-073); la extensión nunca lee los archivos. Paquete binario `berigna-nautilus` (Depends: `berigna (= ${binary:Version})`, `python3-nautilus`), recomendado por `berigna` (BRG-DSP-001 §1 y §8) | RF-070, RF-073 | Pruebas del proveedor con Nautilus y Gio simulados (100 % de cobertura); la prueba en GNOME real llega con la VM del criterio de salida de la fase (incremento 6) |
 | PIN pad (PC/SC parte 10) | Aplazado a la versión 1.1 (decisión del 2026-10-27; requiere un lector de clase 2) | RF-005, P-08 | — |
 | *Backend* PKCS#11 + SoftHSM | Aplazado a la versión 1.1 (decisión del 2026-10-27; el DNIe v2 no lo necesita) | ADR-0003 | — |
 | DNIe 1.0 y DNIe 3.0 | Versión 1.1 (decisión del 2026-10-27); identificación pendiente en SPK-06 | RNF-COM-05 | — |

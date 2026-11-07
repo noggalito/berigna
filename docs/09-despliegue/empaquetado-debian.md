@@ -3,9 +3,9 @@
 | Campo | Valor |
 |---|---|
 | Documento | BRG-DSP-001 |
-| Versión | 0.4.0 |
+| Versión | 0.5.0 |
 | Estado | Borrador |
-| Fecha | 2026-11-05 |
+| Fecha | 2026-11-06 |
 | Responsable | noggalito |
 
 ## 1. Paquetes binarios
@@ -20,7 +20,7 @@ Un paquete separado `python3-berigna-core` es una alternativa abierta (arquitect
 
 (\*) No está en Debian 13. Se empaqueta en el repositorio del proyecto (DP-06, ADR-0013).
 
-Los tres paquetes son `Architecture: all` (DP-08). La lista de `Depends` quedó confirmada con el incremento 3 (2026-11-05): el paquete `berigna` se construye, se instala y se verifica en Debian 13 con ella (§7). `berigna-nautilus` llega con el incremento 4; mientras no exista en el repositorio, la instalación con `--no-install-recommends` no lo pide (apt ignora los `Recommends` ausentes). `python3-pkcs11` se añadirá en la versión 1.1, con el *backend* PKCS#11 (ADR-0003, DP-15); `python3-babel` se quitó el 2026-10-29: berigna no lo usa.
+Los tres paquetes son `Architecture: all` (DP-08). La lista de `Depends` quedó confirmada con el incremento 3 (2026-11-05): el paquete `berigna` se construye, se instala y se verifica en Debian 13 con ella (§7). `berigna-nautilus` llegó con el incremento 4 (2026-11-06, §8); mientras no esté en el repositorio, la instalación con `--no-install-recommends` no lo pide (apt ignora los `Recommends` ausentes). `python3-pkcs11` se añadirá en la versión 1.1, con el *backend* PKCS#11 (ADR-0003, DP-15); `python3-babel` se quitó el 2026-10-29: berigna no lo usa.
 
 ## 2. Archivos instalados
 
@@ -125,3 +125,10 @@ Compilación reproducible con `scripts/empaquetar-berigna.sh`, el mismo procedim
 `sudo piuparts -d trixie -b /var/cache/piuparts/base.tar.xz build/berigna_0.1.0~dev0-1_all.deb`.
 
 Verificación con el paquete instalado: en un Debian 13 recién instalado, `apt install ./python3-pyhanko_0.25.1-1_all.deb ./berigna_0.1.0~dev0-1_all.deb` resuelve todas las dependencias con los paquetes de Debian más pyHanko del repositorio propio. La aplicación instalada se comprueba con las pruebas de la interfaz (Xvfb) contra el paquete instalado, incluidos el arrastrar y soltar (RF-072) y la apertura como argumento (RF-073), y en una sesión real la segunda invocación entrega el archivo a la instancia en marcha y termina (instancia única por D-Bus, RF-073). El icono, la entrada de escritorio con sus MIME (RF-071), la metainfo y los catálogos quedan instalados y validados (las pruebas de Meson de §3).
+
+## 8. El paquete `berigna-nautilus` (incremento 4, 2026-11-06)
+
+- `src/berigna_nautilus.py` (GPL-3.0-or-later): el proveedor de menú con las acciones "Firmar con berigna" (archivos y carpetas; varios, o una carpeta, abren el lote, CU-04) y "Verificar firma" (un solo archivo), con las etiquetas del catálogo de berigna (ADR-0011, ADR-0015) y el icono simbólico; lanza la entrada de escritorio `com.noggalito.Berigna.desktop` con la selección (RF-073) y nunca lee los archivos. Sin archivos locales no ofrece nada (berigna no abre ubicaciones remotas).
+- Meson (`src/meson.build`) lo instala en `/usr/share/nautilus-python/extensions/berigna_nautilus.py`, donde lo busca `python3-nautilus`; no va al directorio de Python de la distribución.
+- `debian/control` añade el paquete binario `berigna-nautilus` (`Architecture: all`; Depends: `berigna (= ${binary:Version})`, `python3-nautilus`) y `debian/berigna-nautilus.install` le asigna la extensión; el `Recommends` de `berigna` ya apuntaba a él (§1).
+- Pruebas: `tests/unit/test_nautilus.py` ejercita el proveedor con Nautilus, Gio y GObject simulados (100 % de cobertura), de modo que la suite no necesita `python3-nautilus`. La prueba en GNOME real, con las acciones del menú y el lote, llega con la VM del criterio de salida de la fase (incremento 6); `lintian --pedantic` y `piuparts` se pasan con el mismo procedimiento de §5.
