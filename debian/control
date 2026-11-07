@@ -68,8 +68,9 @@ Description: sign and verify documents with the Peruvian DNIe
 
 Package: berigna-nautilus
 Architecture: all
+# No ${python3:Depends}: dh_python3 does not scan the extension (it is not a
+# dist-packages module), and python3-nautilus already depends on python3-gi.
 Depends: ${misc:Depends},
- ${python3:Depends},
  berigna (= ${binary:Version}),
  python3-nautilus
 Description: Nautilus extension to sign and verify with berigna
