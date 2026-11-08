@@ -6,16 +6,21 @@ Every error carries a stable ``code`` (ERR-xxx) that the UI maps to a translated
 (docs/06-ux, error catalogue). Messages here are for logs and developers, in English.
 """
 
+from cryptography import x509
+
 # What asn1crypto, cryptography, pyHanko and pyhanko-certvalidator raise past their own errors
 # on data they cannot make sense of: asn1crypto parses lazily, so a damaged value may fail
 # only when a field is read, and not always with a ValueError. One list for every boundary
 # with data from outside (the verifiers add their own, spec.MALFORMED; R-DES-07).
+# x509.InvalidVersion is not a ValueError: cryptography raises it for a certificate or a CRL
+# whose version was damaged (found by the mutations on 2026-11-08).
 UNREADABLE_DATA: tuple[type[Exception], ...] = (
     ValueError,
     KeyError,
     TypeError,
     AttributeError,
     IndexError,
+    x509.InvalidVersion,
 )
 
 

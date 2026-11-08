@@ -2,6 +2,7 @@
 # SPDX-FileCopyrightText: 2026 noggalito
 """INDECOPI trusted list (ADR-0014): verification, reading and use as trust anchors."""
 
+import base64
 import datetime as dt
 import hashlib
 from pathlib import Path
@@ -11,7 +12,7 @@ import pytest
 import requests
 from cryptography import x509
 from cryptography.hazmat.primitives import serialization
-from hypothesis import given, settings
+from hypothesis import example, given, settings
 from hypothesis import strategies as st
 from lxml import etree
 
@@ -253,6 +254,29 @@ def test_signer_crl_must_come_from_the_root(tsl_pki: TslPki) -> None:
         load_tsl(build_tsl(tsl_pki), root=tsl_pki.root, signer_crl=b"no es una CRL")
 
 
+def _bad_version(der: bytes, version: bytes) -> bytes:
+    """``der`` with its version set to 5, which cryptography refuses with InvalidVersion, not
+    a ValueError (R-DES-07, 2026-11-08). ``version`` is how the version is encoded there."""
+    assert version in der
+    return der.replace(version, version[:-1] + b"\x05", 1)
+
+
+_CERT_V3 = b"\xa0\x03\x02\x01\x02"  # [0] EXPLICIT INTEGER 2 (v3), first in the TBSCertificate
+_CRL_V2 = b"\x02\x01\x01"  # INTEGER 1 (v2), first in the TBSCertList
+
+
+@pytest.mark.parametrize("pem", [False, True], ids=["der", "pem"])
+def test_crl_with_a_damaged_version_is_refused(tsl_pki: TslPki, pem: bool) -> None:
+    damaged = _bad_version(tsl_pki.crl(), _CRL_V2)
+    if pem:
+        damaged = (
+            b"-----BEGIN X509 CRL-----\n%s\n-----END X509 CRL-----\n"
+            % base64.encodebytes(damaged).rstrip()
+        )
+    with pytest.raises(TslError, match="unreadable CRL"):
+        load_tsl(build_tsl(tsl_pki), root=tsl_pki.root, signer_crl=damaged)
+
+
 def test_pem_crl_is_read(tsl_pki: TslPki) -> None:
     pem = x509.load_der_x509_crl(tsl_pki.crl()).public_bytes(serialization.Encoding.PEM)
     assert load_tsl(build_tsl(tsl_pki), root=tsl_pki.root, signer_crl=pem).sequence_number == 7
@@ -312,9 +336,11 @@ def test_signer_certificate_problems(tsl_pki: TslPki) -> None:
     ds = "http://www.w3.org/2000/09/xmldsig#"
     document = etree.fromstring(signed)
     certificate = document.find(f".//{{{ds}}}X509Certificate")
-    certificate.text = "AAAA"
-    with pytest.raises(TslError, match="unreadable signer certificate"):
-        load_tsl(etree.tostring(document), root=tsl_pki.root)
+    der = base64.b64decode(certificate.text)
+    for unreadable in ("AAAA", base64.b64encode(_bad_version(der, _CERT_V3)).decode()):
+        certificate.text = unreadable
+        with pytest.raises(TslError, match="unreadable signer certificate"):
+            load_tsl(etree.tostring(document), root=tsl_pki.root)
     certificate.getparent().remove(certificate)
     with pytest.raises(TslError, match="does not carry"):
         load_tsl(etree.tostring(document), root=tsl_pki.root)
@@ -336,13 +362,18 @@ def test_bad_scheme_information(content: TslContent, message: str, tsl_pki: TslP
 def test_naive_dates_are_taken_as_utc_and_bad_certificates_are_skipped(
     pki: Pki, tsl_pki: TslPki
 ) -> None:
-    content = TslContent(services=[Service(pki.root)], next_update="2099-01-01T00:00:00")
+    content = TslContent(
+        services=[Service(pki.root), Service(pki.ca)], next_update="2099-01-01T00:00:00"
+    )
     root = unsigned_tsl(content)
-    bad = root.find(".//{http://uri.etsi.org/02231/v2#}X509Certificate")
-    bad.text = "AAAA"
+    unreadable, damaged = root.iterfind(".//{http://uri.etsi.org/02231/v2#}X509Certificate")
+    unreadable.text = "AAAA"
+    damaged.text = base64.b64encode(
+        _bad_version(pki.ca.public_bytes(serialization.Encoding.DER), _CERT_V3)
+    ).decode()
     trusted = load_tsl(sign_tsl(root, tsl_pki), root=tsl_pki.root)
     assert trusted.next_update.tzinfo is dt.UTC
-    assert trusted.services[0].certificates == ()
+    assert [service.certificates for service in trusted.services] == [(), ()]
 
 
 # -- download ---------------------------------------------------------------------------------
@@ -458,6 +489,8 @@ def test_fetch_tries_every_crl_distribution_point(monkeypatch: pytest.MonkeyPatc
     truncate=st.booleans(),
     in_crl=st.booleans(),
 )
+# Found on 2026-11-08: the version of the CRL set to 0 made cryptography raise InvalidVersion.
+@example(position=10, byte=0, truncate=False, in_crl=True)
 def test_a_damaged_list_or_crl_is_refused_or_reads_the_same(
     position: int, byte: int, truncate: bool, in_crl: bool
 ) -> None:

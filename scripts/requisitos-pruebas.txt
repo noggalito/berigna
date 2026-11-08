@@ -1,0 +1,7 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# SPDX-FileCopyrightText: 2026 noggalito
+# The test tools from PyPI, one place for scripts/ci-entorno.sh (Debian 13) and
+# scripts/probar-paquete-instalado.sh (the installed .deb on another distribution), so that a
+# failure in one and not the other comes from the distribution, never from the tool.
+pytest==8.3.5
+hypothesis==6.130.5

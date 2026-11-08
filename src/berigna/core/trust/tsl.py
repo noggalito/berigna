@@ -147,7 +147,7 @@ def _signer_certificate(signature: Any) -> x509.Certificate:
         raise TslError("the signature does not carry the signer certificate")
     try:
         return x509.load_der_x509_certificate(base64.b64decode(encoded))
-    except ValueError as exc:
+    except UNREADABLE_DATA as exc:
         raise TslError(f"unreadable signer certificate: {exc}") from exc
 
 
@@ -191,10 +191,13 @@ def _check_not_revoked(
 ) -> None:
     try:
         crl = x509.load_der_x509_crl(data)
+    except x509.InvalidVersion as exc:
+        # DER, but with its version damaged (R-DES-07, 2026-11-08): not a PEM CRL either
+        raise TslError(f"unreadable CRL of the trusted list signer: {exc}") from exc
     except ValueError:
         try:
             crl = x509.load_pem_x509_crl(data)
-        except ValueError as exc:
+        except UNREADABLE_DATA as exc:
             raise TslError(f"unreadable CRL of the trusted list signer: {exc}") from exc
     # cryptography reads the fields of a CRL when asked: a damaged one may raise only here,
     # and not always a ValueError (a KeyError, found by the mutations of R-DES-07)
@@ -270,7 +273,7 @@ def _services(signed: Any) -> tuple[TslService, ...]:
                     certificates.append(
                         x509.load_der_x509_certificate(base64.b64decode(encoded.text or ""))
                     )
-                except ValueError:
+                except UNREADABLE_DATA:
                     continue  # an unreadable entry is skipped, never trusted
             services.append(
                 TslService(

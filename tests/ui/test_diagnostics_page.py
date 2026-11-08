@@ -45,7 +45,10 @@ def test_diagnosis_from_the_menu(app: BerignaApplication) -> None:
         row, _icon = page._rows[Step.CARD]
         assert row.get_subtitle() == "Hay un DNIe en innovatech 00."
         row, _icon = page._rows[Step.VALIDATION]
-        assert "berigna está funcionando sin acceso a la red" in row.get_subtitle()
+        # The subtitle is markup, with the name in bold (brand_markup); libadwaita 1.7 gives it
+        # back without the tags and 1.9 (Ubuntu 26.04) as set: compare without them.
+        subtitle = row.get_subtitle().replace("<b>", "").replace("</b>", "")
+        assert "berigna está funcionando sin acceso a la red" in subtitle
         page.run()  # check again
         yield from wait_until(lambda: page._again.get_sensitive(), 15)
 

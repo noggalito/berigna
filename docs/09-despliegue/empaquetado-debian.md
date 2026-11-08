@@ -3,9 +3,9 @@
 | Campo | Valor |
 |---|---|
 | Documento | BRG-DSP-001 |
-| Versión | 0.7.0 |
+| Versión | 0.8.0 |
 | Estado | Borrador |
-| Fecha | 2026-11-06 |
+| Fecha | 2026-11-08 |
 | Responsable | noggalito |
 
 ## 1. Paquetes binarios
@@ -100,6 +100,22 @@ Resultados con `python3-pyhanko` 0.25.1: `lintian --pedantic` sin errores (un av
 esperado, `initial-upload-closes-no-bugs`, hasta que la subida a Debian cierre el ITP
 #1062808); `piuparts` pasa en un trixie mínimo; el paquete se instala con las dependencias
 de Debian y funciona (`import pyhanko`, el CLI y su página de manual).
+
+## 5 bis. Un solo `.deb` para la familia Debian (2026-11-08)
+
+Un entregable por formato, no por distribución: el mismo `berigna_X.Y.Z-1_all.deb`, con `python3-pyhanko` y `berigna-nautilus`, se instala en cualquier distribución de la familia Debian que satisfaga sus dependencias, sin sufijos `~ubuntu…` ni suites por distribución. Se puede porque los tres paquetes son `Architecture: all`, Python puro: `dh_python3` no pone techo a la versión de Python (`python3 (>= 3.12)`) y la byte-compilación se hace al instalar, con el Python del sistema. Dónde está soportado lo dice la matriz de pruebas, no el paquete.
+
+La CI compila los paquetes una sola vez, en Debian 13 (la base más antigua), en el trabajo `paquetes` (`scripts/empaquetar-*.sh debuild`, con su `SHA256SUMS`), y el trabajo `ubuntu-26-04` instala ese mismo artefacto en un contenedor `ubuntu:26.04` y ejecuta la suite completa contra el paquete instalado (`scripts/probar-paquete-instalado.sh`: `berigna` se importa de `/usr/lib/python3/dist-packages`, nunca de `src/`; las vistas, el esquema y los catálogos son los instalados). Un fallo se ve en rojo en el PR, pero solo `verificar` es obligatorio para fusionar hasta que se decida el nivel de soporte de Ubuntu 26.04 (DP-23).
+
+Resultado del 2026-11-08 en Ubuntu 26.04.1 (Python 3.14.4, cryptography 46.0.5, lxml 6.0.2, pyscard 2.3.1, signxml 4.2.0, libadwaita 1.9, xmlsec1 1.3.9): 784 pruebas en verde, 5 omitidas (HIL) y una excluida (la del SBOM, que describe el entorno de la CI y no un sistema instalado). Lo que apareció por el camino:
+
+- La imagen de contenedor de Ubuntu está minimizada: `dpkg` descarta `/usr/share/locale` y con él los catálogos de berigna. Una instalación real los conserva; el script quita esa regla antes de instalar.
+- xmlsec1 1.3 lee solo el primer certificado de un archivo PEM: la prueba pasa cada ancla en su archivo (con la 1.2.41 de Debian 13 da igual).
+- libadwaita 1.9 devuelve el subtítulo de una fila con su marcado (`<b>berigna</b>`) y la 1.7 sin él: la prueba compara el texto.
+- cryptography 46 avisa de que tres raíces extranjeras de la TSL real de INDECOPI (dos de GSE, Colombia, y la de Indenova, España) tienen número de serie 0, prohibido por RFC 5280, y de que una versión futura no las leerá. `core.trust.tsl` ya descarta con `ValueError` un certificado que no se puede leer: con esa versión, esas tres CA dejarían de ser de confianza, sin afectar a la carga de la lista ni a las CA peruanas.
+- Avisos de obsolescencia ajenos a berigna: signxml 4.2 (curvas binarias de cryptography) y PyGObject (API de asyncio que Python 3.16 retirará).
+
+Ubuntu 24.04 y Linux Mint 22 quedan fuera: no traen signxml y sus versiones de cryptography, pyscard y libadwaita están por debajo de los mínimos.
 
 ## 6. Futuro: Fedora y similares
 

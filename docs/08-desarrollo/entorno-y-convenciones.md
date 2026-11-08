@@ -3,7 +3,7 @@
 | Campo | Valor |
 |---|---|
 | Documento | BRG-DES-001 |
-| Versión | 0.11.3 |
+| Versión | 0.11.4 |
 | Estado | Borrador |
 | Fecha | 2026-11-08 |
 | Responsable | noggalito |
@@ -101,7 +101,7 @@ Si no se pueden instalar paquetes del sistema, se usa un entorno virtual que reu
 
 ```bash
 python3 -m venv --system-site-packages .venv
-.venv/bin/pip install 'pytest==8.3.5' 'hypothesis==6.130.5' 'mypy==1.15.0' 'pytest-cov==5.0.0' ruff
+.venv/bin/pip install -r scripts/requisitos-pruebas.txt 'mypy==1.15.0' 'pytest-cov==5.0.0' ruff
 .venv/bin/pip install --no-deps -e .   # berigna en modo editable (scripts HIL incluidos)
 ```
 

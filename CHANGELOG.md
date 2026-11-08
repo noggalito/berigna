@@ -4,7 +4,14 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/); v
 
 ## [Sin publicar]
 
+### Añadido
+
+- La CI compila los paquetes una sola vez, en Debian 13, y prueba ese mismo `.deb` instalado en Ubuntu 26.04 LTS con la suite completa contra el paquete instalado, no contra `src/` (`scripts/probar-paquete-instalado.sh`): un solo `.deb` para la familia Debian. El trabajo de Ubuntu avisa en el PR, pero todavía no es obligatorio para fusionar (DP-23).
+
 ### Corregido
+
+- Un certificado o una CRL con el número de versión dañado hacen que cryptography lance `InvalidVersion`, que no es un `ValueError`. En la TSL de INDECOPI, la carga fallaba con un error no previsto en lugar de rechazar la lista (ERR-204) si el dañado era el certificado del firmante o su CRL (DER o PEM), y en lugar de descartar solo esa entrada si era el certificado de un servicio. `InvalidVersion` pasa a la lista común de datos ilegibles (`UNREADABLE_DATA`), que usan todas las fronteras con datos de fuera. Lo encontró la prueba por propiedades de R-DES-07; los casos quedan fijados.
+- Dos pruebas dependían de la versión de las herramientas de Debian 13: la de xmlsec1 pasaba las anclas en un único PEM (xmlsec1 1.3, el de Ubuntu 26.04, lee solo el primer certificado y daba KEY-NOT-FOUND), y la del diagnóstico comparaba el subtítulo sin el marcado del nombre en negrita (libadwaita 1.9 lo devuelve tal cual).
 
 - Las versiones publicadas incluyen `python3-pyhanko`: `berigna` depende de él y Debian 13 no lo tiene, así que la 0.3.0 no se podía instalar solo con sus paquetes (se añadió a la publicación después). `scripts/version.py etiquetar` lo construye con `scripts/empaquetar-pyhanko.sh`, lo incluye en `SHA256SUMS` y las notas dicen cómo instalar. El README dice qué versión está publicada y cómo instalarla.
 
