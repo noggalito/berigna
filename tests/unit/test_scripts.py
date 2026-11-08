@@ -126,20 +126,32 @@ def test_a_dependency_out_of_bounds_or_missing_is_named() -> None:
     assert found[1].startswith("berigna-no-existe: no está instalado")
 
 
-_VERSION_FILES = (
-    "pyproject.toml",
-    "meson.build",
-    "src/berigna/__init__.py",
-    "debian/changelog",
-    "data/com.noggalito.Berigna.metainfo.xml.in",
-    "CHANGELOG.md",
-)
+_RELEASE_FILES = {
+    "pyproject.toml": '[project]\nname = "berigna"\nversion = "0.1.0.dev0"\n',
+    "meson.build": "project(\n  'berigna',\n  version: '0.1.0.dev0',\n)\n",
+    "src/berigna/__init__.py": '"""berigna."""\n\n__version__ = "0.1.0.dev0"\n',
+    "debian/changelog": (
+        "berigna (0.1.0~dev0-1) trixie; urgency=medium\n\n  * Initial package.\n\n"
+        " -- noggalito <berigna@noggalito.com>  Thu, 05 Nov 2026 12:00:00 -0500\n"
+    ),
+    # a blank line before <releases>: the new release keeps the indentation
+    "data/com.noggalito.Berigna.metainfo.xml.in": (
+        '<component>\n\n  <releases>\n    <release version="0.3.0-rc.1" date="2026-10-29"/>\n'
+        "  </releases>\n</component>\n"
+    ),
+    "CHANGELOG.md": (
+        "# Registro de cambios\n\n## [Sin publicar]\n\n### Añadido\n\n- Algo nuevo.\n\n"
+        "### Corregido\n\n- Un fallo.\n"
+    ),
+}
 
 
 def _release_tree(tmp_path: Path) -> Path:
-    for name in _VERSION_FILES:
+    """Files of their own, not the repository's: preparing a real version empties its
+    "Sin publicar" and must not break this test."""
+    for name, content in _RELEASE_FILES.items():
         (tmp_path / name).parent.mkdir(parents=True, exist_ok=True)
-        (tmp_path / name).write_text((ROOT / name).read_text(encoding="utf-8"), encoding="utf-8")
+        (tmp_path / name).write_text(content, encoding="utf-8")
     return tmp_path
 
 
@@ -157,7 +169,7 @@ def test_a_version_is_written_in_each_form() -> None:
     final = version.parse("1.0.0")
     assert (final.pep440, final.debian) == ("1.0.0", "1.0.0")
     assert version.parse("0.4.0-beta.1").pep440 == "0.4.0b1"
-    for wrong in ("1.0", "1.0.0-rc2", "1.0.0.dev0", "1.0.0-rc.2+x"):
+    for wrong in ("1.0", "1.0.0-rc2", "1.0.0.dev0", "1.0.0-rc.2+x", "01.0.0", "1.0.0-rc.01"):
         with pytest.raises(version.VersionError):
             version.parse(wrong)
 
@@ -166,20 +178,22 @@ def test_preparing_a_version_updates_the_six_places(tmp_path: Path) -> None:
     version = _script("version.py")
     root = _release_tree(tmp_path)
     target = version.parse("0.3.0-rc.2")
-    assert version.problems(root, target)  # the repository is not at that version
+    assert version.problems(root, target)  # the files are not at that version
     when = dt.datetime(2026, 11, 8, 10, 30, tzinfo=dt.timezone(dt.timedelta(hours=-5)))
     version.prepare(root, target, when.date(), when)
     assert version.problems(root, target) == []
     changelog = (root / "CHANGELOG.md").read_text(encoding="utf-8")
-    assert "## [Sin publicar]\n\n## [0.3.0-rc.2] - 2026-11-08\n" in changelog
-    notes = version.notes(root, target)
-    assert notes is not None
-    assert notes.startswith("### Añadido")
+    assert "## [Sin publicar]\n\n## [0.3.0-rc.2] - 2026-11-08\n\n### Añadido\n" in changelog
+    assert (
+        version.notes(root, target)
+        == "### Añadido\n\n- Algo nuevo.\n\n### Corregido\n\n- Un fallo."
+    )
     debian = (root / "debian/changelog").read_text(encoding="utf-8")
     assert debian.startswith("berigna (0.3.0~rc2-1) trixie; urgency=medium\n")
     assert " -- noggalito <berigna@noggalito.com>  Sun, 08 Nov 2026 10:30:00 -0500\n" in debian
+    assert debian.endswith(_RELEASE_FILES["debian/changelog"])
     metainfo = (root / "data/com.noggalito.Berigna.metainfo.xml.in").read_text(encoding="utf-8")
-    assert '<release version="0.3.0-rc.2" date="2026-11-08"/>' in metainfo
+    assert '\n  <releases>\n    <release version="0.3.0-rc.2" date="2026-11-08"/>\n' in metainfo
     # the same version again: refused, nothing changes
     with pytest.raises(version.VersionError, match="ya tiene"):
         version.prepare(root, target, when.date(), when)
@@ -189,19 +203,43 @@ def test_preparing_a_version_updates_the_six_places(tmp_path: Path) -> None:
     assert version.problems(root, target) == []
 
 
-def test_the_packages_of_the_version_are_found_where_the_builder_left_them(tmp_path: Path) -> None:
-    """debuild leaves the .deb in build/, debcraft in a folder for each build; the newest
-    copy of each package counts, and those of an earlier run of the script do not."""
+def test_a_version_older_than_the_current_one_is_refused(tmp_path: Path) -> None:
+    """The metainfo already lists 0.3.0-rc.1, ahead of pyproject.toml (tagged by hand)."""
+    version = _script("version.py")
+    root = _release_tree(tmp_path)
+    day = dt.date(2026, 11, 8)
+    when = dt.datetime(2026, 11, 8, 10, 30, tzinfo=dt.UTC)
+    for older in ("0.2.0", "0.3.0-rc.1", "0.3.0-beta.4"):
+        with pytest.raises(version.VersionError, match="no es posterior"):
+            version.prepare(root, version.parse(older), day, when)
+    assert (root / "CHANGELOG.md").read_text(encoding="utf-8") == _RELEASE_FILES["CHANGELOG.md"]
+
+
+def test_the_packages_of_the_version_are_those_of_this_build(tmp_path: Path) -> None:
+    """debuild leaves the .deb in build/, debcraft in a folder for each build. Only those
+    built after the start count (not an older build of the same version, nor the copies of
+    an earlier run), and both packages must be there."""
     version = _script("version.py")
     target = version.parse("0.3.0-rc.2")
     old = tmp_path / "debcraft-build-berigna-1" / "berigna_0.3.0~rc2-1_all.deb"
+    old_nautilus = tmp_path / "debcraft-build-berigna-1" / "berigna-nautilus_0.3.0~rc2-1_all.deb"
     new = tmp_path / "debcraft-build-berigna-2" / "berigna_0.3.0~rc2-1_all.deb"
     nautilus = tmp_path / "debcraft-build-berigna-2" / "berigna-nautilus_0.3.0~rc2-1_all.deb"
     copy = tmp_path / "version" / "v0.3.0-rc.2" / "berigna_0.3.0~rc2-1_all.deb"
     other = tmp_path / "berigna_0.1.0~dev0-1_all.deb"
-    for number, path in enumerate((old, new, nautilus, copy, other)):
+    times = {
+        old: 1_000,
+        old_nautilus: 1_000,
+        new: 2_000,
+        nautilus: 2_000,
+        copy: 3_000,
+        other: 2_000,
+    }
+    for path, moment in times.items():
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_bytes(b"deb")
-        os.utime(path, (1_000 + number, 1_000 + number))
-    os.utime(copy, (5_000, 5_000))  # newer, but a copy
-    assert version.built_packages(tmp_path, target) == [nautilus, new]
+        os.utime(path, (moment, moment))
+    assert version.built_packages(tmp_path, target, 1_500) == [new, nautilus]
+    nautilus.unlink()  # this build did not produce it: the older one is not taken instead
+    with pytest.raises(version.VersionError, match="berigna-nautilus"):
+        version.built_packages(tmp_path, target, 1_500)
