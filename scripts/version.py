@@ -49,9 +49,15 @@ class VersionError(Exception):
 
 @dataclass(frozen=True)
 class Version:
-    semver: str  # 1.0.0-rc.2: the tag (with a "v"), the metainfo, the CHANGELOG
+    semver: str  # 1.0.0-rc.2: the tag (with a "v") and the CHANGELOG
     pep440: str  # 1.0.0rc2: pyproject.toml, meson.build, __version__
     debian: str  # 1.0.0~rc2: upstream version of the Debian package (sorts before 1.0.0)
+
+    @property
+    def appstream(self) -> str:
+        """The metainfo's form: AppStream, like Debian, sorts "1.0.0~rc.2" before "1.0.0",
+        and "1.0.0-rc.2" after it (appstreamcli: releases-not-in-order)."""
+        return self.semver.replace("-", "~", 1)
 
     @property
     def tag(self) -> str:
@@ -128,7 +134,7 @@ def prepare(root: Path, version: Version, day: dt.date, when: dt.datetime) -> No
     updates[metainfo] = _replace_once(
         (root / metainfo).read_text(encoding="utf-8"),
         r"^([ \t]*)<releases>\n",
-        rf'\1<releases>\n\1  <release version="{version.semver}" date="{day.isoformat()}"/>\n',
+        rf'\1<releases>\n\1  <release version="{version.appstream}" date="{day.isoformat()}"/>\n',
         metainfo,
     )
     debian = (root / "debian/changelog").read_text(encoding="utf-8")
@@ -148,7 +154,7 @@ def _released(root: Path) -> Pep440 | None:
     metainfo = (root / "data/com.noggalito.Berigna.metainfo.xml.in").read_text(encoding="utf-8")
     release = re.search(r'<release version="([^"]*)"', metainfo)
     if release:
-        found.append(Pep440(parse(release.group(1)).pep440))
+        found.append(Pep440(parse(release.group(1).replace("~", "-", 1)).pep440))
     return max(found) if found else None
 
 
@@ -164,7 +170,7 @@ def problems(root: Path, version: Version) -> list[str]:
         found.append(f"debian/changelog: {debian}")
     metainfo = (root / "data/com.noggalito.Berigna.metainfo.xml.in").read_text(encoding="utf-8")
     first = re.search(r'<release version="([^"]*)"', metainfo)
-    if first is None or first.group(1) != version.semver:
+    if first is None or first.group(1) != version.appstream:
         found.append(f"metainfo: {first.group(1) if first else 'sin <release>'}")
     if notes(root, version) is None:
         found.append(f"CHANGELOG.md: sin la sección [{version.semver}]")
