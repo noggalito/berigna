@@ -9,6 +9,8 @@ PY=${PYTHON:-.venv/bin}
 "$PY/ruff" format --check src tests
 "$PY/ruff" check src tests
 "$PY/mypy"
+# Debian's packages, seen by the .venv, within the bounds of pyproject.toml (DP-19, R-DES-16).
+"$PY/python" scripts/verificar-dependencias.py
 "$PY/python" scripts/verificar-documentacion.py
 scripts/traducciones.sh compilar
 # Views and settings schema of the interface (ADR-0010); the tests read them from build/meson.

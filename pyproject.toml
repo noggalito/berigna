@@ -19,7 +19,9 @@ requires-python = ">=3.12"
 authors = [{ name = "noggalito", email = "berigna@noggalito.com" }]
 # Production installs come from Debian 13 packages (ADR-0013, SPK-05); these bounds follow
 # those versions. pyHanko is pinned: 0.25.3 needs pyhanko-certvalidator>=0.26.5, newer than
-# Debian's 0.26.3.
+# Debian's 0.26.3. pyhanko-certvalidator stays below 0.27 because pyHanko 0.25.1 asks for
+# <0.27 and fails to import with 0.30 (Debian testing, R-15); its floor is Debian 13's 0.26.3.
+# scripts/verificar-dependencias.py checks these bounds in the CI (DP-19, R-DES-16).
 dependencies = [
     "cryptography>=42",
     "pyscard>=2.2",
