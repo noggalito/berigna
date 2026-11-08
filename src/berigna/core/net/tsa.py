@@ -14,6 +14,7 @@ from dataclasses import dataclass, field
 
 import requests
 from asn1crypto import cms, tsp
+from asn1crypto import x509 as asn1_x509
 from pyhanko.sign.general import extract_signer_info
 from pyhanko.sign.timestamps import HTTPTimeStamper, TimeStamper
 from pyhanko.sign.timestamps.common_utils import TimestampRequestError, handle_tsp_response
@@ -36,6 +37,14 @@ class TsaSettings:
 # What a damaged answer raises in asn1crypto and pyHanko (R-DES-07: the mutations of the
 # answer reached the user as ERR-000 or, worse, as a signature written with a broken token).
 _UNREADABLE: tuple[type[Exception], ...] = (*UNREADABLE_DATA, SignatureValidationError)
+
+
+def token_certificates(signed_data: cms.SignedData) -> list[asn1_x509.Certificate]:
+    """The certificates a time-stamp token carries (none if the TSA did not embed them)."""
+    choices = signed_data["certificates"]
+    if not choices.native:
+        return []
+    return [choice.chosen for choice in choices if choice.name == "certificate"]
 
 
 def check_token(token: cms.ContentInfo, message_digest: bytes, md_algorithm: str) -> None:

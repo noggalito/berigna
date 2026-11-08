@@ -41,13 +41,13 @@ from berigna.core.formats.xades import (
     XadesResult,
     _add_archive_timestamp,
     _add_validation_data,
-    _token_certificates,
     _TokenKey,
     _unsigned_properties,
     parse_xml,
     sign_xades,
     signature_element,
 )
+from berigna.core.net.tsa import token_certificates
 from berigna.core.token.base import HashAlgorithmName
 from berigna.core.token.dnie_v2 import INS_PSO, DnieV2Token
 from berigna.core.token.pin import Pin
@@ -697,7 +697,7 @@ def test_the_tsa_token_may_carry_no_certificates(pki: Pki) -> None:
     der = base64.b64decode(time_stamp.find("xades:EncapsulatedTimeStamp", NS).text)
     token = cms.ContentInfo.load(der)
     token["content"]["certificates"] = cms.CertificateSet([])
-    assert _token_certificates(token["content"]) == []
+    assert token_certificates(token["content"]) == []
 
 
 def test_revocation_values_carry_only_what_there_is(pki: Pki) -> None:

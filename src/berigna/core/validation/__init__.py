@@ -20,7 +20,6 @@ from berigna.core.validation.preflight import (
     RevocationNote,
     SignerCheck,
     check_signer,
-    check_tsa,
     signing_validation_context,
 )
 from berigna.core.validation.xades import (
@@ -45,7 +44,6 @@ __all__ = [
     "XadesVerification",
     "cades_content",
     "check_signer",
-    "check_tsa",
     "signing_validation_context",
     "verify_cades",
     "verify_pdf",

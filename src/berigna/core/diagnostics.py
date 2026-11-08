@@ -20,12 +20,12 @@ from pyhanko.sign.timestamps import TimeStamper
 
 from berigna.core.errors import BerignaError
 from berigna.core.report.explanations import common_name, masked_id
-from berigna.core.signing import probe_trusted
 from berigna.core.token.base import TokenSigner
 from berigna.core.token.monitor import DeviceState, DeviceStatus
 from berigna.core.trust import TrustStore
 from berigna.core.validation import check_signer
 from berigna.core.validation.preflight import EXPIRY_WARNING
+from berigna.core.validation.tsa import probe_trusted
 
 log = logging.getLogger(__name__)
 

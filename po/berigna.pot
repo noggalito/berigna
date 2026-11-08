@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-08 00:17-0500\n"
+"POT-Creation-Date: 2026-11-08 00:32-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -426,13 +426,13 @@ msgid "Signature verification report"
 msgstr ""
 
 #: src/berigna/core/report/messages.py:152
-#: src/berigna/core/report/messages.py:277
-#: src/berigna/core/report/messages.py:296
+#: src/berigna/core/report/messages.py:278
+#: src/berigna/core/report/messages.py:297
 msgid "File"
 msgstr ""
 
 #: src/berigna/core/report/messages.py:153
-#: src/berigna/core/report/messages.py:297
+#: src/berigna/core/report/messages.py:298
 msgid "SHA-256 of the file"
 msgstr ""
 
@@ -477,14 +477,14 @@ msgid "Archive time-stamps"
 msgstr ""
 
 #: src/berigna/core/report/messages.py:163
-#: src/berigna/core/report/messages.py:280
-#: src/berigna/core/report/messages.py:298 src/berigna/ui/verification.py:311
+#: src/berigna/core/report/messages.py:281
+#: src/berigna/core/report/messages.py:299 src/berigna/ui/verification.py:311
 msgid "Signed file"
 msgstr ""
 
 #: src/berigna/core/report/messages.py:164
-#: src/berigna/core/report/messages.py:279
-#: src/berigna/core/report/messages.py:303
+#: src/berigna/core/report/messages.py:280
+#: src/berigna/core/report/messages.py:304
 msgid "Result"
 msgstr ""
 
@@ -493,7 +493,7 @@ msgid "ETSI EN 319 102-1 code"
 msgstr ""
 
 #: src/berigna/core/report/messages.py:166
-#: src/berigna/core/report/messages.py:301
+#: src/berigna/core/report/messages.py:302
 msgid "Signer"
 msgstr ""
 
@@ -740,92 +740,93 @@ msgstr ""
 
 #: src/berigna/core/report/messages.py:262
 msgid ""
-"The time-stamping authority is not trusted: its certificate does not lead to "
-"an accredited authority of the IOFE, or it has been revoked. Check the TSA "
-"in Preferences, or sign without a time-stamp (B-B)."
+"The time-stamping authority is not trusted: its certificate does not come "
+"from an accredited authority (IOFE or the trusted list of INDECOPI), is not "
+"for time-stamps, has expired or has been revoked. Check the TSA in "
+"Preferences, or sign without a time-stamp (B-B)."
 msgstr ""
 
-#: src/berigna/core/report/messages.py:267
+#: src/berigna/core/report/messages.py:268
 msgid ""
 "The author certified this document so that it cannot be changed: it does not "
 "accept more signatures."
 msgstr ""
 
-#: src/berigna/core/report/messages.py:270
+#: src/berigna/core/report/messages.py:271
 msgid "The document could not be verified."
 msgstr ""
 
-#: src/berigna/core/report/messages.py:271
+#: src/berigna/core/report/messages.py:272
 msgid "The file is not a document that berigna can read, or it is damaged."
 msgstr ""
 
-#: src/berigna/core/report/messages.py:272
+#: src/berigna/core/report/messages.py:273
 msgid "The signature cannot be read, or it is not a CAdES or XAdES signature."
 msgstr ""
 
-#: src/berigna/core/report/messages.py:278
+#: src/berigna/core/report/messages.py:279
 msgid "Folder"
 msgstr ""
 
-#: src/berigna/core/report/messages.py:281
-#: src/berigna/core/report/messages.py:300 src/berigna/ui/presentation.py:503
+#: src/berigna/core/report/messages.py:282
+#: src/berigna/core/report/messages.py:301 src/berigna/ui/presentation.py:503
 msgid "Level"
 msgstr ""
 
-#: src/berigna/core/report/messages.py:282
-#: src/berigna/core/report/messages.py:299
+#: src/berigna/core/report/messages.py:283
+#: src/berigna/core/report/messages.py:300
 msgid "SHA-256 of the signed file"
 msgstr ""
 
-#: src/berigna/core/report/messages.py:283
+#: src/berigna/core/report/messages.py:284
 msgid "Code"
 msgstr ""
 
-#: src/berigna/core/report/messages.py:284
+#: src/berigna/core/report/messages.py:285
 msgid "Explanation"
 msgstr ""
 
-#: src/berigna/core/report/messages.py:287
+#: src/berigna/core/report/messages.py:288
 msgid "Signed"
 msgstr ""
 
-#: src/berigna/core/report/messages.py:288
+#: src/berigna/core/report/messages.py:289
 msgid "Not signed"
 msgstr ""
 
-#: src/berigna/core/report/messages.py:289
+#: src/berigna/core/report/messages.py:290
 msgid "Skipped"
 msgstr ""
 
-#: src/berigna/core/report/messages.py:294
+#: src/berigna/core/report/messages.py:295
 msgid "Date (UTC)"
 msgstr ""
 
-#: src/berigna/core/report/messages.py:295
+#: src/berigna/core/report/messages.py:296
 msgid "Operation"
 msgstr ""
 
-#: src/berigna/core/report/messages.py:302
+#: src/berigna/core/report/messages.py:303
 msgid "Certificate serial number"
 msgstr ""
 
-#: src/berigna/core/report/messages.py:304
+#: src/berigna/core/report/messages.py:305
 msgid "Detail"
 msgstr ""
 
-#: src/berigna/core/report/messages.py:307
+#: src/berigna/core/report/messages.py:308
 msgid "Signature"
 msgstr ""
 
-#: src/berigna/core/report/messages.py:308
+#: src/berigna/core/report/messages.py:309
 msgid "Signature in a batch"
 msgstr ""
 
-#: src/berigna/core/report/messages.py:309
+#: src/berigna/core/report/messages.py:310
 msgid "Verification"
 msgstr ""
 
-#: src/berigna/ui/application.py:342
+#: src/berigna/ui/application.py:347
 msgid "Sign and verify documents with your Peruvian DNIe."
 msgstr ""
 
@@ -1305,7 +1306,7 @@ msgid "There is no timestamping authority configured."
 msgstr ""
 
 #: src/berigna/ui/preferences.py:401
-msgid "The timestamping authority answered with a valid time-stamp."
+msgid "The timestamping authority answered and is trusted."
 msgstr ""
 
 #: src/berigna/ui/preferences.py:423
@@ -1730,7 +1731,7 @@ msgid ""
 msgstr ""
 
 #: src/berigna/ui/presentation.py:665
-msgid "The time-stamping authority answered."
+msgid "The time-stamping authority answered and is trusted."
 msgstr ""
 
 #: src/berigna/ui/presentation.py:668

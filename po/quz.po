@@ -12,7 +12,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: berigna\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-08 00:17-0500\n"
+"POT-Creation-Date: 2026-11-08 00:32-0500\n"
 "PO-Revision-Date: 2026-10-27 23:37-0500\n"
 "Last-Translator: noggalito <berigna@noggalito.com>\n"
 "Language-Team: none\n"
@@ -470,13 +470,13 @@ msgid "Signature verification report"
 msgstr "Firmakunaq chiqaqchay willakuynin"
 
 #: src/berigna/core/report/messages.py:152
-#: src/berigna/core/report/messages.py:277
-#: src/berigna/core/report/messages.py:296
+#: src/berigna/core/report/messages.py:278
+#: src/berigna/core/report/messages.py:297
 msgid "File"
 msgstr "Archivo"
 
 #: src/berigna/core/report/messages.py:153
-#: src/berigna/core/report/messages.py:297
+#: src/berigna/core/report/messages.py:298
 msgid "SHA-256 of the file"
 msgstr "Archivoq SHA-256 nisqan"
 
@@ -521,14 +521,14 @@ msgid "Archive time-stamps"
 msgstr "Archivo pacha sellokuna"
 
 #: src/berigna/core/report/messages.py:163
-#: src/berigna/core/report/messages.py:280
-#: src/berigna/core/report/messages.py:298 src/berigna/ui/verification.py:311
+#: src/berigna/core/report/messages.py:281
+#: src/berigna/core/report/messages.py:299 src/berigna/ui/verification.py:311
 msgid "Signed file"
 msgstr "Firmasqa archivo"
 
 #: src/berigna/core/report/messages.py:164
-#: src/berigna/core/report/messages.py:279
-#: src/berigna/core/report/messages.py:303
+#: src/berigna/core/report/messages.py:280
+#: src/berigna/core/report/messages.py:304
 msgid "Result"
 msgstr "Lluqsisqan"
 
@@ -537,7 +537,7 @@ msgid "ETSI EN 319 102-1 code"
 msgstr "ETSI EN 319 102-1 código"
 
 #: src/berigna/core/report/messages.py:166
-#: src/berigna/core/report/messages.py:301
+#: src/berigna/core/report/messages.py:302
 msgid "Signer"
 msgstr "Firmaq"
 
@@ -823,15 +823,17 @@ msgstr ""
 
 #: src/berigna/core/report/messages.py:262
 msgid ""
-"The time-stamping authority is not trusted: its certificate does not lead to "
-"an accredited authority of the IOFE, or it has been revoked. Check the TSA "
-"in Preferences, or sign without a time-stamp (B-B)."
+"The time-stamping authority is not trusted: its certificate does not come "
+"from an accredited authority (IOFE or the trusted list of INDECOPI), is not "
+"for time-stamps, has expired or has been revoked. Check the TSA in "
+"Preferences, or sign without a time-stamp (B-B)."
 msgstr ""
-"Pacha sello churaqqa manan iñisqachu: certificadonqa manan IOFEpa "
-"acreditasqa entidadninmanchu chayan, utaq anulasqa karqan. TSAta "
-"Akllanakunapi qhawariy, utaq mana pacha sellowan firmay (B-B)."
+"Pacha sello churaqqa manan iñisqachu: certificadonqa manan acreditasqa "
+"entidadmanta hamunchu (IOFE utaq INDECOPIpa iñisqa listan), manan pacha "
+"sellopaqchu, pachan tukusqa utaq anulasqa karqan. TSAta Akllanakunapi qhawariy, "
+"utaq mana pacha sellowan firmay (B-B)."
 
-#: src/berigna/core/report/messages.py:267
+#: src/berigna/core/report/messages.py:268
 msgid ""
 "The author certified this document so that it cannot be changed: it does not "
 "accept more signatures."
@@ -839,84 +841,84 @@ msgstr ""
 "Qillqaqqa kay qillqata chiqaqcharqan ama tikrakunanpaq: manan aswan "
 "firmakunata chaskinchu."
 
-#: src/berigna/core/report/messages.py:270
+#: src/berigna/core/report/messages.py:271
 msgid "The document could not be verified."
 msgstr "Manan atikurqanchu qillqata chiqaqchayta."
 
-#: src/berigna/core/report/messages.py:271
+#: src/berigna/core/report/messages.py:272
 msgid "The file is not a document that berigna can read, or it is damaged."
 msgstr ""
 "Archivoqa manan berignaq ñawinchayta atisqan qillqachu, utaq p'akisqa kashan."
 
-#: src/berigna/core/report/messages.py:272
+#: src/berigna/core/report/messages.py:273
 msgid "The signature cannot be read, or it is not a CAdES or XAdES signature."
 msgstr ""
 "Firmaqa manan ñawinchayta atinchu, utaq mana CAdES firmanchu nitaq XAdES "
 "firmanchu."
 
-#: src/berigna/core/report/messages.py:278
+#: src/berigna/core/report/messages.py:279
 msgid "Folder"
 msgstr "Carpeta"
 
-#: src/berigna/core/report/messages.py:281
-#: src/berigna/core/report/messages.py:300 src/berigna/ui/presentation.py:503
+#: src/berigna/core/report/messages.py:282
+#: src/berigna/core/report/messages.py:301 src/berigna/ui/presentation.py:503
 msgid "Level"
 msgstr "Pata"
 
-#: src/berigna/core/report/messages.py:282
-#: src/berigna/core/report/messages.py:299
+#: src/berigna/core/report/messages.py:283
+#: src/berigna/core/report/messages.py:300
 msgid "SHA-256 of the signed file"
 msgstr "Firmasqa archivoq SHA-256 nisqan"
 
-#: src/berigna/core/report/messages.py:283
+#: src/berigna/core/report/messages.py:284
 msgid "Code"
 msgstr "Código"
 
-#: src/berigna/core/report/messages.py:284
+#: src/berigna/core/report/messages.py:285
 msgid "Explanation"
 msgstr "Sut'ichay"
 
-#: src/berigna/core/report/messages.py:287
+#: src/berigna/core/report/messages.py:288
 msgid "Signed"
 msgstr "Firmasqa"
 
-#: src/berigna/core/report/messages.py:288
+#: src/berigna/core/report/messages.py:289
 msgid "Not signed"
 msgstr "Mana firmasqa"
 
-#: src/berigna/core/report/messages.py:289
+#: src/berigna/core/report/messages.py:290
 msgid "Skipped"
 msgstr "Saqisqa"
 
-#: src/berigna/core/report/messages.py:294
+#: src/berigna/core/report/messages.py:295
 msgid "Date (UTC)"
 msgstr "P'unchaw (UTC)"
 
-#: src/berigna/core/report/messages.py:295
+#: src/berigna/core/report/messages.py:296
 msgid "Operation"
 msgstr "Ruway"
 
-#: src/berigna/core/report/messages.py:302
+#: src/berigna/core/report/messages.py:303
 msgid "Certificate serial number"
 msgstr "Certificadoq serie yupaynin"
 
-#: src/berigna/core/report/messages.py:304
+#: src/berigna/core/report/messages.py:305
 msgid "Detail"
 msgstr "Aswan willakuy"
 
-#: src/berigna/core/report/messages.py:307
+#: src/berigna/core/report/messages.py:308
 msgid "Signature"
 msgstr "Firma"
 
-#: src/berigna/core/report/messages.py:308
+#: src/berigna/core/report/messages.py:309
 msgid "Signature in a batch"
 msgstr "Huñupi firma"
 
-#: src/berigna/core/report/messages.py:309
+#: src/berigna/core/report/messages.py:310
 msgid "Verification"
 msgstr "Chiqaqchay"
 
-#: src/berigna/ui/application.py:342
+#: src/berigna/ui/application.py:347
 msgid "Sign and verify documents with your Peruvian DNIe."
 msgstr "DNIeykiwan qillqakunata firmay, chiqaqchaypas."
 
@@ -1409,8 +1411,8 @@ msgid "There is no timestamping authority configured."
 msgstr "Manan ni huk pacha sello churaqpas churasqachu."
 
 #: src/berigna/ui/preferences.py:401
-msgid "The timestamping authority answered with a valid time-stamp."
-msgstr "Pacha sello churaqqa chiqaq sellowan kutichirqan."
+msgid "The timestamping authority answered and is trusted."
+msgstr "Pacha sello churaqqa kutichirqanmi, iñisqataqmi."
 
 #: src/berigna/ui/preferences.py:423
 msgid "The proxy address must start with http:// or https://."
@@ -1859,8 +1861,8 @@ msgstr ""
 "Tinkuyta qhawariy; chaykamaqa sapalla firmallam (B-B) atikun."
 
 #: src/berigna/ui/presentation.py:665
-msgid "The time-stamping authority answered."
-msgstr "Pacha sello churaqqa kutichirqanmi."
+msgid "The time-stamping authority answered and is trusted."
+msgstr "Pacha sello churaqqa kutichirqanmi, iñisqataqmi."
 
 #: src/berigna/ui/presentation.py:668
 msgid ""
@@ -2252,6 +2254,21 @@ msgstr "Berignawan firmay"
 #: src/berigna_nautilus.py:65
 msgid "Verificar firma"
 msgstr "Firmata chiqaqchay"
+
+#~ msgid ""
+#~ "The time-stamping authority is not trusted: its certificate does not lead "
+#~ "to an accredited authority of the IOFE, or it has been revoked. Check the "
+#~ "TSA in Preferences, or sign without a time-stamp (B-B)."
+#~ msgstr ""
+#~ "Pacha sello churaqqa manan iñisqachu: certificadonqa manan IOFEpa "
+#~ "acreditasqa entidadninmanchu chayan, utaq anulasqa karqan. TSAta "
+#~ "Akllanakunapi qhawariy, utaq mana pacha sellowan firmay (B-B)."
+
+#~ msgid "The timestamping authority answered with a valid time-stamp."
+#~ msgstr "Pacha sello churaqqa chiqaq sellowan kutichirqan."
+
+#~ msgid "The time-stamping authority answered."
+#~ msgstr "Pacha sello churaqqa kutichirqanmi."
 
 #~ msgid "Document Signer"
 #~ msgstr "Qillqakuna firmana"

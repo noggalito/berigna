@@ -35,7 +35,6 @@ from dataclasses import dataclass, replace
 from typing import Any, cast
 
 from asn1crypto import cms
-from asn1crypto import x509 as asn1_x509
 from cryptography import x509
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import padding as asym_padding
@@ -62,6 +61,7 @@ from berigna.core.formats.common import (
     SignatureLevel,
     required,
 )
+from berigna.core.net.tsa import token_certificates
 from berigna.core.token.base import HashAlgorithmName, TokenSigner
 
 DS = "http://www.w3.org/2000/09/xmldsig#"
@@ -287,13 +287,6 @@ def _unsigned_properties(sig: etree._Element) -> etree._Element:
     return properties
 
 
-def _token_certificates(token_content: cms.SignedData) -> list[asn1_x509.Certificate]:
-    choices = token_content["certificates"]
-    if not choices.native:
-        return []
-    return [choice.chosen for choice in choices if choice.name == "certificate"]
-
-
 async def _add_signature_timestamp(
     sig: etree._Element, stamper: TimeStamper, digest: HashAlgorithmName
 ) -> bytes:
@@ -326,7 +319,7 @@ async def _add_validation_data(
     certificates = [signer]
     known = {signer.dump()}
     token_content = cms.ContentInfo.load(timestamp)["content"]
-    tsa_certs = _token_certificates(token_content)  # may be empty
+    tsa_certs = token_certificates(token_content)  # may be empty
     # signer_certificate raises ValueError when the TSA did not embed it: a service failure,
     # the level lowers with the reason
     tsa = signer_certificate(token_content)

@@ -45,7 +45,10 @@ SIGNER = {"signer": "QUISPE MAMANI ROSA FIR ****4321 hard", "expires": EXPIRES}
             "No se pudo consultar",
         ),
         (Result(Step.VALIDATION, Status.ERROR, "ERR-212"), "Tu certificado fue revocado"),
-        (Result(Step.TSA, Status.OK), "La autoridad de sellado de tiempo respondió"),
+        (
+            Result(Step.TSA, Status.OK),
+            "La autoridad de sellado de tiempo respondió y es de confianza",
+        ),
         (
             Result(Step.TSA, Status.SKIPPED, facts={"configured": "False"}),
             "No hay ninguna autoridad",

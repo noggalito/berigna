@@ -14,18 +14,14 @@ Order of the steps is part of the security design:
 5. The output is written atomically and never over an existing file (RF-045).
 """
 
-import asyncio
 import hashlib
-from collections.abc import Awaitable, Callable, Collection, Sequence
+from collections.abc import Callable, Collection, Sequence
 from dataclasses import dataclass, replace
 from pathlib import Path
-from typing import Any, Protocol
+from typing import Protocol
 from urllib.parse import quote
 
-from asn1crypto import cms
-from asn1crypto import x509 as asn1_x509
 from pyhanko.sign.timestamps import TimeStamper
-from pyhanko.sign.validation.generic_cms import extract_certs_for_validation
 from pyhanko_certvalidator import ValidationContext
 
 from berigna.core.appearance import VisibleSignature, render_appearance, stamp_data
@@ -48,11 +44,11 @@ from berigna.core.formats.pades import (
     sign_pdf_pades,
 )
 from berigna.core.formats.xades import XadesPackaging, check_xml_signable, sign_xades
-from berigna.core.net.tsa import PROBE_DIGEST, probe
 from berigna.core.token.base import HashAlgorithmName, TokenSigner
 from berigna.core.token.pin import Pin
 from berigna.core.trust import TrustStore
-from berigna.core.validation import SignerCheck, check_signer, check_tsa, signing_validation_context
+from berigna.core.validation import SignerCheck, check_signer, signing_validation_context
+from berigna.core.validation.tsa import probe_trusted
 
 AskPin = Callable[[SignerCheck], Pin | None]
 
@@ -249,94 +245,6 @@ def check_source(source: Path, output: Path, expected_sha256: str) -> bytes:
     return data
 
 
-class TrustedTimeStamper(TimeStamper):
-    """``inner``, whose every token is checked by ``check`` before it is used (R-DES-20):
-    the test token before the PIN (:meth:`check_now`), and each real one before it is
-    written into the signature. Each TSA certificate is validated once.
-
-    pyHanko asks a time-stamper for tokens (``async_timestamp``, ``async_dummy_response``)
-    and, for B-LT, for the validation paths of its certificates: all three go to ``inner``.
-    """
-
-    def __init__(
-        self,
-        inner: TimeStamper,
-        check: Callable[[asn1_x509.Certificate, list[asn1_x509.Certificate]], Awaitable[None]],
-    ) -> None:
-        super().__init__()  # type: ignore[no-untyped-call]
-        self._inner = inner
-        self._check = check
-        self._trusted: set[bytes] = set()
-
-    async def _checked(self, token: cms.ContentInfo) -> cms.ContentInfo:
-        signed_data = token["content"]
-        certificate = extract_certs_for_validation(signed_data).signer_cert
-        if certificate.dump() not in self._trusted:
-            others = [
-                c.chosen for c in signed_data["certificates"] or () if c.name == "certificate"
-            ]
-            await self._check(certificate, others)
-            self._trusted.add(certificate.dump())
-        return token
-
-    async def async_timestamp(self, message_digest: bytes, md_algorithm: str) -> cms.ContentInfo:
-        return await self._checked(await self._inner.async_timestamp(message_digest, md_algorithm))
-
-    async def async_dummy_response(self, md_algorithm: str) -> cms.ContentInfo:
-        return await self._checked(await self._inner.async_dummy_response(md_algorithm))
-
-    def validation_paths(self, validation_context: ValidationContext) -> Any:
-        return self._inner.validation_paths(validation_context)  # type: ignore[no-untyped-call]
-
-    def check_now(self, md_algorithm: str = PROBE_DIGEST) -> None:
-        """The TSA of the test token (already fetched by :func:`probe`), before the PIN."""
-        asyncio.run(self.async_dummy_response(md_algorithm))
-
-
-def trusted_time_stamper(
-    timestamper: TimeStamper,
-    store: TrustStore,
-    *,
-    online: bool,
-    ocsp_responses: Sequence[bytes] = (),
-    crls: Sequence[bytes] = (),
-) -> TrustedTimeStamper:
-    """``timestamper``, with its TSA validated against ``store`` (R-DES-20)."""
-
-    async def check(
-        certificate: asn1_x509.Certificate, others: list[asn1_x509.Certificate]
-    ) -> None:
-        await check_tsa(
-            certificate,
-            store,
-            intermediates=others,
-            online=online,
-            ocsp_responses=ocsp_responses,
-            crls=crls,
-        )
-
-    return TrustedTimeStamper(timestamper, check)
-
-
-def probe_trusted(
-    timestamper: TimeStamper,
-    store: TrustStore,
-    *,
-    online: bool = True,
-    ocsp_responses: Sequence[bytes] = (),
-    crls: Sequence[bytes] = (),
-) -> TrustedTimeStamper:
-    """The TSA answers with a valid token (:func:`probe`, TsaError) and is trusted
-    (UntrustedTsaError): the step before the PIN, "Test" in Preferences and the diagnosis
-    say the same about a TSA. Returns the time-stamper to sign with."""
-    probe(timestamper)
-    trusted = trusted_time_stamper(
-        timestamper, store, online=online, ocsp_responses=ocsp_responses, crls=crls
-    )
-    trusted.check_now()
-    return trusted
-
-
 def time_stamper(level: SignatureLevel, timestamper: TimeStamper | None) -> TimeStamper | None:
     stamper = timestamper if level is not SignatureLevel.B_B else None
     if level is not SignatureLevel.B_B and stamper is None:
@@ -345,11 +253,9 @@ def time_stamper(level: SignatureLevel, timestamper: TimeStamper | None) -> Time
 
 
 def check_level(check: SignerCheck, level: SignatureLevel, stamper: TimeStamper | None) -> None:
-    """Step 2: a level above B-B needs revocation checked and a TSA that answers."""
-    if stamper is not None:
-        if check.only_basic_level:
-            raise LevelNotAvailableError(f"revocation not checked: B-B only, not {level.value}")
-        probe(stamper)
+    """Step 2: a level above B-B needs revocation checked (the TSA: :func:`prepare`)."""
+    if stamper is not None and check.only_basic_level:
+        raise LevelNotAvailableError(f"revocation not checked: B-B only, not {level.value}")
 
 
 def prepare(
@@ -373,11 +279,10 @@ def prepare(
         crls=crls,
     )
     check_level(check, level, stamper)
-    if stamper is not None:  # R-DES-20: a TSA that is not trusted is known before the PIN
-        stamper = trusted_time_stamper(
+    if stamper is not None:  # it answers, and is trusted (R-DES-20): before the PIN
+        stamper = probe_trusted(
             stamper, store, online=online, ocsp_responses=ocsp_responses, crls=crls
         )
-        stamper.check_now()
     return stamper, check
 
 

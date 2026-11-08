@@ -5,6 +5,7 @@
 import asyncio
 import hashlib
 import io
+import logging
 from pathlib import Path
 from typing import Any
 
@@ -29,10 +30,11 @@ from berigna.core.errors import (
 from berigna.core.files import write_atomically
 from berigna.core.formats.pades import SignatureLevel
 from berigna.core.net.tsa import TsaSettings, http_timestamper
-from berigna.core.signing import output_path, sign_pdf_file, trusted_time_stamper
+from berigna.core.signing import output_path, sign_pdf_file
 from berigna.core.token.dnie_v2 import INS_PSO, INS_VERIFY, DnieV2Token
 from berigna.core.token.pin import Pin
 from berigna.core.validation import Indication, SignerCheck, verify_pdf
+from berigna.core.validation.tsa import trusted_time_stamper
 from support.cards import make_card
 from support.certified import certified_pdf
 from support.net import damaged
@@ -463,6 +465,7 @@ def test_a_trusted_tsa_without_revocation_data_still_stamps(
 ) -> None:
     """Decision of 2026-11-08: revocation of the TSA that cannot be established is logged,
     not a reason to refuse the time-stamp."""
+    caplog.set_level(logging.DEBUG, logger="berigna")  # offline it is only a debug line
     source, sha = document
     card, leaf = make_card(pki, "FIRMANTE")
     stamper, _tsa = make_timestamper(pki)
@@ -528,7 +531,7 @@ def test_a_time_stamp_from_a_tsa_that_is_not_trusted_is_never_written(
 
 
 def test_each_tsa_certificate_is_validated_once(pki: Pki, monkeypatch: pytest.MonkeyPatch) -> None:
-    from berigna.core import signing as module
+    from berigna.core.validation import tsa as module
 
     calls: list[object] = []
     real_check = module.check_tsa
@@ -545,3 +548,85 @@ def test_each_tsa_certificate_is_validated_once(pki: Pki, monkeypatch: pytest.Mo
     for _ in range(3):
         asyncio.run(trusted.async_timestamp(digest, "sha256"))
     assert len(calls) == 1
+
+
+def _crl_revoking(pki: Pki, certificate: Any) -> bytes:
+    """A CRL of the test CA that revokes ``certificate``."""
+    import datetime as dt
+
+    from cryptography import x509
+    from cryptography.hazmat.primitives import hashes, serialization
+
+    from support.pki import NOW
+
+    return (
+        x509.CertificateRevocationListBuilder()
+        .issuer_name(pki.ca.subject)
+        .last_update(NOW - dt.timedelta(hours=1))
+        .next_update(NOW + dt.timedelta(days=7))
+        .add_extension(x509.CRLNumber(1), critical=False)
+        .add_extension(
+            x509.AuthorityKeyIdentifier.from_issuer_public_key(pki.ca_key.public_key()),
+            critical=False,
+        )
+        .add_revoked_certificate(
+            x509.RevokedCertificateBuilder()
+            .serial_number(certificate.serial_number)
+            .revocation_date(NOW - dt.timedelta(days=1))
+            .build()
+        )
+        .sign(pki.ca_key, hashes.SHA256())
+        .public_bytes(serialization.Encoding.DER)
+    )
+
+
+def test_a_tsa_revoked_in_its_crl_is_refused(pki: Pki) -> None:
+    """Review of R-DES-20: a TSA may publish only a CRL. With OCSP required, as for the
+    DNIe, a CRL was never looked at and a revoked TSA passed."""
+    from berigna.core.certs import to_asn1
+    from berigna.core.validation.tsa import check_tsa
+
+    _stamper, tsa = make_timestamper(pki)
+    with pytest.raises(UntrustedTsaError, match="revoked"):
+        asyncio.run(
+            check_tsa(
+                to_asn1(tsa), pki.store, online=False, crls=[_crl_revoking(pki, tsa), pki.arl()]
+            )
+        )
+
+
+class _WithoutCertificate(TimeStamper):
+    """A TSA that ignores cert_req: its token carries no certificate."""
+
+    def __init__(self, inner: TimeStamper) -> None:
+        super().__init__()
+        self._inner = inner
+
+    async def async_dummy_response(self, md_algorithm: str) -> Any:
+        from asn1crypto import cms
+
+        token = await self._inner.async_dummy_response(md_algorithm)
+        stripped = token.copy()
+        content = stripped["content"]
+        content["certificates"] = cms.CertificateSet([])
+        return cms.ContentInfo.load(stripped.dump(force=True))
+
+
+def test_a_token_without_its_tsa_certificate_is_a_tsa_error(pki: Pki) -> None:
+    """Not ERR-000 (nor a dead thread in "Test"): the token is not a valid one."""
+    stamper, _tsa = make_timestamper(pki)
+    trusted = trusted_time_stamper(_WithoutCertificate(stamper), pki.store, online=False)
+    with pytest.raises(TsaError, match="does not carry"):
+        trusted.check_now()
+
+
+def test_checking_the_tsa_before_the_pin_has_a_deadline(pki: Pki) -> None:
+    """Like the probe: its revocation services may hang on a broken route."""
+
+    class Hanging(TimeStamper):
+        async def async_dummy_response(self, md_algorithm: str) -> Any:
+            await asyncio.sleep(5)
+
+    trusted = trusted_time_stamper(Hanging(), pki.store, online=False)
+    with pytest.raises(TsaError, match=r"within 0\.2 s"):
+        trusted.check_now(deadline=0.2)

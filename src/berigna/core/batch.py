@@ -29,7 +29,7 @@ from pathlib import Path
 from pyhanko.sign.timestamps import TimeStamper
 
 from berigna.core.documents import DocumentKind, detect_kind
-from berigna.core.errors import BatchCancelledError, BerignaError, TokenError
+from berigna.core.errors import BatchCancelledError, BerignaError, TokenError, UntrustedTsaError
 from berigna.core.formats.cades import CadesPackaging
 from berigna.core.formats.pades import PadesOptions, SignatureLevel, check_pdf_signable
 from berigna.core.formats.xades import XadesPackaging, check_xml_signable
@@ -209,8 +209,9 @@ def sign_batch(
                     ocsp_responses=ocsp_responses,
                     crls=crls,
                 )
-            except TokenError as exc:
-                # The card is gone or no longer authenticated: nothing else can be signed.
+            except (TokenError, UntrustedTsaError) as exc:
+                # The card is gone or no longer authenticated, or the TSA now answers with a
+                # certificate that is not trusted (R-DES-20): nothing else can be signed.
                 items[index] = _failed(job, exc)
                 stopped = exc
             except BerignaError as exc:
