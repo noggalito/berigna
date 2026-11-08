@@ -136,7 +136,7 @@ _RELEASE_FILES = {
     ),
     # a blank line before <releases>: the new release keeps the indentation
     "data/com.noggalito.Berigna.metainfo.xml.in": (
-        '<component>\n\n  <releases>\n    <release version="0.3.0-rc.1" date="2026-10-29"/>\n'
+        '<component>\n\n  <releases>\n    <release version="0.3.0~rc.1" date="2026-10-29"/>\n'
         "  </releases>\n</component>\n"
     ),
     "CHANGELOG.md": (
@@ -168,6 +168,8 @@ def test_a_version_is_written_in_each_form() -> None:
     )
     final = version.parse("1.0.0")
     assert (final.pep440, final.debian) == ("1.0.0", "1.0.0")
+    # AppStream sorts "1.0.0-rc.2" after "1.0.0" (appstreamcli: releases-not-in-order)
+    assert (rc.appstream, final.appstream) == ("1.0.0~rc.2", "1.0.0")
     assert version.parse("0.4.0-beta.1").pep440 == "0.4.0b1"
     for wrong in ("1.0", "1.0.0-rc2", "1.0.0.dev0", "1.0.0-rc.2+x", "01.0.0", "1.0.0-rc.01"):
         with pytest.raises(version.VersionError):
@@ -193,7 +195,7 @@ def test_preparing_a_version_updates_the_six_places(tmp_path: Path) -> None:
     assert " -- noggalito <berigna@noggalito.com>  Sun, 08 Nov 2026 10:30:00 -0500\n" in debian
     assert debian.endswith(_RELEASE_FILES["debian/changelog"])
     metainfo = (root / "data/com.noggalito.Berigna.metainfo.xml.in").read_text(encoding="utf-8")
-    assert '\n  <releases>\n    <release version="0.3.0-rc.2" date="2026-11-08"/>\n' in metainfo
+    assert '\n  <releases>\n    <release version="0.3.0~rc.2" date="2026-11-08"/>\n' in metainfo
     # the same version again: refused, nothing changes
     with pytest.raises(version.VersionError, match="ya tiene"):
         version.prepare(root, target, when.date(), when)
