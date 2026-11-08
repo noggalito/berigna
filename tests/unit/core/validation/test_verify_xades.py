@@ -508,18 +508,18 @@ def test_text_added_after_the_signature_is_not_signed(pki: Pki) -> None:
 def test_a_subset_inherits_the_xml_attributes(algorithm: str, expected: bytes) -> None:
     """C14N 1.0 inherits every xml: attribute of the ancestors, 1.1 only xml:lang and
     xml:space, the exclusive one none; lxml inherits none by itself (Santuario does)."""
-    from berigna.core.validation import xades as module
+    from berigna.core.validation import xmldsig as module
 
     root = etree.fromstring(b'<a xml:lang="es" xml:id="i"><b>t</b></a>')
-    assert module._c14n_of(root[0], algorithm) == expected
+    assert module.c14n_of(root[0], algorithm) == expected
 
 
 def test_c14n11_under_an_xml_base_is_refused() -> None:
-    from berigna.core.validation import xades as module
+    from berigna.core.validation import xmldsig as module
 
     root = etree.fromstring(b'<a xml:base="http://ejemplo/"><b>t</b></a>')
-    with pytest.raises(module._Result):
-        module._c14n_of(root[0], "http://www.w3.org/2006/12/xml-c14n11")
+    with pytest.raises(module.Result):
+        module.c14n_of(root[0], "http://www.w3.org/2006/12/xml-c14n11")
 
 
 def test_a_fake_signature_that_wraps_content_makes_the_scope_partial(pki: Pki) -> None:
