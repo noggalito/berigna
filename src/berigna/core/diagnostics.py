@@ -19,8 +19,8 @@ from dataclasses import dataclass, field
 from pyhanko.sign.timestamps import TimeStamper
 
 from berigna.core.errors import BerignaError
-from berigna.core.net.tsa import probe
 from berigna.core.report.explanations import common_name, masked_id
+from berigna.core.signing import probe_trusted
 from berigna.core.token.base import TokenSigner
 from berigna.core.token.monitor import DeviceState, DeviceStatus
 from berigna.core.trust import TrustStore
@@ -102,7 +102,7 @@ def diagnose(
             Result(Step.CERTIFICATE, Status.SKIPPED),
             Result(Step.VALIDATION, Status.SKIPPED),
         ]
-    results.append(_tsa(timestamper, online))
+    results.append(_tsa(timestamper, store, online, ocsp_responses, crls))
     for result in results:
         if result.status is not Status.OK:
             log.info(
@@ -168,11 +168,17 @@ def _certificate(
     return results
 
 
-def _tsa(timestamper: TimeStamper | None, online: bool) -> Result:
+def _tsa(
+    timestamper: TimeStamper | None,
+    store: TrustStore,
+    online: bool,
+    ocsp_responses: Sequence[bytes],
+    crls: Sequence[bytes],
+) -> Result:
     if timestamper is None or not online:
         return Result(Step.TSA, Status.SKIPPED, facts={"configured": str(timestamper is not None)})
-    try:
-        probe(timestamper)
+    try:  # answers, and is trusted (R-DES-20): what signing will find
+        probe_trusted(timestamper, store, ocsp_responses=ocsp_responses, crls=crls)
     except BerignaError as exc:
         return Result(Step.TSA, Status.ERROR, exc.code)
     return Result(Step.TSA, Status.OK)

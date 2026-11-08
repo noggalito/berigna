@@ -12,7 +12,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: berigna\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-07 20:07-0500\n"
+"POT-Creation-Date: 2026-11-08 00:17-0500\n"
 "PO-Revision-Date: 2026-10-27 23:37-0500\n"
 "Last-Translator: noggalito <berigna@noggalito.com>\n"
 "Language-Team: none\n"
@@ -149,7 +149,7 @@ msgstr "_Akllanakuna"
 msgid "_History"
 msgstr "_Ruwasqakuna"
 
-#: data/ui/window.blp:111 src/berigna/ui/signing.py:174
+#: data/ui/window.blp:111 src/berigna/ui/signing.py:172
 msgid "_Diagnosis"
 msgstr "_T'aqwiy"
 
@@ -470,13 +470,13 @@ msgid "Signature verification report"
 msgstr "Firmakunaq chiqaqchay willakuynin"
 
 #: src/berigna/core/report/messages.py:152
-#: src/berigna/core/report/messages.py:272
-#: src/berigna/core/report/messages.py:291
+#: src/berigna/core/report/messages.py:277
+#: src/berigna/core/report/messages.py:296
 msgid "File"
 msgstr "Archivo"
 
 #: src/berigna/core/report/messages.py:153
-#: src/berigna/core/report/messages.py:292
+#: src/berigna/core/report/messages.py:297
 msgid "SHA-256 of the file"
 msgstr "Archivoq SHA-256 nisqan"
 
@@ -521,14 +521,14 @@ msgid "Archive time-stamps"
 msgstr "Archivo pacha sellokuna"
 
 #: src/berigna/core/report/messages.py:163
-#: src/berigna/core/report/messages.py:275
-#: src/berigna/core/report/messages.py:293 src/berigna/ui/verification.py:311
+#: src/berigna/core/report/messages.py:280
+#: src/berigna/core/report/messages.py:298 src/berigna/ui/verification.py:311
 msgid "Signed file"
 msgstr "Firmasqa archivo"
 
 #: src/berigna/core/report/messages.py:164
-#: src/berigna/core/report/messages.py:274
-#: src/berigna/core/report/messages.py:298
+#: src/berigna/core/report/messages.py:279
+#: src/berigna/core/report/messages.py:303
 msgid "Result"
 msgstr "Lluqsisqan"
 
@@ -537,7 +537,7 @@ msgid "ETSI EN 319 102-1 code"
 msgstr "ETSI EN 319 102-1 código"
 
 #: src/berigna/core/report/messages.py:166
-#: src/berigna/core/report/messages.py:296
+#: src/berigna/core/report/messages.py:301
 msgid "Signer"
 msgstr "Firmaq"
 
@@ -823,86 +823,96 @@ msgstr ""
 
 #: src/berigna/core/report/messages.py:262
 msgid ""
+"The time-stamping authority is not trusted: its certificate does not lead to "
+"an accredited authority of the IOFE, or it has been revoked. Check the TSA "
+"in Preferences, or sign without a time-stamp (B-B)."
+msgstr ""
+"Pacha sello churaqqa manan iñisqachu: certificadonqa manan IOFEpa "
+"acreditasqa entidadninmanchu chayan, utaq anulasqa karqan. TSAta "
+"Akllanakunapi qhawariy, utaq mana pacha sellowan firmay (B-B)."
+
+#: src/berigna/core/report/messages.py:267
+msgid ""
 "The author certified this document so that it cannot be changed: it does not "
 "accept more signatures."
 msgstr ""
 "Qillqaqqa kay qillqata chiqaqcharqan ama tikrakunanpaq: manan aswan "
 "firmakunata chaskinchu."
 
-#: src/berigna/core/report/messages.py:265
+#: src/berigna/core/report/messages.py:270
 msgid "The document could not be verified."
 msgstr "Manan atikurqanchu qillqata chiqaqchayta."
 
-#: src/berigna/core/report/messages.py:266
+#: src/berigna/core/report/messages.py:271
 msgid "The file is not a document that berigna can read, or it is damaged."
 msgstr ""
 "Archivoqa manan berignaq ñawinchayta atisqan qillqachu, utaq p'akisqa kashan."
 
-#: src/berigna/core/report/messages.py:267
+#: src/berigna/core/report/messages.py:272
 msgid "The signature cannot be read, or it is not a CAdES or XAdES signature."
 msgstr ""
 "Firmaqa manan ñawinchayta atinchu, utaq mana CAdES firmanchu nitaq XAdES "
 "firmanchu."
 
-#: src/berigna/core/report/messages.py:273
+#: src/berigna/core/report/messages.py:278
 msgid "Folder"
 msgstr "Carpeta"
 
-#: src/berigna/core/report/messages.py:276
-#: src/berigna/core/report/messages.py:295 src/berigna/ui/presentation.py:503
+#: src/berigna/core/report/messages.py:281
+#: src/berigna/core/report/messages.py:300 src/berigna/ui/presentation.py:503
 msgid "Level"
 msgstr "Pata"
 
-#: src/berigna/core/report/messages.py:277
-#: src/berigna/core/report/messages.py:294
+#: src/berigna/core/report/messages.py:282
+#: src/berigna/core/report/messages.py:299
 msgid "SHA-256 of the signed file"
 msgstr "Firmasqa archivoq SHA-256 nisqan"
 
-#: src/berigna/core/report/messages.py:278
+#: src/berigna/core/report/messages.py:283
 msgid "Code"
 msgstr "Código"
 
-#: src/berigna/core/report/messages.py:279
+#: src/berigna/core/report/messages.py:284
 msgid "Explanation"
 msgstr "Sut'ichay"
 
-#: src/berigna/core/report/messages.py:282
+#: src/berigna/core/report/messages.py:287
 msgid "Signed"
 msgstr "Firmasqa"
 
-#: src/berigna/core/report/messages.py:283
+#: src/berigna/core/report/messages.py:288
 msgid "Not signed"
 msgstr "Mana firmasqa"
 
-#: src/berigna/core/report/messages.py:284
+#: src/berigna/core/report/messages.py:289
 msgid "Skipped"
 msgstr "Saqisqa"
 
-#: src/berigna/core/report/messages.py:289
+#: src/berigna/core/report/messages.py:294
 msgid "Date (UTC)"
 msgstr "P'unchaw (UTC)"
 
-#: src/berigna/core/report/messages.py:290
+#: src/berigna/core/report/messages.py:295
 msgid "Operation"
 msgstr "Ruway"
 
-#: src/berigna/core/report/messages.py:297
+#: src/berigna/core/report/messages.py:302
 msgid "Certificate serial number"
 msgstr "Certificadoq serie yupaynin"
 
-#: src/berigna/core/report/messages.py:299
+#: src/berigna/core/report/messages.py:304
 msgid "Detail"
 msgstr "Aswan willakuy"
 
-#: src/berigna/core/report/messages.py:302
+#: src/berigna/core/report/messages.py:307
 msgid "Signature"
 msgstr "Firma"
 
-#: src/berigna/core/report/messages.py:303
+#: src/berigna/core/report/messages.py:308
 msgid "Signature in a batch"
 msgstr "Huñupi firma"
 
-#: src/berigna/core/report/messages.py:304
+#: src/berigna/core/report/messages.py:309
 msgid "Verification"
 msgstr "Chiqaqchay"
 
@@ -927,7 +937,7 @@ msgid "Other Files"
 msgstr "Huk archivokuna"
 
 #: src/berigna/ui/batch.py:142 src/berigna/ui/pin_dialog.py:105
-#: src/berigna/ui/signing.py:221 src/berigna/ui/verification.py:89
+#: src/berigna/ui/signing.py:220 src/berigna/ui/verification.py:89
 msgid "_Sign"
 msgstr "_Firmay"
 
@@ -1266,7 +1276,7 @@ msgstr "Qhipa sutiqa manan ch'usaqchu kanan, manataq «/» nisqayuqchu."
 msgid "The same folder as the original"
 msgstr "Ñawpaq archivoq kaq carpetan"
 
-#: src/berigna/ui/preferences.py:219 src/berigna/ui/visible_signature.py:46
+#: src/berigna/ui/preferences.py:219 src/berigna/ui/visible_signature.py:47
 msgid "Visible Signature"
 msgstr "Rikukuq firma"
 
@@ -1282,7 +1292,7 @@ msgstr ""
 "Firmasqa PDFqa certificadonpi llapan DNIta apan; «Firmapi DNI» nisqaqa "
 "imprimisqallatam tikran."
 
-#: src/berigna/ui/preferences.py:240 src/berigna/ui/visible_signature.py:55
+#: src/berigna/ui/preferences.py:240 src/berigna/ui/visible_signature.py:56
 msgid "Appearance"
 msgstr "Rikch'ay"
 
@@ -1940,19 +1950,19 @@ msgstr "/ {total}"
 msgid "Fit"
 msgstr "Tupachiy"
 
-#: src/berigna/ui/signing.py:155
+#: src/berigna/ui/signing.py:153
 msgid "Signature cancelled. The PIN was not sent."
 msgstr "Firmaqa saqisqa. PINqa manan apachisqachu."
 
-#: src/berigna/ui/signing.py:169
+#: src/berigna/ui/signing.py:167
 msgid "_Back"
 msgstr "_Kutiy"
 
-#: src/berigna/ui/signing.py:179
+#: src/berigna/ui/signing.py:177
 msgid "Sign Without _Timestamp (B-B)"
 msgstr "Mana pacha _sellowan firmay (B-B)"
 
-#: src/berigna/ui/signing.py:241
+#: src/berigna/ui/signing.py:240
 msgid ""
 "Some of the signatures already in this document are not valid. Your "
 "signature will be added anyway."
@@ -2190,7 +2200,7 @@ msgstr "Kay firmawan qillqa imayna kasqan"
 msgid "Saved {name}"
 msgstr "{name} waqaychasqa"
 
-#: src/berigna/ui/visible_signature.py:48
+#: src/berigna/ui/visible_signature.py:49
 msgid ""
 "Drag the box to move it and its corner to resize it; drag the page to scroll "
 "it. In a box taller than wide, the image goes above the text."
@@ -2199,11 +2209,11 @@ msgstr ""
 "rapita aysay kuyuchinaykipaq. Cuadro kinrayninmanta aswan suni kaqtinqa, "
 "siq'iqa qillqaq hawanpim."
 
-#: src/berigna/ui/visible_signature.py:116
+#: src/berigna/ui/visible_signature.py:118
 msgid "Load the image in Preferences → Visible Signature."
 msgstr "Akllanakuna → Rikukuq firma nisqapi siq'ita churay."
 
-#: src/berigna/ui/visible_signature.py:122
+#: src/berigna/ui/visible_signature.py:124
 msgid "NAMES AND SURNAMES"
 msgstr "SUTIKUNA, APELLIDOKUNAPAS"
 

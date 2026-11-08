@@ -217,6 +217,14 @@ class LevelNotAvailableError(SigningError):
     code = "ERR-306"
 
 
+class UntrustedTsaError(LevelNotAvailableError):
+    """The TSA is not trusted (R-DES-20): its certificate does not lead to an anchor of the
+    store (IOFE, TSL of INDECOPI), is not for time-stamping, is expired or is revoked. A level
+    that needs a TSA is not available with it: the UI offers B-B, as for ERR-306."""
+
+    code = "ERR-314"
+
+
 class AppearanceError(SigningError):
     """The visible signature cannot be drawn: box too small, or an image that cannot be read."""
 

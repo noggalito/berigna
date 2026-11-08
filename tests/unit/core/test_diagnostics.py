@@ -12,7 +12,7 @@ from berigna.core.token.dnie_v2 import CertificateSlot, DnieV2Token
 from berigna.core.token.monitor import DeviceState, DeviceStatus
 from sim.dnie_v2 import DnieV2Simulator
 from support.pki import NOW, Pki, build_pki
-from support.tsa import make_timestamper
+from support.tsa import make_timestamper, unknown_timestamper
 
 READY = DeviceStatus(DeviceState.DNIE_READY, ("innovatech 00",), "innovatech 00", b"\x3b\x8f")
 
@@ -64,6 +64,18 @@ def test_tsa_that_answers(pki: Pki) -> None:
         timestamper=stamper,
     )
     assert results[5].status is Status.OK
+
+
+def test_a_tsa_that_answers_but_is_not_trusted(pki: Pki) -> None:
+    """R-DES-20: the diagnosis says what signing will find, ERR-314."""
+    results = diagnose(
+        DeviceStatus(DeviceState.NO_READER),
+        open_token=DnieV2Token,
+        store=pki.store,
+        timestamper=unknown_timestamper(),
+        online=True,
+    )
+    assert (results[5].status, results[5].code) == (Status.ERROR, "ERR-314")
 
 
 def test_certificate_about_to_expire_and_revocation_not_checked(pki: Pki) -> None:

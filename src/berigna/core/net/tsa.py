@@ -124,7 +124,12 @@ def http_timestamper(settings: TsaSettings) -> TimeStamper:
     )
 
 
-def probe(timestamper: TimeStamper, md_algorithm: str = "sha256", deadline: float = 30.0) -> None:
+PROBE_DIGEST = "sha256"  # the digest of the test token: pyHanko keeps it by algorithm
+
+
+def probe(
+    timestamper: TimeStamper, md_algorithm: str = PROBE_DIGEST, deadline: float = 30.0
+) -> None:
     """Obtain one time-stamp over a dummy digest; raise :class:`TsaError` if that fails.
 
     pyHanko caches the answer and reuses it to reserve space in the signature.

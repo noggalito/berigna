@@ -24,6 +24,7 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 from typing import cast
 
+from asn1crypto import x509 as asn1_x509
 from cryptography import x509
 from cryptography.hazmat.primitives.asymmetric import rsa
 from pyhanko_certvalidator import CertificateValidator, ValidationContext
@@ -51,6 +52,7 @@ from berigna.core.errors import (
     CertificateRevokedError,
     CertificateValidationError,
     UntrustedCertificateError,
+    UntrustedTsaError,
 )
 from berigna.core.net.fetchers import revocation_fetchers
 from berigna.core.trust import TrustStore
@@ -235,3 +237,70 @@ def check_signer(
     return SignerCheck(
         revocation_checked=note is None, chain=chain, moment=when, revocation_note=note
     )
+
+
+async def check_tsa(
+    certificate: asn1_x509.Certificate,
+    store: TrustStore,
+    *,
+    intermediates: Sequence[asn1_x509.Certificate] = (),
+    moment: dt.datetime | None = None,
+    online: bool = True,
+    ocsp_responses: Sequence[bytes] = (),
+    crls: Sequence[bytes] = (),
+    timeout: float = 10.0,
+) -> None:
+    """Raise :class:`~berigna.core.errors.UntrustedTsaError` unless the TSA ``certificate``
+    (with the ``intermediates`` its token carries) can stamp signatures now (R-DES-20).
+
+    The chain must reach an anchor of ``store`` (the IOFE and, through ADR-0022, every CA
+    accredited in the TSL), the certificate must be valid and for time-stamping, and it must
+    not be revoked. Revocation that cannot be established does not stop the time-stamp (the
+    decision of 2026-11-08): it goes to the technical log, and a B-LT that needs it keeps
+    falling back to B-T with its note. Damaged revocation data from the network is the same
+    case, as for the signer (R-DES-07). A coroutine: pyHanko asks for the time-stamp
+    inside its own event loop.
+    """
+    when = moment or dt.datetime.now(dt.UTC)
+
+    async def run(policy: RevocationCheckingPolicy, online: bool = online) -> None:
+        context = signing_validation_context(
+            store,
+            moment=when,
+            online=online,
+            ocsp_responses=ocsp_responses,
+            crls=crls,
+            timeout=timeout,
+            policy=policy,
+            tolerance=time_tolerance(moment),
+        )
+        validator = CertificateValidator(
+            certificate, intermediate_certs=list(intermediates), validation_context=context
+        )
+        await validator.async_validate_usage(set(), {"time_stamping"})  # type: ignore[no-untyped-call]
+
+    try:
+        try:
+            await run(_SIGNING_POLICY)
+        except InsufficientRevinfoError as exc:
+            log.warning("revocation of the TSA certificate not established: %s", exc)
+            await run(_OFFLINE_POLICY)
+        except UNREADABLE_DATA:
+            if not online:
+                raise
+            log.warning("revocation data of the TSA could not be processed", exc_info=True)
+            await run(_OFFLINE_POLICY, online=False)
+    except RevokedError as exc:
+        raise UntrustedTsaError(f"the TSA certificate is revoked: {exc}") from exc
+    except (
+        ExpiredError,
+        NotYetValidError,
+        PathBuildingError,
+        InvalidCertificateError,
+        PathValidationError,
+        ValidationError,
+    ) as exc:
+        raise UntrustedTsaError(f"the TSA is not trusted: {exc}") from exc
+    except UNREADABLE_DATA as exc:
+        log.warning("the TSA certificate could not be validated", exc_info=True)
+        raise UntrustedTsaError(f"the TSA certificate cannot be validated: {exc}") from exc

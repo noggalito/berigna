@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: berigna\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-07 20:07-0500\n"
+"POT-Creation-Date: 2026-11-08 00:17-0500\n"
 "PO-Revision-Date: 2026-10-27 23:38-0500\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -144,7 +144,7 @@ msgstr "_Preferencias"
 msgid "_History"
 msgstr "_Historial"
 
-#: data/ui/window.blp:111 src/berigna/ui/signing.py:174
+#: data/ui/window.blp:111 src/berigna/ui/signing.py:172
 msgid "_Diagnosis"
 msgstr "_Diagnóstico"
 
@@ -471,13 +471,13 @@ msgid "Signature verification report"
 msgstr "Informe de verificación de firmas"
 
 #: src/berigna/core/report/messages.py:152
-#: src/berigna/core/report/messages.py:272
-#: src/berigna/core/report/messages.py:291
+#: src/berigna/core/report/messages.py:277
+#: src/berigna/core/report/messages.py:296
 msgid "File"
 msgstr "Archivo"
 
 #: src/berigna/core/report/messages.py:153
-#: src/berigna/core/report/messages.py:292
+#: src/berigna/core/report/messages.py:297
 msgid "SHA-256 of the file"
 msgstr "SHA-256 del archivo"
 
@@ -522,14 +522,14 @@ msgid "Archive time-stamps"
 msgstr "Sellos de archivo"
 
 #: src/berigna/core/report/messages.py:163
-#: src/berigna/core/report/messages.py:275
-#: src/berigna/core/report/messages.py:293 src/berigna/ui/verification.py:311
+#: src/berigna/core/report/messages.py:280
+#: src/berigna/core/report/messages.py:298 src/berigna/ui/verification.py:311
 msgid "Signed file"
 msgstr "Archivo firmado"
 
 #: src/berigna/core/report/messages.py:164
-#: src/berigna/core/report/messages.py:274
-#: src/berigna/core/report/messages.py:298
+#: src/berigna/core/report/messages.py:279
+#: src/berigna/core/report/messages.py:303
 msgid "Result"
 msgstr "Resultado"
 
@@ -538,7 +538,7 @@ msgid "ETSI EN 319 102-1 code"
 msgstr "Código ETSI EN 319 102-1"
 
 #: src/berigna/core/report/messages.py:166
-#: src/berigna/core/report/messages.py:296
+#: src/berigna/core/report/messages.py:301
 msgid "Signer"
 msgstr "Firmante"
 
@@ -819,83 +819,93 @@ msgstr ""
 
 #: src/berigna/core/report/messages.py:262
 msgid ""
+"The time-stamping authority is not trusted: its certificate does not lead to "
+"an accredited authority of the IOFE, or it has been revoked. Check the TSA "
+"in Preferences, or sign without a time-stamp (B-B)."
+msgstr ""
+"La autoridad de sellado de tiempo no es de confianza: su certificado no lleva "
+"a una entidad acreditada de la IOFE o fue revocado. Revisa la TSA en "
+"Preferencias o firma sin sello de tiempo (B-B)."
+
+#: src/berigna/core/report/messages.py:267
+msgid ""
 "The author certified this document so that it cannot be changed: it does not "
 "accept more signatures."
 msgstr ""
 "El autor certificó este documento para que no se pueda modificar: no admite "
 "más firmas."
 
-#: src/berigna/core/report/messages.py:265
+#: src/berigna/core/report/messages.py:270
 msgid "The document could not be verified."
 msgstr "No se pudo verificar el documento."
 
-#: src/berigna/core/report/messages.py:266
+#: src/berigna/core/report/messages.py:271
 msgid "The file is not a document that berigna can read, or it is damaged."
 msgstr "El archivo no es un documento que berigna pueda leer, o está dañado."
 
-#: src/berigna/core/report/messages.py:267
+#: src/berigna/core/report/messages.py:272
 msgid "The signature cannot be read, or it is not a CAdES or XAdES signature."
 msgstr "La firma no se puede leer, o no es una firma CAdES ni XAdES."
 
-#: src/berigna/core/report/messages.py:273
+#: src/berigna/core/report/messages.py:278
 msgid "Folder"
 msgstr "Carpeta"
 
-#: src/berigna/core/report/messages.py:276
-#: src/berigna/core/report/messages.py:295 src/berigna/ui/presentation.py:503
+#: src/berigna/core/report/messages.py:281
+#: src/berigna/core/report/messages.py:300 src/berigna/ui/presentation.py:503
 msgid "Level"
 msgstr "Nivel"
 
-#: src/berigna/core/report/messages.py:277
-#: src/berigna/core/report/messages.py:294
+#: src/berigna/core/report/messages.py:282
+#: src/berigna/core/report/messages.py:299
 msgid "SHA-256 of the signed file"
 msgstr "SHA-256 del archivo firmado"
 
-#: src/berigna/core/report/messages.py:278
+#: src/berigna/core/report/messages.py:283
 msgid "Code"
 msgstr "Código"
 
-#: src/berigna/core/report/messages.py:279
+#: src/berigna/core/report/messages.py:284
 msgid "Explanation"
 msgstr "Explicación"
 
-#: src/berigna/core/report/messages.py:282
+#: src/berigna/core/report/messages.py:287
 msgid "Signed"
 msgstr "Firmado"
 
-#: src/berigna/core/report/messages.py:283
+#: src/berigna/core/report/messages.py:288
 msgid "Not signed"
 msgstr "No firmado"
 
-#: src/berigna/core/report/messages.py:284
+#: src/berigna/core/report/messages.py:289
 msgid "Skipped"
 msgstr "Omitido"
 
-#: src/berigna/core/report/messages.py:289
+#: src/berigna/core/report/messages.py:294
 msgid "Date (UTC)"
 msgstr "Fecha (UTC)"
 
-#: src/berigna/core/report/messages.py:290
+#: src/berigna/core/report/messages.py:295
 msgid "Operation"
 msgstr "Operación"
 
-#: src/berigna/core/report/messages.py:297
+#: src/berigna/core/report/messages.py:302
 msgid "Certificate serial number"
 msgstr "Número de serie del certificado"
 
-#: src/berigna/core/report/messages.py:299
+#: src/berigna/core/report/messages.py:304
 msgid "Detail"
 msgstr "Detalle"
 
-#: src/berigna/core/report/messages.py:302
+#: src/berigna/core/report/messages.py:307
 msgid "Signature"
 msgstr "Firma"
 
-#: src/berigna/core/report/messages.py:303
+#: src/berigna/core/report/messages.py:308
 msgid "Signature in a batch"
 msgstr "Firma en un lote"
 
-#: src/berigna/core/report/messages.py:304
+#: src/berigna/core/report/messages.py:309
 msgid "Verification"
 msgstr "Verificación"
 
@@ -920,7 +930,7 @@ msgid "Other Files"
 msgstr "Otros archivos"
 
 #: src/berigna/ui/batch.py:142 src/berigna/ui/pin_dialog.py:105
-#: src/berigna/ui/signing.py:221 src/berigna/ui/verification.py:89
+#: src/berigna/ui/signing.py:220 src/berigna/ui/verification.py:89
 msgid "_Sign"
 msgstr "_Firmar"
 
@@ -1263,7 +1273,7 @@ msgstr "El sufijo no puede estar vacío ni contener «/»."
 msgid "The same folder as the original"
 msgstr "La misma carpeta que el original"
 
-#: src/berigna/ui/preferences.py:219 src/berigna/ui/visible_signature.py:46
+#: src/berigna/ui/preferences.py:219 src/berigna/ui/visible_signature.py:47
 msgid "Visible Signature"
 msgstr "Firma visible"
 
@@ -1279,7 +1289,7 @@ msgstr ""
 "El PDF firmado siempre lleva el DNI completo en su certificado; «DNI en la "
 "firma» solo cambia lo que se imprime."
 
-#: src/berigna/ui/preferences.py:240 src/berigna/ui/visible_signature.py:55
+#: src/berigna/ui/preferences.py:240 src/berigna/ui/visible_signature.py:56
 msgid "Appearance"
 msgstr "Apariencia"
 
@@ -1957,19 +1967,19 @@ msgstr "de {total}"
 msgid "Fit"
 msgstr "Ajustar"
 
-#: src/berigna/ui/signing.py:155
+#: src/berigna/ui/signing.py:153
 msgid "Signature cancelled. The PIN was not sent."
 msgstr "Firma cancelada. No se envió el PIN."
 
-#: src/berigna/ui/signing.py:169
+#: src/berigna/ui/signing.py:167
 msgid "_Back"
 msgstr "_Volver"
 
-#: src/berigna/ui/signing.py:179
+#: src/berigna/ui/signing.py:177
 msgid "Sign Without _Timestamp (B-B)"
 msgstr "Firmar sin _sello de tiempo (B-B)"
 
-#: src/berigna/ui/signing.py:241
+#: src/berigna/ui/signing.py:240
 msgid ""
 "Some of the signatures already in this document are not valid. Your "
 "signature will be added anyway."
@@ -2206,7 +2216,7 @@ msgstr "El documento tal como quedó con esta firma"
 msgid "Saved {name}"
 msgstr "Se guardó {name}"
 
-#: src/berigna/ui/visible_signature.py:48
+#: src/berigna/ui/visible_signature.py:49
 msgid ""
 "Drag the box to move it and its corner to resize it; drag the page to scroll "
 "it. In a box taller than wide, the image goes above the text."
@@ -2215,11 +2225,11 @@ msgstr ""
 "arrastra la página para desplazarla. En un recuadro más alto que ancho, la "
 "imagen va encima del texto."
 
-#: src/berigna/ui/visible_signature.py:116
+#: src/berigna/ui/visible_signature.py:118
 msgid "Load the image in Preferences → Visible Signature."
 msgstr "Carga la imagen en Preferencias → Firma visible."
 
-#: src/berigna/ui/visible_signature.py:122
+#: src/berigna/ui/visible_signature.py:124
 msgid "NAMES AND SURNAMES"
 msgstr "NOMBRES Y APELLIDOS"
 
