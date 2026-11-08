@@ -50,6 +50,7 @@ from pyhanko_certvalidator.registry import SimpleTrustManager
 from pyhanko_certvalidator.revinfo.archival import CRLContainer, OCSPContainer
 
 from berigna.core.certs import to_asn1, to_cryptography
+from berigna.core.errors import UNREADABLE_DATA
 from berigna.core.net.fetchers import RevocationFetcherBackend
 from berigna.core.trust import TrustStore
 from berigna.core.validation.algorithms import algorithm_policy, signature_algorithm_policy
@@ -87,13 +88,9 @@ log = logging.getLogger(__name__)
 # 0.25.1 looks a digest algorithm up with getattr (``get_pyca_cryptography_hash``), so an
 # OID it does not know in a time-stamp raises it (R-DES-18, DP-20 option A). IndexError comes
 # from asn1crypto's lazy parsing, InvalidVersion from a certificate with a mutated version.
-MALFORMED = (
+MALFORMED: tuple[type[Exception], ...] = (
     SignatureValidationError,
-    ValueError,
-    KeyError,
-    TypeError,
-    AttributeError,
-    IndexError,
+    *UNREADABLE_DATA,
     x509.InvalidVersion,
 )
 
@@ -103,23 +100,32 @@ class _Report(Protocol):
     def subindication(self) -> str | None: ...
 
 
+def _format_failures(report: _Report) -> int:
+    """FORMAT_FAILUREs of ``report`` and of the time-stamps it carries (signature and
+    archive time-stamps validate the TSA with the network too: review of R-DES-07)."""
+    parts = [report, getattr(report, "timestamp", None), *getattr(report, "archive_timestamps", ())]
+    return sum(1 for part in parts if part is not None and part.subindication == "FORMAT_FAILURE")
+
+
 def offline_on_format_failure[R: _Report](
     verify: Callable[["Context"], R], context: "Context"
 ) -> R:
-    """``verify`` with ``context``; if that is a FORMAT_FAILURE and the revocation data came
-    from the network, ``verify`` again without it (R-DES-07).
+    """``verify`` with ``context``; if that has a FORMAT_FAILURE (in the signature or in one
+    of its time-stamps) and the revocation data came from the network, ``verify`` again
+    without it (R-DES-07).
 
     A damaged OCSP response or CRL from the network (corrupted, or altered by whoever sits
     on its plain HTTP) can make pyhanko-certvalidator raise past its own errors, which reads
     as a signature that cannot be processed: an intact signature would be shown as
-    TOTAL-FAILED. A failure that goes away without the network is the network's: the result
-    without it stands (INDETERMINATE when revocation cannot be established). One that stays
-    is the signature's own."""
+    TOTAL-FAILED. Failures that go away without the network are the network's: the result
+    without it stands (INDETERMINATE when revocation cannot be established; the validation
+    data the file carries still count). Those that stay are the signature's own."""
     report = verify(context)
-    if not context.online or report.subindication != "FORMAT_FAILURE":
+    failures = _format_failures(report)
+    if not context.online or not failures:
         return report
     offline = verify(dataclasses.replace(context, online=False))
-    if offline.subindication == "FORMAT_FAILURE":
+    if _format_failures(offline) >= failures:
         return report
     log.warning(
         "revocation data from the network could not be processed; result without it: %s",

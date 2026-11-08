@@ -78,7 +78,8 @@ from berigna.core.validation.spec import validation_spec as _spec_of
 
 # Re-used names: the tests of hostile inputs patch the PDF steps by name (AM-05).
 GENERIC_CHAIN_FAILURE = GENERIC_CHAIN_FAILURE
-_MALFORMED = (PdfError, *MALFORMED)
+_MALFORMED: tuple[type[Exception], ...] = (PdfError, *MALFORMED)
+_UNREADABLE_PDF: tuple[type[Exception], ...] = (*_MALFORMED, AssertionError)
 _indication = indication
 
 
@@ -337,7 +338,7 @@ def verify_pdf(
         dss = _dss_contents(reader)
     # also a damaged DSS, and pyHanko's own asserts on a damaged signature field (mutations;
     # without asserts, under python -O, pyHanko fails later and one of the others is raised)
-    except (*_MALFORMED, AssertionError) as exc:
+    except _UNREADABLE_PDF as exc:
         log_malformed(exc)
         raise UnreadableDocumentError(f"cannot read this PDF: {exc}") from exc
 

@@ -480,11 +480,6 @@ def test_a_certificate_with_a_mutated_version_is_a_reading_error(pki: Pki) -> No
         verify_cades(mutated, pki.store, online=False)
 
 
-@pytest.fixture(scope="module")
-def signed_b_b(pki: Pki) -> tuple[bytes, x509.Certificate, x509.Certificate]:
-    return _sign(pki, SignatureLevel.B_B, CadesPackaging.ENVELOPING)
-
-
 @settings(max_examples=80, deadline=None)
 @given(
     position=st.integers(min_value=0),
@@ -494,7 +489,7 @@ def signed_b_b(pki: Pki) -> tuple[bytes, x509.Certificate, x509.Certificate]:
 )
 def test_damaged_revocation_data_from_the_network_never_fails_an_intact_signature(
     pki: Pki,
-    signed_b_b: tuple[bytes, x509.Certificate, x509.Certificate],
+    signed_b_t: tuple[bytes, x509.Certificate, x509.Certificate],
     position: int,
     byte: int,
     truncate: bool,
@@ -503,8 +498,9 @@ def test_damaged_revocation_data_from_the_network_never_fails_an_intact_signatur
     """R-DES-07: an intact signature verified with a damaged OCSP answer or ARL from the
     network is TOTAL-PASSED or INDETERMINATE (revocation not established), never
     TOTAL-FAILED: some damaged answers made pyhanko-certvalidator raise past its errors,
-    which read as FORMAT_FAILURE. The PDF and XAdES verifiers share the same retry."""
-    signature, leaf, _tsa = signed_b_b
+    which read as FORMAT_FAILURE. B-T: the signature time-stamp validates the TSA with the
+    network too (review of R-DES-07). The PDF and XAdES verifiers share the same retry."""
+    signature, leaf, _tsa = signed_b_t
     ocsp, arl = pki.ocsp(leaf), pki.arl()
     answers = (
         {"ocsp": ocsp, "crl": damaged(arl, position, byte, truncate)}
@@ -514,11 +510,15 @@ def test_damaged_revocation_data_from_the_network_never_fails_an_intact_signatur
     with answering(**answers):
         [report] = verify_cades(signature, pki.store, online=True, timeout=2).signatures
     assert report.indication in (Indication.TOTAL_PASSED, Indication.INDETERMINATE)
+    assert report.timestamp is not None
+    assert report.timestamp.subindication != "FORMAT_FAILURE"
 
 
 @dataclasses.dataclass(frozen=True)
 class _Result:
     subindication: str | None
+    timestamp: "_Result | None" = None
+    archive_timestamps: "tuple[_Result, ...]" = ()
 
 
 def _context(pki: Pki, online: bool) -> Context:
@@ -557,3 +557,17 @@ def test_a_format_failure_of_the_signature_itself_stays(pki: Pki) -> None:
     offline_on_format_failure(verify, _context(pki, False))
     assert calls == [False]
     assert offline_on_format_failure(lambda _c: _Result(None), _context(pki, True)) == _Result(None)
+
+
+def test_a_format_failure_of_a_time_stamp_only_with_the_network_is_retried_too(pki: Pki) -> None:
+    """Review of R-DES-07: the signature passes, but its time-stamp (which validates the
+    TSA with the network) reads as FORMAT_FAILURE."""
+    broken = _Result(None, timestamp=_Result("FORMAT_FAILURE"))
+    fixed = _Result(None, timestamp=_Result("TRY_LATER"))
+    assert (
+        offline_on_format_failure(lambda c: broken if c.online else fixed, _context(pki, True))
+        == fixed
+    )
+    # an archive time-stamp that also fails offline is the file's: nothing changes
+    own = _Result(None, archive_timestamps=(_Result("FORMAT_FAILURE"),))
+    assert offline_on_format_failure(lambda _c: own, _context(pki, True)) is own

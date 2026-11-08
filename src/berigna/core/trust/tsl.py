@@ -45,7 +45,7 @@ from signxml.exceptions import InvalidSignature as XmlInvalidSignature
 from signxml.verifier import SignatureConfiguration, XMLVerifier
 
 from berigna.core.certs import to_asn1
-from berigna.core.errors import TrustStoreIntegrityError, TslError, TslExpiredError
+from berigna.core.errors import UNREADABLE_DATA, TrustStoreIntegrityError, TslError, TslExpiredError
 from berigna.core.trust.store import (
     TrustedCertificate,
     TrustStore,
@@ -204,7 +204,7 @@ def _check_not_revoked(
         signed = issued_by_root and crl.is_signature_valid(root.public_key())  # type: ignore[arg-type]
         next_update = crl.next_update_utc
         revoked = crl.get_revoked_certificate_by_serial_number(signer.serial_number)
-    except (ValueError, KeyError, TypeError, IndexError) as exc:
+    except UNREADABLE_DATA as exc:
         raise TslError(f"unreadable CRL of the trusted list signer: {exc!r}") from exc
     if not signed:
         raise TslError("the CRL of the trusted list signer is not signed by its root")

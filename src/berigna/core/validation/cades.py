@@ -431,14 +431,19 @@ def verify_cades(
     if not signer_infos:  # an empty CMS has no signature: ETSI has nothing to say about it
         raise UnreadableSignatureError("the CMS has no SignerInfo")
 
+    specs: dict[bool, SignatureValidationSpec] = {}  # by context.online: built once each
+
     def verify(signer_info: Any, context: Context) -> CadesSignatureReport:
-        spec = validation_spec(
-            context,
-            [*store.intermediates, *certificates],
-            [*own_ocsps, *context.extra_ocsps],
-            [*own_crls, *context.extra_crls],
+        if context.online not in specs:
+            specs[context.online] = validation_spec(
+                context,
+                [*store.intermediates, *certificates],
+                [*own_ocsps, *context.extra_ocsps],
+                [*own_crls, *context.extra_crls],
+            )
+        return _verify_signer_info(
+            signed_data, signer_info, checked, context, packaging, specs[context.online]
         )
-        return _verify_signer_info(signed_data, signer_info, checked, context, packaging, spec)
 
     return CadesVerification(
         signatures=tuple(

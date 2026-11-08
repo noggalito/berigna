@@ -115,15 +115,17 @@ def test_a_token_is_checked_before_it_is_embedded(pki: Pki) -> None:
     signature; berigna does, before writing it into a signature."""
     stamper, _ = make_timestamper(pki)
     token = asyncio.run(stamper.async_timestamp(_DIGEST, "sha256"))
-    check_token(token, _DIGEST)
+    check_token(token, _DIGEST, "sha256")
     with pytest.raises(TimestampRequestError, match="requested digest"):
-        check_token(token, hashlib.sha256(b"otro").digest())
+        check_token(token, hashlib.sha256(b"otro").digest(), "sha256")
+    with pytest.raises(TimestampRequestError, match="requested digest"):
+        check_token(token, _DIGEST, "sha512")  # the same bytes, said to be another hash
     der = token.dump()
     signature = token["content"]["signer_infos"][0]["signature"].native
     broken = der.replace(signature, bytes([signature[0] ^ 1]) + signature[1:])
     assert broken != der
     with pytest.raises(TimestampRequestError, match="does not verify"):
-        check_token(type(token).load(broken), _DIGEST)
+        check_token(type(token).load(broken), _DIGEST, "sha256")
 
 
 def test_a_damaged_answer_of_the_tsa_is_a_tsa_error(pki: Pki) -> None:
@@ -148,6 +150,6 @@ def test_a_damaged_answer_of_the_tsa_is_a_tsa_error(pki: Pki) -> None:
                 token = asyncio.run(client.async_timestamp(_DIGEST, "sha256"))
             except TimestampRequestError:
                 return
-            check_token(token, _DIGEST)
+            check_token(token, _DIGEST, "sha256")
 
         check()
