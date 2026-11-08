@@ -415,9 +415,11 @@ def test_a_root_with_serial_number_zero_is_still_kept(
     with warnings.catch_warnings(record=True) as shown:
         warnings.simplefilter("always")
         trusted = load_tsl(sign_tsl(root, tsl_pki), root=tsl_pki.root)
-    (kept,) = trusted.services[0].certificates
-    assert kept.serial_number == 0
     assert not [w for w in shown if issubclass(w.category, CryptographyDeprecationWarning)]
+    (kept,) = trusted.services[0].certificates
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", CryptographyDeprecationWarning)
+        assert kept.serial_number == 0
     assert "with serial number 0 kept" in caplog.text
 
 
