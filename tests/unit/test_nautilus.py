@@ -208,4 +208,4 @@ def test_the_nautilus_api_of_each_distribution_is_used(
     _install_fake_bindings(monkeypatch)
     monkeypatch.delitem(sys.modules, "berigna_nautilus", raising=False)
     importlib.import_module("berigna_nautilus")
-    assert _REQUESTED == requested
+    assert requested == _REQUESTED

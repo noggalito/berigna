@@ -25,7 +25,7 @@ try:
     gi.require_version("Nautilus", "4.1")
 except ValueError:
     gi.require_version("Nautilus", "4.0")
-from gi.repository import Gio, GObject, Nautilus  # noqa: E402
+from gi.repository import Gio, GObject, Nautilus
 
 APP_INFO_ID = "com.noggalito.Berigna.desktop"
 ICON = "com.noggalito.Berigna-symbolic"
