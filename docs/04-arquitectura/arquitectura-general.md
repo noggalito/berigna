@@ -3,9 +3,9 @@
 | Campo | Valor |
 |---|---|
 | Documento | BRG-ARQ-001 |
-| Versión | 0.6.0 |
+| Versión | 0.6.1 |
 | Estado | Borrador |
-| Fecha | 2026-11-02 |
+| Fecha | 2026-11-07 |
 | Responsable | noggalito |
 
 ## 1. Principios
@@ -146,7 +146,7 @@ Decisiones de implementación de `core.token.dnie_v2` (ADR-0012), documentadas p
 | Abrir un documento lo lee una vez y calcula su SHA-256 (`core.documents.inspect_document`), en un hilo de trabajo | La firma comprueba después que el archivo sigue siendo el mostrado (RF-018); un PDF grande no bloquea la interfaz |
 | Al validar en el momento actual, la tolerancia de tiempo para los datos de revocación es de 5 minutos (`CURRENT_TIME_TOLERANCE`); en una fecha pasada, 1 s | El momento se fija antes de consultar los servicios, y su respuesta lleva la hora en que se produjo: con 1 s, una respuesta de RENIEC que tardó 2,6 s era "demasiado reciente" y la firma salía INDETERMINATE (2026-10-28). Los servicios pueden tardar hasta un minuto (R-17) |
 | La verificación corre en un hilo de trabajo y su resultado se descarta si el usuario ya abrió otro documento (`ui.verification`) | Puede tardar segundos por la red; la interfaz no se bloquea y nunca muestra el resultado de un documento que ya no está a la vista |
-| El diálogo del PIN se muestra desde el *callback* `ask_pin` del núcleo, que corre en el hilo de firma y espera la respuesta del bucle principal (`ui.signing`) | El núcleo decide el orden de seguridad (certificado y TSA antes del PIN, archivo comprobado antes y después) y la interfaz no puede alterarlo; la ventana no se bloquea mientras se consulta a RENIEC |
+| El diálogo del PIN se muestra desde el *callback* `ask_pin` del núcleo, que corre en el hilo de firma y espera la respuesta del bucle principal (`ui.pin_dialog`) | El núcleo decide el orden de seguridad (certificado y TSA antes del PIN, archivo comprobado antes y después) y la interfaz no puede alterarlo; la ventana no se bloquea mientras se consulta a RENIEC |
 | Un documento certificado "sin cambios" (DocMDP P=1) se rechaza en `check_pdf_signable`, antes del PIN (ERR-307) | pyHanko también lo rechaza, pero dentro de la firma, después de enviar el PIN, y con el error genérico de PDF dañado |
 | El proxy se aplica a las variables de entorno del proceso, no como parámetro de cada petición (`core.net.proxy`) | pyhanko-certvalidator llama a `requests` sin parámetros de proxy; las variables de entorno las lee `requests` en todas las peticiones, propias y de las bibliotecas |
 | La caché de la TSL guarda la lista, no la CRL de su firmante | La revocación del firmante se comprueba con una CRL vigente al aceptar la lista; volver a comprobarla con una copia caducada solo haría inservible sin conexión una lista que sigue vigente |

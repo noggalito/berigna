@@ -102,6 +102,7 @@ Escritorio y empaquetado (Fase 5):
 
 ### Cambiado
 
+- La página de firma se divide en módulos (R-DES-19), sin cambios de comportamiento: el diálogo del PIN en `ui/pin_dialog.py`, lo que comparten la firma de un documento y la de un lote (nivel, motivo y lugar, formato CAdES o XAdES, vista de un archivo que no es PDF) en `ui/signing_form.py` y la firma visible en `ui/visible_signature.py`; `ui/signing.py` pasa de 1010 a unas 500 líneas.
 - Al elegir el formato de una firma, la CAdES envolvente (`.p7m`) y la XAdES separada (`.xsig`) avisan de cómo difieren de Firma Perú. Su validador web no reconoce la extensión `.p7m`: el mismo archivo renombrado `.p7s` es válido allí, subiendo antes el archivo original. Tampoco valida `.xsig`. berigna mantiene los nombres estándar (BRG-CAL-006 §3.10).
 - Lo que comparten PAdES y CAdES pasa a `berigna.core.formats.common` (niveles, firmante que delega en la tarjeta); los pasos de seguridad de `core.signing` son uno solo para los dos formatos (`prepare`), y `check_source` ya no comprueba el PDF, lo hacen quienes firman PDF.
 - Los CSV del historial y del lote se proponen con la fecha y la hora delante: "2026-10-29_00h55_historial-berigna.csv".
