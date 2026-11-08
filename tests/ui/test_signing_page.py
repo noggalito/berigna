@@ -15,8 +15,9 @@ from berigna.core.i18n import Language
 from berigna.core.token.dnie_v2 import DnieV2Token
 from berigna.ui import i18n
 from berigna.ui.application import BerignaApplication
+from berigna.ui.pin_dialog import PinDialog
 from berigna.ui.preview import PdfPreview
-from berigna.ui.signing import PinDialog, SigningPage
+from berigna.ui.signing import SigningPage
 from conftest import FakeReaders, drive, open_card, wait_until
 from sim.dnie_v2 import DnieV2Simulator
 from support.certified import certified_pdf

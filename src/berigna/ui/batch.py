@@ -45,16 +45,9 @@ from berigna.core.token.pin import Pin  # noqa: E402
 from berigna.core.validation import SignerCheck  # noqa: E402
 from berigna.ui import presentation  # noqa: E402
 from berigna.ui.i18n import _, catalogue, current_language, ngettext  # noqa: E402
-from berigna.ui.signing import (  # noqa: E402
-    LevelChoice,
-    PinDialog,
-    SignatureData,
-    SigningServices,
-    ask_pin_in_main_loop,
-    failure_page,
-    output_settings,
-    signature_entry,
-)
+from berigna.ui.pin_dialog import PinDialog, ask_pin_in_main_loop  # noqa: E402
+from berigna.ui.signing import SigningServices, failure_page, signature_entry  # noqa: E402
+from berigna.ui.signing_form import LevelChoice, SignatureData, output_settings  # noqa: E402
 from berigna.ui.widgets import brand_markup, document_filters, label_factory, named  # noqa: E402
 
 if TYPE_CHECKING:

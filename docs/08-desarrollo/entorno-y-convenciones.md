@@ -48,7 +48,8 @@ berigna/
 │   │   ├── documents.py          # tipo de documento abierto, páginas, firmas y SHA-256
 │   │   └── appearance/, history.py, config.py, batch.py   # (previstos)
 │   ├── main.py, __main__.py      # punto de entrada de la interfaz
-│   ├── ui/                       # GTK 4 + libadwaita: application, window, presentation, i18n
+│   ├── ui/                       # GTK 4 + libadwaita: application, window, presentation, i18n;
+│   │                             # signing (página y flujo), signing_form, pin_dialog, visible_signature
 ├── data/
 │   ├── brand/                    # logotipos SVG (GPL-3.0-or-later)
 │   ├── ui/*.blp, berigna.gresource.xml   # vistas en Blueprint y recursos
