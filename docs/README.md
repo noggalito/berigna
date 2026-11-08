@@ -3,9 +3,9 @@
 | Campo | Valor |
 |---|---|
 | Documento | BRG-GEN-000 |
-| Versión | 0.21.0 |
+| Versión | 0.22.0 |
 | Estado | Borrador |
-| Fecha | 2026-11-06 |
+| Fecha | 2026-11-07 |
 | Responsable | noggalito |
 
 ## 1. Propósito
@@ -39,7 +39,8 @@ docs/
 ├── 06-ux/
 │   ├── diseno-de-interfaz.md
 │   ├── inventario-visual.md       ← iconos, ilustraciones y piezas gráficas por diseñar
-│   └── glosario-quechua.md        ← términos fijos de la traducción al quechua sureño
+│   ├── glosario-quechua.md        ← términos fijos de la traducción al quechua sureño
+│   └── guia-revision-quechua.md   ← cómo revisan la traducción las personas hablantes
 ├── 07-calidad/
 │   ├── estrategia-de-pruebas.md
 │   ├── protocolo-pruebas-con-pin.md   ← obligatorio antes de usar un PIN real
@@ -80,7 +81,7 @@ Algunos documentos públicos citan identificadores cuyo detalle está en la docu
 | 03-requisitos | Borrador | Línea base para la v1.0 |
 | 04-arquitectura | Borrador | ADR-0001 a ADR-0021 aceptados |
 | 05-seguridad | Borrador | — |
-| 06-ux | Borrador | Interfaz implementada (Fase 3); glosario del quechua (BRG-UX-003) |
+| 06-ux | Borrador | Interfaz implementada (Fase 3); glosario del quechua (BRG-UX-003) y guía para su revisión por hablantes (BRG-UX-004) |
 | 07-calidad | Borrador | El protocolo de PIN está Vigente; protocolo de la prueba de usabilidad (BRG-CAL-005) pendiente de aplicar |
 | 08-desarrollo | Borrador | Recomendaciones a futuro (BRG-DES-002) |
 | 09-despliegue | Borrador | — |

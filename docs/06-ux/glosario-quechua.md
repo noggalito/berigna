@@ -3,9 +3,9 @@
 | Campo | Valor |
 |---|---|
 | Documento | BRG-UX-003 |
-| Versión | 0.2.0 |
+| Versión | 0.3.0 |
 | Estado | Borrador |
-| Fecha | 2026-10-29 |
+| Fecha | 2026-11-07 |
 | Responsable | noggalito |
 
 ## 1. Propósito y alcance
@@ -88,4 +88,4 @@ La primera traducción (2026-10-29) es automática, hecha en línea a partir de 
 
 ## 4. Revisión
 
-Para la versión 1.1: revisión de todo el catálogo por traductores del Registro Nacional de Intérpretes y Traductores de Lenguas Indígenas u Originarias del Ministerio de Cultura (RNF-USA-09), empezando por este glosario. Hasta entonces, las correcciones de hablantes se reciben como incidencias y actualizan primero este glosario y después el catálogo.
+Para la versión 1.1: revisión de todo el catálogo por traductores del Registro Nacional de Intérpretes y Traductores de Lenguas Indígenas u Originarias del Ministerio de Cultura (RNF-USA-09), empezando por este glosario. Hasta entonces, las correcciones de hablantes se reciben como incidencias, pull requests o por correo, y actualizan primero este glosario y después el catálogo. El procedimiento está en la guía de revisión (BRG-UX-004, [`guia-revision-quechua.md`](guia-revision-quechua.md)).
