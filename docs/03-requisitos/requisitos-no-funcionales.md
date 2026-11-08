@@ -3,9 +3,9 @@
 | Campo | Valor |
 |---|---|
 | Documento | BRG-REQ-002 |
-| Versión | 0.2.1 |
+| Versión | 0.3.0 |
 | Estado | Borrador |
-| Fecha | 2026-10-28 |
+| Fecha | 2026-11-08 |
 | Responsable | noggalito |
 
 Identificadores: `RNF-<CATEGORÍA>-NN`.
@@ -72,7 +72,7 @@ Nota: el tiempo de la operación criptográfica dentro del chip (medido: unos 0,
 | RNF-COM-04 | Lectores USB CCID de contacto genéricos admitidos por `libccid`. Probados: Realtek `0bda:0169` ("Hyperion") y Alcor Micro AU9540 `058f:9540` ("innovatech"). Las necesidades de hardware de prueba, como un lector con PIN pad, están en 07-calidad §10 | Debe |
 | RNF-COM-05 | Versiones del DNIe: DNIe v2 en la versión 1.0; DNIe 1.0 y DNIe 3.0 en la versión 1.1 (decisión del 2026-10-27; identificación en SPK-06) | Debe |
 | RNF-COM-06 | arm64: el paquete es `Architecture: all` y funciona, pero sin soporte oficial ni pruebas HIL en la v1 (DP-08) | Podría |
-| RNF-COM-07 | Ubuntu LTS actual (por compartir base Debian), sin soporte oficial | Podría |
+| RNF-COM-07 | Ubuntu 26.04 LTS con el mismo `.deb` de Debian 13, soportada desde la v1.0 con las mismas pruebas (decisión del 2026-11-08, ADR-0023). Ubuntu 24.04 LTS y Linux Mint 22 quedan fuera: `apt` rechaza el paquete | Debe |
 
 ## 6. Interoperabilidad (INT)
 

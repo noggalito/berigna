@@ -6,10 +6,14 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/); v
 
 ### Añadido
 
-- La CI compila los paquetes una sola vez, en Debian 13, y prueba ese mismo `.deb` instalado en Ubuntu 26.04 LTS con la suite completa contra el paquete instalado, no contra `src/` (`scripts/probar-paquete-instalado.sh`): un solo `.deb` para la familia Debian. El trabajo de Ubuntu avisa en el PR, pero todavía no es obligatorio para fusionar (DP-23).
+- La CI compila los paquetes una sola vez, en Debian 13, y prueba ese mismo `.deb` instalado en Ubuntu 26.04 LTS con la suite completa contra el paquete instalado, no contra `src/` (`scripts/probar-paquete-instalado.sh`): un solo `.deb` para la familia Debian. El trabajo de Ubuntu avisa en el PR y pasa a ser obligatorio en la Fase 6: Ubuntu 26.04 LTS queda soportada desde la v1.0 (ADR-0023, RNF-COM-07).
+- El paquete `berigna` declara en su `Depends` las versiones mínimas de `pyproject.toml`, y `scripts/verificar-dependencias.py` comprueba que coinciden. Así `apt` rechaza con un mensaje claro una distribución que no las cumple, en lugar de instalar un berigna que falle al firmar; la CI lo comprueba en Ubuntu 24.04 (`scripts/probar-rechazo.sh`).
+- En Ubuntu, antes de la suite, todos los módulos del paquete se importan con los avisos de berigna convertidos en errores, y la vigilancia semanal repite la prueba con las actualizaciones de Ubuntu 26.04.
+- Una prueba fija que las raíces de la TSL con número de serie 0 (tres extranjeras en la lista real) se siguen conservando: fallará el día que cryptography deje de leerlas, para decidirlo entonces.
 
 ### Corregido
 
+- La extensión de Nautilus pedía solo la API 4.0 (Nautilus 48, Debian 13): en Ubuntu 26.04, con Nautilus 50, que la publica como 4.1, no se cargaba y el menú "Firmar con berigna" no aparecía. Ahora pide la 4.1 y, si no está, la 4.0. Lo encontró la nueva importación de todos los módulos del paquete instalado en Ubuntu.
 - Un certificado o una CRL con el número de versión dañado hacen que cryptography lance `InvalidVersion`, que no es un `ValueError`. En la TSL de INDECOPI, la carga fallaba con un error no previsto en lugar de rechazar la lista (ERR-204) si el dañado era el certificado del firmante o su CRL (DER o PEM), y en lugar de descartar solo esa entrada si era el certificado de un servicio. `InvalidVersion` pasa a la lista común de datos ilegibles (`UNREADABLE_DATA`), que usan todas las fronteras con datos de fuera. Lo encontró la prueba por propiedades de R-DES-07; los casos quedan fijados.
 - Dos pruebas dependían de la versión de las herramientas de Debian 13: la de xmlsec1 pasaba las anclas en un único PEM (xmlsec1 1.3, el de Ubuntu 26.04, lee solo el primer certificado y daba KEY-NOT-FOUND), y la del diagnóstico comparaba el subtítulo sin el marcado del nombre en negrita (libadwaita 1.9 lo devuelve tal cual).
 

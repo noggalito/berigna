@@ -3,7 +3,7 @@
 | Campo | Valor |
 |---|---|
 | Documento | BRG-DES-001 |
-| Versión | 0.11.4 |
+| Versión | 0.11.5 |
 | Estado | Borrador |
 | Fecha | 2026-11-08 |
 | Responsable | noggalito |
@@ -18,17 +18,21 @@ berigna/
 ├── meson.build                   # aplicación GTK (ADR-0010): vistas, esquema, catálogos, lanzador
 ├── bin/berigna.in                # lanzador instalado
 ├── LICENSE, README.md, SECURITY.md, CHANGELOG.md
-├── .github/workflows/verificar.yml  # CI: scripts/verificar.sh en Debian 13, SBOM y rendimiento
-├── .github/workflows/vigilancia.yml # semanal: Debian stable y testing, servicios, última pyHanko
+├── .github/workflows/verificar.yml  # CI: scripts/verificar.sh en Debian 13, SBOM, rendimiento y el .deb en Ubuntu
+├── .github/workflows/vigilancia.yml # semanal: Debian stable y testing, Ubuntu 26.04, servicios, última pyHanko
+├── .github/workflows/paquetes.yml  # el .deb único: compilado en Debian 13, probado en Ubuntu (ADR-0023)
 ├── .github/dependabot.yml        # solo las actions de GitHub, cada mes (BRG-MAN-001 §5)
 ├── scripts/verificar.sh          # verificación local, incluida la documentación (R-DES-05)
 ├── scripts/verificar-documentacion.py  # cabeceras, fechas e identificadores de docs/
-├── scripts/verificar-dependencias.py  # versiones del entorno frente a pyproject.toml (R-DES-16)
+├── scripts/verificar-dependencias.py  # versiones del entorno y Depends de debian/control frente a pyproject.toml
 ├── scripts/version.py            # proceso de versión: preparar, comprobar y etiquetar (R-DES-09)
 ├── scripts/hooks/pre-push        # gancho de pre-push con verificar.sh (R-DES-06)
 ├── scripts/traducciones.sh       # plantilla, catálogos y compilación a build/locale (gettext)
 ├── scripts/fusionar-incremento.sh  # rama → commit con DCO → push → PR → CI → fusión
 ├── scripts/empaquetar-{pyhanko,berigna}.sh  # .deb reproducibles con debcraft o debuild (Fase 5)
+├── scripts/compilar-paquetes.sh  # los tres .deb en build/paquetes, en un contenedor Debian 13 (ADR-0023)
+├── scripts/probar-paquete-instalado.sh  # suite contra el .deb instalado (Ubuntu 26.04)
+├── scripts/probar-rechazo.sh     # apt rechaza el .deb bajo los mínimos (Ubuntu 24.04)
 ├── scripts/ejecutar.sh           # lanza la interfaz desde el árbol de trabajo
 ├── scripts/ci-entorno.sh         # entorno de la CI: paquetes de Debian y .venv (las dos CI)
 ├── scripts/sbom.py               # lista de componentes CycloneDX 1.6 (R-DES-03)

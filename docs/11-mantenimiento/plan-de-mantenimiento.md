@@ -3,9 +3,9 @@
 | Campo | Valor |
 |---|---|
 | Documento | BRG-MAN-001 |
-| Versión | 0.2.0 |
+| Versión | 0.3.0 |
 | Estado | Borrador |
-| Fecha | 2026-11-02 |
+| Fecha | 2026-11-08 |
 | Responsable | noggalito |
 
 ## 1. Propósito y alcance
@@ -66,6 +66,7 @@ Quién vigila cada origen se asigna en la documentación interna.
 |---|---|---|
 | CI de cada PR (`scripts/verificar.sh` en Debian 13, con Xvfb), lista de componentes (SBOM) y medidas de rendimiento | Cada cambio | Formato, tipos, pruebas y cobertura; los componentes y sus licencias; un empeoramiento de más del 50 % (aviso) |
 | CI programada contra Debian *stable* y *testing* | Semanal | Roturas por actualizaciones de Debian antes de que lleguen a los usuarios |
+| El mismo `.deb` de Debian 13 instalado en Ubuntu 26.04 LTS con sus actualizaciones (*resolute-updates* y *resolute-security*), con la suite contra el paquete instalado (ADR-0023) | Semanal y en cada PR | Roturas y avisos de obsolescencia por actualizaciones de Ubuntu; la CI de cada PR comprueba además que `apt` rechaza el paquete en Ubuntu 24.04 |
 | Descarga y verificación de la TSL real de INDECOPI | Semanal | Rotación del firmante, cambio de formato, lista caducada o a menos de 7 días de su NextUpdate |
 | Respuesta del OCSP de RENIEC y de cada espejo de las ARL de las CA del almacén | Semanal | Direcciones cambiadas, listas vencidas o servicios caídos (R-17) |
 | OSV para lo que no viene de Debian (hoy solo pyHanko) y `debsecan` sobre los paquetes de Debian del SBOM | Semanal | Vulnerabilidades conocidas en las dependencias; `debsecan`, solo informativo |

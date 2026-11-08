@@ -3,7 +3,7 @@
 | Campo | Valor |
 |---|---|
 | Documento | BRG-DSP-001 |
-| Versión | 0.8.0 |
+| Versión | 0.9.0 |
 | Estado | Borrador |
 | Fecha | 2026-11-08 |
 | Responsable | noggalito |
@@ -12,7 +12,7 @@
 
 | Paquete | Contenido | Depends | Recommends |
 |---|---|---|---|
-| `berigna` | Aplicación, recursos, almacén de confianza, traducciones, manual | `python3 (>= 3.12)`, `python3-gi`, `python3-gi-cairo`, `gir1.2-gtk-4.0`, `gir1.2-adw-1`, `gir1.2-poppler-0.18`, `python3-pyhanko (>= 0.25.1), python3-pyhanko (<< 0.26)` (\*), `python3-pyhanko-certvalidator`, `python3-pyscard`, `python3-cryptography`, `python3-asn1crypto`, `python3-lxml`, `python3-signxml`, `python3-requests`, `python3-pil`, `python3-reportlab`, `fonts-dejavu-core`, `pcscd` | `berigna-nautilus`, `libccid`, `opensc-pkcs11` (*backend* PKCS#11, ADR-0012) |
+| `berigna` | Aplicación, recursos, almacén de confianza, traducciones, manual | `python3 (>= 3.12)`, `python3-gi`, `python3-gi-cairo`, `gir1.2-gtk-4.0`, `gir1.2-adw-1`, `gir1.2-poppler-0.18`, `python3-pyhanko (>= 0.25.1), python3-pyhanko (<< 0.25.2~)` (\*), `python3-pyhanko-certvalidator (>= 0.26.3), (<< 0.27~)`, `python3-pyscard (>= 2.2)`, `python3-cryptography (>= 42)`, `python3-asn1crypto (>= 1.5), (<< 2~)`, `python3-lxml (>= 5)`, `python3-signxml (>= 4.0), (<< 5~)`, `python3-requests (>= 2.31)`, `python3-pil (>= 10)`, `python3-reportlab (>= 4)`, `fonts-dejavu-core`, `pcscd` | `berigna-nautilus`, `libccid`, `opensc-pkcs11` (*backend* PKCS#11, ADR-0012) |
 | `berigna-nautilus` | Extensión de Nautilus | `berigna (= ${binary:Version})`, `python3-nautilus` | — |
 | `python3-pyhanko` (\*) | pyHanko 0.25.1 | Las dependencias oficiales de Debian 13 (SPK-05) | — |
 
@@ -20,7 +20,7 @@ Un paquete separado `python3-berigna-core` es una alternativa abierta (arquitect
 
 (\*) No está en Debian 13. Se empaqueta en el repositorio del proyecto (DP-06, ADR-0013).
 
-Los tres paquetes son `Architecture: all` (DP-08). La lista de `Depends` quedó confirmada con el incremento 3 (2026-11-05): el paquete `berigna` se construye, se instala y se verifica en Debian 13 con ella (§7). `berigna-nautilus` llegó con el incremento 4 (2026-11-06, §8); mientras no esté en el repositorio, la instalación con `--no-install-recommends` no lo pide (apt ignora los `Recommends` ausentes). `python3-pkcs11` se añadirá en la versión 1.1, con el *backend* PKCS#11 (ADR-0003, DP-15); `python3-babel` se quitó el 2026-10-29: berigna no lo usa.
+Los tres paquetes son `Architecture: all` (DP-08). Los límites de versión son los de `pyproject.toml` (desde el 2026-11-08, ADR-0023): `scripts/verificar-dependencias.py` comprueba en la CI que `debian/control` los repite (`>=V` es `(>= V)`; `~=V` añade el techo de PEP 440; `==V` admite solo las revisiones de Debian de V; los techos llevan `~`, para que tampoco pase una versión previa como `0.27~rc1`, que dpkg ordena antes de `0.27`), para que `apt` rechace una distribución que no los cumple. La lista de `Depends` quedó confirmada con el incremento 3 (2026-11-05): el paquete `berigna` se construye, se instala y se verifica en Debian 13 con ella (§7). `berigna-nautilus` llegó con el incremento 4 (2026-11-06, §8); mientras no esté en el repositorio, la instalación con `--no-install-recommends` no lo pide (apt ignora los `Recommends` ausentes). `python3-pkcs11` se añadirá en la versión 1.1, con el *backend* PKCS#11 (ADR-0003, DP-15); `python3-babel` se quitó el 2026-10-29: berigna no lo usa.
 
 ## 2. Archivos instalados
 
@@ -105,14 +105,15 @@ de Debian y funciona (`import pyhanko`, el CLI y su página de manual).
 
 Un entregable por formato, no por distribución: el mismo `berigna_X.Y.Z-1_all.deb`, con `python3-pyhanko` y `berigna-nautilus`, se instala en cualquier distribución de la familia Debian que satisfaga sus dependencias, sin sufijos `~ubuntu…` ni suites por distribución. Se puede porque los tres paquetes son `Architecture: all`, Python puro: `dh_python3` no pone techo a la versión de Python (`python3 (>= 3.12)`) y la byte-compilación se hace al instalar, con el Python del sistema. Dónde está soportado lo dice la matriz de pruebas, no el paquete.
 
-La CI compila los paquetes una sola vez, en Debian 13 (la base más antigua), en el trabajo `paquetes` (`scripts/empaquetar-*.sh debuild`, con su `SHA256SUMS`), y el trabajo `ubuntu-26-04` instala ese mismo artefacto en un contenedor `ubuntu:26.04` y ejecuta la suite completa contra el paquete instalado (`scripts/probar-paquete-instalado.sh`: `berigna` se importa de `/usr/lib/python3/dist-packages`, nunca de `src/`; las vistas, el esquema y los catálogos son los instalados). Un fallo se ve en rojo en el PR, pero solo `verificar` es obligatorio para fusionar hasta que se decida el nivel de soporte de Ubuntu 26.04 (DP-23).
+La CI compila los paquetes una sola vez, en Debian 13 (la base más antigua), en el trabajo `paquetes` (`scripts/compilar-paquetes.sh`, que llama a `scripts/empaquetar-*.sh debuild` y deja el `SHA256SUMS`), y el trabajo `ubuntu-26-04` instala ese mismo artefacto en un contenedor `ubuntu:26.04` y ejecuta la suite completa contra el paquete instalado (`scripts/probar-paquete-instalado.sh`: `berigna` se importa de `/usr/lib/python3/dist-packages`, nunca de `src/`; las vistas, el esquema y los catálogos son los instalados). Antes de la suite importa todos los módulos del paquete con los avisos de berigna convertidos en errores: una biblioteca de la distribución que declare obsoleto algo que berigna usa se ve ahí antes de romperlo. Un fallo se ve en rojo en el PR; solo `verificar` es obligatorio para fusionar hasta la Fase 6, en que `ubuntu-26-04` se suma (Ubuntu 26.04 soportada desde la v1.0, ADR-0023). El trabajo `ubuntu-24-04` comprueba el otro lado: `scripts/probar-rechazo.sh` simula la instalación en `ubuntu:24.04` y exige que `apt` la rechace nombrando `python3-cryptography`, `python3-pyscard` y `python3-signxml`. Los tres trabajos están en `.github/workflows/paquetes.yml`, que llaman la CI de cada PR y la vigilancia semanal (BRG-MAN-001 §5); esta los repite con las actualizaciones de Ubuntu (*resolute-updates* y *resolute-security*) y abre una incidencia si fallan.
 
 Resultado del 2026-11-08 en Ubuntu 26.04.1 (Python 3.14.4, cryptography 46.0.5, lxml 6.0.2, pyscard 2.3.1, signxml 4.2.0, libadwaita 1.9, xmlsec1 1.3.9): 784 pruebas en verde, 5 omitidas (HIL) y una excluida (la del SBOM, que describe el entorno de la CI y no un sistema instalado). Lo que apareció por el camino:
 
+- Nautilus 50 (Ubuntu 26.04) publica su API como `Nautilus 4.1`; Nautilus 48 (Debian 13), como 4.0. La extensión pedía solo la 4.0 y en Ubuntu no se cargaba (sin menú). Desde el 2026-11-08 pide la 4.1 y, si no está, la 4.0; `python3-nautilus` arrastra la typelib de cada distribución. Lo encontró la importación con avisos como errores, no la suite, que usa un Nautilus simulado.
 - La imagen de contenedor de Ubuntu está minimizada: `dpkg` descarta `/usr/share/locale` y con él los catálogos de berigna. Una instalación real los conserva; el script quita esa regla antes de instalar.
 - xmlsec1 1.3 lee solo el primer certificado de un archivo PEM: la prueba pasa cada ancla en su archivo (con la 1.2.41 de Debian 13 da igual).
 - libadwaita 1.9 devuelve el subtítulo de una fila con su marcado (`<b>berigna</b>`) y la 1.7 sin él: la prueba compara el texto.
-- cryptography 46 avisa de que tres raíces extranjeras de la TSL real de INDECOPI (dos de GSE, Colombia, y la de Indenova, España) tienen número de serie 0, prohibido por RFC 5280, y de que una versión futura no las leerá. `core.trust.tsl` ya descarta con `ValueError` un certificado que no se puede leer: con esa versión, esas tres CA dejarían de ser de confianza, sin afectar a la carga de la lista ni a las CA peruanas.
+- cryptography 46 avisa de que tres raíces extranjeras de la TSL real de INDECOPI (dos de GSE, Colombia, y la de Indenova, España) tienen número de serie 0, prohibido por RFC 5280, y de que una versión futura no las leerá. `core.trust.tsl` ya descarta con `ValueError` un certificado que no se puede leer: con esa versión, esas tres CA dejarían de ser de confianza, sin afectar a la carga de la lista ni a las CA peruanas. `test_a_root_with_serial_number_zero_is_still_kept` fija que hoy se conservan: falla el día que cryptography las rechace, para que descartarlas sea una decisión del titular y no un cambio silencioso.
 - Avisos de obsolescencia ajenos a berigna: signxml 4.2 (curvas binarias de cryptography) y PyGObject (API de asyncio que Python 3.16 retirará).
 
 Ubuntu 24.04 y Linux Mint 22 quedan fuera: no traen signxml y sus versiones de cryptography, pyscard y libadwaita están por debajo de los mínimos.
