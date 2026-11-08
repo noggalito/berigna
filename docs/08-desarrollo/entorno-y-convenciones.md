@@ -3,7 +3,7 @@
 | Campo | Valor |
 |---|---|
 | Documento | BRG-DES-001 |
-| Versión | 0.9.0 |
+| Versión | 0.10.0 |
 | Estado | Borrador |
 | Fecha | 2026-11-07 |
 | Responsable | noggalito |
@@ -39,7 +39,7 @@ berigna/
 │   │   ├── errors.py             # jerarquía de errores ERR-xxx
 │   │   ├── token/                # base (TokenSigner), pin, transport (PC/SC), dnie_v2 (APDU), monitor
 │   │   ├── trust/                # store + anchors/ (IOFE, manifest.json); tsl + tsl/ (raíz de INDECOPI)
-│   │   ├── validation/           # preflight (RF-006), pdf (verificación de firmas, RF-050), cades (RF-051) y spec (procesos ETSI compartidos)
+│   │   ├── validation/           # preflight (RF-006), pdf (verificación de firmas, RF-050), cades (RF-051), xades y xmldsig (RF-052) y spec (procesos ETSI compartidos)
 │   │   ├── formats/              # pades (B-B a B-LTA); cades y xades (previstos, Fase 4)
 │   │   ├── net/                  # fetchers (OCSP, CRL) y tsa (RFC 3161)
 │   │   ├── report/               # messages, explanations (RF-053), json_report y pdf_report (RF-054)
