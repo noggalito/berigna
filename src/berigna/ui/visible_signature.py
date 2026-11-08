@@ -29,7 +29,8 @@ from berigna.ui.widgets import label_factory  # noqa: E402
 
 class VisibleSignatureChoice:
     """Not visible or its appearance, and the box on ``preview``, which must have pages. The
-    sample text follows the reason and location of ``data``."""
+    sample text follows the reason and location of ``data``. Whoever owns the preview calls
+    :meth:`update` when the box moves (``PdfPreview.on_box_changed``)."""
 
     def __init__(
         self,
@@ -63,7 +64,6 @@ class VisibleSignatureChoice:
             kinds = [k.value if k else None for k, _label in APPEARANCES]
             self.combo.set_selected(kinds.index(kind) if kind in kinds else 1)
         self.combo.connect("notify::selected", lambda *_a: self._on_visible())
-        preview.on_box_changed = lambda _box: self.update()
         data.reason.connect(self.update)
         data.location.connect(self.update)
         self.group.add(self.combo)
@@ -89,15 +89,20 @@ class VisibleSignatureChoice:
 
     def signature(self) -> VisibleSignature | None:
         """What the core draws in the PDF; None: not visible."""
-        box = self._preview.box
         kind = self.kind()
+        return self._signature(kind, self._image(kind) if kind is not None else None)
+
+    def _signature(
+        self, kind: AppearanceKind | None, image: Path | None
+    ) -> VisibleSignature | None:
+        box = self._preview.box
         if box is None or kind is None:
             return None
         return VisibleSignature(
             box.page,
             (box.x, box.y, box.width, box.height),
             kind,
-            self._image(kind),
+            image,
             self._data.language(),
             self._dni(),
         )
@@ -105,13 +110,10 @@ class VisibleSignatureChoice:
     def update(self) -> None:
         """Draw the appearance in the box with sample data: the real name and DNI come from
         the card when signing."""
-        visible = self.signature()
         kind = self.kind()
-        missing = (
-            kind in (AppearanceKind.RUBRIC, AppearanceKind.LOGO)
-            and kind is not None
-            and not self._image(kind)
-        )
+        image = self._image(kind) if kind is not None else None  # looked up once per update
+        visible = self._signature(kind, image)
+        missing = kind in (AppearanceKind.RUBRIC, AppearanceKind.LOGO) and image is None
         label = _(APPEARANCES[self.combo.get_selected()][1])
         warning = _("Load the image in Preferences → Visible Signature.")
         self.combo.set_subtitle(f"{label}\n{warning}" if missing else label)

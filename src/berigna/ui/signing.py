@@ -76,9 +76,7 @@ from berigna.ui.signing_form import (  # noqa: E402
     output_settings,
 )
 from berigna.ui.visible_signature import VisibleSignatureChoice  # noqa: E402
-from berigna.ui.widgets import (  # noqa: E402
-    brand_markup,
-)
+from berigna.ui.widgets import brand_markup  # noqa: E402
 
 if TYPE_CHECKING:
     from berigna.ui.window import MainWindow
@@ -217,6 +215,7 @@ class SigningPage:
         self.preview: PdfPreview | None = None  # PDF only
         self.formats: PackagingChoice | None = None  # any other file (CU-05)
         self.visible: VisibleSignatureChoice | None = None  # a PDF with pages (CU-02)
+        self.appearance: Adw.ComboRow | None = None  # its list of appearances
 
         self._sign = Gtk.Button(label=_("_Sign"), use_underline=True)
         self._sign.add_css_class("suggested-action")
@@ -266,14 +265,15 @@ class SigningPage:
         else:
             self.preview = PdfPreview(self.data)
             if self.preview.page_count:  # CU-02
-                self.visible = VisibleSignatureChoice(
+                self.visible = visible = VisibleSignatureChoice(
                     self.preview,
                     self.signature_data,
                     self._services.settings,
                     self._services.appearance_dir,
                 )
-                self.appearance = self.visible.combo
-                panel.add(self.visible.group)
+                self.preview.on_box_changed = lambda _box: visible.update()
+                self.appearance = visible.combo
+                panel.add(visible.group)
             panel.add(self.signature_data.group)
             layout.append(self.preview)
         layout.append(Gtk.Separator(orientation=Gtk.Orientation.VERTICAL))
