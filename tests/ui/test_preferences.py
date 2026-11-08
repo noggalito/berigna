@@ -167,7 +167,7 @@ def test_tsa_test_button(readers: FakeReaders, pki: Pki) -> None:
         assert dialog.tsa_test.get_sensitive()
 
     drive(app, script)
-    assert toasts == ["La autoridad de sellado de tiempo respondió con un sello válido."]
+    assert toasts == ["La autoridad de sellado de tiempo respondió y es de confianza."]
 
 
 def test_tsa_test_button_with_a_tsa_that_is_not_trusted(readers: FakeReaders, pki: Pki) -> None:
@@ -190,9 +190,10 @@ def test_tsa_test_button_with_a_tsa_that_is_not_trusted(readers: FakeReaders, pk
 
     drive(app, script)
     assert toasts == [
-        "La autoridad de sellado de tiempo no es de confianza: su certificado no lleva a una "
-        "entidad acreditada de la IOFE o fue revocado. Revisa la TSA en Preferencias o firma "
-        "sin sello de tiempo (B-B)."
+        "La autoridad de sellado de tiempo no es de confianza: su certificado no viene de una "
+        "entidad acreditada (IOFE o lista de confianza de INDECOPI), no es para sellos de "
+        "tiempo, venció o fue revocado. Revisa la TSA en Preferencias o firma sin sello de "
+        "tiempo (B-B)."
     ]
 
 
