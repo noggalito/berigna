@@ -43,6 +43,7 @@ import enum
 import hashlib
 from collections.abc import Sequence
 from dataclasses import dataclass
+from functools import partial
 from typing import Any
 
 from asn1crypto import cms
@@ -72,6 +73,7 @@ from berigna.core.validation.spec import (
     TimestampReport,
     diagnose_path,
     log_malformed,
+    offline_on_format_failure,
     timestamp_report,
     validate_timestamp,
     validation_spec,
@@ -614,6 +616,9 @@ def verify_xades(
         timeout=timeout,
     )
     return XadesVerification(
-        signatures=tuple(_verify_signature(sig, tree, content, context) for sig in signatures),
+        signatures=tuple(
+            offline_on_format_failure(partial(_verify_signature, sig, tree, content), context)
+            for sig in signatures
+        ),
         moment=when,
     )

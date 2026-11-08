@@ -65,6 +65,10 @@ _SIGNING_POLICY = RevocationCheckingPolicy(
 # services can take up to a minute (R-17: 20 s to connect, a retry, mirrors).
 log = logging.getLogger(__name__)
 
+# What pyhanko-certvalidator may raise past its own errors on an OCSP response or a CRL that
+# parses but does not hold together (found by the mutations of R-DES-07).
+_UNPROCESSABLE = (ValueError, KeyError, TypeError, AttributeError, IndexError)
+
 CURRENT_TIME_TOLERANCE = dt.timedelta(minutes=5)
 # Validation at a given moment in the past keeps the strict default.
 POINT_IN_TIME_TOLERANCE = dt.timedelta(seconds=1)
@@ -180,7 +184,7 @@ def check_signer(
     _check_key_size(certificate)
     leaf = to_asn1(certificate)
 
-    def run(policy: RevocationCheckingPolicy) -> ValidationPath:
+    def run(policy: RevocationCheckingPolicy, online: bool = online) -> ValidationPath:
         context = signing_validation_context(
             store,
             moment=when,
@@ -204,6 +208,15 @@ def check_signer(
             if online:  # the reason is only in pyhanko-certvalidator's message (RF-083)
                 log.warning("revocation of the signer certificate not established: %s", exc)
             path = run(_OFFLINE_POLICY)
+        except _UNPROCESSABLE as exc:
+            if not online:
+                raise
+            # R-DES-07: a damaged OCSP response or CRL from the network (or altered on its
+            # plain HTTP) is revocation that could not be established, as when the network
+            # fails: B-B only, with the warning; never ERR-000 before the PIN.
+            log.warning("revocation data from the network could not be processed: %r", exc)
+            note = RevocationNote.UNAVAILABLE
+            path = run(_OFFLINE_POLICY, online=False)
     except RevokedError as exc:
         raise CertificateRevokedError(str(exc)) from exc
     except (ExpiredError, NotYetValidError) as exc:
@@ -212,6 +225,11 @@ def check_signer(
         raise UntrustedCertificateError(str(exc)) from exc
     except (InvalidCertificateError, PathValidationError, ValidationError) as exc:
         raise CertificateValidationError(str(exc)) from exc
+    except _UNPROCESSABLE as exc:  # revocation data of the caller, or a defect: in the log
+        log.warning("the certificate could not be validated", exc_info=True)
+        raise CertificateValidationError(
+            f"validation data that cannot be processed: {exc}"
+        ) from exc
 
     chain = tuple(to_cryptography(c) for c in path.iter_certs(include_root=True))
     return SignerCheck(

@@ -106,12 +106,12 @@ class CaOnlyCrlFetcher(CRLFetcher):
     def __init__(
         self,
         timeouts: Timeouts,
-        pause: float = RETRY_PAUSE,
+        pause: float | None = None,  # RETRY_PAUSE, read when built (the tests set it to 0)
         hedge: float = HEDGE_DELAY,
         download: Callable[[str, Timeouts], asn1_crl.CertificateList] = _download_crl,
     ) -> None:
         self._timeouts = timeouts
-        self._pause = pause
+        self._pause = RETRY_PAUSE if pause is None else pause
         self._hedge = hedge
         self._download = download
         self._by_cert: dict[Any, list[asn1_crl.CertificateList]] = {}
@@ -183,9 +183,9 @@ def _caused_by_connect_timeout(error: BaseException) -> bool:
 class RetryingOcspFetcher(OCSPFetcher):
     """Retries a failed OCSP request once, unless the connection itself timed out."""
 
-    def __init__(self, inner: OCSPFetcher, pause: float = RETRY_PAUSE) -> None:
+    def __init__(self, inner: OCSPFetcher, pause: float | None = None) -> None:
         self._inner = inner
-        self._pause = pause
+        self._pause = RETRY_PAUSE if pause is None else pause  # read when built, as above
 
     async def fetch(self, cert: Any, authority: Any) -> asn1_ocsp.OCSPResponse:
         try:

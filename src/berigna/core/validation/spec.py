@@ -10,12 +10,13 @@ data (RF-053, RF-063).
 """
 
 import asyncio
+import dataclasses
 import datetime as dt
 import enum
 import logging
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, Protocol
 
 from asn1crypto import cms
 from asn1crypto import x509 as asn1_x509
@@ -95,6 +96,36 @@ MALFORMED = (
     IndexError,
     x509.InvalidVersion,
 )
+
+
+class _Report(Protocol):
+    @property
+    def subindication(self) -> str | None: ...
+
+
+def offline_on_format_failure[R: _Report](
+    verify: Callable[["Context"], R], context: "Context"
+) -> R:
+    """``verify`` with ``context``; if that is a FORMAT_FAILURE and the revocation data came
+    from the network, ``verify`` again without it (R-DES-07).
+
+    A damaged OCSP response or CRL from the network (corrupted, or altered by whoever sits
+    on its plain HTTP) can make pyhanko-certvalidator raise past its own errors, which reads
+    as a signature that cannot be processed: an intact signature would be shown as
+    TOTAL-FAILED. A failure that goes away without the network is the network's: the result
+    without it stands (INDETERMINATE when revocation cannot be established). One that stays
+    is the signature's own."""
+    report = verify(context)
+    if not context.online or report.subindication != "FORMAT_FAILURE":
+        return report
+    offline = verify(dataclasses.replace(context, online=False))
+    if offline.subindication == "FORMAT_FAILURE":
+        return report
+    log.warning(
+        "revocation data from the network could not be processed; result without it: %s",
+        offline.subindication or "TOTAL_PASSED",
+    )
+    return offline
 
 
 def log_malformed(exc: BaseException) -> None:

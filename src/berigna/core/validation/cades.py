@@ -39,6 +39,7 @@ import datetime as dt
 import hashlib
 from collections.abc import Sequence
 from dataclasses import dataclass
+from functools import partial
 from typing import Any
 
 from asn1crypto import cms, core
@@ -71,6 +72,7 @@ from berigna.core.validation.spec import (
     diagnose_chain,
     indication,
     log_malformed,
+    offline_on_format_failure,
     timestamp_report,
     validate_timestamp,
     validation_spec,
@@ -426,17 +428,21 @@ def verify_cades(
         online=online,
         timeout=timeout,
     )
-    spec = validation_spec(
-        context,
-        [*store.intermediates, *certificates],
-        [*own_ocsps, *context.extra_ocsps],
-        [*own_crls, *context.extra_crls],
-    )
     if not signer_infos:  # an empty CMS has no signature: ETSI has nothing to say about it
         raise UnreadableSignatureError("the CMS has no SignerInfo")
+
+    def verify(signer_info: Any, context: Context) -> CadesSignatureReport:
+        spec = validation_spec(
+            context,
+            [*store.intermediates, *certificates],
+            [*own_ocsps, *context.extra_ocsps],
+            [*own_crls, *context.extra_crls],
+        )
+        return _verify_signer_info(signed_data, signer_info, checked, context, packaging, spec)
+
     return CadesVerification(
         signatures=tuple(
-            _verify_signer_info(signed_data, signer_info, checked, context, packaging, spec)
+            offline_on_format_failure(partial(verify, signer_info), context)
             for signer_info in signer_infos
         ),
         content=embedded,

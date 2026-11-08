@@ -36,6 +36,7 @@ import enum
 import io
 from collections.abc import Sequence
 from dataclasses import dataclass
+from functools import partial
 from typing import Any
 
 from asn1crypto import cms
@@ -69,6 +70,7 @@ from berigna.core.validation.spec import (
     TimestampReport,
     indication,
     log_malformed,
+    offline_on_format_failure,
     timestamp_report,
 )
 from berigna.core.validation.spec import diagnose_chain as _diagnose_cms_chain
@@ -356,9 +358,15 @@ def verify_pdf(
     stamps: list[TimestampReport] = []
     for sig in embedded:
         if sig.sig_object_type == "/DocTimeStamp":
-            stamps.append(_verify_document_timestamp(sig, context, dss))
+            stamps.append(
+                offline_on_format_failure(
+                    partial(_verify_document_timestamp, sig, dss=dss), context
+                )
+            )
         else:
-            reports.append(_verify_signature(sig, context, dss))
+            reports.append(
+                offline_on_format_failure(partial(_verify_signature, sig, dss=dss), context)
+            )
     return PdfVerification(
         signatures=tuple(reports), document_timestamps=tuple(stamps), moment=when
     )
