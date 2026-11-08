@@ -3,9 +3,9 @@
 | Campo | Valor |
 |---|---|
 | Documento | BRG-NOR-002 |
-| Versión | 0.1.2 |
+| Versión | 0.2.0 |
 | Estado | Borrador |
-| Fecha | 2026-10-28 |
+| Fecha | 2026-11-07 |
 | Responsable | noggalito |
 
 ## 1. Estándares de firma
@@ -75,3 +75,18 @@
 | B-T | B-B más un sello de tiempo sobre la firma | TSA | Prueba la fecha de existencia, pero no incluye los datos de validación |
 | B-LT | B-T más los certificados de la cadena y las respuestas OCSP o CRL embebidas (en PAdES, dentro del diccionario DSS) | TSA y OCSP o CRL según el estándar. En berigna, para el DNIe: OCSP obligatorio (la CRL de 109 MB no es viable; RF-063, SPK-02) | Verificable sin conexión mientras sigan siendo fuertes los algoritmos y el sello |
 | B-LTA | B-LT más un sello de tiempo de archivo (en PAdES, un *document timestamp*) | TSA | Se puede extender indefinidamente volviendo a sellar |
+
+## 7. Normas de proceso y de calidad
+
+berigna adopta estas normas de proceso y de calidad. Hasta tener las evidencias de cada una, ningún texto afirma que berigna las cumple (mismo criterio que RNF-LEG-03).
+
+| Norma | Título | Uso en berigna | Versión |
+|---|---|---|---|
+| ISO/IEC 5230:2020 | OpenChain: cumplimiento de licencias de código abierto | Política de licencias, responsables e inventario de componentes; se apoya en `debian/copyright` (DEP-5), el permiso adicional de la GPL (ADR-0021) y el SBOM CycloneDX de la CI. Autocertificación | 1.0 |
+| ISO/IEC 18974:2023 | OpenChain: aseguramiento de la seguridad del código abierto | Tratamiento de las vulnerabilidades conocidas de las dependencias; se apoya en el SBOM y en la vigilancia semanal con OSV y `debsecan`. Autocertificación | 1.0 |
+| ISO/IEC 29147:2018 | Divulgación de vulnerabilidades | Recepción de avisos, comunicación con quien informa y publicación de avisos de seguridad ([`SECURITY.md`](../../SECURITY.md)) | 1.0 |
+| ISO/IEC 30111:2019 | Procesos de tratamiento de vulnerabilidades | Análisis, corrección y verificación de las vulnerabilidades recibidas | 1.0 |
+| ISO/IEC 25010:2023 | Modelo de calidad de producto (SQuaRE) | Clasificación de los requisitos no funcionales y de la estrategia de pruebas. No es certificable | 1.0 |
+| ISO 9001:2015 | Sistemas de gestión de la calidad | Gestión de la calidad del desarrollo y del mantenimiento | 1.1 |
+| ISO/IEC 15408 | Criterios Comunes (Common Criteria) | Evaluación de la seguridad del producto | 1.1 |
+| ISO/IEC 27001:2022 | Sistemas de gestión de la seguridad de la información | Seguridad de la información de la organización y de los servicios que opere | 1.1 |
