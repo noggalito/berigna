@@ -62,7 +62,7 @@ _TSA_POLICY = RevocationCheckingPolicy(
 # What the check before the PIN may take, as the probe (core.net.tsa.probe): the revocation
 # services of the TSA can hang on a broken IPv6 route as the TSA itself.
 CHECK_DEADLINE = 30.0
-MIN_CHECK_TIME = 2.0  # left to the trust check when the probe took almost all of it
+MIN_CHECK_TIME = 5.0  # left to the trust check when the probe took almost all of it
 _UNREADABLE_TOKEN: tuple[type[Exception], ...] = (*UNREADABLE_DATA, SignatureValidationError)
 
 
@@ -161,23 +161,27 @@ class TrustedTimeStamper(TimeStamper):
         self._online = online
         self._ocsp_responses = ocsp_responses
         self._crls = crls
-        self._trusted: set[bytes] = set()
-        self._lock = threading.Lock()  # check_now's thread may outlive its deadline
+        self._trusted: set[bytes] = set()  # DER of the TSA certificates already validated
 
-    async def _check(self, token: cms.ContentInfo, *, online: bool) -> None:
+    @staticmethod
+    def _certificates(
+        token: cms.ContentInfo,
+    ) -> tuple[asn1_x509.Certificate, list[asn1_x509.Certificate]]:
         try:
             signed_data = token["content"]
-            certificate = extract_certs_for_validation(signed_data).signer_cert
-            others = token_certificates(signed_data)
+            return extract_certs_for_validation(signed_data).signer_cert, token_certificates(
+                signed_data
+            )
         except _UNREADABLE_TOKEN as exc:
             # a TSA that ignored cert_req, or a token that cannot be read: not a valid one
             raise TsaError(
                 f"the time-stamp token does not carry its TSA certificate: {exc}"
             ) from exc
-        key = certificate.dump()
-        with self._lock:
-            if key in self._trusted:
-                return
+
+    async def _check(self, token: cms.ContentInfo, *, online: bool) -> None:
+        certificate, others = self._certificates(token)
+        if certificate.dump() in self._trusted:
+            return
         await check_tsa(
             certificate,
             self._store,
@@ -186,34 +190,75 @@ class TrustedTimeStamper(TimeStamper):
             ocsp_responses=self._ocsp_responses,
             crls=self._crls,
         )
-        with self._lock:
-            self._trusted.add(key)
+        self._trusted.add(certificate.dump())
 
     async def async_timestamp(self, message_digest: bytes, md_algorithm: str) -> cms.ContentInfo:
+        """A real time-stamp, after the PIN. Its TSA certificate was validated before the PIN
+        (:meth:`check_now`); another one (a TSA that renewed it, or several units) is
+        validated without the network, so that signing never hangs once the card has signed:
+        its revocation counts only with the data given (decision of 2026-11-08)."""
         token: cms.ContentInfo = await self._inner.async_timestamp(message_digest, md_algorithm)
-        await self._check(token, online=self._online)
+        await self._check(token, online=False)
         return token
 
     async def async_dummy_response(self, md_algorithm: str) -> cms.ContentInfo:
         token: cms.ContentInfo = await self._inner.async_dummy_response(md_algorithm)
-        await self._check(token, online=self._online)
+        await self._check(token, online=False)
         return token
 
     def validation_paths(self, validation_context: ValidationContext) -> Any:
         return self._inner.validation_paths(validation_context)  # type: ignore[no-untyped-call]
 
     def check_now(self, md_algorithm: str = PROBE_DIGEST, deadline: float = CHECK_DEADLINE) -> None:
-        """The TSA of the test token (already fetched by :func:`probe`), before the PIN.
+        """Validate the TSA of the test token before the PIN, with the network if allowed.
 
-        Within ``deadline``, in a daemon thread as the probe: the revocation services of the
-        TSA may hang. Past it, revocation counts as not established (decision of 2026-11-08)
-        and the rest is checked without the network, which takes no time: a TSA whose chain
-        does not hold is still refused; one that cannot be checked even so is ERR-305."""
+        The test token is the one :func:`probe` left (pyHanko keeps it). Only the online
+        validation runs in a daemon thread, which touches nothing of this object, within
+        ``deadline``: the revocation services of the TSA may hang. Past it, revocation counts
+        as not established (decision of 2026-11-08) and the rest is validated without the
+        network: a TSA whose chain does not hold is still refused (ERR-314)."""
+        try:
+            token = asyncio.run(self._inner.async_dummy_response(md_algorithm))
+            certificate, others = self._certificates(token)
+            if certificate.dump() in self._trusted:
+                return
+            if self._online and not self._validated_online(certificate, others, deadline):
+                log.warning(
+                    "revocation of the TSA not established within %g s: its chain is "
+                    "checked offline",
+                    deadline,
+                )
+                asyncio.run(self._check(token, online=False))
+            elif not self._online:
+                asyncio.run(self._check(token, online=False))
+            self._trusted.add(certificate.dump())
+        except BerignaError:
+            raise
+        except Exception as exc:  # anything else: the TSA could not be checked, not ERR-000
+            raise TsaError(f"the TSA could not be checked: {exc}") from exc
+
+    def _validated_online(
+        self,
+        certificate: asn1_x509.Certificate,
+        others: list[asn1_x509.Certificate],
+        deadline: float,
+    ) -> bool:
+        """Whether the online validation finished within ``deadline`` (and passed: if it
+        failed, its error is raised)."""
         outcome: list[BaseException | None] = []
 
         def run() -> None:
             try:
-                asyncio.run(self.async_dummy_response(md_algorithm))
+                asyncio.run(
+                    check_tsa(
+                        certificate,
+                        self._store,
+                        intermediates=others,
+                        online=True,
+                        ocsp_responses=self._ocsp_responses,
+                        crls=self._crls,
+                    )
+                )
                 outcome.append(None)
             except Exception as exc:  # re-raised below in the calling thread
                 outcome.append(exc)
@@ -221,24 +266,11 @@ class TrustedTimeStamper(TimeStamper):
         worker = threading.Thread(target=run, name="berigna-tsa-check", daemon=True)
         worker.start()
         worker.join(deadline)
-        if outcome:
-            error = outcome[0]
-            if isinstance(error, BerignaError):
-                raise error
-            if error is not None:
-                raise TsaError(f"the TSA could not be checked: {error}") from error
-            return
-        log.warning(
-            "revocation of the TSA not established within %g s: its chain is checked offline",
-            deadline,
-        )
-        try:
-            token = asyncio.run(self._inner.async_dummy_response(md_algorithm))  # kept by pyHanko
-            asyncio.run(self._check(token, online=False))
-        except UntrustedTsaError:
-            raise
-        except BerignaError as exc:
-            raise TsaError(f"the TSA could not be checked within {deadline:g} s: {exc}") from exc
+        if not outcome:
+            return False
+        if outcome[0] is not None:
+            raise outcome[0]
+        return True
 
 
 def probe_trusted(
@@ -251,9 +283,10 @@ def probe_trusted(
     deadline: float = CHECK_DEADLINE,
 ) -> TrustedTimeStamper:
     """The TSA answers with a valid token (:func:`probe`, TsaError) and is trusted
-    (UntrustedTsaError), both within ``deadline``: the step before the PIN, "Test" in
-    Preferences and the diagnosis wait no longer than the probe alone did. Returns the
-    time-stamper to sign with."""
+    (UntrustedTsaError), both within ``deadline`` (plus at most ``MIN_CHECK_TIME`` when the
+    probe took almost all of it): the step before the PIN, "Test" in Preferences and the
+    diagnosis wait about as long as the probe alone did. Returns the time-stamper to sign
+    with."""
     start = time.monotonic()
     probe(timestamper, deadline=deadline)
     trusted = TrustedTimeStamper(

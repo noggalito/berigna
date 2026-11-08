@@ -614,8 +614,9 @@ def _slow_online_check(monkeypatch: pytest.MonkeyPatch) -> list[bool]:
 
     async def slow(*args: Any, online: bool, **kwargs: Any) -> None:
         calls.append(online)
-        if online:
-            await asyncio.sleep(5)
+        if online:  # the abandoned thread wakes later and does nothing (no log, no state)
+            await asyncio.sleep(1)
+            return
         await real_check(*args, online=online, **kwargs)
 
     monkeypatch.setattr(module, "check_tsa", slow)
@@ -676,3 +677,15 @@ def test_an_archive_time_stamp_from_a_tsa_that_is_not_trusted_keeps_the_b_lt(
     assert result.level is SignatureLevel.B_LT
     assert result.level_note is not None
     assert output.exists()
+
+
+def test_any_failure_while_checking_the_tsa_is_a_tsa_error(pki: Pki) -> None:
+    """Review of R-DES-20: whatever the time-stamper raises, the step before the PIN, "Test"
+    and the diagnosis get ERR-305, never an unexpected error (ERR-000)."""
+
+    class Broken(TimeStamper):
+        async def async_dummy_response(self, md_algorithm: str) -> Any:
+            raise RuntimeError("the cache of the test token is gone")
+
+    with pytest.raises(TsaError, match="could not be checked"):
+        TrustedTimeStamper(Broken(), pki.store, online=True).check_now()
