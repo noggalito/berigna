@@ -34,13 +34,13 @@ from berigna.core.signing import output_path, sign_pdf_file
 from berigna.core.token.dnie_v2 import INS_PSO, INS_VERIFY, DnieV2Token
 from berigna.core.token.pin import Pin
 from berigna.core.validation import Indication, SignerCheck, verify_pdf
-from berigna.core.validation.tsa import trusted_time_stamper
+from berigna.core.validation.tsa import TrustedTimeStamper
 from support.cards import make_card
 from support.certified import certified_pdf
 from support.net import damaged
 from support.pki import Pki, build_pki, minimal_pdf
 from support.prompts import PinPrompt
-from support.tsa import local_tsa, make_timestamper, unknown_timestamper
+from support.tsa import SwitchingTimeStamper, local_tsa, make_timestamper, unknown_timestamper
 
 
 @pytest.fixture(scope="module")
@@ -487,22 +487,6 @@ def test_a_trusted_tsa_without_revocation_data_still_stamps(
     assert any("revocation of the TSA certificate" in r.message for r in caplog.records)
 
 
-class _Switching(TimeStamper):
-    """Answers the test token from one TSA and the real time-stamps from another, as
-    someone between berigna and the TSA could."""
-
-    def __init__(self, probe: TimeStamper, real: TimeStamper) -> None:
-        super().__init__()
-        self._probe = probe
-        self._real = real
-
-    async def async_dummy_response(self, md_algorithm: str) -> Any:
-        return await self._probe.async_dummy_response(md_algorithm)
-
-    async def async_timestamp(self, message_digest: bytes, md_algorithm: str) -> Any:
-        return await self._real.async_timestamp(message_digest, md_algorithm)
-
-
 def test_a_time_stamp_from_a_tsa_that_is_not_trusted_is_never_written(
     pki: Pki, document: tuple[Path, str]
 ) -> None:
@@ -521,7 +505,7 @@ def test_a_time_stamp_from_a_tsa_that_is_not_trusted_is_never_written(
             store=pki.store,
             ask_pin=PinPrompt(),
             level=SignatureLevel.B_T,
-            timestamper=_Switching(stamper, unknown_timestamper()),
+            timestamper=SwitchingTimeStamper(stamper, unknown_timestamper()),
             online=False,
             ocsp_responses=[pki.ocsp(leaf), pki.ocsp(tsa)],
             crls=[pki.arl()],
@@ -542,7 +526,7 @@ def test_each_tsa_certificate_is_validated_once(pki: Pki, monkeypatch: pytest.Mo
 
     monkeypatch.setattr(module, "check_tsa", counted)
     stamper, tsa = make_timestamper(pki)
-    trusted = trusted_time_stamper(stamper, pki.store, online=False, ocsp_responses=[pki.ocsp(tsa)])
+    trusted = TrustedTimeStamper(stamper, pki.store, online=False, ocsp_responses=[pki.ocsp(tsa)])
     trusted.check_now()
     digest = hashlib.sha256(b"x").digest()
     for _ in range(3):
@@ -615,18 +599,80 @@ class _WithoutCertificate(TimeStamper):
 def test_a_token_without_its_tsa_certificate_is_a_tsa_error(pki: Pki) -> None:
     """Not ERR-000 (nor a dead thread in "Test"): the token is not a valid one."""
     stamper, _tsa = make_timestamper(pki)
-    trusted = trusted_time_stamper(_WithoutCertificate(stamper), pki.store, online=False)
+    trusted = TrustedTimeStamper(_WithoutCertificate(stamper), pki.store, online=False)
     with pytest.raises(TsaError, match="does not carry"):
         trusted.check_now()
 
 
-def test_checking_the_tsa_before_the_pin_has_a_deadline(pki: Pki) -> None:
-    """Like the probe: its revocation services may hang on a broken route."""
+def _slow_online_check(monkeypatch: pytest.MonkeyPatch) -> list[bool]:
+    """check_tsa that hangs when it may use the network (a revocation service that does
+    not answer) and runs as usual without it; returns the ``online`` of each call."""
+    from berigna.core.validation import tsa as module
 
-    class Hanging(TimeStamper):
-        async def async_dummy_response(self, md_algorithm: str) -> Any:
+    calls: list[bool] = []
+    real_check = module.check_tsa
+
+    async def slow(*args: Any, online: bool, **kwargs: Any) -> None:
+        calls.append(online)
+        if online:
             await asyncio.sleep(5)
+        await real_check(*args, online=online, **kwargs)
 
-    trusted = trusted_time_stamper(Hanging(), pki.store, online=False)
-    with pytest.raises(TsaError, match=r"within 0\.2 s"):
-        trusted.check_now(deadline=0.2)
+    monkeypatch.setattr(module, "check_tsa", slow)
+    return calls
+
+
+def test_a_trusted_tsa_whose_revocation_does_not_answer_in_time_still_stamps(
+    pki: Pki, monkeypatch: pytest.MonkeyPatch, caplog: pytest.LogCaptureFixture
+) -> None:
+    """Review of R-DES-20: the deadline before the PIN must not turn a slow revocation
+    service into ERR-305 (decision of 2026-11-08). Past it, the chain is checked offline."""
+    calls = _slow_online_check(monkeypatch)
+    stamper, _tsa = make_timestamper(pki)
+    asyncio.run(stamper.async_dummy_response("sha256"))  # what the probe leaves
+    trusted = TrustedTimeStamper(stamper, pki.store, online=True)
+    trusted.check_now(deadline=0.2)
+    assert calls == [True, False]
+    assert any("within 0.2 s" in r.message for r in caplog.records)
+    digest = hashlib.sha256(b"x").digest()
+    asyncio.run(trusted.async_timestamp(digest, "sha256"))  # validated once: no new check
+    assert calls == [True, False]
+
+
+def test_a_tsa_that_is_not_trusted_is_refused_even_past_the_deadline(
+    pki: Pki, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _slow_online_check(monkeypatch)
+    stamper = unknown_timestamper()
+    asyncio.run(stamper.async_dummy_response("sha256"))
+    with pytest.raises(UntrustedTsaError):
+        TrustedTimeStamper(stamper, pki.store, online=True).check_now(deadline=0.2)
+
+
+def test_an_archive_time_stamp_from_a_tsa_that_is_not_trusted_keeps_the_b_lt(
+    pki: Pki, document: tuple[Path, str]
+) -> None:
+    """Review of R-DES-20: the signature time-stamp comes from the trusted TSA, the document
+    time-stamp of B-LTA from another. The signature made with the PIN is kept, at B-LT with
+    its note, as with any service that fails after the card has signed."""
+    source, sha = document
+    card, leaf = make_card(pki, "FIRMANTE B-LTA")
+    stamper, tsa = make_timestamper(pki)
+    output = source.with_name("b-lta.pdf")
+    with DnieV2Token(card) as token:
+        result = sign_pdf_file(
+            source,
+            output,
+            expected_sha256=sha,
+            token=token,
+            store=pki.store,
+            ask_pin=PinPrompt(),
+            level=SignatureLevel.B_LTA,
+            timestamper=SwitchingTimeStamper(stamper, unknown_timestamper(), first_stamps=1),
+            online=False,
+            ocsp_responses=[pki.ocsp(leaf), pki.ocsp(tsa)],
+            crls=[pki.arl()],
+        )
+    assert result.level is SignatureLevel.B_LT
+    assert result.level_note is not None
+    assert output.exists()
