@@ -1,3 +1,9 @@
+berigna (0.3.0-1) trixie; urgency=medium
+
+  * Upstream release 0.3.0 (CHANGELOG.md).
+
+ -- noggalito <berigna@noggalito.com>  Sun, 08 Nov 2026 01:15:39 -0500
+
 berigna (0.1.0~dev0-1) trixie; urgency=medium
 
   * Initial package for the berigna repository: the application, its
