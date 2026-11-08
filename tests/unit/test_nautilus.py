@@ -77,8 +77,16 @@ class _FakeNautilus:
     MenuItem = _FakeMenuItem
 
 
-def _require_version(_name: str, _version: str) -> None:
-    return None
+_AVAILABLE = {"4.1"}  # the Nautilus API versions of the fake system
+
+
+def _require_version(_name: str, version: str) -> None:
+    _REQUESTED.append(version)
+    if version not in _AVAILABLE:
+        raise ValueError(f"Namespace Nautilus not available for version {version}")
+
+
+_REQUESTED: list[str] = []
 
 
 def _install_fake_bindings(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -96,6 +104,9 @@ def _install_fake_bindings(monkeypatch: pytest.MonkeyPatch) -> None:
 @pytest.fixture(autouse=True)
 def _fresh_bindings() -> None:
     """Each test starts with the fakes empty, whatever the previous one did."""
+    _AVAILABLE.clear()
+    _AVAILABLE.add("4.1")
+    _REQUESTED.clear()
     _FakeGio.DesktopAppInfo.new_calls = []
     _FakeGio.DesktopAppInfo.result = _FakeDesktopAppInfo()
     _FakeDesktopAppInfo.launched = []
@@ -180,3 +191,21 @@ def test_menu_for_a_folder_offers_only_the_batch(extension: Any) -> None:
 def test_no_items_without_local_files(extension: Any) -> None:
     files = [_FakeFile(scheme="sftp"), _FakeFile(scheme="dav")]
     assert _items(extension, files) == []
+
+
+@pytest.mark.parametrize(
+    ("available", "requested"),
+    [({"4.1"}, ["4.1"]), ({"4.0"}, ["4.1", "4.0"])],
+    ids=["nautilus-50", "nautilus-48"],
+)
+def test_the_nautilus_api_of_each_distribution_is_used(
+    monkeypatch: pytest.MonkeyPatch, available: set[str], requested: list[str]
+) -> None:
+    """4.1 in Ubuntu 26.04 (Nautilus 50), 4.0 in Debian 13 (Nautilus 48): asking only for 4.0
+    left the menu out of Ubuntu (2026-11-08, ADR-0023)."""
+    _AVAILABLE.clear()
+    _AVAILABLE.update(available)
+    _install_fake_bindings(monkeypatch)
+    monkeypatch.delitem(sys.modules, "berigna_nautilus", raising=False)
+    importlib.import_module("berigna_nautilus")
+    assert _REQUESTED == requested
