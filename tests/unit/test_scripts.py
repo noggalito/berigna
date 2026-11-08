@@ -245,3 +245,36 @@ def test_the_packages_of_the_version_are_those_of_this_build(tmp_path: Path) -> 
     nautilus.unlink()  # this build did not produce it: the older one is not taken instead
     with pytest.raises(version.VersionError, match="berigna-nautilus"):
         version.built_packages(tmp_path, target, 1_500)
+
+
+def test_the_dependencies_built_with_the_version_are_found(tmp_path: Path) -> None:
+    """python3-pyhanko goes with every version: berigna depends on it and Debian 13 does not
+    have it. The newest built after the start, not an older one nor an earlier copy."""
+    version = _script("version.py")
+    old = tmp_path / "python3-pyhanko_0.25.1-1_all.deb"
+    new = tmp_path / "debcraft-build-pyhanko-2" / "python3-pyhanko_0.25.1-1_all.deb"
+    copy = tmp_path / "version" / "v0.3.0" / "python3-pyhanko_0.25.1-1_all.deb"
+    for path, moment in ((old, 1_000), (new, 2_000), (copy, 3_000)):
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(b"deb")
+        os.utime(path, (moment, moment))
+    assert version.built_dependency(tmp_path, "python3-pyhanko", 1_500) == new
+    with pytest.raises(version.VersionError, match="python3-pyhanko"):
+        version.built_dependency(tmp_path, "python3-pyhanko", 2_500)
+
+
+def test_the_release_notes_say_how_to_install(tmp_path: Path) -> None:
+    version = _script("version.py")
+    notes = version.release_notes(
+        version.parse("0.3.0"),
+        "### Añadido\n\n- Algo.",
+        [("berigna_0.3.0-1_all.deb", "aa"), ("python3-pyhanko_0.25.1-1_all.deb", "bb")],
+        ["berigna_0.3.0-1_all.deb", "python3-pyhanko_0.25.1-1_all.deb"],
+        "berigna-nautilus_0.3.0-1_all.deb",
+    )
+    assert notes.startswith("# berigna 0.3.0\n\n### Añadido\n\n- Algo.\n\n## Instalación")
+    assert (
+        "sudo apt install ./berigna_0.3.0-1_all.deb ./python3-pyhanko_0.25.1-1_all.deb\n" in notes
+    )
+    assert "`sudo apt install ./berigna-nautilus_0.3.0-1_all.deb`" in notes
+    assert "- `python3-pyhanko_0.25.1-1_all.deb`, SHA-256 `bb`" in notes

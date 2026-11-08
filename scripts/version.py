@@ -14,8 +14,8 @@ CHANGELOG (SemVer).
     scripts/version.py comprobar VERSIÓN
         the six places carry VERSIÓN.
     scripts/version.py etiquetar VERSIÓN [--constructor debcraft|debuild]
-        on main, clean and equal to origin/main: verificar.sh, the .deb packages (berigna and
-        berigna-nautilus), their SHA-256, the
+        on main, clean and equal to origin/main: verificar.sh, the .deb packages (berigna,
+        berigna-nautilus and python3-pyhanko, which berigna needs), their SHA-256, the
         notes from the CHANGELOG and the signed tag (git tag -s, the SSH key of the commits),
         all in build/version/vVERSIÓN/. Pushing the tag and the release on GitHub are left to
         the person, who sees the commands at the end: nothing leaves the machine by itself.
@@ -223,6 +223,9 @@ def _check_repository(version: Version) -> None:
 
 
 PACKAGES = ("berigna", "berigna-nautilus")
+# Built with their own version and script, and published with every version: berigna depends
+# on them and Debian 13 does not have them (python3-pyhanko 0.25.1, ADR-0013, SPK-05).
+DEPENDENCIES = {"python3-pyhanko": "scripts/empaquetar-pyhanko.sh"}
 
 
 def built_packages(build: Path, version: Version, since: float) -> list[Path]:
@@ -241,6 +244,38 @@ def built_packages(build: Path, version: Version, since: float) -> list[Path]:
     return [newest[f"{p}_{version.package}_all.deb"] for p in PACKAGES]
 
 
+def built_dependency(build: Path, name: str, since: float) -> Path:
+    """The newest .deb of the dependency ``name`` built after ``since`` under ``build``."""
+    found = [
+        deb
+        for deb in build.rglob(f"{name}_*_all.deb")
+        if "version" not in deb.relative_to(build).parts[:1] and deb.stat().st_mtime >= since
+    ]
+    if not found:
+        raise VersionError(f"no se construyó {name}")
+    return max(found, key=lambda deb: deb.stat().st_mtime)
+
+
+def release_notes(
+    version: Version, body: str, sums: list[tuple[str, str]], install: list[str], optional: str
+) -> str:
+    """notas.md: the CHANGELOG section, how to install the packages (``install``, and the
+    ``optional`` one) and their SHA-256."""
+    packages = "".join(f"- `{name}`, SHA-256 `{digest}`\n" for name, digest in sums)
+    files = " ".join(f"./{name}" for name in install)
+    return (
+        f"# berigna {version.semver}\n\n{body}\n\n"
+        "## Instalación (Debian 13)\n\n"
+        f"```sh\nsudo apt install {files}\n```\n\n"
+        "`python3-pyhanko` va con berigna porque Debian 13 no lo tiene. Opcional, para "
+        '"Firmar con berigna" y "Verificar firma" en el menú de Archivos (Nautilus): '
+        f"`sudo apt install ./{optional}`.\n\n"
+        f"## Paquetes\n\n{packages}\n"
+        "Versión no acreditada ante INDECOPI. Las evidencias de las pruebas de esta versión "
+        "están en BRG-CAL-001 §9.\n"
+    )
+
+
 def tag(version: Version, builder: str) -> Path:
     """verificar.sh, the packages and their SHA-256, the notes and the signed tag; returns
     the folder with the packages and the notes."""
@@ -248,7 +283,10 @@ def tag(version: Version, builder: str) -> Path:
     _run("scripts/verificar.sh")
     start = time.time() - 1  # file times may be rounded down
     _run("scripts/empaquetar-berigna.sh", builder, "comprobar")
+    for script in DEPENDENCIES.values():
+        _run(script, builder, "comprobar")
     debs = built_packages(ROOT / "build", version, start)
+    debs += [built_dependency(ROOT / "build", name, start) for name in DEPENDENCIES]
     out = ROOT / "build" / "version" / version.tag
     out.mkdir(parents=True, exist_ok=True)
     sums = []
@@ -260,12 +298,9 @@ def tag(version: Version, builder: str) -> Path:
         "".join(f"{digest}  {name}\n" for name, digest in sums), encoding="utf-8"
     )
     body = notes(ROOT, version) or ""
-    packages = "".join(f"- `{name}`, SHA-256 `{digest}`\n" for name, digest in sums)
-    text = (
-        f"# berigna {version.semver}\n\n{body}\n\n## Paquetes\n\n{packages}\n"
-        "Versión no acreditada ante INDECOPI. Las evidencias de las pruebas de esta versión "
-        "están en BRG-CAL-001 §9.\n"
-    )
+    # berigna and its dependencies; berigna-nautilus, optional
+    install = [debs[0].name, *(deb.name for deb in debs[len(PACKAGES) :])]
+    text = release_notes(version, body, sums, install, debs[1].name)
     (out / "notas.md").write_text(text, encoding="utf-8")
     # verbatim: git's default cleanup drops the lines that start with "#", the headings
     message = f"berigna {version.semver}\n\n{body}\n"

@@ -3,7 +3,7 @@
 | Campo | Valor |
 |---|---|
 | Documento | BRG-DES-001 |
-| Versión | 0.11.2 |
+| Versión | 0.11.3 |
 | Estado | Borrador |
 | Fecha | 2026-11-08 |
 | Responsable | noggalito |
@@ -176,7 +176,7 @@ Pasos mínimos del *pipeline*:
 - Las etiquetas git van firmadas (`git tag -s vX.Y.Z`), con la misma clave SSH que los commits.
 - La versión se escribe en SemVer (`1.0.0`, `1.0.0-rc.2`) y aparece en seis sitios, cada uno en su forma: `pyproject.toml`, `meson.build` y `berigna/__init__.py` en PEP 440 (`1.0.0rc2`), `debian/changelog` con tilde (`1.0.0~rc2-1`, que Debian ordena antes de `1.0.0`), la metainfo de AppStream también con tilde (`1.0.0~rc.2`: AppStream ordena `1.0.0-rc.2` después de `1.0.0`) y el CHANGELOG en SemVer. `scripts/version.py` los mantiene juntos (R-DES-09):
   1. `scripts/version.py preparar 1.0.0-rc.2`: escribe la versión en los seis sitios y convierte "Sin publicar" del CHANGELOG en la sección de la versión, con la fecha. El cambio llega a `main` en un PR, como cualquier otro.
-  2. Tras la fusión, en `main` limpio e igual a `origin/main`: `scripts/version.py etiquetar 1.0.0-rc.2`. Comprueba los seis sitios (`comprobar`), pasa `scripts/verificar.sh`, construye los paquetes `berigna` y `berigna-nautilus` con `scripts/empaquetar-berigna.sh` y `lintian --pedantic`, deja los `.deb`, `SHA256SUMS` y `notas.md` (la sección del CHANGELOG, el SHA-256 y si la versión está acreditada) en `build/version/v1.0.0-rc.2/` y pone la etiqueta firmada, que verifica.
+  2. Tras la fusión, en `main` limpio e igual a `origin/main`: `scripts/version.py etiquetar 1.0.0-rc.2`. Comprueba los seis sitios (`comprobar`), pasa `scripts/verificar.sh`, construye los paquetes `berigna` y `berigna-nautilus` con `scripts/empaquetar-berigna.sh`, y `python3-pyhanko`, del que depende `berigna` y que Debian 13 no tiene, con `scripts/empaquetar-pyhanko.sh`, todos con `lintian --pedantic`, deja los `.deb`, `SHA256SUMS` y `notas.md` (la sección del CHANGELOG, cómo instalar, el SHA-256 y si la versión está acreditada) en `build/version/v1.0.0-rc.2/` y pone la etiqueta firmada, que verifica.
   3. Publicar queda a cargo de la persona, con los dos comandos que el *script* muestra al final: `git push origin v1.0.0-rc.2` y `gh release create` con los paquetes, las sumas y las notas (`--prerelease` en una candidata). `piuparts`, que necesita root, se pasa antes en la VM (BRG-DSP-001).
 - Cada publicación incluye el registro de cambios, el *hash* SHA-256 del `.deb`, las evidencias de las pruebas (07-calidad §9) y una nota que indica si la versión está acreditada.
 - La versión acreditada se mantiene en una rama `release/X.Y` y solo recibe correcciones de seguridad evaluadas según el procedimiento de INDECOPI (SPK-04, pregunta 7).
