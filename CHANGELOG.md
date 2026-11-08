@@ -131,6 +131,11 @@ Escritorio y empaquetado (Fase 5):
 
 ### Corregido
 
+- Datos dañados que llegan de la red (R-DES-07, AM-07): el OCSP de RENIEC, las ARL y la TSA responden por HTTP sin cifrar, y las pruebas por mutación encontraron cuatro fallos.
+  - El sello de tiempo de la TSA no se comprobaba antes de escribirlo: una respuesta dañada podía acabar en un PDF "firmado a B-T" cuya firma verificaba TOTAL-FAILED, y una truncada daba ERR-000. Ahora el token se lee entero y su firma y su resumen deben verificar; si no, ERR-305 y no se escribe nada.
+  - En la validación previa, una respuesta OCSP o una ARL dañadas daban ERR-000 antes del PIN. Ahora es revocación no establecida, como cuando falla la red: solo B-B, con el aviso.
+  - En la verificación, una firma intacta podía salir TOTAL-FAILED/FORMAT_FAILURE. Si el fallo desaparece sin los datos de la red, vale el resultado sin ellos (INDETERMINATE si no se puede establecer la revocación).
+  - Una CRL dañada del firmante de la TSL de INDECOPI daba un `KeyError` en lugar de rechazar la lista (ERR-203).
 - La extensión de Nautilus recibía el elemento de menú como primer argumento del manejador de "activate" (así emite GObject la señal) y su firma esperaba solo los archivos: las acciones del menú contextual no hacían nada. Ahora `_launch` recibe ambos, y las pruebas emiten la señal como Nautilus (`callback(item, files)`), de modo que no vuelva a pasar (RF-070).
 
 - Un sello de tiempo con un algoritmo de resumen que pyHanko 0.25.1 no conoce hacía terminar la verificación de una CAdES o de un PDF en "error inesperado" (ERR-000) y ocultaba todas las firmas del archivo, también las válidas (R-DES-18, DP-20). Ahora esa firma es TOTAL-FAILED/FORMAT_FAILURE, como ya pasaba en XAdES, y el log técnico guarda la causa con su traza. Las nuevas pruebas por mutación de CAdES y de PDF encontraron siete casos más del mismo tipo (estructura del CMS dañada, respuestas OCSP incrustadas, certificado del firmante o fecha `/M` ilegibles, DSS dañado), también corregidos, igual que un certificado con la versión alterada: dan un resultado ETSI o "no se puede leer el archivo" (ERR-401, ERR-402). Los tres verificadores comparten una sola lista de excepciones de archivo hostil.
