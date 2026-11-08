@@ -11,7 +11,7 @@ import pytest
 
 from berigna.core.batch import BatchItem, Outcome, batch_outputs, read_files, sign_batch
 from berigna.core.documents import DocumentKind, inspect_document
-from berigna.core.errors import CardRemovedError, SigningCancelledError
+from berigna.core.errors import CardRemovedError, SigningCancelledError, UntrustedTsaError
 from berigna.core.formats.cades import CadesPackaging
 from berigna.core.formats.xades import XadesPackaging
 from berigna.core.i18n import Language
@@ -264,6 +264,27 @@ def test_csv_report(pki: Pki, tmp_path: Path) -> None:
     assert failed[7].startswith("Ya existe un archivo")
     quechua = list(csv.reader(io.StringIO(batch_csv(items, Language.QUZ_PE))))
     assert quechua[2][7] == "Ñam kan chay sutiyuq archivo. Huk sutita akllay."
+
+
+def test_a_tsa_that_stops_being_trusted_stops_the_batch(
+    pki: Pki, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """R-DES-20: the real time-stamps come from a TSA that is not trusted. Every file would
+    cost a signature of the card only to fail: the batch stops, as for a removed card."""
+    import berigna.core.batch as batch
+
+    jobs = _jobs(tmp_path, 3)
+    calls = []
+
+    def untrusted(job: SigningJob, **_kwargs: object) -> object:
+        calls.append(job)
+        raise UntrustedTsaError("the TSA is not trusted")
+
+    monkeypatch.setattr(batch, "sign_checked", untrusted)
+    items, _card, _leaf = _sign(pki, jobs)
+    assert [item.outcome for item in items] == [Outcome.FAILED, Outcome.SKIPPED, Outcome.SKIPPED]
+    assert [item.code for item in items] == ["ERR-314"] * 3
+    assert len(calls) == 1
 
 
 def test_a_file_failing_while_signing_does_not_stop_the_others(

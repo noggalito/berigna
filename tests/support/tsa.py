@@ -13,6 +13,7 @@ from asn1crypto import tsp
 from asn1crypto import x509 as asn1_x509
 from cryptography import x509
 from cryptography.hazmat.primitives import serialization
+from pyhanko.sign.timestamps import TimeStamper
 from pyhanko.sign.timestamps.common_utils import TimestampRequestError
 from pyhanko.sign.timestamps.dummy_client import DummyTimeStamper
 from pyhanko_certvalidator.registry import SimpleCertificateStore
@@ -138,3 +139,23 @@ def unknown_timestamper() -> DummyTimeStamper:
         tsa_key=asn1_keys.PrivateKeyInfo.load(der_key),
         certs_to_embed=SimpleCertificateStore(),  # type: ignore[no-untyped-call]
     )
+
+
+class SwitchingTimeStamper(TimeStamper):
+    """The test token from ``first``; the real time-stamps from ``first`` for the first
+    ``first_stamps`` of them and from ``later`` after that, as someone between berigna and
+    the TSA could answer (R-DES-20)."""
+
+    def __init__(self, first: Any, later: Any, *, first_stamps: int = 0) -> None:
+        super().__init__()
+        self._first = first
+        self._later = later
+        self._left = first_stamps
+
+    async def async_dummy_response(self, md_algorithm: str) -> Any:
+        return await self._first.async_dummy_response(md_algorithm)
+
+    async def async_timestamp(self, message_digest: bytes, md_algorithm: str) -> Any:
+        source = self._first if self._left > 0 else self._later
+        self._left -= 1
+        return await source.async_timestamp(message_digest, md_algorithm)

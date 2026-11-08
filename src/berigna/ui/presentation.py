@@ -662,7 +662,7 @@ def diagnosis_text(result: DiagnosisResult) -> str:
         )
     # Step.TSA
     if status is DiagnosisStatus.OK:
-        return _("The time-stamping authority answered.")
+        return _("The time-stamping authority answered and is trusted.")
     if facts.get("configured") == "False":
         return _(
             "No time-stamping authority is configured: only basic signatures (B-B) are "

@@ -258,6 +258,12 @@ ERRORS: dict[str, str] = {
         "example <?xml-stylesheet?>). The enveloped and detached forms would not cover them, "
         "and the signature would not check out: use the enveloping form instead."
     ),
+    "ERR-314": N_(
+        "The time-stamping authority is not trusted: its certificate does not come from an "
+        "accredited authority (IOFE or the trusted list of INDECOPI), is not for time-stamps, "
+        "has expired or has been revoked. Check the TSA in Preferences, or sign without a "
+        "time-stamp (B-B)."
+    ),
     "ERR-307": N_(
         "The author certified this document so that it cannot be changed: "
         "it does not accept more signatures."

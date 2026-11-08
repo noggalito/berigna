@@ -16,7 +16,7 @@ from berigna.ui.application import BerignaApplication
 from berigna.ui.preferences import PreferencesDialog
 from conftest import FakeReaders, drive, wait_until
 from support.pki import Pki
-from support.tsa import make_timestamper
+from support.tsa import make_timestamper, unknown_timestamper
 from support.tsl import Service, TslContent, TslPki, build_tsl, build_tsl_pki
 
 
@@ -167,7 +167,34 @@ def test_tsa_test_button(readers: FakeReaders, pki: Pki) -> None:
         assert dialog.tsa_test.get_sensitive()
 
     drive(app, script)
-    assert toasts == ["La autoridad de sellado de tiempo respondió con un sello válido."]
+    assert toasts == ["La autoridad de sellado de tiempo respondió y es de confianza."]
+
+
+def test_tsa_test_button_with_a_tsa_that_is_not_trusted(readers: FakeReaders, pki: Pki) -> None:
+    """R-DES-20: "Test" says what signing will find (ERR-314), not only that it answers."""
+    stamper = unknown_timestamper()
+    app = BerignaApplication(
+        status_source=lambda: readers,
+        trust_store=lambda: pki.store,
+        timestamper=lambda: stamper,
+        online=False,
+        unique=False,
+    )
+    toasts: list[str] = []
+
+    def script(app: BerignaApplication) -> Generator[None, None, None]:
+        dialog = yield from _open(app)
+        dialog.toast = toasts.append  # type: ignore[method-assign]
+        dialog.test_tsa()
+        yield from wait_until(lambda: bool(toasts), 10)
+
+    drive(app, script)
+    assert toasts == [
+        "La autoridad de sellado de tiempo no es de confianza: su certificado no viene de una "
+        "entidad acreditada (IOFE o lista de confianza de INDECOPI), no es para sellos de "
+        "tiempo, venció o fue revocado. Revisa la TSA en Preferencias o firma sin sello de "
+        "tiempo (B-B)."
+    ]
 
 
 def _download(tsl_pki: TslPki, pki: Pki, fail: list[bool]):  # type: ignore[no-untyped-def]

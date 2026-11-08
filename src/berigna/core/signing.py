@@ -44,11 +44,11 @@ from berigna.core.formats.pades import (
     sign_pdf_pades,
 )
 from berigna.core.formats.xades import XadesPackaging, check_xml_signable, sign_xades
-from berigna.core.net.tsa import probe
 from berigna.core.token.base import HashAlgorithmName, TokenSigner
 from berigna.core.token.pin import Pin
 from berigna.core.trust import TrustStore
 from berigna.core.validation import SignerCheck, check_signer, signing_validation_context
+from berigna.core.validation.tsa import probe_trusted
 
 AskPin = Callable[[SignerCheck], Pin | None]
 
@@ -253,11 +253,9 @@ def time_stamper(level: SignatureLevel, timestamper: TimeStamper | None) -> Time
 
 
 def check_level(check: SignerCheck, level: SignatureLevel, stamper: TimeStamper | None) -> None:
-    """Step 2: a level above B-B needs revocation checked and a TSA that answers."""
-    if stamper is not None:
-        if check.only_basic_level:
-            raise LevelNotAvailableError(f"revocation not checked: B-B only, not {level.value}")
-        probe(stamper)
+    """Step 2: a level above B-B needs revocation checked (the TSA: :func:`prepare`)."""
+    if stamper is not None and check.only_basic_level:
+        raise LevelNotAvailableError(f"revocation not checked: B-B only, not {level.value}")
 
 
 def prepare(
@@ -281,6 +279,10 @@ def prepare(
         crls=crls,
     )
     check_level(check, level, stamper)
+    if stamper is not None:  # it answers, and is trusted (R-DES-20): before the PIN
+        stamper = probe_trusted(
+            stamper, store, online=online, ocsp_responses=ocsp_responses, crls=crls
+        )
     return stamper, check
 
 

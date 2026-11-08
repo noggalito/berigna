@@ -186,6 +186,11 @@ class BerignaApplication(Adw.Application):
         """The store in use now: bundled anchors, plus the trusted list once loaded."""
         return self._trust_store()
 
+    @property
+    def online(self) -> bool:
+        """Whether berigna may fetch revocation data (off in the tests)."""
+        return self._online
+
     def history(self) -> History | None:
         """The history of operations (RF-082), or None when the user switched it off."""
         if self.settings is None or not self.settings.get_boolean("history-enabled"):

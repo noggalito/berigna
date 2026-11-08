@@ -26,9 +26,9 @@ from berigna.core.appearance import (  # noqa: E402
 )
 from berigna.core.errors import AppearanceError, BerignaError  # noqa: E402
 from berigna.core.net.proxy import ProxyMode, valid_proxy_url  # noqa: E402
-from berigna.core.net.tsa import probe  # noqa: E402
 from berigna.core.report.explanations import explain_error  # noqa: E402
 from berigna.core.trust.cache import TslRefresh  # noqa: E402
+from berigna.core.validation.tsa import probe_trusted  # noqa: E402
 from berigna.ui import presentation  # noqa: E402
 from berigna.ui.help import HelpTopic, help_button  # noqa: E402
 from berigna.ui.i18n import _, catalogue  # noqa: E402
@@ -397,8 +397,8 @@ class PreferencesDialog(Adw.PreferencesDialog):
 
         def work() -> None:
             try:
-                probe(stamper)
-                message = _("The timestamping authority answered with a valid time-stamp.")
+                probe_trusted(stamper, self._app.trust_store(), online=self._app.online)  # R-DES-20
+                message = _("The timestamping authority answered and is trusted.")
             except BerignaError as exc:
                 message = explain_error(exc.code, catalogue()) or ""
 
