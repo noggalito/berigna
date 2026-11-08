@@ -363,7 +363,7 @@ def test_bad_scheme_information(content: TslContent, message: str, tsl_pki: TslP
 
 
 def test_naive_dates_are_taken_as_utc_and_bad_certificates_are_skipped(
-    pki: Pki, tsl_pki: TslPki
+    pki: Pki, tsl_pki: TslPki, caplog: pytest.LogCaptureFixture
 ) -> None:
     content = TslContent(
         services=[Service(pki.root), Service(pki.ca)], next_update="2099-01-01T00:00:00"
@@ -377,6 +377,7 @@ def test_naive_dates_are_taken_as_utc_and_bad_certificates_are_skipped(
     trusted = load_tsl(sign_tsl(root, tsl_pki), root=tsl_pki.root)
     assert trusted.next_update.tzinfo is dt.UTC
     assert [service.certificates for service in trusted.services] == [(), ()]
+    assert caplog.text.count("skipped from the trusted list") == 2
 
 
 def _serial_zero(pki: Pki) -> x509.Certificate:
@@ -401,17 +402,23 @@ def _serial_zero(pki: Pki) -> x509.Certificate:
         return x509.load_der_x509_certificate(der.replace(one, one[:-1] + b"\x00"))
 
 
-def test_a_root_with_serial_number_zero_is_still_kept(pki: Pki, tsl_pki: TslPki) -> None:
+def test_a_root_with_serial_number_zero_is_still_kept(
+    pki: Pki, tsl_pki: TslPki, caplog: pytest.LogCaptureFixture
+) -> None:
     """cryptography 43 (Debian 13) reads it quietly; 46 (Ubuntu 26.04) warns that a future
-    release will refuse it, and core.trust.tsl would then skip it as unreadable. This test
-    fails on that day, on purpose: dropping those roots changes which foreign signatures
-    berigna validates, a decision of the owner (BRG-DSP-001 §5 bis), not a silent change."""
+    release will refuse it, and core.trust.tsl would then skip it as unreadable (and log it).
+    This test fails on that day, on purpose: dropping those roots changes which foreign
+    signatures berigna validates, a decision of the owner (BRG-DSP-001 §5 bis), not a silent
+    change. The warning of cryptography never reaches the user."""
     root = unsigned_tsl(TslContent(services=[Service(_serial_zero(pki))]))
-    with warnings.catch_warnings():
-        warnings.simplefilter("ignore", CryptographyDeprecationWarning)
+    caplog.set_level("INFO", logger="berigna.core.trust.tsl")
+    with warnings.catch_warnings(record=True) as shown:
+        warnings.simplefilter("always")
         trusted = load_tsl(sign_tsl(root, tsl_pki), root=tsl_pki.root)
     (kept,) = trusted.services[0].certificates
     assert kept.serial_number == 0
+    assert not [w for w in shown if issubclass(w.category, CryptographyDeprecationWarning)]
+    assert "with serial number 0 kept" in caplog.text
 
 
 # -- download ---------------------------------------------------------------------------------
