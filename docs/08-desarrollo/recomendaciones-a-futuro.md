@@ -3,7 +3,7 @@
 | Campo | Valor |
 |---|---|
 | Documento | BRG-DES-002 |
-| Versión | 0.12.0 |
+| Versión | 0.12.1 |
 | Estado | Borrador |
 | Fecha | 2026-11-08 |
 | Responsable | noggalito |
@@ -64,6 +64,8 @@ Implementado el 2026-10-29 (Fase 4, incremento 1) en `core.crashes`. Como las ex
 ## 6. Versión candidata para la prueba de usabilidad
 
 La prueba (BRG-CAL-005) durará unas cuatro semanas, en paralelo con la Fase 4. Los participantes deben probar siempre la misma versión, no la rama `main` en movimiento: se etiqueta `v0.3.0-rc.1` al empezar la prueba y BRG-CAL-005 §3.1 instala esa etiqueta. Las correcciones de gravedad 3 y 4 que salgan de la prueba van a `main` y, si hace falta repetir alguna tarea, a una `v0.3.0-rc.2`. Al cerrar la Fase 3 se etiqueta `v0.3.0`.
+
+El 2026-11-08, por decisión del titular, la `v0.3.0` se etiquetó antes de la prueba de usabilidad, con `scripts/version.py` (R-DES-09). Incluye, además de la interfaz de la Fase 3, la Fase 4 y lo hecho de la Fase 5 (paquetes `berigna` y `berigna-nautilus`). La Fase 3 sigue abierta hasta esa prueba, que puede seguir haciéndose con la `v0.3.0-rc.1` (BRG-CAL-005 §3.1) o con la `v0.3.0`. Sus correcciones irán en una `v0.3.1` o en la versión siguiente.
 
 ## 7. Lo que no se recomienda
 
