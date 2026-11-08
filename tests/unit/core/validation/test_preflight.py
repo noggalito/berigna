@@ -6,15 +6,19 @@ import datetime as dt
 
 import pytest
 import requests
+from hypothesis import given, settings
+from hypothesis import strategies as st
 
 from berigna.core.errors import (
     CertificateExpiredError,
     CertificateRevokedError,
     CertificateValidationError,
+    SignerCertificateError,
     UntrustedCertificateError,
 )
 from berigna.core.trust import TrustedCertificate, TrustStore
 from berigna.core.validation import RevocationNote, check_signer
+from support.net import answering, damaged
 from support.pki import Pki, build_pki
 
 
@@ -129,3 +133,49 @@ def test_ocsp_answer_dated_after_the_moment_was_fixed(pki: Pki) -> None:
         leaf, pki.store, online=False, ocsp_responses=[pki.ocsp(leaf, at=later)], crls=[pki.arl()]
     )
     assert result.revocation_checked
+
+
+@pytest.fixture(scope="module")
+def network_signers(pki: Pki) -> dict[bool, tuple[object, bytes]]:
+    """A good and a revoked signer with their OCSP responses, by "revoked"."""
+    good = pki.leaf("FIRMANTE EN RED")
+    revoked = pki.leaf("FIRMANTE REVOCADO EN RED")
+    return {False: (good, pki.ocsp(good)), True: (revoked, pki.ocsp(revoked, revoked=True))}
+
+
+@settings(max_examples=80, deadline=None)
+@given(
+    position=st.integers(min_value=0),
+    byte=st.integers(0, 255),
+    truncate=st.booleans(),
+    in_crl=st.booleans(),
+    revoked=st.booleans(),
+)
+def test_damaged_revocation_data_from_the_network_is_revocation_not_established(
+    pki: Pki,
+    network_signers: dict[bool, tuple[object, bytes]],
+    position: int,
+    byte: int,
+    truncate: bool,
+    in_crl: bool,
+    revoked: bool,
+) -> None:
+    """R-DES-07: the OCSP of RENIEC and the ARL of its CAs travel over plain HTTP. A damaged
+    answer is a certificate error or revocation not established (B-B, with the warning),
+    as when the network fails; never an unexpected error before the PIN (it was ERR-000)
+    and never a revoked certificate taken as checked."""
+    leaf, ocsp = network_signers[revoked]
+    arl = pki.arl()
+    answers = (
+        {"ocsp": ocsp, "crl": damaged(arl, position, byte, truncate)}
+        if in_crl
+        else {"ocsp": damaged(ocsp, position, byte, truncate), "crl": arl}
+    )
+    try:
+        with answering(**answers):
+            result = check_signer(leaf, pki.store, online=True, timeout=2)  # type: ignore[arg-type]
+    except SignerCertificateError:
+        return
+    if revoked or not result.revocation_checked:
+        assert not result.revocation_checked
+        assert result.revocation_note is RevocationNote.UNAVAILABLE

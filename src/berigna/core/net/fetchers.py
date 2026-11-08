@@ -214,8 +214,10 @@ class RevocationFetcherBackend(FetcherBackend):
     def get_fetchers(self) -> Fetchers:
         fetchers = self._inner.get_fetchers()
         return Fetchers(
-            ocsp_fetcher=RetryingOcspFetcher(fetchers.ocsp_fetcher),
-            crl_fetcher=CaOnlyCrlFetcher(self._timeouts),
+            # the pause read here, not when the module loads: the tests of damaged answers
+            # set it to 0 (tests/support/net.py)
+            ocsp_fetcher=RetryingOcspFetcher(fetchers.ocsp_fetcher, pause=RETRY_PAUSE),
+            crl_fetcher=CaOnlyCrlFetcher(self._timeouts, pause=RETRY_PAUSE),
             cert_fetcher=fetchers.cert_fetcher,
         )
 

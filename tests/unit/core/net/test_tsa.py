@@ -3,14 +3,19 @@
 """RFC 3161 client (RF-062): configuration and the probe run before the PIN."""
 
 import asyncio
+import hashlib
 import socket
 import threading
 import time
 
 import pytest
+from hypothesis import given, settings
+from hypothesis import strategies as st
+from pyhanko.sign.timestamps.common_utils import TimestampRequestError
 
 from berigna.core.errors import TsaError
-from berigna.core.net.tsa import TsaSettings, http_timestamper, probe
+from berigna.core.net.tsa import TsaSettings, check_token, http_timestamper, probe
+from support.net import damaged
 from support.pki import Pki, build_pki
 from support.tsa import local_tsa, make_timestamper
 
@@ -100,3 +105,51 @@ def test_probe_gives_up_at_its_deadline() -> None:
         probe(stamper, deadline=0.2)  # type: ignore[arg-type]
     assert time.monotonic() - started < 2
     stamper.release.set()
+
+
+_DIGEST = hashlib.sha256(b"documento").digest()
+
+
+def test_a_token_is_checked_before_it_is_embedded(pki: Pki) -> None:
+    """R-DES-07: pyHanko checks the status and the nonce of the answer, not the token's
+    signature; berigna does, before writing it into a signature."""
+    stamper, _ = make_timestamper(pki)
+    token = asyncio.run(stamper.async_timestamp(_DIGEST, "sha256"))
+    check_token(token, _DIGEST, "sha256")
+    with pytest.raises(TimestampRequestError, match="requested digest"):
+        check_token(token, hashlib.sha256(b"otro").digest(), "sha256")
+    with pytest.raises(TimestampRequestError, match="requested digest"):
+        check_token(token, _DIGEST, "sha512")  # the same bytes, said to be another hash
+    der = token.dump()
+    signature = token["content"]["signer_infos"][0]["signature"].native
+    broken = der.replace(signature, bytes([signature[0] ^ 1]) + signature[1:])
+    assert broken != der
+    with pytest.raises(TimestampRequestError, match="does not verify"):
+        check_token(type(token).load(broken), _DIGEST, "sha256")
+
+
+def test_a_damaged_answer_of_the_tsa_is_a_tsa_error(pki: Pki) -> None:
+    """R-DES-07: the TSA answers over plain HTTP. A damaged answer gives a token that
+    checks, or TimestampRequestError (TsaError, ERR-305, in signing): it reached the user as
+    ERR-000, or as a signature written with a broken token and reported as done. One
+    server for every example: stopping it costs half a second."""
+    stamper, _ = make_timestamper(pki)
+    damage: dict[str, int | bool] = {}
+
+    def answer(_number: int, sent: bytes) -> bytes:
+        return damaged(sent, int(damage["position"]), int(damage["byte"]), bool(damage["cut"]))
+
+    with local_tsa(stamper, answer=answer) as url:
+        client = http_timestamper(TsaSettings(url, timeout=5))
+
+        @settings(max_examples=60, deadline=None)
+        @given(position=st.integers(min_value=0), byte=st.integers(0, 255), cut=st.booleans())
+        def check(position: int, byte: int, cut: bool) -> None:
+            damage.update(position=position, byte=byte, cut=cut)
+            try:
+                token = asyncio.run(client.async_timestamp(_DIGEST, "sha256"))
+            except TimestampRequestError:
+                return
+            check_token(token, _DIGEST, "sha256")
+
+        check()

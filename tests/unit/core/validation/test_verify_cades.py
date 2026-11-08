@@ -7,6 +7,7 @@ externally by DSS 6.2 in ``tests/interop/matriz_cades.py`` (SPK-03). As in the P
 hostile CMS that breaks pyHanko or asn1crypto past the digest is still an ETSI result
 (TOTAL-FAILED/FORMAT_FAILURE), never an unexpected error (AM-05)."""
 
+import dataclasses
 import datetime as dt
 
 import pytest
@@ -29,9 +30,10 @@ from berigna.core.validation import (
     signing_validation_context,
     verify_cades,
 )
-from berigna.core.validation.spec import Indication
+from berigna.core.validation.spec import Context, Indication, offline_on_format_failure
 from sim.dnie_v2 import DnieV2Simulator
 from support.cards import make_card
+from support.net import answering, damaged
 from support.pki import NOW, Pki, build_pki
 from support.tsa import make_timestamper
 
@@ -476,3 +478,96 @@ def test_a_certificate_with_a_mutated_version_is_a_reading_error(pki: Pki) -> No
     mutated = signature.replace(version, b"\xa0\x03\x02\x01\x07", 1)
     with pytest.raises(UnreadableSignatureError):
         verify_cades(mutated, pki.store, online=False)
+
+
+@settings(max_examples=80, deadline=None)
+@given(
+    position=st.integers(min_value=0),
+    byte=st.integers(0, 255),
+    truncate=st.booleans(),
+    in_crl=st.booleans(),
+)
+def test_damaged_revocation_data_from_the_network_never_fails_an_intact_signature(
+    pki: Pki,
+    signed_b_t: tuple[bytes, x509.Certificate, x509.Certificate],
+    position: int,
+    byte: int,
+    truncate: bool,
+    in_crl: bool,
+) -> None:
+    """R-DES-07: an intact signature verified with a damaged OCSP answer or ARL from the
+    network is TOTAL-PASSED or INDETERMINATE (revocation not established), never
+    TOTAL-FAILED: some damaged answers made pyhanko-certvalidator raise past its errors,
+    which read as FORMAT_FAILURE. B-T: the signature time-stamp validates the TSA with the
+    network too (review of R-DES-07). The PDF and XAdES verifiers share the same retry."""
+    signature, leaf, _tsa = signed_b_t
+    ocsp, arl = pki.ocsp(leaf), pki.arl()
+    answers = (
+        {"ocsp": ocsp, "crl": damaged(arl, position, byte, truncate)}
+        if in_crl
+        else {"ocsp": damaged(ocsp, position, byte, truncate), "crl": arl}
+    )
+    with answering(**answers):
+        [report] = verify_cades(signature, pki.store, online=True, timeout=2).signatures
+    assert report.indication in (Indication.TOTAL_PASSED, Indication.INDETERMINATE)
+    assert report.timestamp is not None
+    assert report.timestamp.subindication != "FORMAT_FAILURE"
+
+
+@dataclasses.dataclass(frozen=True)
+class _Result:
+    subindication: str | None
+    timestamp: "_Result | None" = None
+    archive_timestamps: "tuple[_Result, ...]" = ()
+
+
+def _context(pki: Pki, online: bool) -> Context:
+    return Context(
+        store=pki.store,
+        extra_ocsps=[],
+        extra_crls=[],
+        timing=None,  # type: ignore[arg-type]
+        tolerance=dt.timedelta(0),
+        online=online,
+        timeout=1.0,
+    )
+
+
+def test_a_format_failure_only_with_the_network_takes_the_result_without_it(pki: Pki) -> None:
+    calls: list[bool] = []
+
+    def verify(context: Context) -> _Result:
+        calls.append(context.online)
+        return _Result("FORMAT_FAILURE" if context.online else "TRY_LATER")
+
+    assert offline_on_format_failure(verify, _context(pki, True)) == _Result("TRY_LATER")
+    assert calls == [True, False]
+
+
+def test_a_format_failure_of_the_signature_itself_stays(pki: Pki) -> None:
+    calls: list[bool] = []
+
+    def verify(context: Context) -> _Result:
+        calls.append(context.online)
+        return _Result("FORMAT_FAILURE")
+
+    assert offline_on_format_failure(verify, _context(pki, True)) == _Result("FORMAT_FAILURE")
+    assert calls == [True, False]
+    calls.clear()  # offline from the start, or another result: verified once
+    offline_on_format_failure(verify, _context(pki, False))
+    assert calls == [False]
+    assert offline_on_format_failure(lambda _c: _Result(None), _context(pki, True)) == _Result(None)
+
+
+def test_a_format_failure_of_a_time_stamp_only_with_the_network_is_retried_too(pki: Pki) -> None:
+    """Review of R-DES-07: the signature passes, but its time-stamp (which validates the
+    TSA with the network) reads as FORMAT_FAILURE."""
+    broken = _Result(None, timestamp=_Result("FORMAT_FAILURE"))
+    fixed = _Result(None, timestamp=_Result("TRY_LATER"))
+    assert (
+        offline_on_format_failure(lambda c: broken if c.online else fixed, _context(pki, True))
+        == fixed
+    )
+    # an archive time-stamp that also fails offline is the file's: nothing changes
+    own = _Result(None, archive_timestamps=(_Result("FORMAT_FAILURE"),))
+    assert offline_on_format_failure(lambda _c: own, _context(pki, True)) is own

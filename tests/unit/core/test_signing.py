@@ -8,6 +8,8 @@ from pathlib import Path
 from typing import Any
 
 import pytest
+from hypothesis import given, settings
+from hypothesis import strategies as st
 from pyhanko.pdf_utils.reader import PdfFileReader
 from pyhanko.sign.fields import MDPPerm
 
@@ -23,15 +25,17 @@ from berigna.core.errors import (
 )
 from berigna.core.files import write_atomically
 from berigna.core.formats.pades import SignatureLevel
+from berigna.core.net.tsa import TsaSettings, http_timestamper
 from berigna.core.signing import output_path, sign_pdf_file
 from berigna.core.token.dnie_v2 import INS_PSO, INS_VERIFY, DnieV2Token
 from berigna.core.token.pin import Pin
 from berigna.core.validation import Indication, SignerCheck, verify_pdf
 from support.cards import make_card
 from support.certified import certified_pdf
+from support.net import damaged
 from support.pki import Pki, build_pki, minimal_pdf
 from support.prompts import PinPrompt
-from support.tsa import make_timestamper
+from support.tsa import local_tsa, make_timestamper
 
 
 @pytest.fixture(scope="module")
@@ -355,3 +359,60 @@ def test_output_path_never_reuses_a_name(tmp_path: Path) -> None:
     assert output_path(source, "-firmado") == tmp_path / "contrato-firmado-3.pdf"
     other = tmp_path / "otra"
     assert output_path(source, "-f", other) == other / "contrato-f.pdf"
+
+
+def test_a_damaged_answer_of_the_tsa_never_gives_a_broken_signature(
+    pki: Pki, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """R-DES-07: the probe before the PIN gets an intact answer, the time-stamp of the
+    signature a damaged one. The result is a TsaError (ERR-305) or a signature that
+    verifies: some damaged answers were written into the PDF, signed "B-T" and reported as
+    done, and verified as TOTAL-FAILED."""
+    for name in ("HTTP_PROXY", "HTTPS_PROXY", "http_proxy", "https_proxy", "ALL_PROXY"):
+        monkeypatch.delenv(name, raising=False)
+    monkeypatch.setenv("NO_PROXY", "127.0.0.1")
+    stamper, tsa = make_timestamper(pki)
+    data = minimal_pdf()
+    source = tmp_path / "contrato.pdf"
+    source.write_bytes(data)
+    damage: dict[str, int | bool] = {}
+
+    def answer(_number: int, sent: bytes) -> bytes:
+        damage["requests"] = int(damage["requests"]) + 1  # of this example
+        if damage["requests"] == 1:  # the probe (pyHanko keeps it for the size of the signature)
+            return sent
+        return damaged(sent, int(damage["position"]), int(damage["byte"]), bool(damage["cut"]))
+
+    with local_tsa(stamper, answer=answer) as url:
+
+        @settings(max_examples=30, deadline=None)
+        @given(position=st.integers(min_value=0), byte=st.integers(0, 255), cut=st.booleans())
+        def check(position: int, byte: int, cut: bool) -> None:
+            damage.update(position=position, byte=byte, cut=cut, requests=0)
+            card, leaf = make_card(pki, "FIRMANTE CON TSA DAÑADA")  # a card powers off when closed
+            revinfo = {"ocsp_responses": [pki.ocsp(leaf), pki.ocsp(tsa)], "crls": [pki.arl()]}
+            output = tmp_path / f"firmado-{position}-{byte}-{cut}.pdf"
+            output.unlink(missing_ok=True)
+            with DnieV2Token(card) as token:
+                try:
+                    sign_pdf_file(
+                        source,
+                        output,
+                        expected_sha256=hashlib.sha256(data).hexdigest(),
+                        token=token,
+                        store=pki.store,
+                        ask_pin=PinPrompt(),
+                        level=SignatureLevel.B_T,
+                        timestamper=http_timestamper(TsaSettings(url, timeout=5)),
+                        online=False,
+                        **revinfo,  # type: ignore[arg-type]
+                    )
+                except TsaError:
+                    assert not output.exists()
+                    return
+            [report] = verify_pdf(
+                output.read_bytes(), pki.store, online=False, **revinfo
+            ).signatures  # type: ignore[arg-type]
+            assert report.indication is Indication.TOTAL_PASSED
+
+        check()

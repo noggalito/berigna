@@ -8,15 +8,19 @@ before the PIN is requested, so an unreachable TSA does not cost the user a PIN 
 """
 
 import asyncio
+import hashlib
 import threading
 from dataclasses import dataclass, field
 
 import requests
-from asn1crypto import tsp
+from asn1crypto import cms, tsp
+from pyhanko.sign.general import extract_signer_info
 from pyhanko.sign.timestamps import HTTPTimeStamper, TimeStamper
-from pyhanko.sign.timestamps.common_utils import TimestampRequestError
+from pyhanko.sign.timestamps.common_utils import TimestampRequestError, handle_tsp_response
+from pyhanko.sign.validation.errors import SignatureValidationError
+from pyhanko.sign.validation.generic_cms import extract_certs_for_validation, validate_sig_integrity
 
-from berigna.core.errors import TsaError
+from berigna.core.errors import UNREADABLE_DATA, TsaError
 
 
 @dataclass(frozen=True)
@@ -27,6 +31,46 @@ class TsaSettings:
     timeout: float = 10.0
     username: str | None = None
     password: str | None = field(default=None, repr=False)
+
+
+# What a damaged answer raises in asn1crypto and pyHanko (R-DES-07: the mutations of the
+# answer reached the user as ERR-000 or, worse, as a signature written with a broken token).
+_UNREADABLE: tuple[type[Exception], ...] = (*UNREADABLE_DATA, SignatureValidationError)
+
+
+def check_token(token: cms.ContentInfo, message_digest: bytes, md_algorithm: str) -> None:
+    """Raise :class:`TimestampRequestError` unless ``token`` can be read in full and is
+    signed, by the certificate it carries, over a ``TSTInfo`` with ``message_digest``
+    computed with ``md_algorithm``.
+
+    pyHanko checks the status and the nonce of the answer, not the token's own signature: an
+    answer damaged on the way (the TSA answers over plain HTTP) would be written into the
+    signature, which would then be TOTAL-FAILED. This catches damage, not forgery: a token
+    signed by someone else's certificate passes here, and the validation of the signature
+    shows it (a TSA that is not trusted, INDETERMINATE)."""
+    try:
+        token.native  # noqa: B018 - asn1crypto parses lazily: every field, now
+        signed_data = token["content"]
+        signer = extract_certs_for_validation(signed_data).signer_cert
+        signer_info = extract_signer_info(signed_data)
+        content = signed_data["encap_content_info"]
+        raw = bytes(content["content"])
+        digest = hashlib.new(signer_info["digest_algorithm"]["algorithm"].native, raw).digest()
+        intact, valid = validate_sig_integrity(
+            signer_info,
+            signer,
+            expected_content_type=content["content_type"].native,
+            actual_digest=digest,
+        )
+        message_imprint = content["content"].parsed["message_imprint"]
+        imprint = message_imprint["hashed_message"].native
+        imprint_algorithm = message_imprint["hash_algorithm"]["algorithm"].native
+    except _UNREADABLE as exc:
+        raise TimestampRequestError(f"the time-stamp token cannot be read: {exc}") from exc
+    if not (intact and valid):
+        raise TimestampRequestError("the signature of the time-stamp token does not verify")
+    if imprint != message_digest or imprint_algorithm != md_algorithm:
+        raise TimestampRequestError("the time-stamp token is not over the requested digest")
 
 
 class _HttpTimeStamper(HTTPTimeStamper):
@@ -49,7 +93,23 @@ class _HttpTimeStamper(HTTPTimeStamper):
             raise TimestampRequestError("Error in communication with timestamp server") from exc
         if response.headers.get("Content-Type") != "application/timestamp-reply":
             raise TimestampRequestError("Timestamp server response is malformed.", response)
-        return tsp.TimeStampResp.load(response.content)
+        try:
+            return tsp.TimeStampResp.load(response.content)
+        except ValueError as exc:
+            raise TimestampRequestError(f"the answer of the TSA cannot be read: {exc}") from exc
+
+    async def async_timestamp(self, message_digest: bytes, md_algorithm: str) -> cms.ContentInfo:
+        """pyHanko's (request, answer, status and nonce), and then the token itself is
+        checked (:func:`check_token`). Only the reading of the answer is the TSA's fault: an
+        error while building the request is not reported as one."""
+        nonce, request = self.request_cms(message_digest, md_algorithm)  # type: ignore[no-untyped-call]
+        answer = await self.async_request_tsa_response(request)
+        try:
+            token: cms.ContentInfo = handle_tsp_response(answer, nonce)
+        except _UNREADABLE as exc:
+            raise TimestampRequestError(f"the answer of the TSA cannot be read: {exc}") from exc
+        check_token(token, message_digest, md_algorithm)
+        return token
 
 
 def http_timestamper(settings: TsaSettings) -> TimeStamper:
