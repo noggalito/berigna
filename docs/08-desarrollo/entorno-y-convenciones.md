@@ -3,9 +3,9 @@
 | Campo | Valor |
 |---|---|
 | Documento | BRG-DES-001 |
-| Versión | 0.8.0 |
+| Versión | 0.9.0 |
 | Estado | Borrador |
-| Fecha | 2026-11-05 |
+| Fecha | 2026-11-07 |
 | Responsable | noggalito |
 
 ## 1. Estructura del repositorio
@@ -23,6 +23,7 @@ berigna/
 ├── .github/dependabot.yml        # solo las actions de GitHub, cada mes (BRG-MAN-001 §5)
 ├── scripts/verificar.sh          # verificación local, incluida la documentación (R-DES-05)
 ├── scripts/verificar-documentacion.py  # cabeceras, fechas e identificadores de docs/
+├── scripts/verificar-dependencias.py  # versiones del entorno frente a pyproject.toml (R-DES-16)
 ├── scripts/hooks/pre-push        # gancho de pre-push con verificar.sh (R-DES-06)
 ├── scripts/traducciones.sh       # plantilla, catálogos y compilación a build/locale (gettext)
 ├── scripts/fusionar-incremento.sh  # rama → commit con DCO → push → PR → CI → fusión
@@ -114,7 +115,7 @@ Comprobaciones antes de cada commit:
 .venv/bin/pytest --cov=berigna
 ```
 
-El script `scripts/verificar.sh` ejecuta exactamente esas comprobaciones (nunca las pruebas HIL), la comprobación de la documentación (`scripts/verificar-documentacion.py`, R-DES-05) y la compilación de los catálogos con `scripts/traducciones.sh compilar` (necesita el paquete `gettext`). Las pruebas del informe PDF necesitan `poppler-utils` (`pdftotext`) y usan la fuente DejaVu (`fonts-dejavu-core`); la TSL y el informe, `python3-lxml`, `python3-signxml` y `python3-reportlab`; la verificación independiente de XAdES, el paquete `xmlsec1`. Tras añadir o cambiar un texto traducible: `scripts/traducciones.sh actualizar`, traducir la entrada en `po/es_PE.po` y dejarla en `po/quz.po` para los traductores; una prueba comprueba que `po/berigna.pot` está al día. El *hook* de `pre-push` va versionado en `scripts/hooks/` (R-DES-06): se activa una vez por clon con `git config core.hooksPath scripts/hooks`.
+El script `scripts/verificar.sh` ejecuta exactamente esas comprobaciones (nunca las pruebas HIL), la comprobación de la documentación (`scripts/verificar-documentacion.py`, R-DES-05), la de las versiones de las dependencias frente a `pyproject.toml` (`scripts/verificar-dependencias.py`, R-DES-16) y la compilación de los catálogos con `scripts/traducciones.sh compilar` (necesita el paquete `gettext`). Las pruebas del informe PDF necesitan `poppler-utils` (`pdftotext`) y usan la fuente DejaVu (`fonts-dejavu-core`); la TSL y el informe, `python3-lxml`, `python3-signxml` y `python3-reportlab`; la verificación independiente de XAdES, el paquete `xmlsec1`. Tras añadir o cambiar un texto traducible: `scripts/traducciones.sh actualizar`, traducir la entrada en `po/es_PE.po` y dejarla en `po/quz.po` para los traductores; una prueba comprueba que `po/berigna.pot` está al día. El *hook* de `pre-push` va versionado en `scripts/hooks/` (R-DES-06): se activa una vez por clon con `git config core.hooksPath scripts/hooks`.
 
 ## 3. Estilo de código
 

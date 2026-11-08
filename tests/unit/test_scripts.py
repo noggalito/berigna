@@ -105,3 +105,19 @@ def test_the_c_libraries_under_the_python_packages_are_included() -> None:
         "libc6",
         "zlib1g",
     }
+
+
+def test_the_environment_has_the_declared_dependency_versions() -> None:
+    """DP-19, R-DES-16: the CI's environment has what pyproject.toml declares."""
+    assert _script("verificar-dependencias.py").main() == 0
+
+
+def test_a_dependency_out_of_bounds_or_missing_is_named() -> None:
+    dependencias = _script("verificar-dependencias.py")
+    found = dependencias.problems(
+        ["pyhanko-certvalidator~=0.30.0", "packaging>=1", "berigna-no-existe>=1"]
+    )
+    assert len(found) == 2
+    assert found[0].startswith("pyhanko-certvalidator 0.26.")
+    assert "fuera de los límites" in found[0]
+    assert found[1].startswith("berigna-no-existe: no está instalado")

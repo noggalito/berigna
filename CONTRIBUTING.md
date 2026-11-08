@@ -34,6 +34,8 @@ El texto fuente de la interfaz está en inglés, dentro de `_()`. Toda cadena nu
 
 Una entrada pendiente bloquea la publicación de una versión. Detalle en las convenciones, §3.
 
+Si hablas quechua sureño y quieres revisar la traducción, que todavía no está revisada por hablantes, no hace falta programar: sigue la [guía de revisión del quechua](docs/06-ux/guia-revision-quechua.md).
+
 ## Certificado de origen (DCO) y licencia
 
 Cada commit lleva una línea `Signed-off-by: Nombre <correo>`, que añade `git commit -s`. Con ella certificas lo que dice el [Developer Certificate of Origin 1.1](https://developercertificate.org/): que tienes derecho a enviar el cambio bajo la licencia del proyecto.
