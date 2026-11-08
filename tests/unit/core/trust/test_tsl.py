@@ -5,13 +5,16 @@
 import base64
 import datetime as dt
 import hashlib
+import warnings
 from pathlib import Path
 from typing import Any
 
 import pytest
 import requests
 from cryptography import x509
-from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives import hashes, serialization
+from cryptography.utils import CryptographyDeprecationWarning
+from cryptography.x509.oid import NameOID
 from hypothesis import example, given, settings
 from hypothesis import strategies as st
 from lxml import etree
@@ -360,7 +363,7 @@ def test_bad_scheme_information(content: TslContent, message: str, tsl_pki: TslP
 
 
 def test_naive_dates_are_taken_as_utc_and_bad_certificates_are_skipped(
-    pki: Pki, tsl_pki: TslPki
+    pki: Pki, tsl_pki: TslPki, caplog: pytest.LogCaptureFixture
 ) -> None:
     content = TslContent(
         services=[Service(pki.root), Service(pki.ca)], next_update="2099-01-01T00:00:00"
@@ -374,6 +377,50 @@ def test_naive_dates_are_taken_as_utc_and_bad_certificates_are_skipped(
     trusted = load_tsl(sign_tsl(root, tsl_pki), root=tsl_pki.root)
     assert trusted.next_update.tzinfo is dt.UTC
     assert [service.certificates for service in trusted.services] == [(), ()]
+    assert caplog.text.count("skipped from the trusted list") == 2
+
+
+def _serial_zero(pki: Pki) -> x509.Certificate:
+    """A root with serial number 0, forbidden by RFC 5280 §4.1.2.2, like three foreign roots
+    of the real INDECOPI list (two of GSE and the one of Indenova; BRG-DSP-001 §5 bis)."""
+    name = x509.Name([x509.NameAttribute(NameOID.COMMON_NAME, "Raíz con serie 0")])
+    built = (
+        x509.CertificateBuilder()
+        .subject_name(name)
+        .issuer_name(name)
+        .public_key(pki.root_key.public_key())
+        .serial_number(1)
+        .not_valid_before(NOW - dt.timedelta(days=1))
+        .not_valid_after(NOW + dt.timedelta(days=365))
+        .sign(pki.root_key, hashes.SHA256())
+    )
+    one = b"\xa0\x03\x02\x01\x02\x02\x01\x01"  # v3, then INTEGER 1: the serial number
+    der = built.public_bytes(serialization.Encoding.DER)
+    assert der.count(one) == 1
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", CryptographyDeprecationWarning)
+        return x509.load_der_x509_certificate(der.replace(one, one[:-1] + b"\x00"))
+
+
+def test_a_root_with_serial_number_zero_is_still_kept(
+    pki: Pki, tsl_pki: TslPki, caplog: pytest.LogCaptureFixture
+) -> None:
+    """cryptography 43 (Debian 13) reads it quietly; 46 (Ubuntu 26.04) warns that a future
+    release will refuse it, and core.trust.tsl would then skip it as unreadable (and log it).
+    This test fails on that day, on purpose: dropping those roots changes which foreign
+    signatures berigna validates, a decision of the owner (BRG-DSP-001 §5 bis), not a silent
+    change. The warning of cryptography never reaches the user."""
+    root = unsigned_tsl(TslContent(services=[Service(_serial_zero(pki))]))
+    caplog.set_level("INFO", logger="berigna.core.trust.tsl")
+    with warnings.catch_warnings(record=True) as shown:
+        warnings.simplefilter("always")
+        trusted = load_tsl(sign_tsl(root, tsl_pki), root=tsl_pki.root)
+    assert not [w for w in shown if issubclass(w.category, CryptographyDeprecationWarning)]
+    (kept,) = trusted.services[0].certificates
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", CryptographyDeprecationWarning)
+        assert kept.serial_number == 0
+    assert "with serial number 0 kept" in caplog.text
 
 
 # -- download ---------------------------------------------------------------------------------

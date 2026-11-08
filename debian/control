@@ -23,8 +23,10 @@ Vcs-Browser: https://github.com/noggalito/berigna
 
 Package: berigna
 Architecture: all
-# The versions of Debian 13 (SPK-05, DP-06, ADR-0013); pyHanko comes from the
-# project's own repository (ADR-0013), everything else from Debian (BRG-DSP-001 §1).
+# The bounds of pyproject.toml, checked by scripts/verificar-dependencias.py: apt
+# refuses a distribution below them (one .deb for the Debian family, ADR-0023). pyHanko
+# comes from the project's own repository (ADR-0013), everything else from the
+# distribution (BRG-DSP-001 §1).
 Depends: ${misc:Depends},
  ${python3:Depends},
  python3 (>= 3.12),
@@ -34,16 +36,19 @@ Depends: ${misc:Depends},
  gir1.2-adw-1,
  gir1.2-poppler-0.18,
  python3-pyhanko (>= 0.25.1),
- python3-pyhanko (<< 0.26),
- python3-pyhanko-certvalidator,
- python3-pyscard,
- python3-cryptography,
- python3-asn1crypto,
- python3-lxml,
- python3-signxml,
- python3-requests,
- python3-pil,
- python3-reportlab,
+ python3-pyhanko (<< 0.25.2~),
+ python3-pyhanko-certvalidator (>= 0.26.3),
+ python3-pyhanko-certvalidator (<< 0.27~),
+ python3-pyscard (>= 2.2),
+ python3-cryptography (>= 42),
+ python3-asn1crypto (>= 1.5),
+ python3-asn1crypto (<< 2~),
+ python3-lxml (>= 5),
+ python3-signxml (>= 4.0),
+ python3-signxml (<< 5~),
+ python3-requests (>= 2.31),
+ python3-pil (>= 10),
+ python3-reportlab (>= 4),
  fonts-dejavu-core,
  pcscd
 # berigna-nautilus arrives with the Fase 5 incremento 4; libccid and opensc-pkcs11

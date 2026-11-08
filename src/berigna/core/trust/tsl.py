@@ -27,6 +27,7 @@ From the services in an accepted status, the CA certificates become trust anchor
 import base64
 import datetime as dt
 import hashlib
+import logging
 import warnings
 from collections.abc import Iterator, Sequence
 from contextlib import contextmanager
@@ -70,6 +71,8 @@ ACCEPTED_STATUSES = frozenset(
     {"undersupervision", "accredited", "granted", "recognisedatnationallevel"}
 )
 _MAX_REFERENCES = 8
+
+log = logging.getLogger(__name__)
 
 
 @dataclass(frozen=True)
@@ -259,6 +262,30 @@ def _datetime(value: str) -> dt.datetime:
     return moment if moment.tzinfo else moment.replace(tzinfo=dt.UTC)
 
 
+# cryptography 46 (Ubuntu 26.04) warns when the serial number of a certificate is read and is
+# not positive: three foreign roots of the real list have serial 0 (BRG-DSP-001 §5 bis).
+_SERIAL_WARNING = "Parsed a serial number which wasn't positive"
+
+
+def _service_certificate(encoded: str, provider: str) -> x509.Certificate | None:
+    """A certificate of a service, or None when it cannot be read: it is skipped, never
+    trusted, and the log names its provider so that a dropped root never goes unnoticed.
+
+    The serial number is read here, once, under the filter: cryptography 46 warns on the read
+    (not on the load), and a later release may refuse it there too, which skips the entry."""
+    try:
+        with warnings.catch_warnings():
+            warnings.filterwarnings("ignore", message=_SERIAL_WARNING)
+            certificate = x509.load_der_x509_certificate(base64.b64decode(encoded))
+            serial = certificate.serial_number
+    except UNREADABLE_DATA as exc:
+        log.warning("unreadable certificate of %s skipped from the trusted list: %s", provider, exc)
+        return None
+    if serial <= 0:  # RFC 5280 §4.1.2.2; kept while cryptography reads it
+        log.info("certificate of %s with serial number %d kept", provider, serial)
+    return certificate
+
+
 def _services(signed: Any) -> tuple[TslService, ...]:
     services = []
     for provider in signed.iterfind(".//tsl:TrustServiceProvider", namespaces=_NS):
@@ -269,12 +296,9 @@ def _services(signed: Any) -> tuple[TslService, ...]:
             for encoded in info.iterfind(
                 "tsl:ServiceDigitalIdentity/tsl:DigitalId/tsl:X509Certificate", namespaces=_NS
             ):
-                try:
-                    certificates.append(
-                        x509.load_der_x509_certificate(base64.b64decode(encoded.text or ""))
-                    )
-                except UNREADABLE_DATA:
-                    continue  # an unreadable entry is skipped, never trusted
+                certificate = _service_certificate(encoded.text or "", provider_name)
+                if certificate is not None:
+                    certificates.append(certificate)
             services.append(
                 TslService(
                     provider=provider_name,

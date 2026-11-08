@@ -18,8 +18,14 @@ from typing import Any
 
 import gi
 
-gi.require_version("Nautilus", "4.0")
-from gi.repository import Gio, GObject, Nautilus  # noqa: E402
+# Nautilus 49 and later (GNOME 49; Ubuntu 26.04 has Nautilus 50) publish the API as 4.1, with
+# the same menu provider; Nautilus 48 (Debian 13) as 4.0. Asking only for 4.0 left the menu
+# out of Ubuntu 26.04 (found on 2026-11-08 by the import check of the installed package).
+try:
+    gi.require_version("Nautilus", "4.1")
+except ValueError:
+    gi.require_version("Nautilus", "4.0")
+from gi.repository import Gio, GObject, Nautilus
 
 APP_INFO_ID = "com.noggalito.Berigna.desktop"
 ICON = "com.noggalito.Berigna-symbolic"

@@ -76,6 +76,20 @@ export BERIGNA_LOCALEDIR=/usr/share/locale
 export GSETTINGS_SCHEMA_DIR=/usr/share/glib-2.0/schemas
 export PYTHONPATH=/usr/share/nautilus-python/extensions
 export BERIGNA_TEST_DISPLAY=1
+# Every module of the package imported with the warnings of berigna turned into errors: a
+# library of this distribution that deprecates something berigna calls shows here, before
+# it breaks (the warnings of the libraries themselves, such as signxml's, are theirs).
+xvfb-run -a /tmp/venv-pruebas/bin/python - <<'EOF'
+import importlib, pkgutil, warnings
+warnings.filterwarnings("error", module=r"berigna(_nautilus)?(\.|$)")
+import berigna
+modules = pkgutil.walk_packages(berigna.__path__, "berigna.")
+names = [m.name for m in modules if m.name != "berigna.__main__"]  # it starts berigna
+for name in ["berigna_nautilus", *names]:
+    importlib.import_module(name)
+print(len(names) + 1, "módulos importados sin avisos de berigna")
+EOF
+
 # Left out: the SBOM test describes the CI environment of scripts/ci-entorno.sh (pyHanko
 # from PyPI), not an installed system; the scripts are development tools, not the package.
 xvfb-run -a -s "-screen 0 1280x1024x24" \

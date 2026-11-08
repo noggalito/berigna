@@ -1,0 +1,78 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# SPDX-FileCopyrightText: 2026 noggalito
+# The single .deb of the Debian family (ADR-0023), called by verificar.yml on each change and
+# by vigilancia.yml every week (with the updates of each distribution): the packages are
+# built once, on Debian 13, the oldest base, and that same artifact is installed and tested
+# on each supported distribution, and refused by apt below the minimum versions.
+name: paquetes
+
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  paquetes:
+    runs-on: ubuntu-24.04
+    container: debian:trixie
+    timeout-minutes: 20
+    steps:
+      - name: git
+        run: |
+          echo 'Acquire::Retries "5";' > /etc/apt/apt.conf.d/80-retries
+          apt-get update && apt-get install -y --no-install-recommends ca-certificates git
+
+      # Full history: the scripts take SOURCE_DATE_EPOCH from the last change of the packaging.
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: python3-pyhanko, berigna y berigna-nautilus
+        run: scripts/compilar-paquetes.sh
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: paquetes
+          path: build/paquetes/
+
+  # Ubuntu 26.04 LTS with the .deb of Debian 13, against the installed package (line of the
+  # single .deb, ADR-0023). A failure shows red on the pull request, but only "verificar" is
+  # required to merge until the Fase 6, when this job joins the required checks (DP-23,
+  # resolved on 2026-11-08: Ubuntu 26.04 supported in the v1.0).
+  ubuntu-26-04:
+    needs: paquetes
+    runs-on: ubuntu-24.04
+    container: ubuntu:26.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/download-artifact@v7
+        with:
+          name: paquetes
+          path: build/paquetes
+
+      - name: Suite contra el paquete instalado
+        run: scripts/probar-paquete-instalado.sh build/paquetes
+
+  # The other side of the single .deb (ADR-0023): a distribution below the minimum versions
+  # gets a clear refusal from apt. Ubuntu 24.04 LTS is outside the family by decision of the
+  # owner; apt must name the three dependencies it lacks.
+  ubuntu-24-04:
+    needs: paquetes
+    runs-on: ubuntu-24.04
+    container: ubuntu:24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/download-artifact@v7
+        with:
+          name: paquetes
+          path: build/paquetes
+
+      - name: apt rechaza el paquete
+        run: |
+          scripts/probar-rechazo.sh build/paquetes \
+            python3-cryptography python3-pyscard python3-signxml

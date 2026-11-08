@@ -126,6 +126,39 @@ def test_a_dependency_out_of_bounds_or_missing_is_named() -> None:
     assert found[1].startswith("berigna-no-existe: no está instalado")
 
 
+def test_each_bound_becomes_a_debian_relation() -> None:
+    """ADR-0023: apt must refuse what pip would refuse."""
+    relations = _script("verificar-dependencias.py").debian_relations
+    assert relations("cryptography>=42") == ("python3-cryptography", {(">=", "42")})
+    assert relations("pyhanko-certvalidator~=0.26.3")[1] == {(">=", "0.26.3"), ("<<", "0.27~")}
+    assert relations("asn1crypto~=1.5")[1] == {(">=", "1.5"), ("<<", "2~")}
+    assert relations("pyhanko==0.25.1")[1] == {(">=", "0.25.1"), ("<<", "0.25.2~")}
+    assert relations("signxml~=4.0.post1")[1] == {(">=", "4.0.post1"), ("<<", "5~")}
+    assert relations("Pillow>=10")[0] == "python3-pil"
+    assert relations("typing_extensions>=4")[0] == "python3-typing-extensions"
+    for unsupported in ("lxml!=5.1", "pyhanko==0.25.*", "lxml<6"):
+        with pytest.raises(ValueError, match="sin equivalente"):
+            relations(unsupported)
+
+
+def test_a_bound_missing_from_debian_control_is_named() -> None:
+    dependencias = _script("verificar-dependencias.py")
+    control = (
+        "Source: berigna\n\nPackage: berigna\n# a comment\nDepends: ${misc:Depends},\n"
+        " python3-cryptography:any (>= 41),\n python3-signxml (>= 4.0),\n"
+        " python3-signxml (<< 5~),\n python3-pil (>= 10) | python3-pillow\n"
+        "Description: x\n\nPackage: otro\nDepends: python3-lxml\n"
+    )
+    found = dependencias.control_problems(
+        ["cryptography>=42", "signxml~=4.0", "lxml>=5", "pillow>=10", "x==1.*"], control
+    )
+    assert found == [
+        "debian/control: python3-cryptography debe llevar (>= 42) (cryptography>=42)",
+        "debian/control: falta python3-lxml en el Depends de berigna (lxml>=5)",
+        "pyproject.toml: x==1.*: sin equivalente en Debian (==1.*)",
+    ]
+
+
 _RELEASE_FILES = {
     "pyproject.toml": '[project]\nname = "berigna"\nversion = "0.1.0.dev0"\n',
     "meson.build": "project(\n  'berigna',\n  version: '0.1.0.dev0',\n)\n",

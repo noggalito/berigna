@@ -56,57 +56,8 @@ jobs:
       - name: Rendimiento
         run: .venv/bin/python scripts/rendimiento.py
 
-  # One deliverable per format (BRG-VIS-002, line of the single .deb): the packages are built
-  # once, on Debian 13, the oldest base, and that same artifact is installed and tested on
-  # each distribution of the family.
+  # One deliverable per format (ADR-0023): the .deb built once on Debian 13, installed and
+  # tested on Ubuntu 26.04, and refused by apt on Ubuntu 24.04. The same jobs run in the
+  # weekly watch (vigilancia.yml), from .github/workflows/paquetes.yml.
   paquetes:
-    runs-on: ubuntu-24.04
-    container: debian:trixie
-    timeout-minutes: 20
-    steps:
-      - name: git y herramientas de compilación
-        run: |
-          echo 'Acquire::Retries "5";' > /etc/apt/apt.conf.d/80-retries
-          apt-get update && apt-get install -y --no-install-recommends ca-certificates git curl dpkg-dev
-
-      # Full history: the scripts take SOURCE_DATE_EPOCH from the last change of the packaging.
-      - uses: actions/checkout@v7
-        with:
-          fetch-depth: 0
-
-      - name: Dependencias de compilación
-        run: apt-get build-dep -y ./ ./packaging/python3-pyhanko
-
-      - name: python3-pyhanko, berigna y berigna-nautilus
-        run: |
-          git config --global --add safe.directory "$PWD"
-          scripts/empaquetar-pyhanko.sh debuild
-          scripts/empaquetar-berigna.sh debuild
-          mkdir -p build/paquetes
-          cp build/*.deb build/paquetes/
-          cd build/paquetes && sha256sum *.deb | tee SHA256SUMS
-
-      - uses: actions/upload-artifact@v7
-        with:
-          name: paquetes
-          path: build/paquetes/
-
-  # Ubuntu 26.04 LTS with the .deb of Debian 13, against the installed package (line of the
-  # single .deb, incremento 1). Early warning: a failure shows red on the pull request, but
-  # only "verificar" is required to merge; this job joins the required checks when DP-23
-  # declares Ubuntu 26.04 supported.
-  ubuntu-26-04:
-    needs: paquetes
-    runs-on: ubuntu-24.04
-    container: ubuntu:26.04
-    timeout-minutes: 20
-    steps:
-      - uses: actions/checkout@v7
-
-      - uses: actions/download-artifact@v7
-        with:
-          name: paquetes
-          path: build/paquetes
-
-      - name: Suite contra el paquete instalado
-        run: scripts/probar-paquete-instalado.sh build/paquetes
+    uses: ./.github/workflows/paquetes.yml
