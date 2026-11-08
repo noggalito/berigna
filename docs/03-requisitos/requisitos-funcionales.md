@@ -3,9 +3,9 @@
 | Campo | Valor |
 |---|---|
 | Documento | BRG-REQ-001 |
-| Versión | 0.5.0 |
+| Versión | 0.5.1 |
 | Estado | Borrador |
-| Fecha | 2026-10-29 |
+| Fecha | 2026-11-08 |
 | Responsable | noggalito |
 
 Prioridades según MoSCoW (ver convenciones). Cada requisito tiene criterios de aceptación verificables. La columna CU indica los casos de uso relacionados.
@@ -191,7 +191,7 @@ Prioridades según MoSCoW (ver convenciones). Cada requisito tiene criterios de 
 ### RF-061: Actualización del almacén de confianza
 - Prioridad: Debe. Descripción: el almacén base se actualiza junto con el paquete `.deb`. En tiempo de ejecución se le añaden las CA de la TSL de INDECOPI, verificada contra la raíz de INDECOPI fijada en el paquete; si la TSL no está disponible, no verifica o está vencida, se usa el almacén base (ADR-0014). El usuario puede añadir anclas adicionales, que se marcan como "añadidas por el usuario" en los informes.
 ### RF-062: Configuración de la TSA
-- Prioridad: Debe. Descripción: URL, autenticación opcional (usuario y contraseña, o certificado de cliente), algoritmo de *hash* y tiempo de espera. Incluye un botón "Probar".
+- Prioridad: Debe. Descripción: URL, autenticación opcional (usuario y contraseña, o certificado de cliente), algoritmo de *hash* y tiempo de espera. Incluye un botón "Probar", que comprueba que la TSA responde con un sello válido y que es de confianza, igual que la firma antes del PIN (R-DES-20, ERR-314).
 ### RF-063: OCSP y CRL
 - Prioridad: Debe.
 - Descripción: OCSP es el mecanismo principal y el único que se usa para firmar y para embeber datos en B-LT y B-LTA. La CRL es solo un respaldo opcional al verificar, desactivado por defecto (`crl-fallback`): la CRL de la CA del DNIe pesa unos 109 MB (SPK-02 §3.2). Si se activa, se muestra su tamaño antes de descargarla y se guarda en caché respetando `nextUpdate`.
