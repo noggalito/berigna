@@ -4,6 +4,10 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/); v
 
 ## [Sin publicar]
 
+### Corregido
+
+- Las versiones publicadas incluyen `python3-pyhanko`: `berigna` depende de él y Debian 13 no lo tiene, así que la 0.3.0 no se podía instalar solo con sus paquetes (se añadió a la publicación después). `scripts/version.py etiquetar` lo construye con `scripts/empaquetar-pyhanko.sh`, lo incluye en `SHA256SUMS` y las notas dicen cómo instalar. El README dice qué versión está publicada y cómo instalarla.
+
 ## [0.3.0] - 2026-11-08
 
 ### Añadido
