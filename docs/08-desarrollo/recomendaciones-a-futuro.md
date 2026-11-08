@@ -3,9 +3,9 @@
 | Campo | Valor |
 |---|---|
 | Documento | BRG-DES-002 |
-| Versión | 0.10.0 |
+| Versión | 0.11.0 |
 | Estado | Borrador |
-| Fecha | 2026-11-07 |
+| Fecha | 2026-11-08 |
 | Responsable | noggalito |
 
 ## 1. Propósito
@@ -36,6 +36,7 @@ Punto de partida: el proyecto ya tiene ADR, trazabilidad de requisitos a pruebas
 | R-DES-10 | Medidas de rendimiento con la tarjeta simulada en la CI: firmar un PDF y un lote de 20, verificar un PDF B-LTA, abrir una carpeta de 200 PDF; aviso si empeoran más de un 50 % | RNF-REN está sin medir; un problema como M-1 (lectura en el hilo principal) se habría visto. **Adoptado el 2026-11-02**: `scripts/rendimiento.py` en la CI de cada PR, con los tiempos divididos por una carga de calibración; la medida de una carpeta lee 200 PDF de 200 kB, y la firma de un PDF usa uno de 10 MB (RNF-REN-02) | Bajo |
 | R-DES-11 | Registro local de fallos (§5) | Hoy una excepción no prevista fuera de los hilos protegidos se pierde. **Adoptado el 2026-10-29** (Fase 4, incremento 1): `core.crashes` (§5) | Bajo |
 | R-DES-19 | Dividir los módulos que pasan de mil líneas y mezclan responsabilidades: `ui/signing.py` (página, flujo, diálogo del PIN, formulario compartido con los lotes y firma visible) y `core/validation/xades.py` (verificación XAdES completa) | Un módulo grande es más difícil de revisar para el evaluador y para quien llegue al proyecto, y en `ui/signing.py` el diálogo del PIN, lo más delicado de la interfaz, quedaba mezclado con el resto. Señalado por la auditoría externa del 2026-11-07. **`ui/signing.py`, hecho el 2026-11-07**: el diálogo del PIN pasa a `ui/pin_dialog.py`, lo que comparten la firma y los lotes a `ui/signing_form.py` y la firma visible a `ui/visible_signature.py`, sin cambios de comportamiento. `core/validation/xades.py`, hecho el mismo día: la capa XMLDSig (referencias, transformadas, canonicalización, resúmenes y valor de la firma) pasa a `core/validation/xmldsig.py` (unas 430 líneas) y `xades.py` (unas 620) se queda con las propiedades XAdES, el certificado firmante, los sellos, la validación X.509 y el proceso de cada firma. Ningún módulo de `src/` pasa ya de mil líneas. **Adoptado el 2026-11-07** | Medio |
+| R-DES-20 | Comprobar que la TSA es de confianza antes de escribir su sello en la firma: la cadena de su certificado hasta el almacén de confianza (IOFE y TSL de INDECOPI, ADR-0009 y ADR-0014), su uso de clave para sellado de tiempo y su revocación, con las mismas reglas que la verificación. Se hace primero con el sello de la prueba previa al PIN (`core.signing.check_level`), para que una TSA que no es de confianza se sepa antes de pedirlo (RF-006), y otra vez con el sello real, antes de escribirlo; si falla, ERR-305 (o un código propio) y no se escribe nada | Desde R-DES-07, `core.net.tsa.check_token` detecta las respuestas dañadas, pero no un sello falsificado: quien esté en el HTTP sin cifrar de la TSA puede devolver un sello firmado con un certificado propio, que pasa la comprobación. berigna lo escribe y da la firma por hecha a B-T, y el usuario solo lo descubre al verificar (TSA que no es de confianza, INDETERMINATE). No es una falsificación de la firma de la persona, pero sí entrega como buena una firma que no lo es (AM-07). En B-LT y B-LTA, los datos de validación de una TSA desconocida no se pueden incorporar: la firma baja a B-T con un aviso del nivel alcanzado, pero se escribe igual con ese sello (`test_a_tsa_whose_path_cannot_be_built_keeps_the_b_t`). Usar la TSA por HTTPS cuando la ofrezca reduce el riesgo, pero no lo elimina. Propuesto el 2026-11-08 | Medio |
 
 ## 4. Fases 5 y 6
 
