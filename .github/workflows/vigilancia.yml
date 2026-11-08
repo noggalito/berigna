@@ -52,6 +52,11 @@ jobs:
       - name: Formato, lint, tipos y pruebas
         run: scripts/verificar.sh
 
+  # Ubuntu 26.04 LTS with its updates (resolute-updates and resolute-security), as the
+  # debian job does with Debian 13: the same jobs as on each change (ADR-0023; DP-23).
+  paquetes:
+    uses: ./.github/workflows/paquetes.yml
+
   # The trusted list of INDECOPI, the CRLs and the OCSP of RENIEC (R-17), and OSV for
   # pyHanko, the only component that does not come from Debian (R-DES-02).
   servicios:
@@ -112,7 +117,7 @@ jobs:
           exit $status
 
   avisar:
-    needs: [debian, servicios]
+    needs: [debian, servicios, paquetes]
     if: failure()
     runs-on: ubuntu-24.04
     permissions:

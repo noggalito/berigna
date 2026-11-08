@@ -13,6 +13,12 @@
 set -eu
 cd "$(dirname "$0")/.."
 
+# Like probar-paquete-instalado.sh: it changes apt and deletes the .deb of earlier builds.
+if [ ! -e /run/.containerenv ] && [ ! -e /.dockerenv ] && [ -z "${GITHUB_ACTIONS:-}" ]; then
+  echo "solo dentro de un contenedor: instala las dependencias de compilación" >&2
+  exit 2
+fi
+
 echo 'Acquire::Retries "5";' > /etc/apt/apt.conf.d/80-retries
 apt-get update
 DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
@@ -20,6 +26,8 @@ DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
 DEBIAN_FRONTEND=noninteractive apt-get build-dep -y ./ ./packaging/python3-pyhanko
 
 git config --global --add safe.directory "$PWD"
+# Only what this run builds: an older .deb in build/ would travel with the new ones.
+rm -f build/*.deb
 scripts/empaquetar-pyhanko.sh debuild
 scripts/empaquetar-berigna.sh debuild
 rm -rf build/paquetes

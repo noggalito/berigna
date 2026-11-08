@@ -25,9 +25,13 @@ if LC_ALL=C apt-get install -s --no-install-recommends "$DEBS"/*.deb >"$SALIDA" 
   exit 1
 fi
 cat "$SALIDA"
+# Only the unmet dependencies of berigna itself: python3-pyhanko fails here too, and its
+# lines must not stand in for a bound that berigna's Depends lost.
+BERIGNA=$(awk '/^ berigna :/ { dentro = 1 } dentro && /^ [^ ]+ :/ && !/^ berigna :/ { dentro = 0 }
+  dentro' "$SALIDA")
 for paquete in "$@"; do
-  grep -q "Depends: $paquete " "$SALIDA" || grep -q "Depends: $paquete\$" "$SALIDA" || {
-    echo "apt rechaza berigna en $PRETTY_NAME, pero sin nombrar $paquete" >&2
+  printf '%s\n' "$BERIGNA" | grep -qF "Depends: $paquete " || {
+    echo "apt rechaza berigna en $PRETTY_NAME, pero no por $paquete" >&2
     exit 1
   }
 done
