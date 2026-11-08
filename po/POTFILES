@@ -9,10 +9,13 @@ src/berigna/ui/batch.py
 src/berigna/ui/diagnostics.py
 src/berigna/ui/help.py
 src/berigna/ui/history.py
+src/berigna/ui/pin_dialog.py
 src/berigna/ui/presentation.py
 src/berigna/ui/preferences.py
 src/berigna/ui/preview.py
 src/berigna/ui/signing.py
+src/berigna/ui/signing_form.py
+src/berigna/ui/visible_signature.py
 src/berigna/ui/verification.py
 src/berigna/ui/widgets.py
 src/berigna/ui/window.py

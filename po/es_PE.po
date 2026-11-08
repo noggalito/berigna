@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: berigna\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-06 18:58-0500\n"
+"POT-Creation-Date: 2026-11-07 20:07-0500\n"
 "PO-Revision-Date: 2026-10-27 23:38-0500\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -144,7 +144,7 @@ msgstr "_Preferencias"
 msgid "_History"
 msgstr "_Historial"
 
-#: data/ui/window.blp:111 src/berigna/ui/signing.py:488
+#: data/ui/window.blp:111 src/berigna/ui/signing.py:174
 msgid "_Diagnosis"
 msgstr "_Diagnóstico"
 
@@ -903,55 +903,55 @@ msgstr "Verificación"
 msgid "Sign and verify documents with your Peruvian DNIe."
 msgstr "Firma y verifica documentos con tu DNIe."
 
-#: src/berigna/ui/batch.py:88 src/berigna/ui/signing.py:336
+#: src/berigna/ui/batch.py:81 src/berigna/ui/signing_form.py:252
 msgid "Signature Format"
 msgstr "Formato de la firma"
 
-#: src/berigna/ui/batch.py:89
+#: src/berigna/ui/batch.py:82
 msgid "PDF documents are signed in PAdES."
 msgstr "Los documentos PDF se firman en PAdES."
 
-#: src/berigna/ui/batch.py:91
+#: src/berigna/ui/batch.py:84
 msgid "XML Documents"
 msgstr "Documentos XML"
 
-#: src/berigna/ui/batch.py:92
+#: src/berigna/ui/batch.py:85
 msgid "Other Files"
 msgstr "Otros archivos"
 
-#: src/berigna/ui/batch.py:149 src/berigna/ui/signing.py:574
-#: src/berigna/ui/signing.py:652 src/berigna/ui/verification.py:89
+#: src/berigna/ui/batch.py:142 src/berigna/ui/pin_dialog.py:105
+#: src/berigna/ui/signing.py:221 src/berigna/ui/verification.py:89
 msgid "_Sign"
 msgstr "_Firmar"
 
-#: src/berigna/ui/batch.py:156
+#: src/berigna/ui/batch.py:149
 msgid "Sign Several Documents"
 msgstr "Firmar varios documentos"
 
-#: src/berigna/ui/batch.py:165 src/berigna/ui/batch.py:279
+#: src/berigna/ui/batch.py:158 src/berigna/ui/batch.py:272
 msgid "Add Documents"
 msgstr "Añadir documentos"
 
-#: src/berigna/ui/batch.py:166 src/berigna/ui/batch.py:292
+#: src/berigna/ui/batch.py:159 src/berigna/ui/batch.py:285
 msgid "Add Folder"
 msgstr "Añadir carpeta"
 
-#: src/berigna/ui/batch.py:174 src/berigna/ui/presentation.py:475
+#: src/berigna/ui/batch.py:167 src/berigna/ui/presentation.py:475
 msgid "Documents"
 msgstr "Documentos"
 
-#: src/berigna/ui/batch.py:175
+#: src/berigna/ui/batch.py:168
 msgid "Include Subfolders When Adding a Folder"
 msgstr "Incluir las subcarpetas al añadir una carpeta"
 
-#: src/berigna/ui/batch.py:220
+#: src/berigna/ui/batch.py:213
 #, python-brace-format
 msgid "{n} file cannot be read; it was left out."
 msgid_plural "{n} files cannot be read; they were left out."
 msgstr[0] "{n} archivo no se puede leer; se dejó fuera."
 msgstr[1] "{n} archivos no se pueden leer; se dejaron fuera."
 
-#: src/berigna/ui/batch.py:228
+#: src/berigna/ui/batch.py:221
 #, python-brace-format
 msgid "{n} signature was left out: open it on its own to verify it."
 msgid_plural ""
@@ -959,11 +959,11 @@ msgid_plural ""
 msgstr[0] "{n} firma se dejó fuera: ábrela sola para verificarla."
 msgstr[1] "{n} firmas se dejaron fuera: ábrelas una por una para verificarlas."
 
-#: src/berigna/ui/batch.py:253
+#: src/berigna/ui/batch.py:246
 msgid "Remove from the List"
 msgstr "Quitar de la lista"
 
-#: src/berigna/ui/batch.py:266
+#: src/berigna/ui/batch.py:259
 #, python-brace-format
 msgid ""
 "{n} document. They are signed with a single PIN; the signatures are not "
@@ -976,67 +976,67 @@ msgstr[0] ""
 msgstr[1] ""
 "{n} documentos. Se firman con un solo PIN; las firmas no son visibles."
 
-#: src/berigna/ui/batch.py:272
+#: src/berigna/ui/batch.py:265
 #, python-brace-format
 msgid "_Sign {n} Document"
 msgid_plural "_Sign {n} Documents"
 msgstr[0] "_Firmar {n} documento"
 msgstr[1] "_Firmar {n} documentos"
 
-#: src/berigna/ui/batch.py:310 src/berigna/ui/history.py:165
-#: src/berigna/ui/signing.py:573
+#: src/berigna/ui/batch.py:303 src/berigna/ui/history.py:165
+#: src/berigna/ui/pin_dialog.py:104
 msgid "_Cancel"
 msgstr "_Cancelar"
 
-#: src/berigna/ui/batch.py:331
+#: src/berigna/ui/batch.py:324
 msgid "Cancelling after the current document…"
 msgstr "Cancelando después del documento actual…"
 
-#: src/berigna/ui/batch.py:363 src/berigna/ui/signing.py:848
+#: src/berigna/ui/batch.py:356 src/berigna/ui/signing.py:332
 msgid "Checking your certificate…"
 msgstr "Comprobando tu certificado…"
 
-#: src/berigna/ui/batch.py:408
+#: src/berigna/ui/batch.py:401
 #, python-brace-format
 msgid "Signing {done} of {total} with your DNIe…"
 msgstr "Firmando {done} de {total} con tu DNIe…"
 
-#: src/berigna/ui/batch.py:424
+#: src/berigna/ui/batch.py:417
 msgid "The documents were not signed"
 msgstr "Los documentos no se firmaron"
 
-#: src/berigna/ui/batch.py:459
+#: src/berigna/ui/batch.py:452
 #, python-brace-format
 msgid "{signed} of {total} document signed"
 msgid_plural "{signed} of {total} documents signed"
 msgstr[0] "{signed} de {total} documento firmado"
 msgstr[1] "{signed} de {total} documentos firmados"
 
-#: src/berigna/ui/batch.py:481
+#: src/berigna/ui/batch.py:474
 msgid "_Export Report…"
 msgstr "_Exportar el informe…"
 
-#: src/berigna/ui/batch.py:482 src/berigna/ui/signing.py:967
+#: src/berigna/ui/batch.py:475 src/berigna/ui/signing.py:451
 msgid "Show in _Folder"
 msgstr "Mostrar en la _carpeta"
 
-#: src/berigna/ui/batch.py:483
+#: src/berigna/ui/batch.py:476
 msgid "Sign _Other Documents"
 msgstr "Firmar _otros documentos"
 
-#: src/berigna/ui/batch.py:501 src/berigna/ui/verification.py:86
+#: src/berigna/ui/batch.py:494 src/berigna/ui/verification.py:86
 msgid "Export Report"
 msgstr "Exportar el informe"
 
-#: src/berigna/ui/batch.py:501
+#: src/berigna/ui/batch.py:494
 msgid "batch-report.csv"
 msgstr "informe-del-lote.csv"
 
-#: src/berigna/ui/batch.py:515
+#: src/berigna/ui/batch.py:508
 msgid "The report could not be saved."
 msgstr "No se pudo guardar el informe."
 
-#: src/berigna/ui/batch.py:517
+#: src/berigna/ui/batch.py:510
 msgid "Report saved."
 msgstr "Informe guardado."
 
@@ -1183,6 +1183,14 @@ msgstr "_Borrar"
 msgid "History cleared."
 msgstr "Historial borrado."
 
+#: src/berigna/ui/pin_dialog.py:70 src/berigna/ui/pin_dialog.py:148
+msgid "Confirm Signature"
+msgstr "Confirmar la firma"
+
+#: src/berigna/ui/pin_dialog.py:92 src/berigna/ui/pin_dialog.py:95
+msgid "DNIe PIN"
+msgstr "PIN del DNIe"
+
 #: src/berigna/ui/preferences.py:115
 msgid "General"
 msgstr "General"
@@ -1255,7 +1263,7 @@ msgstr "El sufijo no puede estar vacío ni contener «/»."
 msgid "The same folder as the original"
 msgstr "La misma carpeta que el original"
 
-#: src/berigna/ui/preferences.py:219 src/berigna/ui/signing.py:712
+#: src/berigna/ui/preferences.py:219 src/berigna/ui/visible_signature.py:46
 msgid "Visible Signature"
 msgstr "Firma visible"
 
@@ -1271,7 +1279,7 @@ msgstr ""
 "El PDF firmado siempre lleva el DNI completo en su certificado; «DNI en la "
 "firma» solo cambia lo que se imprime."
 
-#: src/berigna/ui/preferences.py:240 src/berigna/ui/signing.py:721
+#: src/berigna/ui/preferences.py:240 src/berigna/ui/visible_signature.py:55
 msgid "Appearance"
 msgstr "Apariencia"
 
@@ -1298,7 +1306,7 @@ msgstr ""
 msgid "Handwritten Signature"
 msgstr "Rúbrica"
 
-#: src/berigna/ui/preferences.py:269 src/berigna/ui/signing.py:129
+#: src/berigna/ui/preferences.py:269 src/berigna/ui/signing_form.py:45
 msgid "Logo"
 msgstr "Logotipo"
 
@@ -1949,124 +1957,19 @@ msgstr "de {total}"
 msgid "Fit"
 msgstr "Ajustar"
 
-#: src/berigna/ui/signing.py:126
-msgid "Not visible"
-msgstr "No visible"
-
-#: src/berigna/ui/signing.py:127
-msgid "Text only"
-msgstr "Solo texto"
-
-#: src/berigna/ui/signing.py:128
-msgid "Handwritten signature (image)"
-msgstr "Rúbrica (imagen)"
-
-#: src/berigna/ui/signing.py:130
-msgid "QR code"
-msgstr "Código QR"
-
-#: src/berigna/ui/signing.py:134
-msgid "Last four digits (****5678)"
-msgstr "Últimos cuatro dígitos (****5678)"
-
-#: src/berigna/ui/signing.py:135
-msgid "Full (12345678)"
-msgstr "Completo (12345678)"
-
-#: src/berigna/ui/signing.py:136
-msgid "Do not show"
-msgstr "No mostrar"
-
-#: src/berigna/ui/signing.py:221
-msgid "Signature Level"
-msgstr "Nivel de firma"
-
-#: src/berigna/ui/signing.py:259
-msgid "Signature Data"
-msgstr "Datos de la firma"
-
-#: src/berigna/ui/signing.py:261
-msgid ""
-"Signature validators such as Firma Perú show them. The reasons of the list "
-"are written in the language of the signature."
-msgstr ""
-"Los muestran los validadores de firmas, como Firma Perú. Los motivos de la "
-"lista se escriben en el idioma de la firma."
-
-#: src/berigna/ui/signing.py:266
-msgid "Reason"
-msgstr "Motivo"
-
-#: src/berigna/ui/signing.py:267
-msgid "Other Reason"
-msgstr "Otro motivo"
-
-#: src/berigna/ui/signing.py:267
-msgid "Other reason…"
-msgstr "Otro motivo…"
-
-#: src/berigna/ui/signing.py:268
-msgid "No reason"
-msgstr "Sin motivo"
-
-#: src/berigna/ui/signing.py:272
-msgid "Location"
-msgstr "Ubicación"
-
-#: src/berigna/ui/signing.py:273
-msgid "Other Location"
-msgstr "Otra ubicación"
-
-#: src/berigna/ui/signing.py:273
-msgid "Other location…"
-msgstr "Otra ubicación…"
-
-#: src/berigna/ui/signing.py:274
-msgid "No location"
-msgstr "Sin ubicación"
-
-#: src/berigna/ui/signing.py:377
-msgid "File to Sign"
-msgstr "Archivo para firmar"
-
-#: src/berigna/ui/signing.py:395
-msgid ""
-"This file cannot be shown. Check its name, size and SHA-256 before signing: "
-"they identify the file that will be signed."
-msgstr ""
-"Este archivo no se puede mostrar. Revisa su nombre, tamaño y SHA-256 antes "
-"de firmar: identifican el archivo que se firmará."
-
-#: src/berigna/ui/signing.py:407
-#, python-brace-format
-msgid "Only the beginning of the file is shown ({size})."
-msgstr "Solo se muestra el comienzo del archivo ({size})."
-
-#: src/berigna/ui/signing.py:419
-msgid "Content of the file"
-msgstr "Contenido del archivo"
-
-#: src/berigna/ui/signing.py:469
+#: src/berigna/ui/signing.py:155
 msgid "Signature cancelled. The PIN was not sent."
 msgstr "Firma cancelada. No se envió el PIN."
 
-#: src/berigna/ui/signing.py:483
+#: src/berigna/ui/signing.py:169
 msgid "_Back"
 msgstr "_Volver"
 
-#: src/berigna/ui/signing.py:493
+#: src/berigna/ui/signing.py:179
 msgid "Sign Without _Timestamp (B-B)"
 msgstr "Firmar sin _sello de tiempo (B-B)"
 
-#: src/berigna/ui/signing.py:539 src/berigna/ui/signing.py:617
-msgid "Confirm Signature"
-msgstr "Confirmar la firma"
-
-#: src/berigna/ui/signing.py:561 src/berigna/ui/signing.py:564
-msgid "DNIe PIN"
-msgstr "PIN del DNIe"
-
-#: src/berigna/ui/signing.py:672
+#: src/berigna/ui/signing.py:241
 msgid ""
 "Some of the signatures already in this document are not valid. Your "
 "signature will be added anyway."
@@ -2074,42 +1977,122 @@ msgstr ""
 "Alguna de las firmas que ya tiene este documento no es válida. Tu firma se "
 "añadirá igualmente."
 
-#: src/berigna/ui/signing.py:714
-msgid ""
-"Drag the box to move it and its corner to resize it; drag the page to scroll "
-"it. In a box taller than wide, the image goes above the text."
-msgstr ""
-"Arrastra el recuadro para moverlo y su esquina para cambiar su tamaño; "
-"arrastra la página para desplazarla. En un recuadro más alto que ancho, la "
-"imagen va encima del texto."
-
-#: src/berigna/ui/signing.py:794
-msgid "Load the image in Preferences → Visible Signature."
-msgstr "Carga la imagen en Preferencias → Firma visible."
-
-#: src/berigna/ui/signing.py:802
-msgid "NAMES AND SURNAMES"
-msgstr "NOMBRES Y APELLIDOS"
-
-#: src/berigna/ui/signing.py:940
+#: src/berigna/ui/signing.py:424
 msgid "Signing with your DNIe…"
 msgstr "Firmando con tu DNIe…"
 
-#: src/berigna/ui/signing.py:960
+#: src/berigna/ui/signing.py:444
 msgid "Document signed"
 msgstr "Documento firmado"
 
-#: src/berigna/ui/signing.py:966
+#: src/berigna/ui/signing.py:450
 msgid "_Open"
 msgstr "_Abrir"
 
-#: src/berigna/ui/signing.py:968
+#: src/berigna/ui/signing.py:452
 msgid "_Verify"
 msgstr "_Verificar"
 
-#: src/berigna/ui/signing.py:988
+#: src/berigna/ui/signing.py:472
 msgid "The document was not signed"
 msgstr "El documento no se firmó"
+
+#: src/berigna/ui/signing_form.py:42
+msgid "Not visible"
+msgstr "No visible"
+
+#: src/berigna/ui/signing_form.py:43
+msgid "Text only"
+msgstr "Solo texto"
+
+#: src/berigna/ui/signing_form.py:44
+msgid "Handwritten signature (image)"
+msgstr "Rúbrica (imagen)"
+
+#: src/berigna/ui/signing_form.py:46
+msgid "QR code"
+msgstr "Código QR"
+
+#: src/berigna/ui/signing_form.py:50
+msgid "Last four digits (****5678)"
+msgstr "Últimos cuatro dígitos (****5678)"
+
+#: src/berigna/ui/signing_form.py:51
+msgid "Full (12345678)"
+msgstr "Completo (12345678)"
+
+#: src/berigna/ui/signing_form.py:52
+msgid "Do not show"
+msgstr "No mostrar"
+
+#: src/berigna/ui/signing_form.py:137
+msgid "Signature Level"
+msgstr "Nivel de firma"
+
+#: src/berigna/ui/signing_form.py:175
+msgid "Signature Data"
+msgstr "Datos de la firma"
+
+#: src/berigna/ui/signing_form.py:177
+msgid ""
+"Signature validators such as Firma Perú show them. The reasons of the list "
+"are written in the language of the signature."
+msgstr ""
+"Los muestran los validadores de firmas, como Firma Perú. Los motivos de la "
+"lista se escriben en el idioma de la firma."
+
+#: src/berigna/ui/signing_form.py:182
+msgid "Reason"
+msgstr "Motivo"
+
+#: src/berigna/ui/signing_form.py:183
+msgid "Other Reason"
+msgstr "Otro motivo"
+
+#: src/berigna/ui/signing_form.py:183
+msgid "Other reason…"
+msgstr "Otro motivo…"
+
+#: src/berigna/ui/signing_form.py:184
+msgid "No reason"
+msgstr "Sin motivo"
+
+#: src/berigna/ui/signing_form.py:188
+msgid "Location"
+msgstr "Ubicación"
+
+#: src/berigna/ui/signing_form.py:189
+msgid "Other Location"
+msgstr "Otra ubicación"
+
+#: src/berigna/ui/signing_form.py:189
+msgid "Other location…"
+msgstr "Otra ubicación…"
+
+#: src/berigna/ui/signing_form.py:190
+msgid "No location"
+msgstr "Sin ubicación"
+
+#: src/berigna/ui/signing_form.py:293
+msgid "File to Sign"
+msgstr "Archivo para firmar"
+
+#: src/berigna/ui/signing_form.py:311
+msgid ""
+"This file cannot be shown. Check its name, size and SHA-256 before signing: "
+"they identify the file that will be signed."
+msgstr ""
+"Este archivo no se puede mostrar. Revisa su nombre, tamaño y SHA-256 antes "
+"de firmar: identifican el archivo que se firmará."
+
+#: src/berigna/ui/signing_form.py:323
+#, python-brace-format
+msgid "Only the beginning of the file is shown ({size})."
+msgstr "Solo se muestra el comienzo del archivo ({size})."
+
+#: src/berigna/ui/signing_form.py:335
+msgid "Content of the file"
+msgstr "Contenido del archivo"
 
 #: src/berigna/ui/verification.py:54
 #, python-brace-format
@@ -2223,6 +2206,23 @@ msgstr "El documento tal como quedó con esta firma"
 msgid "Saved {name}"
 msgstr "Se guardó {name}"
 
+#: src/berigna/ui/visible_signature.py:48
+msgid ""
+"Drag the box to move it and its corner to resize it; drag the page to scroll "
+"it. In a box taller than wide, the image goes above the text."
+msgstr ""
+"Arrastra el recuadro para moverlo y su esquina para cambiar su tamaño; "
+"arrastra la página para desplazarla. En un recuadro más alto que ancho, la "
+"imagen va encima del texto."
+
+#: src/berigna/ui/visible_signature.py:116
+msgid "Load the image in Preferences → Visible Signature."
+msgstr "Carga la imagen en Preferencias → Firma visible."
+
+#: src/berigna/ui/visible_signature.py:122
+msgid "NAMES AND SURNAMES"
+msgstr "NOMBRES Y APELLIDOS"
+
 #: src/berigna/ui/widgets.py:50
 msgid "Read in Spanish"
 msgstr "Leer en español"
@@ -2251,11 +2251,11 @@ msgstr "Solo se pueden abrir archivos de este equipo."
 msgid "Open Document"
 msgstr "Abrir documento"
 
-#: src/berigna_nautilus.py:60
+#: src/berigna_nautilus.py:63
 msgid "Firmar con berigna"
 msgstr "Firmar con berigna"
 
-#: src/berigna_nautilus.py:62
+#: src/berigna_nautilus.py:65
 msgid "Verificar firma"
 msgstr "Verificar firma"
 

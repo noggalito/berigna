@@ -32,7 +32,7 @@ from berigna.core.trust.cache import TslRefresh  # noqa: E402
 from berigna.ui import presentation  # noqa: E402
 from berigna.ui.help import HelpTopic, help_button  # noqa: E402
 from berigna.ui.i18n import _, catalogue  # noqa: E402
-from berigna.ui.signing import APPEARANCES, DNI_OPTIONS, LEVEL_ORDER  # noqa: E402
+from berigna.ui.signing_form import APPEARANCES, DNI_OPTIONS, LEVEL_ORDER  # noqa: E402
 from berigna.ui.widgets import brand_markup, label_factory, named  # noqa: E402
 
 if TYPE_CHECKING:
