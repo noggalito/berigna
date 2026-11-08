@@ -3,7 +3,7 @@
 | Campo | Valor |
 |---|---|
 | Documento | BRG-ARQ-001 |
-| Versión | 0.6.1 |
+| Versión | 0.6.2 |
 | Estado | Borrador |
 | Fecha | 2026-11-07 |
 | Responsable | noggalito |
@@ -110,7 +110,7 @@ flowchart TB
 | `core.files` | Escritura atómica con permisos correctos, carpeta de datos y nombres con fecha | Implementado |
 | `core.logs` | Registro técnico rotativo con números enmascarados (RF-083) | `logging` de la biblioteca estándar; implementado |
 | `core.crashes` | Registro local de fallos: excepciones no capturadas en cualquier hilo y fallos de código nativo, ofrecidos una vez en el siguiente arranque (R-DES-11) | `sys.excepthook`, `threading.excepthook`, `faulthandler`; implementado |
-| `core.validation` | Validación previa del firmante (`preflight`, RF-006), verificación de firmas PDF (`pdf`, RF-050, RF-053, RF-055) de CAdES (`cades`, RF-051) y de XAdES (`xades`, RF-052), con los procesos ETSI y la especificación del almacén compartidos (`spec`) | pyhanko-certvalidator 0.26.3 y la validación AdES de pyHanko 0.25.1; `preflight` y `pdf` implementados; `cades` contrastado con DSS 6.2 (BRG-CAL-006 §3.2); `xades` con lxml y código propio para XMLDSig, contrastado con DSS 6.2 y con una firma de Firma Perú (BRG-CAL-006 §3.5 a §3.7) |
+| `core.validation` | Validación previa del firmante (`preflight`, RF-006), verificación de firmas PDF (`pdf`, RF-050, RF-053, RF-055) de CAdES (`cades`, RF-051) y de XAdES (`xades`, RF-052, con la capa XMLDSig de referencias, transformadas y valor de la firma en `xmldsig`), con los procesos ETSI y la especificación del almacén compartidos (`spec`) | pyhanko-certvalidator 0.26.3 y la validación AdES de pyHanko 0.25.1; `preflight` y `pdf` implementados; `cades` contrastado con DSS 6.2 (BRG-CAL-006 §3.2); `xades` con lxml y código propio para XMLDSig, contrastado con DSS 6.2 y con una firma de Firma Perú (BRG-CAL-006 §3.5 a §3.7) |
 | `core.report` | Explicaciones en lenguaje llano de cada indicación y subindicación ETSI y de cada `ERR-xxx` (`messages`, `explanations`); informe de verificación en JSON con explicaciones en ambos idiomas (`json_report`) y en PDF en es_PE o en quechua (`pdf_report`) | gettext, ReportLab; implementado |
 | `core.i18n` | Idiomas es_PE y quechua sureño, elección según la configuración del usuario con es_PE de respaldo (ADR-0015) y carga de los catálogos; el quechua cae en es_PE, nunca en el texto fuente inglés | gettext de la biblioteca estándar; implementado |
 | `core.history` | Historial local de operaciones, en un archivo solo legible por su dueño (RF-082) | sqlite3 (biblioteca estándar); implementado |
