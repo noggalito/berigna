@@ -77,11 +77,10 @@ from berigna.core.validation.spec import (
     validation_spec,
 )
 from berigna.core.validation.xmldsig import (
-    BY_ID,
     C14N10,
     CANONICALIZATIONS,
-    OBJECT,
-    SIGNATURE,
+    DS_OBJECT,
+    DS_SIGNATURE,
     SIGNED_PROPERTIES,
     Octets,
     Result,
@@ -92,6 +91,7 @@ from berigna.core.validation.xmldsig import (
     digest_name,
     format_failure,
     text_of,
+    unique_by_id,
     weak_failure,
 )
 
@@ -382,8 +382,8 @@ def _packaging(sig: etree._Element, tree: etree._ElementTree) -> XadesPackaging:
     uris = [reference.get("URI") for reference in _data_references(sig, tree)]
     for uri in uris:
         if uri is not None and uri.startswith("#") and not uri.startswith("#xpointer("):
-            matches = BY_ID(tree, id=uri[1:])
-            if len(matches) == 1 and _is_object(matches[0], sig):
+            target = unique_by_id(tree, uri[1:])
+            if target is not None and _is_object(target, sig):
                 return XadesPackaging.ENVELOPING
     if uris and all(uri is None or (uri != "" and not uri.startswith("#")) for uri in uris):
         return XadesPackaging.DETACHED
@@ -399,12 +399,8 @@ def _data_references(sig: etree._Element, tree: etree._ElementTree) -> list[etre
         if reference.get("Type") == SIGNED_PROPERTIES:
             continue
         if uri is not None and uri.startswith("#") and not uri.startswith("#xpointer("):
-            matches = BY_ID(tree, id=uri[1:])
-            if (
-                len(matches) == 1
-                and _is_inside(matches[0], sig)
-                and not _is_object(matches[0], sig)
-            ):
+            target = unique_by_id(tree, uri[1:])
+            if target is not None and _is_inside(target, sig) and not _is_object(target, sig):
                 continue
         data.append(reference)
     return data
@@ -418,7 +414,7 @@ def _is_object(element: etree._Element, sig: etree._Element) -> bool:
     """Whether ``element`` is a ``ds:Object`` of ``sig`` (or inside one) other than the one
     of the ``QualifyingProperties``."""
     for node in (element, *element.iterancestors()):
-        if node.tag == OBJECT and node.getparent() is sig:
+        if node.tag == DS_OBJECT and node.getparent() is sig:
             return node.find("xades:QualifyingProperties", NS) is None
     return False
 
@@ -434,7 +430,7 @@ def _scope(
     for reference in _data_references(sig, tree):
         uri = reference.get("URI")
         whole = uri == "" or (
-            uri is not None and uri.startswith("#") and BY_ID(tree, id=uri[1:]) == [root]
+            uri is not None and uri.startswith("#") and unique_by_id(tree, uri[1:]) is root
         )
         if whole and not octets.of(reference)[1]:
             return SignedScope.DOCUMENT
@@ -568,7 +564,7 @@ def _signatures(tree: etree._ElementTree) -> list[etree._Element]:
     counter = f"{{{XADES}}}CounterSignature"
     return [
         sig
-        for sig in tree.getroot().iter(SIGNATURE)
+        for sig in tree.getroot().iter(DS_SIGNATURE)
         if not any(ancestor.tag == counter for ancestor in sig.iterancestors())
     ]
 

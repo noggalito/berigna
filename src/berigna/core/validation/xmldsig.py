@@ -32,9 +32,28 @@ from cryptography.hazmat.primitives.asymmetric import ec, padding, rsa
 from cryptography.hazmat.primitives.asymmetric.utils import encode_dss_signature
 from lxml import etree
 
-from berigna.core.formats.xades import DS, NS, XADES, parse_document
+from berigna.core.formats.xades import DS, ENVELOPED, EXC_C14N, NS, XADES, parse_document
 from berigna.core.validation.algorithms import MIN_RSA_BITS, WEAK_DIGESTS
 from berigna.core.validation.spec import Indication
+
+__all__ = [
+    "C14N10",
+    "CANONICALIZATIONS",
+    "DS_OBJECT",
+    "DS_SIGNATURE",
+    "SIGNED_PROPERTIES",
+    "Octets",
+    "Result",
+    "by_id",
+    "c14n_of",
+    "check_references",
+    "check_signature_value",
+    "digest_name",
+    "format_failure",
+    "text_of",
+    "unique_by_id",
+    "weak_failure",
+]
 
 _MORE = "http://www.w3.org/2001/04/xmldsig-more#"
 _XMLENC = "http://www.w3.org/2001/04/xmlenc#"
@@ -69,26 +88,24 @@ _HASHES: dict[str, type[hashes.HashAlgorithm]] = {
 }
 C14N10 = "http://www.w3.org/TR/2001/REC-xml-c14n-20010315"
 _C14N11 = "http://www.w3.org/2006/12/xml-c14n11"
-_EXC_C14N = "http://www.w3.org/2001/10/xml-exc-c14n#"
 # algorithm -> (exclusive, with comments)
 CANONICALIZATIONS = {
     C14N10: (False, False),
     f"{C14N10}#WithComments": (False, True),
     _C14N11: (False, False),
     f"{_C14N11}#WithComments": (False, True),
-    _EXC_C14N: (True, False),
-    f"{_EXC_C14N}WithComments": (True, True),
+    EXC_C14N: (True, False),
+    f"{EXC_C14N}WithComments": (True, True),
 }
-_ENVELOPED = f"{DS}enveloped-signature"
 _FILTER2 = "http://www.w3.org/2002/06/xmldsig-filter2"
 _BASE64 = f"{DS}base64"
 SIGNED_PROPERTIES = "http://uri.etsi.org/01903#SignedProperties"
 _XML_NS = "http://www.w3.org/XML/1998/namespace"
-SIGNATURE = f"{{{DS}}}Signature"
-OBJECT = f"{{{DS}}}Object"
+DS_SIGNATURE = f"{{{DS}}}Signature"
+DS_OBJECT = f"{{{DS}}}Object"
 # Id, ID and id: the names that DSS (Santuario) registers as identifiers too. An identifier
 # that two elements share is refused (AM-06), whatever its spelling.
-BY_ID = etree.XPath("//*[@Id=$id or @ID=$id or @id=$id]")
+_BY_ID = etree.XPath("//*[@Id=$id or @ID=$id or @id=$id]")
 
 
 class Result(Exception):
@@ -137,8 +154,15 @@ def _same_in(clone: etree._ElementTree, tree: etree._ElementTree, element: etree
     return same
 
 
+def unique_by_id(tree: etree._ElementTree, identifier: str) -> etree._Element | None:
+    """The one element with ``identifier``; None when there is none or more than one (where
+    a failure is not wanted: what the signature covers is decided by :func:`by_id`)."""
+    matches = _BY_ID(tree, id=identifier)
+    return matches[0] if len(matches) == 1 else None
+
+
 def by_id(tree: etree._ElementTree, identifier: str) -> etree._Element:
-    matches = BY_ID(tree, id=identifier)
+    matches = _BY_ID(tree, id=identifier)
     if len(matches) > 1:  # signature wrapping: two candidates for one reference (AM-06)
         raise format_failure(f"the identifier {identifier!r} appears {len(matches)} times")
     if not matches:
@@ -234,7 +258,7 @@ def c14n_of(
 
 
 def _prefixes(transform: etree._Element) -> list[str] | None:
-    inclusive = transform.find(f"{{{_EXC_C14N}}}InclusiveNamespaces")
+    inclusive = transform.find(f"{{{EXC_C14N}}}InclusiveNamespaces")
     return None if inclusive is None else inclusive.get("PrefixList", "").split()
 
 
@@ -264,7 +288,7 @@ def _is_bare_signature(element: etree._Element) -> bool:
     """A ``ds:Signature`` that carries no document content: ``SignedInfo``, ``SignatureValue``
     and only the ``ds:Object`` of its qualifying properties. Anything else that a transform
     removes (a fake signature that wraps a clause, AM-06) is content left unsigned."""
-    if element.tag != SIGNATURE:
+    if element.tag != DS_SIGNATURE:
         return False
     if element.find("ds:SignedInfo", NS) is None or element.find("ds:SignatureValue", NS) is None:
         return False
@@ -314,9 +338,10 @@ def _transformed(
             data = _canonicalize(data, algorithm, _prefixes(transform))
         elif algorithm == _BASE64:  # DSS's enveloping: the document, encoded in ds:Object
             data = _decoded(data)
-        elif algorithm in (_ENVELOPED, _FILTER2) and isinstance(data, _NodeSet):
-            if algorithm == _ENVELOPED:
-                _remove(data, _own_copy(data, tree, sig))
+        elif algorithm in (ENVELOPED, _FILTER2) and isinstance(data, _NodeSet):
+            if algorithm == ENVELOPED:
+                # only the copy of the signature that the reference belongs to
+                _remove(data, _same_in(data.tree, tree, sig))
             else:
                 _subtract(data, transform)
         else:
@@ -333,12 +358,6 @@ def _decoded(data: _NodeSet | bytes) -> bytes:
         target = data.tree.getroot() if data.apex is None else data.apex
         data = "".join(target.itertext()).encode()
     return base64.b64decode(b"".join(data.split()), validate=True)
-
-
-def _own_copy(node_set: _NodeSet, tree: etree._ElementTree, sig: etree._Element) -> Any:
-    """The copy of ``sig`` in the node-set's private tree (the enveloped transform removes
-    only the signature that the reference belongs to)."""
-    return _same_in(node_set.tree, tree, sig)
 
 
 class Octets:
