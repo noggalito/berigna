@@ -87,11 +87,11 @@ log = logging.getLogger(__name__)
 # XAdES had); each verifier adds the exceptions of its own parser. AttributeError: pyHanko
 # 0.25.1 looks a digest algorithm up with getattr (``get_pyca_cryptography_hash``), so an
 # OID it does not know in a time-stamp raises it (R-DES-18, DP-20 option A). IndexError comes
-# from asn1crypto's lazy parsing, InvalidVersion from a certificate with a mutated version.
+# from asn1crypto's lazy parsing, and UNREADABLE_DATA has InvalidVersion, from a certificate
+# with a mutated version.
 MALFORMED: tuple[type[Exception], ...] = (
     SignatureValidationError,
     *UNREADABLE_DATA,
-    x509.InvalidVersion,
 )
 
 
