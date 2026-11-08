@@ -11,6 +11,8 @@ import pytest
 import requests
 from cryptography import x509
 from cryptography.hazmat.primitives import serialization
+from hypothesis import given, settings
+from hypothesis import strategies as st
 from lxml import etree
 
 from berigna.core.errors import TrustStoreIntegrityError, TslError, TslExpiredError
@@ -24,6 +26,7 @@ from berigna.core.trust.tsl import (
     load_tsl,
     tsl_root,
 )
+from support.net import damaged
 from support.pki import NOW, Pki, build_pki
 from support.tsl import (
     WITHDRAWN,
@@ -446,3 +449,27 @@ def test_fetch_tries_every_crl_distribution_point(monkeypatch: pytest.MonkeyPatc
     monkeypatch.setattr(tsl_module, "_download", nothing_answers)
     with pytest.raises(TslError, match=r"espejo\.example"):
         fetch_tsl(url="https://iofe.example/tsl.xml")
+
+
+@settings(max_examples=120, deadline=None)
+@given(
+    position=st.integers(min_value=0),
+    byte=st.integers(0, 255),
+    truncate=st.booleans(),
+    in_crl=st.booleans(),
+)
+def test_a_damaged_list_or_crl_is_refused_or_reads_the_same(
+    position: int, byte: int, truncate: bool, in_crl: bool
+) -> None:
+    """R-DES-07 (AM-15): the real list of INDECOPI, or the CRL of its signer, cut or with a
+    byte changed. Either it is refused (TslError) or it is read exactly as the intact one:
+    a change can never add, drop or alter a trust service."""
+    intact = load_tsl(REAL, moment=REAL_MOMENT, signer_crl=REAL_CRL)
+    data = REAL if in_crl else damaged(REAL, position, byte, truncate)
+    crl = damaged(REAL_CRL, position, byte, truncate) if in_crl else REAL_CRL
+    try:
+        result = load_tsl(data, moment=REAL_MOMENT, signer_crl=crl)
+    except TslError:
+        return
+    assert result.services == intact.services
+    assert result.sequence_number == intact.sequence_number

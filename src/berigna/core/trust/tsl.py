@@ -196,13 +196,21 @@ def _check_not_revoked(
             crl = x509.load_pem_x509_crl(data)
         except ValueError as exc:
             raise TslError(f"unreadable CRL of the trusted list signer: {exc}") from exc
-    with _root_names():
-        issued_by_root = crl.issuer == root.subject
-    if not issued_by_root or not crl.is_signature_valid(root.public_key()):  # type: ignore[arg-type]
+    # cryptography reads the fields of a CRL when asked: a damaged one may raise only here,
+    # and not always a ValueError (a KeyError, found by the mutations of R-DES-07)
+    try:
+        with _root_names():
+            issued_by_root = crl.issuer == root.subject
+        signed = issued_by_root and crl.is_signature_valid(root.public_key())  # type: ignore[arg-type]
+        next_update = crl.next_update_utc
+        revoked = crl.get_revoked_certificate_by_serial_number(signer.serial_number)
+    except (ValueError, KeyError, TypeError, IndexError) as exc:
+        raise TslError(f"unreadable CRL of the trusted list signer: {exc!r}") from exc
+    if not signed:
         raise TslError("the CRL of the trusted list signer is not signed by its root")
-    if crl.next_update_utc is not None and crl.next_update_utc < moment:
+    if next_update is not None and next_update < moment:
         raise TslError("the CRL of the trusted list signer is out of date")
-    if crl.get_revoked_certificate_by_serial_number(signer.serial_number) is not None:
+    if revoked is not None:
         raise TslError("the trusted list signer certificate has been revoked")
 
 
