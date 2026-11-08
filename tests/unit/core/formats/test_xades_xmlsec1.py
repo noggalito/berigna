@@ -5,7 +5,7 @@ code with berigna (review of 2026-11-01). test_xades.py recomputes the octets it
 one hands the signature to another program and expects its OK, whatever the packaging and
 the comments in the document.
 
-Needs the xmlsec1 of Debian:  apt install xmlsec1
+Needs xmlsec1:  apt install xmlsec1
 """
 
 import shutil
@@ -44,15 +44,18 @@ def pki() -> Pki:
 
 
 @pytest.fixture(scope="module")
-def anchors(pki: Pki, tmp_path_factory: pytest.TempPathFactory) -> Path:
+def anchors(pki: Pki, tmp_path_factory: pytest.TempPathFactory) -> list[str]:
     """The test PKI as xmlsec1 wants it: the CA and the root close the chain of the leaf,
-    which is the only certificate the signature embeds."""
-    path = tmp_path_factory.mktemp("xmlsec1") / "anclas.pem"
-    path.write_bytes(
-        pki.ca.public_bytes(serialization.Encoding.PEM)
-        + pki.root.public_bytes(serialization.Encoding.PEM)
-    )
-    return path
+    which is the only certificate the signature embeds. One file each: xmlsec1 1.3 (Ubuntu
+    26.04; Debian 13 has 1.2.41) reads only the first certificate of a PEM file, and without
+    the root it gives KEY-NOT-FOUND ("unable to get issuer certificate")."""
+    folder = tmp_path_factory.mktemp("xmlsec1")
+    options: list[str] = []
+    for name, certificate in (("ca", pki.ca), ("raiz", pki.root)):
+        path = folder / f"{name}.pem"
+        path.write_bytes(certificate.public_bytes(serialization.Encoding.PEM))
+        options += ["--trusted-pem", str(path)]
+    return options
 
 
 def _xmlsec1() -> str:
@@ -62,9 +65,9 @@ def _xmlsec1() -> str:
     return binary
 
 
-def _verify(binary: str, anchors: Path, folder: Path, name: str) -> None:
+def _verify(binary: str, anchors: list[str], folder: Path, name: str) -> None:
     result = subprocess.run(  # noqa: S603 - fixed program, arguments from the test
-        [binary, "--verify", "--trusted-pem", str(anchors), name],
+        [binary, "--verify", *anchors, name],
         cwd=folder,
         capture_output=True,
         text=True,
@@ -103,7 +106,7 @@ def _sign(
 
 @pytest.mark.parametrize("packaging", list(XadesPackaging))
 def test_xmlsec1_verifies_the_signature_whatever_the_packaging(
-    pki: Pki, anchors: Path, tmp_path: Path, packaging: XadesPackaging
+    pki: Pki, anchors: list[str], tmp_path: Path, packaging: XadesPackaging
 ) -> None:
     tmp_path.joinpath("datos.xml").write_bytes(CONTENT)  # the detached signature names it
     tmp_path.joinpath("firma.xml").write_bytes(_sign(pki, packaging))
@@ -111,7 +114,7 @@ def test_xmlsec1_verifies_the_signature_whatever_the_packaging(
 
 
 def test_xmlsec1_verifies_a_b_lta_whatever_was_added_after_signing(
-    pki: Pki, anchors: Path, tmp_path: Path
+    pki: Pki, anchors: list[str], tmp_path: Path
 ) -> None:
     """The unsigned properties of B-T, B-LT and B-LTA do not touch what was signed."""
     tmp_path.joinpath("firma.xml").write_bytes(
@@ -121,14 +124,14 @@ def test_xmlsec1_verifies_a_b_lta_whatever_was_added_after_signing(
 
 
 def test_xmlsec1_rejects_a_document_changed_after_signing(
-    pki: Pki, anchors: Path, tmp_path: Path
+    pki: Pki, anchors: list[str], tmp_path: Path
 ) -> None:
     """That the OK above means something: with the content changed, xmlsec1 refuses."""
     tmp_path.joinpath("firma.xml").write_bytes(
         _sign(pki, XadesPackaging.ENVELOPED).replace(b"berigna", b"otro programa")
     )
     result = subprocess.run(  # noqa: S603 - fixed program, arguments from the test
-        [_xmlsec1(), "--verify", "--trusted-pem", str(anchors), "firma.xml"],
+        [_xmlsec1(), "--verify", *anchors, "firma.xml"],
         cwd=tmp_path,
         capture_output=True,
         text=True,
@@ -138,7 +141,7 @@ def test_xmlsec1_rejects_a_document_changed_after_signing(
 
 
 def test_xmlsec1_verifies_a_signature_under_a_root_with_xml_lang(
-    pki: Pki, anchors: Path, tmp_path: Path
+    pki: Pki, anchors: list[str], tmp_path: Path
 ) -> None:
     """The references and SignatureValue (xmlsec1 does not check the time-stamps)."""
     tmp_path.joinpath("firma.xml").write_bytes(
