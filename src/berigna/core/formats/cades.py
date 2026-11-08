@@ -35,6 +35,7 @@ from pyhanko_certvalidator import CertificateValidator, ValidationContext
 from berigna.core.certs import to_asn1
 from berigna.core.errors import TsaError
 from berigna.core.formats.common import (
+    LATER_TIMESTAMP_ERRORS,
     VALIDATION_SERVICE_ERRORS,
     SignatureLevel,
     TokenCmsSigner,
@@ -46,7 +47,11 @@ OID_ATS_HASH_INDEX_V3 = "0.4.0.19122.1.5"
 OID_ARCHIVE_TIME_STAMP_V3 = "0.4.0.1733.2.4"
 
 # The archive time-stamp of B-LTA may fail on the TSA or on the data: the B-LT is kept.
-_ARCHIVE_ERRORS: tuple[type[Exception], ...] = (TimestampRequestError, *VALIDATION_SERVICE_ERRORS)
+_ARCHIVE_ERRORS: tuple[type[Exception], ...] = (
+    TimestampRequestError,
+    *VALIDATION_SERVICE_ERRORS,
+    *LATER_TIMESTAMP_ERRORS,
+)
 
 
 class CadesPackaging(enum.Enum):

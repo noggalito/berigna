@@ -38,7 +38,12 @@ from pyhanko.stamp import StaticStampStyle
 from pyhanko_certvalidator import ValidationContext
 
 from berigna.core.errors import CertifiedDocumentError, PdfFormatError, TsaError
-from berigna.core.formats.common import VALIDATION_SERVICE_ERRORS, TokenCmsSigner, required
+from berigna.core.formats.common import (
+    LATER_TIMESTAMP_ERRORS,
+    VALIDATION_SERVICE_ERRORS,
+    TokenCmsSigner,
+    required,
+)
 from berigna.core.formats.common import SignatureLevel as SignatureLevel  # the PDF callers
 from berigna.core.token.base import HashAlgorithmName, TokenSigner
 
@@ -244,7 +249,7 @@ def sign_pdf_pades(
         return PadesResult(data, SignatureLevel.B_LT)
     try:
         data = _add_document_timestamp(data, stamper, context, opts.digest)
-    except _SERVICE_ERRORS as exc:
+    except (*_SERVICE_ERRORS, *LATER_TIMESTAMP_ERRORS) as exc:
         return PadesResult(data, SignatureLevel.B_LT, f"document time-stamp not added: {exc}")
     return PadesResult(data, SignatureLevel.B_LTA)
 

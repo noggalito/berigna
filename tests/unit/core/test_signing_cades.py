@@ -29,7 +29,7 @@ from berigna.core.validation import SignerCheck
 from support.cards import make_card
 from support.pki import Pki, build_pki
 from support.prompts import PinPrompt
-from support.tsa import make_timestamper
+from support.tsa import SwitchingTimeStamper, make_timestamper, unknown_timestamper
 
 CONTENT = b"PK\x03\x04 un documento que no es PDF, por ejemplo un .docx" * 30
 
@@ -189,3 +189,31 @@ def test_cades_output_path_never_reuses_a_name(tmp_path: Path) -> None:
     assert cades_output_path(source, CadesPackaging.DETACHED, elsewhere) == (
         elsewhere / "acta.xml.p7s"
     )
+
+
+def test_an_archive_time_stamp_from_a_tsa_that_is_not_trusted_keeps_the_b_lt(
+    pki: Pki, document: tuple[Path, str]
+) -> None:
+    """Review of R-DES-20, as in PAdES: the archive time-stamp of another TSA lowers the
+    level, it does not lose the signature."""
+    source, sha = document
+    card, leaf = make_card(pki, "FIRMANTE")
+    stamper, tsa = make_timestamper(pki)
+    output = cades_output_path(source, CadesPackaging.DETACHED)
+    with DnieV2Token(card) as token:
+        result = sign_cades_file(
+            source,
+            output,
+            expected_sha256=sha,
+            token=token,
+            store=pki.store,
+            ask_pin=PinPrompt(),
+            packaging=CadesPackaging.DETACHED,
+            level=SignatureLevel.B_LTA,
+            timestamper=SwitchingTimeStamper(stamper, unknown_timestamper(), first_stamps=1),
+            online=False,
+            ocsp_responses=[pki.ocsp(leaf), pki.ocsp(tsa)],
+            crls=[pki.arl()],
+        )
+    assert result.level is SignatureLevel.B_LT
+    assert result.level_note is not None

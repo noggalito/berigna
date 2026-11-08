@@ -57,6 +57,7 @@ from berigna.core.errors import (
 )
 from berigna.core.formats.cades import signer_certificate
 from berigna.core.formats.common import (
+    LATER_TIMESTAMP_ERRORS,
     VALIDATION_SERVICE_ERRORS,
     SignatureLevel,
     required,
@@ -82,7 +83,11 @@ _DIGESTS = {hashes.SHA256: "sha256", hashes.SHA384: "sha384", hashes.SHA512: "sh
 _BY_ID = etree.XPath("//*[@Id=$id]")
 
 # The archive time-stamp of B-LTA may fail on the TSA or on the data: the B-LT is kept.
-_ARCHIVE_ERRORS: tuple[type[Exception], ...] = (TimestampRequestError, *VALIDATION_SERVICE_ERRORS)
+_ARCHIVE_ERRORS: tuple[type[Exception], ...] = (
+    TimestampRequestError,
+    *VALIDATION_SERVICE_ERRORS,
+    *LATER_TIMESTAMP_ERRORS,
+)
 
 
 class XadesPackaging(enum.Enum):

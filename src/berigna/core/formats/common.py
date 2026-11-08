@@ -20,6 +20,7 @@ from pyhanko_certvalidator.errors import (
 from pyhanko_certvalidator.registry import SimpleCertificateStore
 
 from berigna.core.certs import to_asn1
+from berigna.core.errors import TsaError, UntrustedTsaError
 from berigna.core.token.base import HashAlgorithmName, TokenSigner
 
 SIGNATURE_SIZE = 256  # RSA-2048 (DNIe v2, SPK-01)
@@ -44,6 +45,10 @@ VALIDATION_SERVICE_ERRORS: tuple[type[Exception], ...] = (
     SignatureValidationError,
     ValueError,
 )
+# A TSA that fails after the card has signed, in a later time-stamp (the document or archive
+# time-stamp of B-LTA): core.validation.tsa raises berigna's own errors, a token that cannot
+# be used (ERR-305) or a TSA that is not trusted (ERR-314, R-DES-20). The level stays lower.
+LATER_TIMESTAMP_ERRORS: tuple[type[Exception], ...] = (TsaError, UntrustedTsaError)
 
 
 def registry(certificates: Sequence[x509.Certificate]) -> SimpleCertificateStore:
