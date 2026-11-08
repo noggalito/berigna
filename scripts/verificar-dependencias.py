@@ -24,6 +24,8 @@ from importlib.metadata import PackageNotFoundError, version
 from pathlib import Path
 
 from packaging.requirements import Requirement
+from packaging.utils import canonicalize_name
+from packaging.version import Version
 
 ROOT = Path(__file__).resolve().parents[1]
 PYPROJECT = ROOT / "pyproject.toml"
@@ -46,54 +48,60 @@ def problems(requirements: list[str]) -> list[str]:
     return found
 
 
-def _next(release: str, part: int) -> str:
-    """``release`` cut after ``part`` components, the last one raised by one."""
-    numbers = [int(number) for number in release.split(".")[: part + 1]]
-    numbers[-1] += 1
-    return ".".join(map(str, numbers))
+def _below(release: tuple[int, ...]) -> str:
+    """The Debian upper bound under ``release``: ``0.27~`` also keeps out ``0.27~rc1``,
+    which dpkg sorts before ``0.27`` (PEP 440 keeps out 0.27rc1 too)."""
+    return ".".join(map(str, release)) + "~"
 
 
 def debian_relations(line: str) -> tuple[str, set[tuple[str, str]]]:
     """The Debian package of a requirement and the version relations it needs in Depends.
 
     ``>=V`` is ``(>= V)``; ``~=V`` adds the upper bound of PEP 440 (``~=0.26.3`` is
-    ``(>= 0.26.3), (<< 0.27)``); ``==V`` allows the fixes of V's minor release, ``(>= V),
-    (<< next minor)``: Debian's versions carry a revision that ``=`` would have to name.
+    ``(>= 0.26.3), (<< 0.27~)``); ``==V`` is ``(>= V), (<< V'~)``, V' being V with its last
+    component raised: any Debian revision of V, nothing else (``=`` would have to name the
+    revision). Raises ValueError for what Debian cannot say (``!=``, wildcards, ``<``).
     """
     requirement = Requirement(line)
-    name = requirement.name.lower()
+    name = canonicalize_name(requirement.name)
     package = DEBIAN_NAMES.get(name, f"python3-{name}")
     relations = set()
     for spec in requirement.specifier:
-        if spec.operator == ">=":
-            relations.add((">=", spec.version))
-        elif spec.operator == "~=":
-            relations.add((">=", spec.version))
-            relations.add(("<<", _next(spec.version, len(spec.version.split(".")) - 2)))
+        if spec.operator not in (">=", "~=", "==") or spec.version.endswith("*"):
+            raise ValueError(f"{line}: sin equivalente en Debian ({spec})")
+        release = Version(spec.version).release
+        relations.add((">=", spec.version))
+        if spec.operator == "~=":
+            relations.add(("<<", _below((*release[:-2], release[-2] + 1))))
         elif spec.operator == "==":
-            relations.add((">=", spec.version))
-            relations.add(("<<", _next(spec.version, 1)))
-        else:
-            raise ValueError(f"{line}: operador sin equivalente en Debian ({spec.operator})")
+            relations.add(("<<", _below((*release[:-1], release[-1] + 1))))
     return package, relations
 
 
 def depends(control: str, package: str = "berigna") -> dict[str, set[tuple[str, str]]]:
-    """The version relations of each dependency of ``package`` in a debian/control."""
+    """The version relations of each dependency of ``package`` in a debian/control.
+
+    A dependency with alternatives (``a | b``) counts for each of them, and an architecture
+    qualifier (``python3-x:any``) is left out of the name.
+    """
     lines = [line for line in control.splitlines() if not line.startswith("#")]
     stanza = re.search(rf"^Package: {package}\n(.*?)(?:\n\n|\Z)", "\n".join(lines), re.M | re.S)
     if stanza is None:
         raise ValueError(f"debian/control no tiene el paquete {package}")
     field = re.search(r"^Depends:(.*?)(?=^\S|\Z)", stanza.group(1), re.M | re.S)
     found: dict[str, set[tuple[str, str]]] = {}
-    for item in (field.group(1) if field else "").split(","):
-        match = re.fullmatch(r"\s*([a-z0-9.+-]+)\s*(?:\((<<|<=|=|>=|>>)\s*([^)\s]+)\))?\s*", item)
-        if match is None:
-            continue  # substitution variables such as ${misc:Depends}
-        name, operator, version = match.groups()
-        found.setdefault(name, set())
-        if operator:
-            found[name].add((operator, version))
+    for alternatives in (field.group(1) if field else "").split(","):
+        for item in alternatives.split("|"):
+            match = re.fullmatch(
+                r"\s*([a-z0-9.+-]+)(?::[a-z0-9-]+)?\s*(?:\((<<|<=|=|>=|>>)\s*([^)\s]+)\))?\s*",
+                item,
+            )
+            if match is None:
+                continue  # substitution variables such as ${misc:Depends}
+            name, operator, version = match.groups()
+            found.setdefault(name, set())
+            if operator:
+                found[name].add((operator, version))
     return found
 
 
@@ -101,11 +109,17 @@ def control_problems(requirements: list[str], control: str) -> list[str]:
     declared = depends(control)
     found = []
     for line in requirements:
-        package, wanted = debian_relations(line)
+        try:
+            package, wanted = debian_relations(line)
+        except ValueError as exc:
+            found.append(f"pyproject.toml: {exc}")
+            continue
         if package not in declared:
             found.append(f"debian/control: falta {package} en el Depends de berigna ({line})")
         elif declared[package] != wanted:
-            relations = ", ".join(f"({op} {version})" for op, version in sorted(wanted, key=lambda r: r[0] != ">="))
+            relations = ", ".join(
+                f"({op} {version})" for op, version in sorted(wanted, key=lambda r: r[0] != ">=")
+            )
             found.append(f"debian/control: {package} debe llevar {relations} ({line})")
     return found
 
