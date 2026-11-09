@@ -22,15 +22,23 @@ Aplicación de escritorio para GNU/Linux (Debian) que permite firmar digitalment
 | Titular | noggalito (persona jurídica) |
 | Sitio y contacto | <https://berigna.noggalito.com> · `berigna@noggalito.com` |
 
-## Instalación (Debian 13)
+## Instalación (Debian 13 y Ubuntu 26.04)
 
-Descarga de la [última versión](https://github.com/noggalito/berigna/releases/latest) los paquetes `berigna` y `python3-pyhanko`, que Debian 13 no tiene, y comprueba sus sumas con `sha256sum -c --ignore-missing SHA256SUMS`. Luego:
+Desde el repositorio APT de noggalito, el mismo para toda la familia Debian:
 
 ```sh
-sudo apt install ./berigna_*_all.deb ./python3-pyhanko_*_all.deb
+sudo curl -fsSLo /usr/share/keyrings/noggalito-archive-keyring.asc \
+  https://noggalito.com/apps/deb/noggalito-archive-keyring.asc
+gpg --show-keys /usr/share/keyrings/noggalito-archive-keyring.asc
+#   la huella debe ser A99859F6A32D8D5DEE5D3609CEA6BD335F594929
+sudo curl -fsSLo /etc/apt/sources.list.d/noggalito.sources \
+  https://noggalito.com/apps/deb/noggalito.sources
+sudo apt update && sudo apt install berigna noggalito-archive-keyring
 ```
 
-`berigna-nautilus`, opcional, añade "Firmar con berigna" y "Verificar firma" al menú de Archivos. Hace falta un lector de tarjetas compatible con PC/SC y el DNIe v2 con sus certificados vigentes.
+Desde ahí, las versiones nuevas llegan con `apt upgrade`, y `noggalito-archive-keyring` mantiene la clave al día. `berigna-nautilus`, que se instala como recomendación, añade "Firmar con berigna" y "Verificar firma" al menú de Archivos. Hace falta un lector de tarjetas compatible con PC/SC y el DNIe v2 con sus certificados vigentes.
+
+Los paquetes también están en cada [versión publicada](https://github.com/noggalito/berigna/releases/latest), con su `SHA256SUMS`, para instalarlos a mano (`sudo apt install ./berigna_*_all.deb ./python3-pyhanko_*_all.deb`).
 
 ## Por dónde empezar
 

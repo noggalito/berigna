@@ -33,6 +33,7 @@ berigna/
 ├── scripts/compilar-paquetes.sh  # los tres .deb en build/paquetes, en un contenedor Debian 13 (ADR-0023)
 ├── scripts/probar-paquete-instalado.sh  # suite contra el .deb instalado (Ubuntu 26.04)
 ├── scripts/probar-rechazo.sh     # apt rechaza el .deb bajo los mínimos (Ubuntu 24.04)
+├── scripts/espejo-ubuntu.sh     # en la CI, Ubuntu desde el espejo de Azure (archive.ubuntu.com falla)
 ├── scripts/{armar,firmar,publicar,probar}-repositorio.sh  # repositorio APT de noggalito (DP-24)
 ├── packaging/noggalito-archive-keyring/  # clave y fuente deb822 del repositorio
 ├── scripts/ejecutar.sh           # lanza la interfaz desde el árbol de trabajo
