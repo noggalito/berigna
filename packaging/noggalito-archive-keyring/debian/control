@@ -1,0 +1,23 @@
+Source: noggalito-archive-keyring
+Section: misc
+Priority: optional
+Maintainer: noggalito <paquetes@noggalito.com>
+Build-Depends: debhelper-compat (= 13)
+Standards-Version: 4.7.0
+Rules-Requires-Root: no
+Homepage: https://noggalito.com/apps/
+Vcs-Git: https://github.com/noggalito/berigna.git
+Vcs-Browser: https://github.com/noggalito/berigna/tree/main/packaging/noggalito-archive-keyring
+
+Package: noggalito-archive-keyring
+Architecture: all
+Multi-Arch: foreign
+Depends: ${misc:Depends}
+Description: OpenPGP key and APT source of the noggalito package repository
+ The public key that signs the APT repository of noggalito
+ (https://noggalito.com/apps/deb/), where berigna and the other
+ applications of noggalito are published, and the deb822 source that
+ points apt to it with that key alone (Signed-By).
+ .
+ Installing this package keeps the key up to date: a renewed or rotated
+ key arrives as an update of this package before the old one expires.
