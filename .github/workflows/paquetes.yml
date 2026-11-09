@@ -76,3 +76,26 @@ jobs:
         run: |
           scripts/probar-rechazo.sh build/paquetes \
             python3-cryptography python3-pyscard python3-signxml
+
+  # The APT repository as apt sees it (DP-24): built with apt-ftparchive and signed with a
+  # throwaway key, served from file://; install, upgrade, and refusal of an altered or
+  # foreign-signed Release, on each distribution of the family.
+  repositorio:
+    needs: paquetes
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        sistema: ["debian:trixie", "ubuntu:26.04"]
+    container: ${{ matrix.sistema }}
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/download-artifact@v7
+        with:
+          name: paquetes
+          path: build/paquetes
+
+      - name: Repositorio firmado, instalación, actualización y rechazos
+        run: scripts/probar-repositorio.sh build/paquetes
