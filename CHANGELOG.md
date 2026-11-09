@@ -6,6 +6,7 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/); v
 
 ### Añadido
 
+- La vigilancia semanal instala berigna desde el repositorio APT publicado, como un usuario nuevo y a través de la CDN, en Debian 13 y Ubuntu 26.04, y abre una incidencia si la firma falla, si la CDN desafía a `apt`, si falta publicar la última versión de GitHub o si la subclave de firma caduca en menos de 90 días.
 - El repositorio APT está publicado desde el 2026-11-08 con la 0.3.0, y el README explica cómo instalar desde él en Debian 13 y Ubuntu 26.04.
 - Repositorio APT de noggalito en `https://noggalito.com/apps/deb/` (DP-24): una sola suite `stable` para toda la familia Debian, armada sin estado con `apt-ftparchive` y `Acquire-By-Hash`, firmada con una subclave Ed25519 de noggalito y comprobada con `sqv`. El paquete `noggalito-archive-keyring` instala la clave y la fuente deb822. `scripts/publicar-repositorio.sh` publica desde la estación del titular; la CI prueba el repositorio con una clave de prueba en Debian 13 y Ubuntu 26.04.
 - La CI compila los paquetes una sola vez, en Debian 13, y prueba ese mismo `.deb` instalado en Ubuntu 26.04 LTS con la suite completa contra el paquete instalado, no contra `src/` (`scripts/probar-paquete-instalado.sh`): un solo `.deb` para la familia Debian. El trabajo de Ubuntu avisa en el PR y pasa a ser obligatorio en la Fase 6: Ubuntu 26.04 LTS queda soportada desde la v1.0 (ADR-0023, RNF-COM-07).
