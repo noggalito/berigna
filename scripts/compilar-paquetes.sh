@@ -37,7 +37,7 @@ rm -rf build/noggalito-archive-keyring
 cp -r packaging/noggalito-archive-keyring build/
 (cd build/noggalito-archive-keyring &&
   SOURCE_DATE_EPOCH=$(git log -1 --format=%ct -- ../../packaging/noggalito-archive-keyring) \
-  dpkg-buildpackage -b -us -uc >/dev/null)
+  dpkg-buildpackage -b -us -uc)
 rm -rf build/paquetes
 mkdir -p build/paquetes
 cp build/*.deb build/paquetes/

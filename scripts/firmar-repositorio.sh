@@ -12,10 +12,10 @@
 # For the CI's test repository: FIRMA_CLAVE (the fingerprint of the signing key) and
 # FIRMA_LLAVERO (the public key to check against).
 set -eu
-RAIZ=${1:?uso: $0 RAIZ}
-cd "$(dirname "$0")/.."
+RAIZ=$(realpath "${1:?uso: $0 RAIZ}")
 CLAVE=${FIRMA_CLAVE:-E21F94C58091EC144E40066E3F89E15C95A9B4F4}
-LLAVERO=$(realpath "${FIRMA_LLAVERO:-packaging/noggalito-archive-keyring/keyrings/noggalito-archive-keyring.asc}")
+# Paths of the caller resolved before moving: FIRMA_LLAVERO is relative to where it was given.
+LLAVERO=$(realpath "${FIRMA_LLAVERO:-$(dirname "$0")/../packaging/noggalito-archive-keyring/keyrings/noggalito-archive-keyring.asc}")
 cd "$RAIZ/dists/stable"
 [ -f Release ] || { echo "no hay dists/stable/Release en $RAIZ" >&2; exit 1; }
 

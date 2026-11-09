@@ -33,18 +33,34 @@ TRABAJO=$(mktemp -d)
 chmod 0755 "$TRABAJO"  # apt's file method reads it as _apt
 export GNUPGHOME="$TRABAJO/gnupg"
 mkdir -m 0700 "$GNUPGHOME"
+# Like the real key (BRG-DSP-001 §4): a primary that only certifies, whose fingerprint the
+# Release names (Signed-By), and a signing subkey that signs.
 nueva_clave() {
-  gpg -q --batch --passphrase '' --quick-generate-key "$1 <prueba@example.invalid>" ed25519 sign 1d
-  gpg --list-keys --with-colons "$1" | awk -F: '/^fpr/{print $10; exit}'
+  gpg -q --batch --passphrase '' --quick-generate-key "$1 <prueba@example.invalid>" ed25519 cert 1d
+  primaria=$(gpg --list-keys --with-colons "$1" | awk -F: '/^fpr/{print $10; exit}')
+  gpg -q --batch --passphrase '' --quick-add-key "$primaria" ed25519 sign 1d
+  gpg --list-keys --with-colons "$primaria" | awk -F: '/^fpr/{f=$10} END{print f}'  # the subkey
+  echo "$primaria" > "$TRABAJO/primaria-$1"
 }
 CLAVE=$(nueva_clave prueba)
 OTRA=$(nueva_clave otra)
-gpg --armor --export "$CLAVE" > "$TRABAJO/prueba.asc"
+PRIMARIA=$(cat "$TRABAJO/primaria-prueba")
+[ "$CLAVE" != "$PRIMARIA" ] || { echo "la clave de prueba no tiene subclave de firma" >&2; exit 1; }
+gpg --armor --export "$PRIMARIA" > "$TRABAJO/prueba.asc"
 chmod 0644 "$TRABAJO/prueba.asc"
-export REPOSITORIO_HUELLA="$CLAVE" FIRMA_CLAVE="$CLAVE" FIRMA_LLAVERO="$TRABAJO/prueba.asc"
+export REPOSITORIO_HUELLA="$PRIMARIA" FIRMA_CLAVE="$CLAVE" FIRMA_LLAVERO="$TRABAJO/prueba.asc"
 
+# Exactly one .deb of each package: two versions would leave the upgrade below to chance.
+paquete() {
+  nombre=$1
+  set -- "$DEBS"/"$nombre"_*_all.deb
+  [ $# -eq 1 ] && [ -e "$1" ] || { echo "hace falta exactamente un $nombre en $DEBS" >&2; exit 2; }
+  echo "$1"
+}
+BERIGNA=$(paquete berigna)
+KEYRING=$(paquete noggalito-archive-keyring)
 REPO="$TRABAJO/repo"
-set -- "$DEBS"/berigna_*_all.deb "$DEBS"/berigna-nautilus_*_all.deb "$DEBS"/python3-pyhanko_*_all.deb
+set -- "$BERIGNA" "$(paquete berigna-nautilus)" "$(paquete python3-pyhanko)"
 scripts/armar-repositorio.sh "$REPO" "$@"
 scripts/firmar-repositorio.sh "$REPO"
 chmod -R a+rX "$REPO"
@@ -65,7 +81,7 @@ echo "instalado: berigna $ANTES"
 
 echo "== 2. actualización a una versión publicada después"
 NUEVA="$ANTES+prueba1"
-rm -rf "$TRABAJO/deb" && dpkg-deb -R "$DEBS/$(basename "$1")" "$TRABAJO/deb"
+rm -rf "$TRABAJO/deb" && dpkg-deb -R "$BERIGNA" "$TRABAJO/deb"
 sed -i "s/^Version: .*/Version: $NUEVA/" "$TRABAJO/deb/DEBIAN/control"
 dpkg-deb -b -Zxz "$TRABAJO/deb" "$TRABAJO/berigna_${NUEVA}_all.deb" >/dev/null
 # berigna-nautilus depends on berigna (= its version): only berigna moves here.
@@ -79,11 +95,14 @@ DESPUES=$(dpkg-query -W -f '${Version}' berigna)
 echo "actualizado: berigna $DESPUES"
 
 echo "== 3. un .deb publicado no se reemplaza"
-cp "$TRABAJO/berigna_${NUEVA}_all.deb" "$TRABAJO/otro.deb" && printf x >> "$TRABAJO/otro.deb"
-mkdir "$TRABAJO/otro" && mv "$TRABAJO/otro.deb" "$TRABAJO/otro/berigna_${NUEVA}_all.deb"
-if scripts/armar-repositorio.sh "$REPO" "$TRABAJO/otro/berigna_${NUEVA}_all.deb" 2>/dev/null; then
+# A valid package, same name and version, other content: only the immutability check stops it.
+echo otro > "$TRABAJO/deb/usr/share/doc/berigna/otro-contenido"
+mkdir "$TRABAJO/otro"
+dpkg-deb -b -Zxz "$TRABAJO/deb" "$TRABAJO/otro/berigna_${NUEVA}_all.deb" >/dev/null
+if scripts/armar-repositorio.sh "$REPO" "$TRABAJO/otro/berigna_${NUEVA}_all.deb" 2>"$TRABAJO/otro.txt"; then
   echo "armar-repositorio.sh reemplazó un .deb publicado" >&2; exit 1
 fi
+grep -q "ya publicado con otro contenido" "$TRABAJO/otro.txt" || { cat "$TRABAJO/otro.txt"; exit 1; }
 echo "rechazado: mismo nombre con otro contenido"
 
 rechaza() {
@@ -107,7 +126,6 @@ mv "$REPO/dists/stable/InRelease.otra" "$REPO/dists/stable/InRelease"
 rechaza "un InRelease firmado con otra clave"
 
 echo "== 6. noggalito-archive-keyring sobre la instalación a mano"
-KEYRING=$(ls "$DEBS"/noggalito-archive-keyring_*_all.deb)
 dpkg-deb -x "$KEYRING" "$TRABAJO/keyring"
 cp "$TRABAJO/keyring/usr/share/keyrings/noggalito-archive-keyring.asc" /usr/share/keyrings/
 cp "$TRABAJO/keyring/etc/apt/sources.list.d/noggalito.sources" /etc/apt/sources.list.d/

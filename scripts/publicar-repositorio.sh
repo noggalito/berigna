@@ -38,7 +38,10 @@ done
 
 rm -rf "$RAIZ"
 mkdir -p "$RAIZ/pool"
-rsync -a "$SERVIDOR:$DESTINO/pool/" "$RAIZ/pool/"
+# The first publication finds no pool/ on the server yet.
+if ssh "$SERVIDOR" test -d "$DESTINO/pool"; then
+  rsync -a "$SERVIDOR:$DESTINO/pool/" "$RAIZ/pool/"
+fi
 scripts/armar-repositorio.sh "$RAIZ" "$@"
 scripts/firmar-repositorio.sh "$RAIZ"
 # What a new user downloads first (BRG-DSP-001 §3): the key and the deb822 source.
@@ -58,12 +61,20 @@ rsync -a --exclude InRelease --exclude Release --exclude Release.gpg \
 rsync -a "$RAIZ/dists/stable/Release" "$RAIZ/dists/stable/Release.gpg" \
   "$RAIZ/dists/stable/InRelease" "$SERVIDOR:$DESTINO/dists/stable/"
 rsync -a "$RAIZ/noggalito-archive-keyring.asc" "$RAIZ/noggalito.sources" "$SERVIDOR:$DESTINO/"
+# The by-hash copies of indices replaced more than two weeks ago: no client still needs them.
+ssh "$SERVIDOR" find "$DESTINO/dists" -path "'*/by-hash/*'" -type f -mtime +14 -delete
 
 # What the users get, through the CDN: the signature apt checks, with the published key.
 COMPROBACION=$(mktemp -d)
 trap 'rm -rf "$COMPROBACION"' EXIT
-curl -fsS -o "$COMPROBACION/InRelease" https://noggalito.com/apps/deb/dists/stable/InRelease
+# A few tries: an edge of the CDN may take a moment to see the new file (dists/ is not cached,
+# but a failure here never means the upload went wrong: run only this check again).
+for intento in 1 2 3 4 5 6; do
+  curl -fsS -H 'Cache-Control: no-cache' -o "$COMPROBACION/InRelease" \
+    "https://noggalito.com/apps/deb/dists/stable/InRelease?comprobacion=$(date +%s)"
+  cmp -s "$COMPROBACION/InRelease" "$RAIZ/dists/stable/InRelease" && break
+  [ "$intento" -lt 6 ] || { echo "subido, pero la CDN todavía sirve otro InRelease" >&2; exit 1; }
+  sleep 10
+done
 sqv --keyring "$LLAVERO" --message --output "$COMPROBACION/Release" "$COMPROBACION/InRelease" >/dev/null
-cmp -s "$COMPROBACION/InRelease" "$RAIZ/dists/stable/InRelease" ||
-  { echo "el InRelease publicado no es el que se acaba de firmar" >&2; exit 1; }
 echo "publicado: https://noggalito.com/apps/deb/ ($(grep -c '^Package:' "$RAIZ/dists/stable/main/binary-amd64/Packages") paquetes)"
