@@ -3,7 +3,7 @@
 | Campo | Valor |
 |---|---|
 | Documento | BRG-MAN-001 |
-| Versión | 0.3.0 |
+| Versión | 0.4.0 |
 | Estado | Borrador |
 | Fecha | 2026-11-08 |
 | Responsable | noggalito |
@@ -124,7 +124,10 @@ Al publicar: etiqueta firmada, paquetes firmados en el repositorio APT, anuncio 
 
 - Al menos dos personas mantenedoras con permisos para fusionar y publicar.
 - Inventario de credenciales en la documentación interna: clave de firma del repositorio APT, claves de firma de los commits, organización de GitHub, dominio `noggalito.com` y sitio. Cada una con dos personas con acceso, fecha de caducidad y procedimiento de rotación.
-- La clave de firma del repositorio APT caduca y se renueva cada dos años; la nueva se publica con antelación en el paquete de claves.
+- Clave del repositorio APT (DP-24, BRG-DSP-001 §4): maestra Ed25519 solo de certificación, `A99859F6A32D8D5DEE5D3609CEA6BD335F594929`, en dos memorias USB cifradas guardadas en lugares distintos, con su certificado de revocación; subclave de firma de dos años en la estación del titular. Sus frases de paso, en el gestor de contraseñas del titular.
+  - Renovación: al menos tres meses antes de que caduque, se extiende la validez de la maestra y de la subclave con la maestra (`gpg --quick-set-expire`), y la clave renovada se publica como versión nueva de `noggalito-archive-keyring` en el repositorio, firmada todavía con la subclave vigente. Los usuarios la reciben con sus actualizaciones antes de la fecha.
+  - Subclave comprometida o perdida: se revoca con la maestra, se crea otra y se publica igual que una renovación; los usuarios no hacen nada.
+  - Maestra comprometida: se publica su revocación y una clave nueva, se avisa en el sitio y en las notas de versión, y los usuarios repiten la instalación a mano de BRG-DSP-001 §4 con la huella nueva.
 - El titular del proyecto es la persona jurídica noggalito (DP-05): responde ante INDECOPI y firma las versiones. El contacto único es `berigna@noggalito.com`.
 
 ## 11. Indicadores
@@ -142,4 +145,3 @@ Se revisan en cada versión menor:
 - Plantillas de incidencia y `security.txt` en el sitio.
 - Activar los avisos de seguridad privados en GitHub (Settings → Code security).
 - Inventario de credenciales y segunda persona mantenedora (documentación interna).
-- Política de rotación de la clave del repositorio APT, cuando exista (Fase 5).

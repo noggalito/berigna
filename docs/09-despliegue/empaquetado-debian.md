@@ -3,7 +3,7 @@
 | Campo | Valor |
 |---|---|
 | Documento | BRG-DSP-001 |
-| Versión | 0.9.0 |
+| Versión | 0.10.0 |
 | Estado | Borrador |
 | Fecha | 2026-11-08 |
 | Responsable | noggalito |
@@ -48,25 +48,31 @@ Los tres paquetes son `Architecture: all` (DP-08). Los límites de versión son 
 - El `.desktop` y la metainfo de AppStream llevan su nombre, su descripción y sus palabras clave en es_PE y en quechua (`Name[quz]=`, `xml:lang="quz-PE"`), generados con gettext desde `po/`. El valor sin etiqueta de idioma, que es el de respaldo, se genera desde el catálogo es_PE (ADR-0015).
 - `lintian` y `appstreamcli validate` deben pasar con ambos idiomas.
 
-## 4. Repositorio APT
+## 4. Repositorio APT (DP-24, 2026-11-08)
 
-- Alojado en `{{URL_REPOSITORIO}}` (pendiente), con la estructura `dists/trixie/main/binary-amd64`.
-- Firmado con una clave GPG dedicada del proyecto. La clave pública se distribuye con un paquete `berigna-archive-keyring` y se configura con `signed-by` en un archivo `.sources` (formato deb822).
-- Instalación prevista para el usuario final:
+Un solo repositorio, una sola clave y una sola fuente para todas las apps de noggalito: quien ya lo tiene configurado instala la siguiente app con `apt install`, sin otra clave. Lo específico de cada app (la huella, los SHA-256 de cada versión, las instrucciones) se publica en su sitio; el de berigna es `https://berigna.noggalito.com`.
+
+- URL: `https://noggalito.com/apps/deb/`. Son archivos estáticos que sirve el servidor web delante del sitio, nunca el sitio: el repositorio no depende de él. Delante hay una CDN: los índices de `dists/` no se guardan en caché y los `.deb` de `pool/` sí, por un año, porque una versión publicada no cambia nunca. La ruta está exenta de los desafíos anti-bots de la CDN, porque `apt` no ejecuta JavaScript.
+- Una suite, `stable`, y un componente, `main`, para toda la familia Debian (ADR-0023). Los paquetes son `Architecture: all` y aparecen en los índices de `amd64` y `arm64`.
+- Se arma sin estado con `apt-ftparchive` (`scripts/armar-repositorio.sh`): `dists/` se regenera entero desde `pool/` en cada publicación, con `Acquire-By-Hash`, para que un cliente que actualiza durante una publicación nunca mezcle índices viejos y nuevos. El `Release` declara `Signed-By` con la huella de la clave. Un `.deb` ya publicado no se reemplaza: el mismo nombre con otro contenido es un error.
+- Clave OpenPGP de noggalito (`paquetes@noggalito.com`): maestra Ed25519 solo de certificación, `A99859F6A32D8D5DEE5D3609CEA6BD335F594929`, guardada fuera de línea; subclave de firma Ed25519 `E21F94C58091EC144E40066E3F89E15C95A9B4F4`, válida hasta el 2028-11-08. La renovación y la rotación están en BRG-MAN-001 §7.
+- El paquete `noggalito-archive-keyring` (en `packaging/noggalito-archive-keyring/`, versión por fecha) instala la clave en `/usr/share/keyrings/noggalito-archive-keyring.asc` y la fuente deb822 `/etc/apt/sources.list.d/noggalito.sources`, con `Signed-By` hacia esa clave sola. Una clave renovada llega como actualización de este paquete, antes de que caduque la anterior.
+- Firma y publicación (`scripts/publicar-repositorio.sh`), en la estación del titular, la única con la subclave: comprueba los `.deb` contra su `SHA256SUMS`, trae `pool/` del servidor, arma, firma `InRelease` y `Release.gpg` y los comprueba con `sqv`, el verificador de `apt` (`scripts/firmar-repositorio.sh`); sube primero `pool/`, después los índices y sus copias `by-hash`, y al final los `Release` firmados; y comprueba a través de la CDN que el `InRelease` publicado es el firmado. La CI no tiene ninguna credencial del servidor.
+- La CI prueba el repositorio con una clave de prueba en Debian 13 y en Ubuntu 26.04 (`scripts/probar-repositorio.sh`, trabajo `repositorio`): instalación con la firma aceptada, actualización a una versión posterior, rechazo de un `Release` alterado y de uno firmado con otra clave, rechazo de un `.deb` publicado con otro contenido, e instalación de `noggalito-archive-keyring` sobre la instalación a mano sin preguntas.
+
+Instalación para el usuario final:
 
 ```bash
-sudo install -d -m 0755 /etc/apt/keyrings
-curl -fsSL {{URL_REPOSITORIO}}/berigna-archive-keyring.gpg \
-  | sudo tee /etc/apt/keyrings/berigna.gpg > /dev/null
-sudo tee /etc/apt/sources.list.d/berigna.sources > /dev/null <<'EOF'
-Types: deb
-URIs: {{URL_REPOSITORIO}}
-Suites: trixie
-Components: main
-Signed-By: /etc/apt/keyrings/berigna.gpg
-EOF
-sudo apt update && sudo apt install berigna berigna-nautilus
+sudo curl -fsSLo /usr/share/keyrings/noggalito-archive-keyring.asc \
+  https://noggalito.com/apps/deb/noggalito-archive-keyring.asc
+gpg --show-keys /usr/share/keyrings/noggalito-archive-keyring.asc
+#   la huella debe ser A99859F6A32D8D5DEE5D3609CEA6BD335F594929
+sudo curl -fsSLo /etc/apt/sources.list.d/noggalito.sources \
+  https://noggalito.com/apps/deb/noggalito.sources
+sudo apt update && sudo apt install berigna noggalito-archive-keyring
 ```
+
+`berigna-nautilus` llega como recomendación de `berigna`. Desde ese momento, `noggalito-archive-keyring` mantiene la clave y la fuente.
 
 ## 4 bis. Archivo oficial de Debian (ADR-0020)
 

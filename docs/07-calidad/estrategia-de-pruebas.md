@@ -3,7 +3,7 @@
 | Campo | Valor |
 |---|---|
 | Documento | BRG-CAL-001 |
-| Versión | 0.6.0 |
+| Versión | 0.6.1 |
 | Estado | Borrador |
 | Fecha | 2026-11-08 |
 | Responsable | noggalito |
@@ -25,7 +25,7 @@
 | Hardware real (HIL) | DNIe y lectores reales | Lista de comprobación manual con un registro de evidencias, siguiendo el [protocolo de pruebas con PIN](protocolo-pruebas-con-pin.md) | No |
 | Interfaz | Flujos de la GUI | Pruebas manuales guiadas; automatización con dogtail o AT-SPI, si es viable | Parcial |
 | Seguridad | *Fuzzing*, análisis estático, dependencias, corpus de ataques | atheris, bandit, pip-audit, corpus de ataques PDF y XML | Sí |
-| Empaquetado | Instalación, actualización, desinstalación y lintian; el mismo `.deb` instalado en cada distribución de la familia Debian, con la suite completa contra el paquete instalado | piuparts, lintian, autopkgtest; `scripts/compilar-paquetes.sh` y `scripts/probar-paquete-instalado.sh` (trabajos `paquetes` y `ubuntu-26-04` de la CI y de la vigilancia semanal: Ubuntu 26.04 LTS, obligatorio desde la Fase 6, ADR-0023); `scripts/probar-rechazo.sh` (trabajo `ubuntu-24-04`: `apt` rechaza el paquete) | Sí |
+| Empaquetado | Instalación, actualización, desinstalación y lintian; el mismo `.deb` instalado en cada distribución de la familia Debian, con la suite completa contra el paquete instalado | piuparts, lintian, autopkgtest; `scripts/compilar-paquetes.sh` y `scripts/probar-paquete-instalado.sh` (trabajos `paquetes` y `ubuntu-26-04` de la CI y de la vigilancia semanal: Ubuntu 26.04 LTS, obligatorio desde la Fase 6, ADR-0023); `scripts/probar-rechazo.sh` (trabajo `ubuntu-24-04`: `apt` rechaza el paquete); `scripts/probar-repositorio.sh` (trabajo `repositorio`: el repositorio firmado con una clave de prueba, en Debian 13 y Ubuntu 26.04) | Sí |
 | Usabilidad | RNF-USA-06 | Sesiones con 5 usuarios | No |
 | Internacionalización | es_PE y quechua completos y coherentes (§8) | msgfmt, xgettext, pseudolocalización | Sí |
 
