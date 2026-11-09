@@ -5,7 +5,7 @@
 | Documento | BRG-GES-001 |
 | Versión | 0.3.1 |
 | Estado | Borrador |
-| Fecha | 2026-10-29 |
+| Fecha | 2026-11-08 |
 | Responsable | noggalito |
 
 ## 1. Idioma y formato
