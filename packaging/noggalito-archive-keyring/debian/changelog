@@ -1,0 +1,7 @@
+noggalito-archive-keyring (2026.11.08) stable; urgency=medium
+
+  * Initial release: key A99859F6A32D8D5DEE5D3609CEA6BD335F594929 (Ed25519,
+    certification only) with the signing subkey
+    E21F94C58091EC144E40066E3F89E15C95A9B4F4, valid until 2028-11-08.
+
+ -- noggalito <paquetes@noggalito.com>  Sun, 08 Nov 2026 21:00:00 -0500

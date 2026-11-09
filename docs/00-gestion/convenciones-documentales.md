@@ -3,9 +3,9 @@
 | Campo | Valor |
 |---|---|
 | Documento | BRG-GES-001 |
-| Versión | 0.3.0 |
+| Versión | 0.3.1 |
 | Estado | Borrador |
-| Fecha | 2026-10-29 |
+| Fecha | 2026-11-08 |
 | Responsable | noggalito |
 
 ## 1. Idioma y formato
@@ -103,7 +103,5 @@ Los identificadores marcados como "documentación interna" se gestionan en un re
 
 ## 7. Marcadores en el texto
 
-- `{{URL_REPOSITORIO}}`: URL del repositorio APT del proyecto (09-despliegue), pendiente de definir.
-
-Resueltos el 2026-10-28 (DP-05): el titular del proyecto es la persona jurídica noggalito, que figura como responsable de los documentos y en las cabeceras de licencia (`SPDX-FileCopyrightText: 2026 noggalito`). Todo contacto (consultas, incidencias, seguridad, validación) va a `berigna@noggalito.com`, y el sitio del proyecto es `https://berigna.noggalito.com`.
+Resueltos el 2026-10-28 (DP-05): el titular del proyecto es la persona jurídica noggalito, que figura como responsable de los documentos y en las cabeceras de licencia (`SPDX-FileCopyrightText: 2026 noggalito`). Todo contacto (consultas, incidencias, seguridad, validación) va a `berigna@noggalito.com`, y el sitio del proyecto es `https://berigna.noggalito.com`. El repositorio APT (antes `{{URL_REPOSITORIO}}`) quedó resuelto el 2026-11-08 (DP-24): `https://noggalito.com/apps/deb/`.
 - `[VERIFICAR]`: afirmación que debe contrastarse con una fuente oficial o con una prueba antes de pasar el documento a Aprobado.

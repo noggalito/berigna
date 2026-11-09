@@ -1,0 +1,4 @@
+# The package exists to configure the repository of noggalito outside the Debian archive:
+# its deb822 source ships with it so that a renewed key and the source travel together
+# (DP-24, BRG-DSP-001 §4). It is never meant for the Debian archive.
+package-installs-apt-sources [etc/apt/sources.list.d/noggalito.sources]

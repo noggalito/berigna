@@ -1,0 +1,7 @@
+# Repositorio de paquetes de noggalito (berigna y las demás apps): una sola suite para
+# toda la familia Debian. Lo instala el paquete noggalito-archive-keyring.
+Types: deb
+URIs: https://noggalito.com/apps/deb/
+Suites: stable
+Components: main
+Signed-By: /usr/share/keyrings/noggalito-archive-keyring.asc
