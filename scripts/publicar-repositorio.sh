@@ -5,7 +5,7 @@
 # (DP-24, BRG-DSP-001 §3). Runs on the owner's workstation, the only place with the signing
 # subkey: the CI never gets a credential of the server.
 #
-#   scripts/publicar-repositorio.sh DIRECTORIO_CON_LOS_DEB
+#   SERVIDOR=alias-ssh scripts/publicar-repositorio.sh DIRECTORIO_CON_LOS_DEB
 #
 # The folder needs its SHA256SUMS (the one of a GitHub release, or of scripts/compilar-paquetes.sh):
 # every .deb is checked against it first. Then:
@@ -16,12 +16,13 @@
 #   4. it is uploaded in the order that never shows an index pointing to a missing file:
 #      pool/, then the indices and their by-hash copies, the signed Release files last.
 #
-# SERVIDOR (default maracuya, an ssh alias) and DESTINO (default /srv/paquetes/deb) can be
-# changed; SOLO_ARMAR=1 stops before the upload, to look at build/repositorio first.
+# SERVIDOR is the ssh alias of the server (its name and address are kept in the internal
+# documentation, not here); DESTINO defaults to /srv/paquetes/deb. SOLO_ARMAR=1 stops before
+# the upload, to look at build/repositorio first.
 set -eu
 DEBS=$(realpath "${1:?uso: $0 DIRECTORIO_CON_LOS_DEB}")
 cd "$(dirname "$0")/.."
-SERVIDOR=${SERVIDOR:-maracuya}
+SERVIDOR=${SERVIDOR:?falta SERVIDOR, el alias ssh del servidor del repositorio}
 DESTINO=${DESTINO:-/srv/paquetes/deb}
 RAIZ=build/repositorio
 LLAVERO=packaging/noggalito-archive-keyring/keyrings/noggalito-archive-keyring.asc

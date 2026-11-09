@@ -8,7 +8,9 @@
 #      distribution;
 #   2. upgrades to a newer version published later;
 #   3. refuses a Release altered after signing, and one signed with another key;
-# and that armar-repositorio.sh refuses to overwrite a published .deb. Runs as root in a
+# that armar-repositorio.sh refuses to overwrite a published .deb; and that the package
+# noggalito-archive-keyring installs without a question over the key and source that the
+# install instructions place by hand. Runs as root in a
 # container (it changes apt's sources and installs packages).
 #
 #   scripts/probar-repositorio.sh DIRECTORIO_CON_LOS_DEB
@@ -103,5 +105,19 @@ echo "== 5. Release firmado con otra clave"
 gpg --local-user "$OTRA!" --clearsign --output "$REPO/dists/stable/InRelease.otra" "$REPO/dists/stable/Release"
 mv "$REPO/dists/stable/InRelease.otra" "$REPO/dists/stable/InRelease"
 rechaza "un InRelease firmado con otra clave"
+
+echo "== 6. noggalito-archive-keyring sobre la instalación a mano"
+KEYRING=$(ls "$DEBS"/noggalito-archive-keyring_*_all.deb)
+dpkg-deb -x "$KEYRING" "$TRABAJO/keyring"
+cp "$TRABAJO/keyring/usr/share/keyrings/noggalito-archive-keyring.asc" /usr/share/keyrings/
+cp "$TRABAJO/keyring/etc/apt/sources.list.d/noggalito.sources" /etc/apt/sources.list.d/
+# No terminal: a conffile question would make dpkg fail here.
+dpkg -i "$KEYRING" </dev/null >/dev/null
+dpkg-query -W -f '${Package} ${Version} ${db:Status-Status}\n' noggalito-archive-keyring
+grep -q '^Signed-By: /usr/share/keyrings/noggalito-archive-keyring.asc$' /etc/apt/sources.list.d/noggalito.sources
+# The key shipped is the one of the repository, whose fingerprint the documentation publishes.
+gpg --show-keys --with-colons /usr/share/keyrings/noggalito-archive-keyring.asc |
+  grep -q '^fpr:::::::::A99859F6A32D8D5DEE5D3609CEA6BD335F594929:$'
+rm /etc/apt/sources.list.d/noggalito.sources  # it points to the real repository
 
 echo "repositorio comprobado en $PRETTY_NAME"
