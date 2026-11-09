@@ -1,3 +1,9 @@
+berigna (0.3.1-1) trixie; urgency=medium
+
+  * Upstream release 0.3.1 (CHANGELOG.md).
+
+ -- noggalito <berigna@noggalito.com>  Mon, 09 Nov 2026 17:31:45 -0500
+
 berigna (0.3.0-1) trixie; urgency=medium
 
   * Upstream release 0.3.0 (CHANGELOG.md).

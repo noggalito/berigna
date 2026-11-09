@@ -4,6 +4,8 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/); v
 
 ## [Sin publicar]
 
+## [0.3.1] - 2026-11-09
+
 ### Añadido
 
 - La vigilancia semanal instala berigna desde el repositorio APT publicado, como un usuario nuevo y a través de la CDN, en Debian 13 y Ubuntu 26.04, y abre una incidencia si la firma falla, si la CDN desafía a `apt`, si falta publicar la última versión de GitHub o si la subclave de firma caduca en menos de 90 días.
