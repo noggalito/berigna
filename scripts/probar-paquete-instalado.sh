@@ -39,6 +39,7 @@ NAUTILUS=$(paquete berigna-nautilus)
 PYHANKO=$(paquete python3-pyhanko)
 
 echo 'Acquire::Retries "5";' > /etc/apt/apt.conf.d/80-retries
+. scripts/espejo-ubuntu.sh
 # The container images of Ubuntu are minimised: dpkg drops /usr/share/locale, and with it the
 # catalogues of berigna, which a real installation keeps. Without the rule they are installed.
 rm -f /etc/dpkg/dpkg.cfg.d/excludes

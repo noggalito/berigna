@@ -24,6 +24,7 @@ fi
 . /etc/os-release
 echo "sistema: $PRETTY_NAME"
 echo 'Acquire::Retries "5";' > /etc/apt/apt.conf.d/80-retries
+. scripts/espejo-ubuntu.sh
 rm -f /etc/dpkg/dpkg.cfg.d/excludes
 apt-get update -qq
 DEBIAN_FRONTEND=noninteractive apt-get install -y -qq --no-install-recommends \

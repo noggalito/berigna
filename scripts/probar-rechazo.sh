@@ -16,6 +16,7 @@ set -eu
 DEBS=$(realpath "${1:?uso: $0 DIRECTORIO_CON_LOS_DEB [PAQUETE...]}")
 shift
 . /etc/os-release
+. "$(dirname "$0")/espejo-ubuntu.sh"
 apt-get update -qq
 SALIDA=$(mktemp)
 # Every .deb of the folder, so that python3-pyhanko is never what is missing.
