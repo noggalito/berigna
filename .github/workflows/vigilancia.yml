@@ -57,6 +57,24 @@ jobs:
   paquetes:
     uses: ./.github/workflows/paquetes.yml
 
+  # The published APT repository, as a new user meets it, through the CDN (DP-24): the key of
+  # the documentation and not near its expiry, apt accepting the signature (no challenge of
+  # the bot protection), berigna installing, and the latest GitHub release published.
+  repositorio-publicado:
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        sistema: ["debian:trixie", "ubuntu:26.04"]
+    container: ${{ matrix.sistema }}
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - name: Instalación desde https://noggalito.com/apps/deb/
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: scripts/vigilar-repositorio.sh
+
   # The trusted list of INDECOPI, the CRLs and the OCSP of RENIEC (R-17), and OSV for
   # pyHanko, the only component that does not come from Debian (R-DES-02).
   servicios:
@@ -117,7 +135,7 @@ jobs:
           exit $status
 
   avisar:
-    needs: [debian, servicios, paquetes]
+    needs: [debian, servicios, paquetes, repositorio-publicado]
     if: failure()
     runs-on: ubuntu-24.04
     permissions:
