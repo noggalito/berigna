@@ -6,6 +6,7 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/); v
 
 ### Añadido
 
+- El repositorio APT está publicado desde el 2026-11-08 con la 0.3.0, y el README explica cómo instalar desde él en Debian 13 y Ubuntu 26.04.
 - Repositorio APT de noggalito en `https://noggalito.com/apps/deb/` (DP-24): una sola suite `stable` para toda la familia Debian, armada sin estado con `apt-ftparchive` y `Acquire-By-Hash`, firmada con una subclave Ed25519 de noggalito y comprobada con `sqv`. El paquete `noggalito-archive-keyring` instala la clave y la fuente deb822. `scripts/publicar-repositorio.sh` publica desde la estación del titular; la CI prueba el repositorio con una clave de prueba en Debian 13 y Ubuntu 26.04.
 - La CI compila los paquetes una sola vez, en Debian 13, y prueba ese mismo `.deb` instalado en Ubuntu 26.04 LTS con la suite completa contra el paquete instalado, no contra `src/` (`scripts/probar-paquete-instalado.sh`): un solo `.deb` para la familia Debian. El trabajo de Ubuntu avisa en el PR y pasa a ser obligatorio en la Fase 6: Ubuntu 26.04 LTS queda soportada desde la v1.0 (ADR-0023, RNF-COM-07).
 - El paquete `berigna` declara en su `Depends` las versiones mínimas de `pyproject.toml`, y `scripts/verificar-dependencias.py` comprueba que coinciden. Así `apt` rechaza con un mensaje claro una distribución que no las cumple, en lugar de instalar un berigna que falle al firmar; la CI lo comprueba en Ubuntu 24.04 (`scripts/probar-rechazo.sh`).
