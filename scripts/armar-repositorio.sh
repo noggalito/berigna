@@ -16,7 +16,7 @@ set -eu
 RAIZ=${1:?uso: $0 RAIZ [PAQUETE.deb...]}
 shift
 # The key that must sign this repository (Release: Signed-By); the CI uses a test key.
-FINGERPRINT=${REPOSITORIO_HUELLA:-A99859F6A32D8D5DEE5D3609CEA6BD335F594929}  # noggalito-archive-keyring
+FINGERPRINT=${REPOSITORIO_HUELLA:-$(cat "$(dirname "$0")/../packaging/noggalito-archive-keyring/huella")}
 mkdir -p "$RAIZ/pool/main"
 RAIZ=$(realpath "$RAIZ")
 

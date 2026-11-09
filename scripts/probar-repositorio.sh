@@ -136,7 +136,7 @@ dpkg-query -W -f '${Package} ${Version} ${db:Status-Status}\n' noggalito-archive
 grep -q '^Signed-By: /usr/share/keyrings/noggalito-archive-keyring.asc$' /etc/apt/sources.list.d/noggalito.sources
 # The key shipped is the one of the repository, whose fingerprint the documentation publishes.
 gpg --show-keys --with-colons /usr/share/keyrings/noggalito-archive-keyring.asc |
-  grep -q '^fpr:::::::::A99859F6A32D8D5DEE5D3609CEA6BD335F594929:$'
+  grep -q "^fpr:::::::::$(cat packaging/noggalito-archive-keyring/huella):\$"
 rm /etc/apt/sources.list.d/noggalito.sources  # it points to the real repository
 
 echo "repositorio comprobado en $PRETTY_NAME"

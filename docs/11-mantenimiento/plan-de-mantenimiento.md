@@ -3,7 +3,7 @@
 | Campo | Valor |
 |---|---|
 | Documento | BRG-MAN-001 |
-| Versión | 0.4.0 |
+| Versión | 0.4.1 |
 | Estado | Borrador |
 | Fecha | 2026-11-08 |
 | Responsable | noggalito |
@@ -70,6 +70,7 @@ Quién vigila cada origen se asigna en la documentación interna.
 | Descarga y verificación de la TSL real de INDECOPI | Semanal | Rotación del firmante, cambio de formato, lista caducada o a menos de 7 días de su NextUpdate |
 | Respuesta del OCSP de RENIEC y de cada espejo de las ARL de las CA del almacén | Semanal | Direcciones cambiadas, listas vencidas o servicios caídos (R-17) |
 | OSV para lo que no viene de Debian (hoy solo pyHanko) y `debsecan` sobre los paquetes de Debian del SBOM | Semanal | Vulnerabilidades conocidas en las dependencias; `debsecan`, solo informativo |
+| Instalación desde el repositorio APT publicado (`https://noggalito.com/apps/deb/`), como un usuario nuevo y a través de la CDN, en Debian 13 y Ubuntu 26.04 (`scripts/vigilar-repositorio.sh`) | Semanal | Firma rechazada o vencida, desafíos de la CDN a `apt`, servidor caído, una versión de GitHub sin publicar en el repositorio, o la subclave de firma a menos de 90 días de caducar |
 | Suite completa con la última pyHanko de PyPI | Semanal | Cuánto costará salir de pyHanko 0.25.1 (R-15); nunca abre una incidencia |
 | Dependabot para las *actions* de GitHub | Mensual | *Actions* desactualizadas |
 
@@ -90,7 +91,12 @@ Antes de etiquetar:
 7. `CHANGELOG.md` con la versión y la fecha; notas de versión en es_PE y en quechua.
 8. Ayuda en línea publicada para la `mayor.menor` nueva (ADR-0017). La de versiones anteriores no se retira.
 
-Al publicar: etiqueta firmada, paquetes firmados en el repositorio APT, anuncio en el sitio y apertura de la rama `estable/` si es una versión menor.
+Al publicar: etiqueta firmada, paquetes firmados en el repositorio APT, anuncio en el sitio y apertura de la rama `estable/` si es una versión menor. El repositorio APT (BRG-DSP-001 §4), en la estación del titular, la única con la subclave de firma:
+
+1. Una carpeta con los `.deb` de la versión de GitHub y su `SHA256SUMS` (más `noggalito-archive-keyring` si cambió, con su línea añadida al `SHA256SUMS`).
+2. `SERVIDOR=<alias ssh> scripts/publicar-repositorio.sh <carpeta>`: comprueba las sumas, arma, firma (pide la frase de la subclave), sube y comprueba a través de la CDN.
+3. Instalación desde cero en contenedores limpios de Debian 13 y Ubuntu 26.04 con las instrucciones del README (la misma comprobación que la vigilancia semanal: `scripts/vigilar-repositorio.sh`).
+4. Los SHA-256 de la versión en el sitio de la app, junto a la huella de la clave.
 
 ## 7. Seguridad
 

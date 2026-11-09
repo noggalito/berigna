@@ -3,7 +3,7 @@
 | Campo | Valor |
 |---|---|
 | Documento | BRG-DES-001 |
-| Versión | 0.11.6 |
+| Versión | 0.11.7 |
 | Estado | Borrador |
 | Fecha | 2026-11-08 |
 | Responsable | noggalito |
@@ -34,7 +34,7 @@ berigna/
 ├── scripts/probar-paquete-instalado.sh  # suite contra el .deb instalado (Ubuntu 26.04)
 ├── scripts/probar-rechazo.sh     # apt rechaza el .deb bajo los mínimos (Ubuntu 24.04)
 ├── scripts/espejo-ubuntu.sh     # en la CI, Ubuntu desde el espejo de Azure (archive.ubuntu.com falla)
-├── scripts/{armar,firmar,publicar,probar}-repositorio.sh  # repositorio APT de noggalito (DP-24)
+├── scripts/{armar,firmar,publicar,probar,vigilar}-repositorio.sh  # repositorio APT de noggalito (DP-24)
 ├── packaging/noggalito-archive-keyring/  # clave y fuente deb822 del repositorio
 ├── scripts/ejecutar.sh           # lanza la interfaz desde el árbol de trabajo
 ├── scripts/ci-entorno.sh         # entorno de la CI: paquetes de Debian y .venv (las dos CI)
