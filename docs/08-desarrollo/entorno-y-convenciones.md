@@ -179,6 +179,8 @@ Pasos mínimos del *pipeline*:
 
 ## 6. Versionado y publicación
 
+El proceso completo, con las comprobaciones previas y el guion que encadena la publicación, está en [BRG-DES-003](publicacion-de-versiones.md); aquí queda la descripción de cada paso.
+
 - SemVer para la aplicación (`MAYOR.MENOR.PARCHE`).
 - Las etiquetas git van firmadas (`git tag -s vX.Y.Z`), con la misma clave SSH que los commits.
 - La versión se escribe en SemVer (`1.0.0`, `1.0.0-rc.2`) y aparece en seis sitios, cada uno en su forma: `pyproject.toml`, `meson.build` y `berigna/__init__.py` en PEP 440 (`1.0.0rc2`), `debian/changelog` con tilde (`1.0.0~rc2-1`, que Debian ordena antes de `1.0.0`), la metainfo de AppStream también con tilde (`1.0.0~rc.2`: AppStream ordena `1.0.0-rc.2` después de `1.0.0`) y el CHANGELOG en SemVer. `scripts/version.py` los mantiene juntos (R-DES-09):
