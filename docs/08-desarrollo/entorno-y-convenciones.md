@@ -5,7 +5,7 @@
 | Documento | BRG-DES-001 |
 | Versión | 0.11.7 |
 | Estado | Borrador |
-| Fecha | 2026-11-08 |
+| Fecha | 2026-11-09 |
 | Responsable | noggalito |
 
 ## 1. Estructura del repositorio
@@ -178,6 +178,8 @@ Pasos mínimos del *pipeline*:
 7. Comprobaciones de internacionalización PR-I18N-01, 02, 04, 06 y 07 (07-calidad §8).
 
 ## 6. Versionado y publicación
+
+El proceso completo, con las comprobaciones previas y el guion que encadena la publicación, está en [BRG-DES-003](publicacion-de-versiones.md); aquí queda la descripción de cada paso.
 
 - SemVer para la aplicación (`MAYOR.MENOR.PARCHE`).
 - Las etiquetas git van firmadas (`git tag -s vX.Y.Z`), con la misma clave SSH que los commits.

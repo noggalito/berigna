@@ -2,7 +2,7 @@
 
 Aplicación de escritorio para GNU/Linux (Debian) que permite firmar digitalmente documentos —especialmente PDF— con los certificados digitales que trae por defecto el DNI electrónico (DNIe) peruano, y verificar documentos firmados.
 
-> Estado: en desarrollo. Fase 4 (CAdES y XAdES) cerrada el 2026-11-04; Fase 3 (interfaz gráfica) funcionalmente completa, con el cierre formal pendiente de la prueba de usabilidad con usuarios; Fase 5 (escritorio y empaquetado) en curso, con la metainfo de AppStream, el paquete `python3-pyhanko`, el paquete `berigna` y la extensión de Nautilus ya hechos. berigna firma PDF en PAdES, de B-B a B-LTA, con el DNIe v2, también por lotes y con firma visible, y firma y verifica además CAdES (`.p7s`, `.p7m`) y XAdES (las firmas son válidas en Firma Perú, el validador de referencia, y en el validador web de ReFirma), verifica con indicaciones ETSI, genera informes en JSON y PDF, y está en español y en quechua. Versión publicada: [0.3.0](https://github.com/noggalito/berigna/releases/tag/v0.3.0) (2026-11-08), para Debian 13, todavía sin acreditar ante INDECOPI. Estado detallado en [`docs/README.md`](docs/README.md) §7. Los prototipos de investigación de la Fase 0 están en [`spikes/`](spikes/README.md).
+> Estado: en desarrollo. Fase 4 (CAdES y XAdES) cerrada el 2026-11-04; Fase 3 (interfaz gráfica) funcionalmente completa, con el cierre formal pendiente de la prueba de usabilidad con usuarios; Fase 5 (escritorio y empaquetado) cerrada el 2026-11-09: repositorio APT de noggalito, paquete `berigna-nautilus` y prueba de salida en máquinas limpias de Debian 13 y Ubuntu 26.04 ([BRG-CAL-007](docs/07-calidad/validacion-vm-fase5.md)). berigna firma PDF en PAdES, de B-B a B-LTA, con el DNIe v2, también por lotes y con firma visible, y firma y verifica además CAdES (`.p7s`, `.p7m`) y XAdES (las firmas son válidas en Firma Perú, el validador de referencia, y en el validador web de ReFirma), verifica con indicaciones ETSI, genera informes en JSON y PDF, y está en español y en quechua. Versión publicada: [0.3.1](https://github.com/noggalito/berigna/releases/tag/v0.3.1) (2026-11-09), para Debian 13 (Ubuntu 26.04 LTS desde la v1.0), todavía sin acreditar ante INDECOPI. Estado detallado en [`docs/README.md`](docs/README.md) §7. Los prototipos de investigación de la Fase 0 están en [`spikes/`](spikes/README.md).
 
 ## Resumen del producto
 
@@ -23,6 +23,8 @@ Aplicación de escritorio para GNU/Linux (Debian) que permite firmar digitalment
 | Sitio y contacto | <https://berigna.noggalito.com> · `berigna@noggalito.com` |
 
 ## Instalación (Debian 13 y Ubuntu 26.04)
+
+Si `curl` no está instalado (Ubuntu no siempre lo trae): `sudo apt install -y curl`. Quien haya instalado el sistema con contraseña de root y no tenga `sudo` puede ejecutar los mismos comandos en una sesión de root (`su -`), sin `sudo`.
 
 Desde el repositorio APT de noggalito, el mismo para toda la familia Debian:
 
