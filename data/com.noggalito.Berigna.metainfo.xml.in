@@ -41,11 +41,11 @@
   <screenshots>
     <screenshot type="default">
       <caption>Firma un PDF con el DNIe</caption>
-      <image width="1280" height="800">https://berigna.noggalito.com/screenshots/berigna-firma.png</image>
+      <image width="1280" height="800">https://berigna.noggalito.com/website_berigna/static/src/img/berigna-firma.png</image>
     </screenshot>
     <screenshot type="default">
       <caption>Verifica un documento firmado</caption>
-      <image width="1280" height="800">https://berigna.noggalito.com/screenshots/berigna-verificacion.png</image>
+      <image width="1280" height="800">https://berigna.noggalito.com/website_berigna/static/src/img/berigna-verificacion.png</image>
     </screenshot>
   </screenshots>
 </component>
