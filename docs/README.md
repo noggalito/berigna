@@ -5,7 +5,7 @@
 | Documento | BRG-GEN-000 |
 | Versión | 0.23.0 |
 | Estado | Borrador |
-| Fecha | 2026-11-07 |
+| Fecha | 2026-11-09 |
 | Responsable | noggalito |
 
 ## 1. Propósito

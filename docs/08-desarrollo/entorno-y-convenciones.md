@@ -5,7 +5,7 @@
 | Documento | BRG-DES-001 |
 | Versión | 0.11.7 |
 | Estado | Borrador |
-| Fecha | 2026-11-08 |
+| Fecha | 2026-11-09 |
 | Responsable | noggalito |
 
 ## 1. Estructura del repositorio
