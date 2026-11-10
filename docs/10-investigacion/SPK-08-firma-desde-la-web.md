@@ -3,9 +3,9 @@
 | Campo | Valor |
 |---|---|
 | Documento | BRG-INV-008 |
-| Versión | 0.1.0 |
+| Versión | 0.2.0 |
 | Estado | Pendiente |
-| Fecha | 2026-11-02 |
+| Fecha | 2026-11-10 |
 | Responsable | noggalito |
 
 ## 1. Contexto
@@ -76,4 +76,5 @@ Un *spike* de una semana con un prototipo mínimo: una página de prueba, la ext
 - [Web eID: extensión del navegador (MIT)](https://github.com/web-eid/web-eid-webextension)
 - [Web Smart Card API (WICG)](https://github.com/WICG/web-smart-card/)
 - [Componente web de Firma Perú (PCM)](https://resources.firmaperu.gob.pe/documentos/firmador-componente-web.pdf)
+- Guía para el uso e integración de la Plataforma Nacional de Firma Digital (R.S. 002-2022-PCM/SGTD), a la que remite la PCM para la integración con Firma Perú (carta D000001-2026-PCM-SSPRD, 2026-11-09)
 - [Native messaging en el Firefox Snap (Ubuntu)](https://discourse.ubuntu.com/t/call-for-testing-native-messaging-support-in-the-firefox-snap/29759)
