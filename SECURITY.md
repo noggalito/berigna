@@ -4,7 +4,7 @@ berigna firma documentos con valor legal. Tomamos en serio cualquier fallo que p
 
 ## Versiones con soporte
 
-El proyecto está en desarrollo (Fase 3). Todavía no hay versiones publicadas. Cuando las haya, reciben correcciones de seguridad la última versión menor y, durante 3 meses, la anterior ([plan de mantenimiento](docs/11-mantenimiento/plan-de-mantenimiento.md) §3 y §7).
+El proyecto está en desarrollo: las fases 0 a 5 están cerradas, pero la versión 1.0 aún no se ha publicado. Hay versiones públicas desde la 0.3.0 (2026-11-08); la última es la 0.3.1 (2026-11-09). Mientras el proyecto siga en desarrollo, reciben correcciones de seguridad la última versión menor y, durante 3 meses, la anterior ([plan de mantenimiento](docs/11-mantenimiento/plan-de-mantenimiento.md) §3 y §7).
 
 ## Cómo reportar una vulnerabilidad
 

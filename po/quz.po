@@ -856,6 +856,13 @@ msgstr ""
 "Firmaqa manan ñawinchayta atinchu, utaq mana CAdES firmanchu nitaq XAdES "
 "firmanchu."
 
+#: src/berigna/core/report/messages.py:267
+msgid ""
+"This file is too large for berigna (more than 512 MB). Use a smaller file."
+msgstr ""
+"Kay archivoqa ancha hatunmi berignapaq (512 MB-manta aswan). Huk aswan "
+"huch'uy archivota kichay."
+
 #: src/berigna/core/report/messages.py:279
 msgid "Folder"
 msgstr "Carpeta"

@@ -3,9 +3,9 @@
 | Campo | Valor |
 |---|---|
 | Documento | BRG-REQ-002 |
-| Versión | 0.3.0 |
+| Versión | 0.3.1 |
 | Estado | Borrador |
-| Fecha | 2026-11-08 |
+| Fecha | 2026-11-13 |
 | Responsable | noggalito |
 
 Identificadores: `RNF-<CATEGORÍA>-NN`.
@@ -47,6 +47,8 @@ Valores objetivo en un equipo de referencia (4 núcleos, 8 GB de RAM, SSD), sin 
 | RNF-REN-05 | Consumo de memoria al firmar un PDF de 100 MB | ≤ 500 MB |
 
 Nota: el tiempo de la operación criptográfica dentro del chip (medido: unos 0,3 s por firma con el DNIe v2, SPK-01 §8.6) se mide y se informa aparte.
+
+Los documentos se leen completos en memoria para firmar y verificar. Para que un archivo de varios gigabytes no agote la memoria, se rechaza antes de leerlo si supera los 512 MB (ERR-315); el límite deja margen para las copias que pyHanko hace de un PDF de 100 MB (RNF-REN-05).
 
 ## 4. Usabilidad y accesibilidad (USA)
 

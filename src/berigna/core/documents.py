@@ -19,7 +19,11 @@ from lxml import etree
 from pyhanko.pdf_utils.misc import PdfError
 from pyhanko.pdf_utils.reader import PdfFileReader
 
-from berigna.core.errors import UnreadableDocumentError, UnreadableSignatureError
+from berigna.core.errors import (
+    DocumentTooLargeError,
+    UnreadableDocumentError,
+    UnreadableSignatureError,
+)
 from berigna.core.formats.pades import no_changes_allowed
 from berigna.core.formats.xades import NS, parse_document
 from berigna.core.validation.cades import signed_data_of
@@ -31,6 +35,27 @@ _BOMS = (codecs.BOM_UTF8, codecs.BOM_UTF16_LE, codecs.BOM_UTF16_BE)
 # Control characters that never appear in text: their presence makes a file binary.
 _BINARY = frozenset(range(0x20)) - {0x09, 0x0A, 0x0C, 0x0D}
 TEXT_PREVIEW_LIMIT = 64 * 1024  # what the text view shows of a large file (CU-05 step 3)
+# A document is read whole, because signing and verification work in memory (RF-020 to RF-022,
+# RF-050 to RF-052). 512 MiB leaves room for the copies pyHanko makes of a 100 MiB PDF
+# (RNF-REN-05) and stops a multi-gigabyte file from exhausting memory (review of 2026-11-13).
+MAX_DOCUMENT_BYTES = 512 * 1024 * 1024
+
+
+def read_document_bytes(path: Path) -> bytes:
+    """Read ``path``, refusing a file over :data:`MAX_DOCUMENT_BYTES` before allocating it.
+
+    The size is checked again after reading, because the file may have grown meanwhile.
+    Raises :class:`~berigna.core.errors.DocumentTooLargeError` (ERR-315).
+    """
+    size = path.stat().st_size
+    if size > MAX_DOCUMENT_BYTES:
+        raise DocumentTooLargeError(
+            f"{path.name} is {size} bytes; berigna opens up to {MAX_DOCUMENT_BYTES}"
+        )
+    data = path.read_bytes()
+    if len(data) > MAX_DOCUMENT_BYTES:
+        raise DocumentTooLargeError(f"{path.name} grew over {MAX_DOCUMENT_BYTES} bytes while read")
+    return data
 
 
 class DocumentKind(enum.Enum):
@@ -105,7 +130,7 @@ def inspect_document(path: Path) -> DocumentInfo:
 
     ``OSError`` (missing file, no permission) is left to the caller, which knows the path.
     """
-    data = path.read_bytes()
+    data = read_document_bytes(path)
     digest = hashlib.sha256(data).hexdigest()
     kind, signatures = detect_kind(data)
     if kind is not DocumentKind.PDF:

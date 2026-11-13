@@ -62,7 +62,7 @@ def _last_change(path: Path) -> str | None:
 
 
 def _is_shallow() -> bool:
-    result = subprocess.run(  # noqa: S603 - fixed program and arguments
+    result = subprocess.run(
         ["git", "rev-parse", "--is-shallow-repository"],
         cwd=REPOSITORY,
         capture_output=True,

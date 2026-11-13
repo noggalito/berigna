@@ -2,12 +2,36 @@
 # SPDX-FileCopyrightText: 2026 noggalito
 """Writing files safely: atomically, with fsync, and never over a file unless asked."""
 
+import contextlib
 import datetime as dt
+import errno
 import os
 import tempfile
 from pathlib import Path
 
 from berigna.core.errors import OutputExistsError
+
+# A hardlink is the cheapest way to publish a fully written file without ever replacing one.
+# Filesystems without hardlinks (FAT/exFAT memories, some SMB or NFS mounts) answer EPERM,
+# EOPNOTSUPP, EXDEV or EMLINK instead; there the file is created exclusively and copied
+# (review of 2026-11-13).
+_NO_HARDLINKS = frozenset(
+    {errno.EACCES, errno.EPERM, errno.EOPNOTSUPP, errno.EXDEV, errno.EMLINK, errno.ENOSYS}
+)
+
+
+def _write_exclusive(path: Path, data: bytes, mode: int) -> None:
+    """Create ``path`` with ``O_EXCL`` and write ``data``; remove a partial file on failure."""
+    fd = os.open(path, os.O_CREAT | os.O_EXCL | os.O_WRONLY, mode)
+    try:
+        with os.fdopen(fd, "wb") as handle:
+            handle.write(data)
+            handle.flush()
+            os.fsync(handle.fileno())
+    except BaseException:
+        with contextlib.suppress(OSError):
+            os.unlink(path)
+        raise
 
 
 def _umask(status: Path = Path("/proc/self/status")) -> int:
@@ -51,7 +75,15 @@ def write_atomically(
         if replace:
             os.replace(temporary, path)
             return
-        os.link(temporary, path)  # fails if path appeared meanwhile: no silent overwrite
+        try:
+            os.link(temporary, path)  # fails if path appeared meanwhile: no silent overwrite
+        except FileExistsError:
+            raise
+        except OSError as exc:
+            if exc.errno not in _NO_HARDLINKS:
+                raise
+            # No hardlinks on this filesystem: an exclusive copy has the same guarantee.
+            _write_exclusive(path, data, mode)
     except FileExistsError as exc:
         raise OutputExistsError(f"{path.name} already exists") from exc
     finally:

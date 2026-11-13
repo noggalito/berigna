@@ -25,7 +25,11 @@ gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
 from gi.repository import Adw, Gio, GLib, Gtk  # noqa: E402
 
-from berigna.core.documents import DocumentInfo, DocumentKind  # noqa: E402
+from berigna.core.documents import (  # noqa: E402
+    DocumentInfo,
+    DocumentKind,
+    read_document_bytes,
+)
 from berigna.core.errors import BerignaError  # noqa: E402
 from berigna.core.files import write_atomically  # noqa: E402
 from berigna.core.history import Entry, Kind  # noqa: E402
@@ -141,14 +145,14 @@ class VerificationPage:
 
         def work() -> None:
             try:
-                data = path.read_bytes()
+                data = read_document_bytes(path)
                 content = None
                 if is_detached(data, kind):
                     original = self.original or original_of(path, data)
                     if original is None:
                         GLib.idle_add(self._ask_original)
                         return
-                    content = original.read_bytes()
+                    content = read_document_bytes(original)
                     GLib.idle_add(self._set_original, original, content)
                 verification, store = self._verify(data, content, kind)
                 GLib.idle_add(self._show_result, data, verification, store)

@@ -35,7 +35,7 @@ def _depends(package: str) -> set[str]:
     """The installed packages ``package`` depends on (Depends and Pre-Depends; of each
     alternative, the one installed)."""
     result = subprocess.run(  # noqa: S603 - fixed program, package name from dpkg
-        ["dpkg-query", "-W", "-f=${Depends}, ${Pre-Depends}", package],  # noqa: S607
+        ["dpkg-query", "-W", "-f=${Depends}, ${Pre-Depends}", package],
         capture_output=True,
         text=True,
         check=False,
@@ -52,7 +52,7 @@ def _depends(package: str) -> set[str]:
 
 def _installed(package: str) -> bool:
     result = subprocess.run(  # noqa: S603 - fixed program, package name from dpkg
-        ["dpkg-query", "-W", "-f=${db:Status-Abbrev}", package],  # noqa: S607
+        ["dpkg-query", "-W", "-f=${db:Status-Abbrev}", package],
         capture_output=True,
         text=True,
         check=False,
@@ -101,7 +101,7 @@ def main() -> int:
     parser.add_argument("--sbom", type=Path, required=True)
     args = parser.parse_args()
     result = subprocess.run(  # noqa: S603 - fixed program and arguments
-        ["debsecan", f"--suite={_codename()}", "--format=detail"],  # noqa: S607
+        ["debsecan", f"--suite={_codename()}", "--format=detail"],
         capture_output=True,
         text=True,
         check=False,

@@ -264,6 +264,7 @@ ERRORS: dict[str, str] = {
         "has expired or has been revoked. Check the TSA in Preferences, or sign without a "
         "time-stamp (B-B)."
     ),
+    "ERR-315": N_("This file is too large for berigna (more than 512 MB). Use a smaller file."),
     "ERR-307": N_(
         "The author certified this document so that it cannot be changed: "
         "it does not accept more signatures."
