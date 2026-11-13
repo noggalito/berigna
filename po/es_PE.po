@@ -849,6 +849,11 @@ msgstr "El archivo no es un documento que berigna pueda leer, o está dañado."
 msgid "The signature cannot be read, or it is not a CAdES or XAdES signature."
 msgstr "La firma no se puede leer, o no es una firma CAdES ni XAdES."
 
+#: src/berigna/core/report/messages.py:267
+msgid ""
+"This file is too large for berigna (more than 512 MB). Use a smaller file."
+msgstr "Este archivo es demasiado grande para berigna (más de 512 MB). Abre uno más pequeño."
+
 #: src/berigna/core/report/messages.py:279
 msgid "Folder"
 msgstr "Carpeta"

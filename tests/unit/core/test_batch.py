@@ -329,6 +329,17 @@ def test_an_unexpected_error_in_one_file_does_not_stop_the_others(
     assert "StopIteration" in items[1].detail
 
 
+def test_read_files_leaves_out_a_file_over_the_limit(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    big = tmp_path / "video.mp4"
+    big.write_bytes(b"12345")
+    monkeypatch.setattr("berigna.core.documents.MAX_DOCUMENT_BYTES", 4)
+    found, unreadable = read_files([big])
+    assert found == []
+    assert unreadable == 1
+
+
 def test_read_files_gives_digest_and_kind(tmp_path: Path) -> None:
     """What the batch page lists when a folder is added (RF-041): each file with its SHA-256
     and its kind; a file that cannot be read is counted, not listed."""

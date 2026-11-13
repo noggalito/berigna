@@ -3,9 +3,9 @@
 | Campo | Valor |
 |---|---|
 | Documento | BRG-DES-001 |
-| Versión | 0.11.7 |
+| Versión | 0.11.8 |
 | Estado | Borrador |
-| Fecha | 2026-11-09 |
+| Fecha | 2026-11-13 |
 | Responsable | noggalito |
 
 ## 1. Estructura del repositorio
@@ -48,13 +48,13 @@ berigna/
 │   │   ├── token/                # base (TokenSigner), pin, transport (PC/SC), dnie_v2 (APDU), monitor
 │   │   ├── trust/                # store + anchors/ (IOFE, manifest.json); tsl + tsl/ (raíz de INDECOPI)
 │   │   ├── validation/           # preflight (RF-006), pdf (verificación de firmas, RF-050), cades (RF-051), xades y xmldsig (RF-052), tsa (confianza en la TSA, R-DES-20) y spec (procesos ETSI compartidos)
-│   │   ├── formats/              # pades (B-B a B-LTA); cades y xades (previstos, Fase 4)
-│   │   ├── net/                  # fetchers (OCSP, CRL) y tsa (RFC 3161)
+│   │   ├── formats/              # pades, cades y xades, de B-B a B-LTA
+│   │   ├── net/                  # fetchers (OCSP, CRL), tsa (RFC 3161) y proxy
 │   │   ├── report/               # messages, explanations (RF-053), json_report y pdf_report (RF-054)
 │   │   ├── i18n.py               # idiomas es_PE y quechua, catálogos gettext (ADR-0015)
-│   │   ├── signing.py            # orquestación de la firma de PDF
+│   │   ├── signing.py            # orquestación de PAdES, CAdES y XAdES
 │   │   ├── documents.py          # tipo de documento abierto, páginas, firmas y SHA-256
-│   │   └── appearance/, history.py, config.py, batch.py   # (previstos)
+│   │   └── appearance.py, history.py, batch.py, verification.py
 │   ├── main.py, __main__.py      # punto de entrada de la interfaz
 │   ├── ui/                       # GTK 4 + libadwaita: application, window, presentation, i18n;
 │   │                             # signing (página y flujo), signing_form, pin_dialog, visible_signature
@@ -62,7 +62,7 @@ berigna/
 │   ├── brand/                    # logotipos SVG (GPL-3.0-or-later)
 │   ├── ui/*.blp, berigna.gresource.xml   # vistas en Blueprint y recursos
 │   ├── com.noggalito.Berigna.gschema.xml    # preferencias (GSettings)
-│   └── *.desktop.in, *.metainfo.xml.in, icons/   # (previstos, Fases 3 y 5)
+│   └── *.desktop.in, *.metainfo.xml.in, icons/   # escritorio, AppStream e iconos
 ├── po/                           # LINGUAS, POTFILES, berigna.pot, es_PE.po, quz.po
 ├── help/                         # (previsto: manual Mallard)
 ├── tests/
@@ -74,9 +74,8 @@ berigna/
 │   ├── interop/                  # matriz PAdES contra un validador externo (DSS 6.2)
 │   └── integration/, fuzz/       # (previstos)
 ├── spikes/                       # prototipos de la Fase 0 (no es código de producto)
-├── packaging/                    # empaquetado de terceros: python3-pyhanko (Fase 5, incremento 2)
-├── nautilus/                     # (previsto, Fase 5)
-├── debian/                       # paquete berigna: control, rules, copyright, berigna(1) (Fase 5, incremento 3)
+├── packaging/                    # empaquetado de terceros: python3-pyhanko y noggalito-archive-keyring
+├── debian/                       # paquete berigna: control, rules, copyright, berigna(1)
 └── docs/                         # esta documentación
 ```
 
@@ -108,9 +107,11 @@ Si no se pueden instalar paquetes del sistema, se usa un entorno virtual que reu
 
 ```bash
 python3 -m venv --system-site-packages .venv
-.venv/bin/pip install -r scripts/requisitos-pruebas.txt 'mypy==1.15.0' 'pytest-cov==5.0.0' ruff
+.venv/bin/pip install -r scripts/requisitos-pruebas.txt -r scripts/requisitos-desarrollo.txt
 .venv/bin/pip install --no-deps -e .   # berigna en modo editable (scripts HIL incluidos)
 ```
+
+`scripts/requisitos-desarrollo.txt` fija ruff y mypy a las versiones de la CI: una versión más nueva puede aceptar o rechazar código distinto (pasó con ruff, revisión del 2026-11-13).
 
 pyscard no tiene un *wheel* para Python 3.13 en PyPI y compilarlo requiere `libpcsclite-dev` y `swig`. Se usa `python3-pyscard` de Debian (`sudo apt install python3-pyscard`), que el entorno virtual ve gracias a `--system-site-packages`.
 
@@ -119,7 +120,7 @@ La interfaz necesita además `meson ninja-build blueprint-compiler libglib2.0-bi
 Comprobaciones antes de cada commit:
 
 ```bash
-.venv/bin/ruff format --check src tests && .venv/bin/ruff check src tests
+.venv/bin/ruff format --check src tests scripts && .venv/bin/ruff check src tests scripts
 .venv/bin/mypy
 .venv/bin/pytest --cov=berigna
 ```

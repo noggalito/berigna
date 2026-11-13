@@ -3,6 +3,7 @@
 """Writing files safely (RNF-FIA-01, RF-045)."""
 
 import datetime as dt
+import errno
 import os
 import stat
 from pathlib import Path
@@ -24,6 +25,25 @@ def test_new_files_get_the_usual_permissions(tmp_path: Path) -> None:
     assert path.read_bytes() == b"datos"
     assert _mode(path) == 0o666 & ~_umask()
     assert not [p for p in tmp_path.iterdir() if p.name.endswith(".tmp")]
+
+
+def test_a_filesystem_without_hardlinks_gets_an_exclusive_copy(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """FAT/exFAT memories and some network mounts cannot hardlink (review of 2026-11-13)."""
+
+    def no_hardlinks(*_args: object, **_kwargs: object) -> None:
+        raise OSError(errno.EPERM, "operation not permitted")
+
+    monkeypatch.setattr(os, "link", no_hardlinks)
+    path = tmp_path / "firmado.pdf"
+    write_atomically(path, b"datos")
+    assert path.read_bytes() == b"datos"
+    assert not [p for p in tmp_path.iterdir() if p.name.endswith(".tmp")]
+
+    with pytest.raises(OutputExistsError):
+        write_atomically(path, b"otro")
+    assert path.read_bytes() == b"datos"
 
 
 def test_replacing_keeps_the_permissions(tmp_path: Path) -> None:

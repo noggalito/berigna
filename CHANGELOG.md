@@ -4,6 +4,17 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/); v
 
 ## [Sin publicar]
 
+### Añadido
+
+- Límite de 512 MB para los archivos que berigna lee para firmar o verificar (ERR-315). El tamaño se comprueba antes de leerlos, también en los lotes y en la verificación de firmas separadas, para que un archivo de varios gigabytes no agote la memoria. El límite deja margen para el consumo de un PDF de 100 MB (RNF-REN-05).
+- `scripts/requisitos-desarrollo.txt` fija las versiones de ruff y mypy que usan la CI y el entorno local, para que una herramienta más nueva no acepte o rechace código distinto.
+- La comprobación local de estilo y *lint* incluye también `scripts/`, y se corrigieron los hallazgos que tenía (un import sin usar, formato y directivas `noqa` obsoletas).
+
+### Corregido
+
+- La escritura atómica usa `os.link` para no sobrescribir nunca un archivo existente; en sistemas de archivos sin enlaces duros (memorias FAT/exFAT, algunos montajes SMB o NFS) ahora se crea el archivo de forma exclusiva y se copia, en lugar de fallar con un error del sistema. Sigue sin haber sobrescritura.
+- `SECURITY.md` decía que el proyecto estaba en la Fase 3 y que no había versiones publicadas; ahora nombra la 0.3.1 y la política de soporte vigente.
+
 ## [0.3.1] - 2026-11-09
 
 ### Añadido

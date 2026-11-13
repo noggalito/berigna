@@ -297,3 +297,13 @@ class UnreadableSignatureError(VerificationError):
     damaged, or a detached one comes without the file it signs (RF-051)."""
 
     code = "ERR-402"
+
+
+class DocumentTooLargeError(BerignaError):
+    """The file is larger than :data:`berigna.core.documents.MAX_DOCUMENT_BYTES`.
+
+    berigna signs and verifies in memory, so a file of many gigabytes would exhaust it. The
+    limit is checked before reading, for signing and for verification (review of 2026-11-13).
+    """
+
+    code = "ERR-315"

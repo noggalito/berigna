@@ -28,8 +28,14 @@ from pathlib import Path
 
 from pyhanko.sign.timestamps import TimeStamper
 
-from berigna.core.documents import DocumentKind, detect_kind
-from berigna.core.errors import BatchCancelledError, BerignaError, TokenError, UntrustedTsaError
+from berigna.core.documents import DocumentKind, detect_kind, read_document_bytes
+from berigna.core.errors import (
+    BatchCancelledError,
+    BerignaError,
+    DocumentTooLargeError,
+    TokenError,
+    UntrustedTsaError,
+)
 from berigna.core.formats.cades import CadesPackaging
 from berigna.core.formats.pades import PadesOptions, SignatureLevel, check_pdf_signable
 from berigna.core.formats.xades import XadesPackaging, check_xml_signable
@@ -83,8 +89,8 @@ def read_files(paths: Iterable[Path]) -> tuple[list[tuple[Path, str, DocumentKin
     unreadable = 0
     for path in paths:
         try:
-            data = path.read_bytes()
-        except OSError:
+            data = read_document_bytes(path)
+        except (OSError, DocumentTooLargeError):
             unreadable += 1
             continue
         kind, _signatures = detect_kind(data)

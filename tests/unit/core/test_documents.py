@@ -14,7 +14,7 @@ from berigna.core.documents import (
     inspect_document,
     text_preview,
 )
-from berigna.core.errors import UnreadableDocumentError
+from berigna.core.errors import DocumentTooLargeError, UnreadableDocumentError
 from berigna.core.formats.cades import CadesPackaging
 from berigna.core.formats.pades import sign_pdf_basic
 from berigna.core.token.dnie_v2 import DnieV2Token
@@ -59,6 +59,17 @@ def test_certified_documents(tmp_path: Path, pki: Pki, permission: MDPPerm, lock
     path = tmp_path / "certificado.pdf"
     path.write_bytes(certified_pdf(pki, permission))
     assert inspect_document(path).locked is locked
+
+
+def test_a_file_over_the_memory_limit_is_refused_before_reading(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A multi-gigabyte file must not exhaust memory (review of 2026-11-13)."""
+    path = tmp_path / "video.mp4"
+    path.write_bytes(b"12345")
+    monkeypatch.setattr("berigna.core.documents.MAX_DOCUMENT_BYTES", 4)
+    with pytest.raises(DocumentTooLargeError):
+        inspect_document(path)
 
 
 def test_header_after_leading_bytes_is_treated_as_a_pdf(tmp_path: Path) -> None:

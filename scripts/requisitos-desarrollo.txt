@@ -1,0 +1,9 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# SPDX-FileCopyrightText: 2026 noggalito
+# The development tools, pinned so that local checks and the CI agree (review of 2026-11-13):
+# a newer ruff may accept code an older one rejects, or the other way round. scripts/ci-entorno.sh
+# installs them; scripts/requisitos-pruebas.txt keeps the test-only tools for the installed
+# package (probar-paquete-instalado.sh), which does not need mypy or ruff.
+mypy==1.15.0
+pytest-cov==5.0.0
+ruff==0.17.3

@@ -54,6 +54,9 @@ select = ["E", "F", "W", "I", "B", "UP", "S", "SIM", "RUF", "PT"]
 
 [tool.ruff.lint.per-file-ignores]
 "tests/**" = ["S101"]
+# Developer scripts: they assert their own invariants and call system tools by name (git,
+# xwd, dpkg-query); the product code keeps those rules (review of 2026-11-13).
+"scripts/**" = ["S101", "S607"]
 
 [tool.mypy]
 python_version = "3.12"
