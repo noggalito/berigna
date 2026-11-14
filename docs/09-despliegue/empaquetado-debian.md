@@ -3,9 +3,9 @@
 | Campo | Valor |
 |---|---|
 | Documento | BRG-DSP-001 |
-| Versión | 0.10.0 |
+| Versión | 0.11.0 |
 | Estado | Borrador |
-| Fecha | 2026-11-09 |
+| Fecha | 2026-11-14 |
 | Responsable | noggalito |
 
 ## 1. Paquetes binarios
@@ -124,6 +124,13 @@ Resultado del 2026-11-08 en Ubuntu 26.04.1 (Python 3.14.4, cryptography 46.0.5, 
 - Avisos de obsolescencia ajenos a berigna: signxml 4.2 (curvas binarias de cryptography) y PyGObject (API de asyncio que Python 3.16 retirará).
 
 Ubuntu 24.04 y Linux Mint 22 quedan fuera: no traen signxml y sus versiones de cryptography, pyscard y libadwaita están por debajo de los mínimos.
+
+Debian 14 (forky) es el primer caso en que dos distribuciones de la familia no caben en el mismo rango de dependencias (2026-11-14, SPK-05 §5 y BRG-CAL-008): forky trae `python3-pyhanko-certvalidator` 0.30.2, fuera del `(<< 0.27~)` que pide pyHanko 0.25.1, y ninguna pyHanko acepta a la vez la 0.26.3 de Debian 13 y la 0.30.2. Todo lo demás de la 0.3.1 se cumple en forky. Lo que haya que hacer está pendiente de decisión del titular (DP-28; opciones en SPK-05 §5.4) y se registrará en un ADR. Restricciones que ya se conocen para un futuro `python3-pyhanko` más nuevo:
+
+- desde la 0.34, `Depends: tzdata-legacy` (o corregir el nombre de la zona): pyHanko crea la zona `CET` al importarse, y Debian la tiene en `tzdata-legacy`;
+- desde la 0.34, `python3-cryptography (>= 43.0.3)`, que Debian 13 no cumple (43.0.0);
+- no sustituir el `python3-pyhanko-certvalidator` de la distribución desde el repositorio del proyecto: `python3-xhtml2pdf` también depende de él;
+- una certvalidator embebida en `python3-pyhanko` sirve para el repositorio del proyecto, pero no para el archivo oficial, cuya política no admite copias embebidas (ADR-0020).
 
 ## 6. Futuro: Fedora y similares
 

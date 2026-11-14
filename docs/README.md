@@ -3,9 +3,9 @@
 | Campo | Valor |
 |---|---|
 | Documento | BRG-GEN-000 |
-| Versión | 0.23.0 |
+| Versión | 0.23.1 |
 | Estado | Borrador |
-| Fecha | 2026-11-09 |
+| Fecha | 2026-11-14 |
 | Responsable | noggalito |
 
 ## 1. Propósito
@@ -46,6 +46,8 @@ docs/
 │   ├── protocolo-pruebas-con-pin.md   ← obligatorio antes de usar un PIN real
 │   ├── validacion-externa-fase2.md    ← matriz PAdES contrastada con DSS 6.2
 │   ├── validacion-externa-fase4.md    ← matriz CAdES y XAdES contrastada con DSS 6.2
+│   ├── validacion-vm-fase5.md         ← criterio de salida de la Fase 5 en VMs (BRG-CAL-007)
+│   ├── validacion-vm-forky.md         ← prueba de berigna en Debian 14 forky (BRG-CAL-008)
 │   └── prueba-de-usabilidad.md        ← protocolo de la prueba con al menos 5 personas
 ├── 08-desarrollo/
 │   ├── entorno-y-convenciones.md

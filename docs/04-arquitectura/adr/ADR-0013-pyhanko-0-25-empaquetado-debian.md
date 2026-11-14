@@ -1,7 +1,7 @@
 # ADR-0013: pyHanko 0.25.x empaquetado para Debian 13
 
 - Estado: Aceptado
-- Fecha: 2026-10-27
+- Fecha: 2026-11-14
 - Origen: DP-06, a partir de SPK-05
 - Complementa: ADR-0004 y ADR-0006
 
@@ -29,3 +29,13 @@ pyHanko no está en Debian 13. Su versión actual (0.38.0) exige `pyhanko-certva
   - `opentype`: fonttools está, pero uharfbuzz no. Los sellos visibles usarán las fuentes estándar de PDF o fuentes TrueType sin *shaping* avanzado.
   - `async-http`: pide aiohttp `~=3.9` y Debian trae 3.11. Se usan los *fetchers* síncronos basados en `requests`.
   - `etsi` (xsdata, para el informe de validación XML de ETSI): no está. RF-054 en XML (prioridad "Debería") se implementará en la capa propia o se pospondrá.
+
+## Seguimiento (2026-11-14)
+
+Reevaluación con Debian 14 (forky, todavía *testing*), en SPK-05 §5 y BRG-CAL-008:
+
+- La decisión sigue vigente para Debian 13. En forky, la 0.3.1 no se instala por una sola dependencia: forky trae `python3-pyhanko-certvalidator` 0.30.2 y pyHanko 0.25.1 pide `<0.27` (con la 0.30, pyHanko 0.25.1 ni siquiera se importa). El resto de las dependencias cumple el `Depends`.
+- Ninguna versión de pyHanko acepta a la vez la certvalidator de Debian 13 (0.26.3) y la de forky (0.30.2): cada pyHanko pide un rango cerrado. Con la de forky de hoy, la pareja es pyHanko 0.34.x, que además necesita `tzdata-legacy` (zona `CET`) y `cryptography >= 43.0.3`.
+- pyHanko 0.25.1 con certvalidator 0.26.3 funciona con las demás bibliotecas de forky y Python 3.14: la suite de la 0.3.1 pasa en una VM con forky, salvo fallos del entorno de prueba (BRG-CAL-008). Con pyHanko 0.34.1 y las bibliotecas de forky, el código casi no cambia: un solo cambio de comportamiento (un CMS hostil sale INDETERMINATE en lugar de TOTAL-FAILED). Pasar de la 0.34 sí exige cambiar código: la 0.35 retiró `pyhanko.sign.validation.ltv`.
+- Opciones (SPK-05 §5.4): suites del repositorio por distribución, certvalidator 0.26.3 embebida en `python3-pyhanko`, o esperar el pyHanko oficial de Debian (ITP #1062808, ADR-0020). Sobrescribir la certvalidator de la distribución queda descartado: cambiaría el componente que se acredita en Debian 13 y `python3-xhtml2pdf` depende de ella. La elección está pendiente de decisión del titular (DP-28); si cambia este ADR, se registrará en un ADR nuevo.
+

@@ -3,9 +3,9 @@
 | Campo | Valor |
 |---|---|
 | Documento | BRG-DES-001 |
-| Versión | 0.11.7 |
+| Versión | 0.12.0 |
 | Estado | Borrador |
-| Fecha | 2026-11-09 |
+| Fecha | 2026-11-14 |
 | Responsable | noggalito |
 
 ## 1. Estructura del repositorio
@@ -161,10 +161,10 @@ Desde el 2026-11-02 (Fase 4, incremento 7), las dos CI preparan el mismo entorno
 
 La vigilancia semanal (`.github/workflows/vigilancia.yml`, BRG-MAN-001 §5, R-DES-01) corre los lunes y no bloquea ningún PR:
 
-- `scripts/verificar.sh` completo en Debian 13 (*stable*) y en *testing* (forky). *Testing* no abre incidencias: desde el 2026-11-02 su `python3-pyhanko-certvalidator` 0.30.2 rompe pyHanko 0.25.1 al importarlo (`pyhanko_certvalidator._asyncio_compat` ya no existe), y *testing* no trae pyHanko. Es el coste conocido de Debian 14 (R-15): habrá que empaquetar una pyHanko más nueva, y lo mide el trabajo siguiente;
+- `scripts/verificar.sh` completo en Debian 13 (*stable*) y en *testing* (forky). *Testing* no abre incidencias: desde el 2026-11-02 su `python3-pyhanko-certvalidator` 0.30.2 rompe pyHanko 0.25.1 al importarlo (`pyhanko_certvalidator._asyncio_compat` ya no existe), y *testing* no trae pyHanko. Es el coste conocido de Debian 14 (R-15). La prueba del 2026-11-14 en una VM con forky (BRG-CAL-008) confirma que es el único bloqueo: con la certvalidator 0.26.3, la suite de la 0.3.1 pasa en forky con Python 3.14. Las opciones (otra pyHanko con suites por distribución, la certvalidator embebida o esperar el pyHanko oficial) están en SPK-05 §5.4;
 - `scripts/vigilar-servicios.py`: la TSL de INDECOPI (descarga, firma y días hasta su NextUpdate, aviso con menos de 7), cada espejo de las ARL de las CA del almacén (firma de su CA y vigencia), el OCSP de RENIEC y las vulnerabilidades publicadas en OSV de lo que no viene de Debian (hoy solo pyHanko, R-DES-02);
 - `scripts/vulnerabilidades-debian.py`: `debsecan` sobre los paquetes de Debian del SBOM, solo informativo (R-DES-02);
-- la suite completa con la última pyHanko de PyPI y sus dependencias (R-DES-08). Mide cuánto costará salir de la 0.25.1 (R-15) y nunca abre una incidencia.
+- la suite completa con la última pyHanko de PyPI y sus dependencias (R-DES-08). Mide cuánto costará salir de la 0.25.1 (R-15) y nunca abre una incidencia. Hoy sus fallos mezclan ese coste con incompatibilidades del entorno: la cryptography 50 de PyPI no deja importar el signxml 4.0.5 de Debian 13, y pyHanko 0.34 y posteriores necesitan la zona `CET` de `tzdata-legacy`; R-DES-22 propone separarlos.
 
 Si falla Debian o un servicio, la vigilancia abre una incidencia o comenta en la que siga abierta.
 
