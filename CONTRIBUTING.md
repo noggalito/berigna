@@ -25,6 +25,15 @@ Al participar aceptas el [código de conducta](CODE_OF_CONDUCT.md).
 
 Los cambios en `core/token`, `core/formats`, `core/trust` o que afecten a la seguridad necesitan una revisión adicional.
 
+## Personas mantenedoras
+
+| Persona | Rol en GitHub | Qué hace |
+|---|---|---|
+| noggalito (`calu777`) | Administración | Aprueba y fusiona todos los PR, publica las versiones y custodia las claves (plan de mantenimiento, §10) |
+| José Miguel Amaya (`joseamaya`) | Triaje | Clasifica, etiqueta y asigna incidencias y PR, revisa PR y contribuye desde su *fork*; no fusiona ni publica |
+
+Todo cambio entra en `main` con la aprobación del titular. El rol de triaje puede ampliarse más adelante; cada cambio de rol se anota aquí.
+
 ## Textos y traducciones
 
 El texto fuente de la interfaz está en inglés, dentro de `_()`. Toda cadena nueva llega en el mismo PR con:

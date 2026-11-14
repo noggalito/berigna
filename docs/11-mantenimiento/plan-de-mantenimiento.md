@@ -3,9 +3,9 @@
 | Campo | Valor |
 |---|---|
 | Documento | BRG-MAN-001 |
-| Versión | 0.4.1 |
+| Versión | 0.5.0 |
 | Estado | Borrador |
-| Fecha | 2026-11-08 |
+| Fecha | 2026-11-13 |
 | Responsable | noggalito |
 
 ## 1. Propósito y alcance
@@ -128,7 +128,7 @@ Al publicar: etiqueta firmada, paquetes firmados en el repositorio APT, anuncio 
 
 ## 10. Continuidad
 
-- Al menos dos personas mantenedoras con permisos para fusionar y publicar.
+- Al menos dos personas mantenedoras con permisos para fusionar y publicar. Estado (2026-11-13): una segunda persona mantenedora con rol de triaje ([CONTRIBUTING](../../CONTRIBUTING.md), «Personas mantenedoras»), sin permiso para fusionar ni publicar; el titular aprueba y fusiona todos los PR. El objetivo de dos personas con permiso para fusionar sigue pendiente.
 - Inventario de credenciales en la documentación interna: clave de firma del repositorio APT, claves de firma de los commits, organización de GitHub, dominio `noggalito.com` y sitio. Cada una con dos personas con acceso, fecha de caducidad y procedimiento de rotación.
 - Clave del repositorio APT (DP-24, BRG-DSP-001 §4): maestra Ed25519 solo de certificación, `A99859F6A32D8D5DEE5D3609CEA6BD335F594929`, en dos memorias USB cifradas guardadas en lugares distintos, con su certificado de revocación; subclave de firma de dos años en la estación del titular. Sus frases de paso, en el gestor de contraseñas del titular.
   - Renovación: al menos tres meses antes de que caduque, se extiende la validez de la maestra y de la subclave con la maestra (`gpg --quick-set-expire`), y la clave renovada se publica como versión nueva de `noggalito-archive-keyring` en el repositorio, firmada todavía con la subclave vigente. Los usuarios la reciben con sus actualizaciones antes de la fecha.
@@ -150,4 +150,4 @@ Se revisan en cada versión menor:
 
 - Plantillas de incidencia y `security.txt` en el sitio.
 - Activar los avisos de seguridad privados en GitHub (Settings → Code security).
-- Inventario de credenciales y segunda persona mantenedora (documentación interna).
+- Inventario de credenciales (documentación interna) y una segunda persona con permiso para fusionar y publicar; hoy la segunda persona mantenedora tiene rol de triaje.
