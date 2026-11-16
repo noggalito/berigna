@@ -12,6 +12,7 @@ catálogos y el display X. La firma y la verificación se hacen sin red y con la
 simulada y la PKI de pruebas (como los tests de la interfaz), para que ningún dato real
 aparezca en las capturas.
 """
+
 from __future__ import annotations
 
 import io
@@ -44,9 +45,8 @@ os.environ["GDK_BACKEND"] = "x11"
 os.environ["BERIGNA_LOCALEDIR"] = str(REPO / "build" / "locale")
 
 from berigna.core.i18n import Language  # noqa: E402
-from berigna.core.token.dnie_v2 import DnieV2Token, DNIE_V2_ATR  # noqa: E402
+from berigna.core.token.dnie_v2 import DNIE_V2_ATR, DnieV2Token  # noqa: E402
 from berigna.core.token.monitor import ReaderState  # noqa: E402
-from sim.dnie_v2 import DnieV2Simulator  # noqa: E402
 from support.cards import make_card  # noqa: E402
 from support.pki import build_pki  # noqa: E402
 from support.signed import signed_with_revinfo  # noqa: E402
@@ -118,14 +118,31 @@ def xwd_to_png(raw: Path, png: Path) -> None:
     ``header_size`` already includes the window name in this xwd variant, the colormap
     entries (XColor, 12 bytes each) come before the pixels when ``ncolors`` > 0, and the
     scanlines go zlib-compressed when the depth is below the bits per pixel."""
-    from PIL import Image  # noqa: PLC0415 - the captures only, not the CI
+    from PIL import Image
 
     data = raw.read_bytes()
     header = struct.unpack(">25I", data[:100])
     (
-        header_size, file_version, pixmap_format, depth, width, height,
-        _xoffset, byte_order, _unit, _bit_order, _pad, bpp, bytes_per_line,
-        _class, _red, _green, _blue, _bits_per_rgb, _colormap_entries, ncolors,
+        header_size,
+        file_version,
+        pixmap_format,
+        depth,
+        width,
+        height,
+        _xoffset,
+        byte_order,
+        _unit,
+        _bit_order,
+        _pad,
+        bpp,
+        bytes_per_line,
+        _class,
+        _red,
+        _green,
+        _blue,
+        _bits_per_rgb,
+        _colormap_entries,
+        ncolors,
         *_rest,
     ) = header
     if file_version != 7 or pixmap_format != 2 or byte_order != 0 or bpp not in (24, 32):
@@ -136,12 +153,12 @@ def xwd_to_png(raw: Path, png: Path) -> None:
     pixels = bytearray()
     if depth < bpp:  # each scanline zlib-compressed, prefixed by its length
         for _row in range(height):
-            (line_len,) = struct.unpack(">I", data[offset:offset + 4])
+            (line_len,) = struct.unpack(">I", data[offset : offset + 4])
             offset += 4
-            pixels += zlib.decompress(data[offset:offset + line_len])
+            pixels += zlib.decompress(data[offset : offset + line_len])
             offset += line_len
     else:
-        pixels += data[offset:offset + bytes_per_line * height]
+        pixels += data[offset : offset + bytes_per_line * height]
     # Pixels as raw XImage data (little-endian 0xAARRGGBB on disk: [B, G, R, A]), or packed
     # RGB when the depth is 24.
     step = bpp // 8 if depth >= bpp else depth // 8
@@ -151,7 +168,7 @@ def xwd_to_png(raw: Path, png: Path) -> None:
         if step == 4:
             rgb += bytes((pixels[start + 2], pixels[start + 1], pixels[start]))
         else:
-            rgb += pixels[start:start + 3]
+            rgb += pixels[start : start + 3]
     image = Image.frombytes("RGB", (width, height), bytes(rgb))
     image.resize((WIDTH, HEIGHT), Image.Resampling.LANCZOS).save(png)
 
@@ -159,8 +176,8 @@ def xwd_to_png(raw: Path, png: Path) -> None:
 def example_document() -> bytes:
     """A fictitious one-page PDF with a few paragraphs (no personal data, inventario
     visual §10); reportlab is a berigna dependency."""
-    from reportlab.lib.pagesizes import A4  # noqa: PLC0415 - the captures only
-    from reportlab.pdfgen import canvas  # noqa: PLC0415
+    from reportlab.lib.pagesizes import A4
+    from reportlab.pdfgen import canvas
 
     buffer = io.BytesIO()
     pdf = canvas.Canvas(buffer, pagesize=A4)
@@ -275,8 +292,10 @@ def main() -> None:
     capture_one(
         to_sign,
         lambda app: _signing_state(app) == "form",
-        lambda app: app.main_window.signing is not None
-        and app.main_window.signing.preview.get_width() > 100,
+        lambda app: (
+            app.main_window.signing is not None
+            and app.main_window.signing.preview.get_width() > 100
+        ),
         "berigna-firma.png",
     )
     # The signed PDF opens the verification page, whose result is TOTAL-PASSED offline
@@ -284,8 +303,10 @@ def main() -> None:
     capture_one(
         signed,
         lambda app: _verification_state(app) == "result",
-        lambda app: app.main_window.verification is not None
-        and app.main_window.verification.summary_row.get_width() > 0,
+        lambda app: (
+            app.main_window.verification is not None
+            and app.main_window.verification.summary_row.get_width() > 0
+        ),
         "berigna-verificacion.png",
     )
     print(f"capturas en {OUT}")

@@ -4,6 +4,15 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/); v
 
 ## [Sin publicar]
 
+### Añadido
+
+- `scripts/requisitos-desarrollo.txt` fija las versiones de ruff y mypy que usan la CI y el entorno local, para que una herramienta más nueva no acepte o rechace código distinto (PR #88).
+- La comprobación local de estilo y *lint* incluye también `scripts/`, y se corrigieron los hallazgos que tenía (un import sin usar, formato y directivas `noqa` obsoletas).
+
+### Corregido
+
+- `SECURITY.md` decía que la Fase 3 estaba cerrada y que no había versiones publicadas; ahora dice que el proyecto sigue en desarrollo y nombra la 0.3.1 y la política de soporte vigente (PR #88).
+
 ## [0.3.1] - 2026-11-09
 
 ### Añadido

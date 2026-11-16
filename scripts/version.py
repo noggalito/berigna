@@ -196,7 +196,7 @@ def _run(*command: str) -> None:
 
 def _git(*args: str) -> str:
     result = subprocess.run(  # noqa: S603 - git with fixed arguments
-        ["git", *args],  # noqa: S607 - git from PATH, like the other scripts
+        ["git", *args],
         cwd=ROOT,
         check=True,
         capture_output=True,

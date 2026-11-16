@@ -26,7 +26,7 @@ DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
 git config --global --add safe.directory "$PWD"
 python3 -m venv --system-site-packages .venv
 .venv/bin/pip install --no-cache-dir -r scripts/requisitos-pruebas.txt \
-  'mypy==1.15.0' 'pytest-cov==5.0.0' 'ruff==0.17.3'
+  -r scripts/requisitos-desarrollo.txt
 if [ "$PYHANKO" = reciente ]; then
   # with its dependencies: the latest pyHanko needs newer cryptography and certvalidator
   # than Debian 13 has (SPK-05); they go into the virtual environment, over Debian's

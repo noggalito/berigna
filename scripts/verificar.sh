@@ -6,8 +6,8 @@
 set -eu
 cd "$(git rev-parse --show-toplevel)"
 PY=${PYTHON:-.venv/bin}
-"$PY/ruff" format --check src tests
-"$PY/ruff" check src tests
+"$PY/ruff" format --check src tests scripts
+"$PY/ruff" check src tests scripts
 "$PY/mypy"
 # Debian's packages, seen by the .venv, within the bounds of pyproject.toml (DP-19, R-DES-16).
 "$PY/python" scripts/verificar-dependencias.py
