@@ -2,12 +2,68 @@
 # SPDX-FileCopyrightText: 2026 noggalito
 """Writing files safely: atomically, with fsync, and never over a file unless asked."""
 
+import contextlib
+import ctypes
 import datetime as dt
+import errno
 import os
 import tempfile
 from pathlib import Path
 
 from berigna.core.errors import OutputExistsError
+
+# A hardlink is the cheapest way to publish a fully written file without ever replacing one.
+# Filesystems without hardlinks (FAT/exFAT memories, some SMB or NFS mounts) answer EPERM,
+# EOPNOTSUPP or EMLINK instead; then renameat2 publishes the temporary atomically, and only
+# as a last resort is the file created exclusively and copied (PR #88).
+_NO_HARDLINKS = frozenset({errno.EPERM, errno.EOPNOTSUPP, errno.EMLINK, errno.ENOSYS})
+
+# renameat2 with RENAME_NOREPLACE is atomic and fails with EEXIST instead of replacing.
+# Python does not expose it, so it is called through libc (PR #88).
+_AT_FDCWD = -100
+_RENAME_NOREPLACE = 1
+_RENAMEAT2_UNAVAILABLE = frozenset({errno.EINVAL, errno.ENOSYS, errno.EOPNOTSUPP})
+
+
+def _rename_noreplace(source: Path, target: Path) -> None:
+    """Rename ``source`` to ``target`` atomically, failing with ``EEXIST`` if it exists."""
+    libc = ctypes.CDLL(None, use_errno=True)
+    try:
+        renameat2 = libc.renameat2
+    except AttributeError:
+        raise OSError(errno.ENOSYS, "renameat2 is not available in libc") from None
+    renameat2.argtypes = [
+        ctypes.c_int,
+        ctypes.c_char_p,
+        ctypes.c_int,
+        ctypes.c_char_p,
+        ctypes.c_uint,
+    ]
+    renameat2.restype = ctypes.c_int
+    result: int = renameat2(
+        _AT_FDCWD,
+        os.fsencode(source),
+        _AT_FDCWD,
+        os.fsencode(target),
+        _RENAME_NOREPLACE,
+    )
+    if result != 0:
+        error = ctypes.get_errno()
+        raise OSError(error, os.strerror(error), source, None, target)
+
+
+def _write_exclusive(path: Path, data: bytes, mode: int) -> None:
+    """Create ``path`` with ``O_EXCL`` and write ``data``; remove a partial file on failure."""
+    fd = os.open(path, os.O_CREAT | os.O_EXCL | os.O_WRONLY, mode)
+    try:
+        with os.fdopen(fd, "wb") as handle:
+            handle.write(data)
+            handle.flush()
+            os.fsync(handle.fileno())
+    except BaseException:
+        with contextlib.suppress(OSError):
+            os.unlink(path)
+        raise
 
 
 def _umask(status: Path = Path("/proc/self/status")) -> int:
@@ -51,7 +107,25 @@ def write_atomically(
         if replace:
             os.replace(temporary, path)
             return
-        os.link(temporary, path)  # fails if path appeared meanwhile: no silent overwrite
+        try:
+            os.link(temporary, path)  # fails if path appeared meanwhile: no silent overwrite
+        except FileExistsError:
+            raise
+        except OSError as exc:
+            if exc.errno not in _NO_HARDLINKS:
+                raise
+            try:
+                _rename_noreplace(Path(temporary), path)
+            except FileExistsError:
+                raise
+            except OSError as exc:
+                if exc.errno not in _RENAMEAT2_UNAVAILABLE:
+                    raise
+                # Last resort: renameat2 does not exist or the filesystem rejects it. The
+                # temporary is complete, but a power cut during this copy would leave a
+                # partial file with its final name, which RNF-FIA-01 forbids. FAT/exFAT
+                # support renameat2, so only old kernels or unusual filesystems reach here.
+                _write_exclusive(path, data, mode)
     except FileExistsError as exc:
         raise OutputExistsError(f"{path.name} already exists") from exc
     finally:

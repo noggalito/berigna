@@ -3,9 +3,9 @@
 | Campo | Valor |
 |---|---|
 | Documento | BRG-REQ-001 |
-| Versión | 0.5.1 |
+| Versión | 0.5.2 |
 | Estado | Borrador |
-| Fecha | 2026-11-08 |
+| Fecha | 2026-11-16 |
 | Responsable | noggalito |
 
 Prioridades según MoSCoW (ver convenciones). Cada requisito tiene criterios de aceptación verificables. La columna CU indica los casos de uso relacionados.
@@ -111,10 +111,10 @@ Prioridades según MoSCoW (ver convenciones). Cada requisito tiene criterios de 
 
 ### RF-020: CAdES separada (`.p7s`)
 - Prioridad: Debe. CU: CU-05.
-- Descripción: se firma cualquier archivo y se genera `<archivo>.p7s` junto al original, que no se modifica.
+- Descripción: se firma cualquier archivo de hasta 1 GB y se genera `<archivo>.p7s` junto al original, que no se modifica. Los archivos mayores se rechazan antes de leerlos (ERR-315).
 
 ### RF-021: CAdES envuelta (`.p7m`)
-- Prioridad: Debe. Descripción: se genera `<archivo>.p7m`, que contiene el archivo original.
+- Prioridad: Debe. Descripción: se genera `<archivo>.p7m`, que contiene el archivo original, de hasta 1 GB; los mayores se rechazan antes de leerlos (ERR-315).
 
 ### RF-022: Niveles CAdES
 - Prioridad: Debe. Descripción: B-B, B-T, B-LT y B-LTA, seleccionables, con las mismas reglas que RF-010.

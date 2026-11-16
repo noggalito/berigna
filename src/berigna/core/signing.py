@@ -25,6 +25,7 @@ from pyhanko.sign.timestamps import TimeStamper
 from pyhanko_certvalidator import ValidationContext
 
 from berigna.core.appearance import VisibleSignature, render_appearance, stamp_data
+from berigna.core.documents import read_document_bytes
 from berigna.core.errors import (
     AppearanceError,
     LevelNotAvailableError,
@@ -63,7 +64,7 @@ class SignResult:
 
 
 def _read_unchanged(path: Path, expected_sha256: str) -> bytes:
-    data = path.read_bytes()
+    data = read_document_bytes(path)
     if hashlib.sha256(data).hexdigest() != expected_sha256:
         raise SourceChangedError(f"{path.name} changed after it was shown")
     return data

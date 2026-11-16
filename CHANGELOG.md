@@ -4,6 +4,14 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/); v
 
 ## [Sin publicar]
 
+### Añadido
+
+- Límite provisional de 1 GB para los archivos que berigna lee para firmar o verificar (ERR-315). El tamaño se comprueba antes de leerlos, también en los lotes y en la verificación de firmas separadas, para que un archivo de varios gigabytes no agote la memoria. La solución de fondo es R-DES-21.
+
+### Corregido
+
+- La escritura atómica usa `os.link` para no sobrescribir nunca un archivo existente. En sistemas de archivos sin enlaces duros (memorias FAT/exFAT, algunos montajes SMB o NFS) publica el temporal con `renameat2(RENAME_NOREPLACE)`, que también es atómico y falla si el destino ya existe. Solo si `renameat2` no está disponible se crea el archivo de forma exclusiva y se copia, con el riesgo conocido de un corte a mitad de la copia.
+
 ## [0.3.1] - 2026-11-09
 
 ### Añadido

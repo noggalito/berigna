@@ -8,13 +8,14 @@ from pyhanko.pdf_utils.misc import PdfError
 from pyhanko.sign.fields import MDPPerm
 
 from berigna.core.documents import (
+    MAX_DOCUMENT_BYTES,
     DocumentKind,
     TextPreview,
     detect_kind,
     inspect_document,
     text_preview,
 )
-from berigna.core.errors import UnreadableDocumentError
+from berigna.core.errors import DocumentTooLargeError, UnreadableDocumentError
 from berigna.core.formats.cades import CadesPackaging
 from berigna.core.formats.pades import sign_pdf_basic
 from berigna.core.token.dnie_v2 import DnieV2Token
@@ -59,6 +60,22 @@ def test_certified_documents(tmp_path: Path, pki: Pki, permission: MDPPerm, lock
     path = tmp_path / "certificado.pdf"
     path.write_bytes(certified_pdf(pki, permission))
     assert inspect_document(path).locked is locked
+
+
+def test_the_memory_limit_is_one_gigabyte() -> None:
+    """The provisional limit of PR #88 is 1 GiB, not 512 MiB."""
+    assert MAX_DOCUMENT_BYTES == 1024 * 1024 * 1024
+
+
+def test_a_file_over_the_memory_limit_is_refused_before_reading(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A multi-gigabyte file must not exhaust memory (PR #88)."""
+    path = tmp_path / "video.mp4"
+    path.write_bytes(b"12345")
+    monkeypatch.setattr("berigna.core.documents.MAX_DOCUMENT_BYTES", 4)
+    with pytest.raises(DocumentTooLargeError):
+        inspect_document(path)
 
 
 def test_header_after_leading_bytes_is_treated_as_a_pdf(tmp_path: Path) -> None:

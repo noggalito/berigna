@@ -7,6 +7,7 @@ import datetime as dt
 import pytest
 from cryptography import x509
 
+from berigna.core.documents import MAX_DOCUMENT_LABEL
 from berigna.core.i18n import Language, translations
 from berigna.core.report.explanations import (
     explain_error,
@@ -124,6 +125,10 @@ def test_document_timestamp() -> None:
 def test_errors() -> None:
     assert explain_error("ERR-303", SPANISH) == "Se canceló la firma. El PIN no se envió."
     assert explain_error("ERR-999", SPANISH) == "Error inesperado."
+    assert explain_error("ERR-315", SPANISH) == (
+        "Este archivo es demasiado grande para berigna "
+        f"(más de {MAX_DOCUMENT_LABEL}). Abre uno más pequeño."
+    )
 
 
 def test_quechua_explanations(pki: Pki) -> None:

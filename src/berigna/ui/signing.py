@@ -36,7 +36,7 @@ from gi.repository import Adw, Gio, GLib, Gtk  # noqa: E402
 from pyhanko.sign.timestamps import TimeStamper  # noqa: E402
 
 from berigna.core.appearance import AppearanceKind, VisibleSignature  # noqa: E402
-from berigna.core.documents import DocumentInfo, DocumentKind  # noqa: E402
+from berigna.core.documents import DocumentInfo, DocumentKind, read_document_bytes  # noqa: E402
 from berigna.core.errors import (  # noqa: E402
     BerignaError,
     LevelNotAvailableError,
@@ -197,7 +197,7 @@ class SigningPage:
     ) -> None:
         self._window = window
         self._services = services
-        self.data = document.path.read_bytes()
+        self.data = read_document_bytes(document.path)
         # What is signed is what is previewed (RF-018): the hash of these very bytes.
         self.document = DocumentInfo(
             document.path,

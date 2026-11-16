@@ -3,9 +3,9 @@
 | Campo | Valor |
 |---|---|
 | Documento | BRG-REQ-002 |
-| Versión | 0.4.0 |
+| Versión | 0.3.2 |
 | Estado | Borrador |
-| Fecha | 2026-11-10 |
+| Fecha | 2026-11-16 |
 | Responsable | noggalito |
 
 Identificadores: `RNF-<CATEGORÍA>-NN`.
@@ -48,6 +48,8 @@ Valores objetivo en un equipo de referencia (4 núcleos, 8 GB de RAM, SSD), sin 
 
 Nota: el tiempo de la operación criptográfica dentro del chip (medido: unos 0,3 s por firma con el DNIe v2, SPK-01 §8.6) se mide y se informa aparte.
 
+Los documentos se leen completos en memoria para firmar y verificar. Para que un archivo de varios gigabytes no agote la memoria, se rechaza antes de leerlo si supera 1 GB (ERR-315). Es un límite provisional: la solución de fondo es R-DES-21, que calcula el resumen de la CAdES separada leyendo el archivo por partes.
+
 ## 4. Usabilidad y accesibilidad (USA)
 
 | ID | Requisito | Prioridad |
@@ -78,7 +80,7 @@ Nota: el tiempo de la operación criptográfica dentro del chip (medido: unos 0,
 
 | ID | Requisito | Prioridad |
 |---|---|---|
-| RNF-INT-01 | Las firmas que genera berigna se validan correctamente en el validador web de la Plataforma Nacional de Firma Digital – Firma Perú (PCM-SGTD), referencia oficial desde que RENIEC dejó de distribuir ReFirma a terceros (respuesta del 2026-10-28; la PCM confirmó el 2026-11-09 que el validador no tiene versión descargable ni automatizada y remite a la Guía para el uso e integración de la Plataforma Nacional de Firma Digital, R.S. 002-2022-PCM/SGTD), y en ReFirma cuando se disponga de él. Evidencia actual: PAdES B-B válido en Firma Perú (SPK-03 §7) y en ReFirma (2026-10-28) | Debe |
+| RNF-INT-01 | Las firmas que genera berigna se validan correctamente en el validador web de la Plataforma Nacional de Firma Digital – Firma Perú (PCM-SGTD), referencia oficial desde que RENIEC dejó de distribuir ReFirma a terceros (respuesta del 2026-10-28), y en ReFirma cuando se disponga de él. Evidencia actual: PAdES B-B válido en Firma Perú (SPK-03 §7) y en ReFirma (2026-10-28) | Debe |
 | RNF-INT-02 | Las firmas que genera berigna se validan correctamente en un validador conforme a ETSI EN 319 102-1 (por ejemplo, DSS) | Debe |
 | RNF-INT-03 | Las firmas PAdES se muestran como válidas en Adobe Acrobat Reader cuando la raíz de la IOFE está en su almacén de confianza | Debe |
 | RNF-INT-04 | berigna valida correctamente las firmas que generan ReFirma y otros programas acreditados | Debe |

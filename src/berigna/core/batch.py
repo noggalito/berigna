@@ -22,14 +22,21 @@ Closing the token session (power off the card) is the caller's ``with`` block.
 
 import enum
 import hashlib
+import logging
 from collections.abc import Callable, Iterable, Sequence
 from dataclasses import dataclass
 from pathlib import Path
 
 from pyhanko.sign.timestamps import TimeStamper
 
-from berigna.core.documents import DocumentKind, detect_kind
-from berigna.core.errors import BatchCancelledError, BerignaError, TokenError, UntrustedTsaError
+from berigna.core.documents import DocumentKind, detect_kind, read_document_bytes
+from berigna.core.errors import (
+    BatchCancelledError,
+    BerignaError,
+    DocumentTooLargeError,
+    TokenError,
+    UntrustedTsaError,
+)
 from berigna.core.formats.cades import CadesPackaging
 from berigna.core.formats.pades import PadesOptions, SignatureLevel, check_pdf_signable
 from berigna.core.formats.xades import XadesPackaging, check_xml_signable
@@ -50,6 +57,8 @@ from berigna.core.token.base import TokenSigner
 from berigna.core.trust import TrustStore
 from berigna.core.validation import SignerCheck
 from berigna.core.verification import DETACHED_SUFFIXES
+
+log = logging.getLogger(__name__)
 
 # Signatures berigna writes: a folder is not asked to sign them again (RF-041).
 SIGNATURE_SUFFIXES = frozenset((*DETACHED_SUFFIXES, ".p7m"))
@@ -83,8 +92,10 @@ def read_files(paths: Iterable[Path]) -> tuple[list[tuple[Path, str, DocumentKin
     unreadable = 0
     for path in paths:
         try:
-            data = path.read_bytes()
-        except OSError:
+            data = read_document_bytes(path)
+        except (OSError, DocumentTooLargeError) as exc:
+            # The page says only that the file was left out; the technical log says why.
+            log.warning("file left out of the batch: %s: %s", path, exc)
             unreadable += 1
             continue
         kind, _signatures = detect_kind(data)

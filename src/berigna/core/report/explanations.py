@@ -181,6 +181,12 @@ def explain_timestamp(report: TimestampReport, catalogue: gettext.NullTranslatio
 def explain_error(code: str, catalogue: gettext.NullTranslations) -> str | None:
     """Message for an ``ERR-xxx`` code; unknown codes get the ERR-000 message."""
     try:
-        return _(catalogue, messages.ERRORS.get(code, messages.ERRORS["ERR-000"]))
+        text = _(catalogue, messages.ERRORS.get(code, messages.ERRORS["ERR-000"]))
     except _UntranslatedError:
         return None
+    if code == "ERR-315":
+        # The limit lives in one place; the message never repeats a stale number.
+        from berigna.core.documents import MAX_DOCUMENT_LABEL
+
+        text = text.format(limit=MAX_DOCUMENT_LABEL)
+    return text

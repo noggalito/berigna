@@ -17,8 +17,8 @@ from collections.abc import Sequence
 from pathlib import Path, PurePosixPath
 from urllib.parse import unquote
 
-from berigna.core.documents import DocumentKind, detect_kind
-from berigna.core.errors import UnreadableDocumentError
+from berigna.core.documents import DocumentKind, detect_kind, read_document_bytes
+from berigna.core.errors import DocumentTooLargeError, UnreadableDocumentError
 from berigna.core.formats.xades import DS, parse_document
 from berigna.core.trust import TrustStore
 from berigna.core.validation import (
@@ -100,8 +100,8 @@ def _digest_matches(signature: bytes, candidate: Path) -> bool:
             for attribute in signer_info["signed_attrs"]
             if attribute["type"].native == "message_digest"
         ]
-        return signed == [hashlib.new(algorithm, candidate.read_bytes()).digest()]
-    except (OSError, ValueError, KeyError, IndexError, TypeError):
+        return signed == [hashlib.new(algorithm, read_document_bytes(candidate)).digest()]
+    except (OSError, ValueError, KeyError, IndexError, TypeError, DocumentTooLargeError):
         return False
 
 

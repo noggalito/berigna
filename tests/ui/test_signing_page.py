@@ -5,11 +5,13 @@
 from collections.abc import Generator
 from pathlib import Path
 
+import pytest
 from gi.repository import Adw, Gio, Gtk
 from pyhanko.pdf_utils.reader import PdfFileReader
 from pyhanko.sign.fields import MDPPerm
 
 from berigna.core.documents import inspect_document
+from berigna.core.errors import OutputExistsError
 from berigna.core.formats.pades import SignatureLevel
 from berigna.core.i18n import Language
 from berigna.core.token.dnie_v2 import DnieV2Token
@@ -204,6 +206,40 @@ def test_level_without_revocation_data_offers_the_basic_level(
         assert page.result.level is SignatureLevel.B_B
 
     drive(app, script, args=[str(path)])
+
+
+@pytest.mark.parametrize(
+    ("error", "expected"),
+    [
+        (OutputExistsError("already exists"), "contrato.pdf: "),
+        (OSError("cannot open"), "No se pudo abrir contrato.pdf."),
+    ],
+)
+def test_errors_opening_the_signing_page_are_toasts(
+    app: BerignaApplication,
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    error: Exception,
+    expected: str,
+) -> None:
+    """Both branches of MainWindow.sign leave a toast instead of a traceback (PR #88)."""
+    document = inspect_document(_pdf(tmp_path))
+    toasts: list[str] = []
+
+    def broken(*_args: object, **_kwargs: object) -> None:
+        raise error
+
+    monkeypatch.setattr("berigna.ui.window.SigningPage", broken)
+
+    def script(app: BerignaApplication) -> Generator[None, None, None]:
+        yield from wait_until(lambda: app.main_window is not None)
+        assert app.main_window is not None
+        app.main_window.toast = toasts.append  # type: ignore[method-assign]
+        app.main_window.sign(document)
+        assert len(toasts) == 1
+        assert toasts[0].startswith(expected)
+
+    drive(app, script)
 
 
 def test_certified_document_cannot_be_signed(

@@ -108,6 +108,10 @@ class MainWindow:
             self.signing = SigningPage(
                 self, document, self._signing, existing_problems=existing_problems
             )
+        except BerignaError as exc:
+            reason = explain_error(exc.code, catalogue()) or ""
+            self.toast(f"{document.path.name}: {reason}")
+            return
         except OSError:
             self.toast(_("{name} could not be opened.").format(name=document.path.name))
             return
