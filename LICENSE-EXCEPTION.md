@@ -15,6 +15,8 @@ If you modify berigna, you may extend this permission to your version, but you a
 
 ---
 
+<!-- Original y traducción en un solo archivo: cada uno lleva su H1. -->
+<!-- markdownlint-disable-next-line MD025 -->
 # Permiso adicional según la sección 7 de la GNU GPL versión 3 (traducción informativa)
 
 berigna se distribuye bajo la Licencia Pública General de GNU, versión 3 o (a tu elección) cualquier versión posterior ([`LICENSE`](LICENSE)), con el siguiente permiso adicional. El texto en inglés de arriba es el que vale; esta traducción es solo informativa.

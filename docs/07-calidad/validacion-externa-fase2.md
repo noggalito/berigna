@@ -1,11 +1,11 @@
 # Validación externa de la Fase 2: matriz PAdES por niveles
 
 | Campo | Valor |
-|---|---|
+| --- | --- |
 | Documento | BRG-CAL-004 |
-| Versión | 0.1.0 |
+| Versión | 0.1.1 |
 | Estado | Vigente |
-| Fecha | 2026-10-28 |
+| Fecha | 2026-11-18 |
 | Responsable | noggalito |
 
 ## 1. Objetivo
@@ -25,7 +25,7 @@ Para repetirlo: `.venv/bin/python tests/interop/matriz_pades.py DIR` y `tests/in
 ### 3.1 Matriz por niveles (PKI y TSA de pruebas)
 
 | Nivel pedido | Nivel alcanzado (berigna) | Formato según DSS | berigna | DSS 6.2 |
-|---|---|---|---|---|
+| --- | --- | --- | --- | --- |
 | B-B | B-B | PAdES-BASELINE-B | INDETERMINATE / TRY_LATER | INDETERMINATE / CERTIFICATE_CHAIN_GENERAL_FAILURE |
 | B-T | B-T | PAdES-BASELINE-T | INDETERMINATE / CERTIFICATE_CHAIN_GENERAL_FAILURE | INDETERMINATE / CERTIFICATE_CHAIN_GENERAL_FAILURE |
 | B-LT | B-LT | PAdES-BASELINE-LT | TOTAL-PASSED | TOTAL_PASSED |
@@ -38,7 +38,7 @@ Para repetirlo: `.venv/bin/python tests/interop/matriz_pades.py DIR` y `tests/in
 ### 3.2 Documentos reales (en línea, anclas ROOT 3 y ROOT 5)
 
 | Documento | berigna | DSS 6.2 |
-|---|---|---|
+| --- | --- | --- |
 | PDF propio firmado con el DNIe real (B-B) | TOTAL-PASSED | PAdES-BASELINE-B, TOTAL_PASSED |
 | Documento público 1 (firmante revocado después de firmar, sin sello) | INDETERMINATE / REVOKED_NO_POE | PAdES-BASELINE-B, INDETERMINATE / REVOKED_NO_POE |
 | Documento público 2 (firmas heredadas de Adobe, CA intermedia vencida) | INDETERMINATE / OUT_OF_BOUNDS_NO_POE | PKCS7-B, INDETERMINATE / TRY_LATER |

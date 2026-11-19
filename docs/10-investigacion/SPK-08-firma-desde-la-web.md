@@ -1,11 +1,11 @@
 # SPK-08: Firma desde la web
 
 | Campo | Valor |
-|---|---|
+| --- | --- |
 | Documento | BRG-INV-008 |
-| Versión | 0.2.0 |
+| Versión | 0.2.1 |
 | Estado | Pendiente |
-| Fecha | 2026-11-10 |
+| Fecha | 2026-11-18 |
 | Responsable | noggalito |
 
 ## 1. Contexto
@@ -17,7 +17,7 @@ Una página web no puede leer el DNIe: los navegadores no dan acceso al lector, 
 ## 2. Líneas de trabajo
 
 | # | Línea | Qué es |
-|---|---|---|
+| --- | --- | --- |
 | 1 | Verificador web | Una página donde se sube un documento firmado y se ve si la firma es válida, con el mismo núcleo de verificación. No necesita DNIe ni lector |
 | 2 | Invocador | Una página web pide a berigna que firme un documento: berigna lo descarga, lo muestra, pide el PIN, firma y sube el resultado |
 | 3 | Compatibilidad | berigna entiende los parámetros que ya envían los sistemas integrados con el firmador web de Firma Perú, con nombre propio |

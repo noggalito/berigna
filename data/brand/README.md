@@ -6,7 +6,7 @@ a trazos: no dependen de fuentes instaladas.
 **Licencia:** GPL-3.0-or-later, la misma que el resto de berigna (© 2026 noggalito). Ver [`LICENSE`](LICENSE).
 
 | Pieza | Archivos | Uso |
-|---|---|---|
+| --- | --- | --- |
 | Isotipo (globo con la onda) | `berigna-isotipo-*.svg` | Base del icono de la aplicación, avatares y *favicons* |
 | Isologo vertical | `berigna-isologo-vertical-*.svg` | Piezas de formato entero: portada del sitio, la ficha técnica |
 | Isologo horizontal | `berigna-isologo-horizontal-*.svg` | Cabeceras de informes y espacios apaisados |

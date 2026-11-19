@@ -1,17 +1,17 @@
 # Empaquetado para Debian
 
 | Campo | Valor |
-|---|---|
+| --- | --- |
 | Documento | BRG-DSP-001 |
-| Versión | 0.10.0 |
+| Versión | 0.10.1 |
 | Estado | Borrador |
-| Fecha | 2026-11-09 |
+| Fecha | 2026-11-18 |
 | Responsable | noggalito |
 
 ## 1. Paquetes binarios
 
 | Paquete | Contenido | Depends | Recommends |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | `berigna` | Aplicación, recursos, almacén de confianza, traducciones, manual | `python3 (>= 3.12)`, `python3-gi`, `python3-gi-cairo`, `gir1.2-gtk-4.0`, `gir1.2-adw-1`, `gir1.2-poppler-0.18`, `python3-pyhanko (>= 0.25.1), python3-pyhanko (<< 0.25.2~)` (\*), `python3-pyhanko-certvalidator (>= 0.26.3), (<< 0.27~)`, `python3-pyscard (>= 2.2)`, `python3-cryptography (>= 42)`, `python3-asn1crypto (>= 1.5), (<< 2~)`, `python3-lxml (>= 5)`, `python3-signxml (>= 4.0), (<< 5~)`, `python3-requests (>= 2.31)`, `python3-pil (>= 10)`, `python3-reportlab (>= 4)`, `fonts-dejavu-core`, `pcscd` | `berigna-nautilus`, `libccid`, `opensc-pkcs11` (*backend* PKCS#11, ADR-0012) |
 | `berigna-nautilus` | Extensión de Nautilus | `berigna (= ${binary:Version})`, `python3-nautilus` | — |
 | `python3-pyhanko` (\*) | pyHanko 0.25.1 | Las dependencias oficiales de Debian 13 (SPK-05) | — |
@@ -25,7 +25,7 @@ Los tres paquetes son `Architecture: all` (DP-08). Los límites de versión son 
 ## 2. Archivos instalados
 
 | Ruta | Origen |
-|---|---|
+| --- | --- |
 | `/usr/bin/berigna` | Lanzador |
 | `/usr/lib/python3/dist-packages/berigna/` | Código |
 | `/usr/share/berigna/` | GResource, almacén de confianza |
@@ -105,7 +105,7 @@ escrito en `scripts/empaquetar-pyhanko.sh`:
 
 Resultados con `python3-pyhanko` 0.25.1: `lintian --pedantic` sin errores (un aviso
 esperado, `initial-upload-closes-no-bugs`, hasta que la subida a Debian cierre el ITP
-#1062808); `piuparts` pasa en un trixie mínimo; el paquete se instala con las dependencias
+\# 1062808); `piuparts` pasa en un trixie mínimo; el paquete se instala con las dependencias
 de Debian y funciona (`import pyhanko`, el CLI y su página de manual).
 
 ## 5 bis. Un solo `.deb` para la familia Debian (2026-11-08)
@@ -136,7 +136,7 @@ Ubuntu 24.04 y Linux Mint 22 quedan fuera: no traen signxml y sus versiones de c
 `debian/` vive en la raíz del repositorio (como preveía BRG-DES-001 §1):
 
 | Archivo | Contenido |
-|---|---|
+| --- | --- |
 | `debian/control` | Fuente 3.0 (quilt); `Build-Depends` para Meson con dh-python (`debhelper-compat (= 13)`, `meson`, `ninja-build`, `blueprint-compiler` con los typelibs `gir1.2-gtk-4.0` y `gir1.2-adw-1` que las vistas importan, `gettext`, `libglib2.0-dev`, `gtk-update-icon-cache`, `desktop-file-utils`, `appstream`, `python3`); el `Depends` de §1 |
 | `debian/rules` | `dh $@ --with python3 --buildsystem=meson`; `dh_auto_test` ejecuta las pruebas de Meson (`desktop-file-validate` y `appstreamcli validate`); `dh_installdocs` añade la página de manual, como en `python3-pyhanko` |
 | `debian/copyright` | DEP-5: GPL-3.0-or-later para el código y la marca, SIL OFL 1.1 con el texto completo para las 4 tipografías (Arvo y Source Sans 3, con los nombres reservados de cada licencia) y los certificados públicos de la IOFE (RENIEC e INDECOPI) como datos públicos con su origen |

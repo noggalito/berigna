@@ -1,11 +1,11 @@
 # Glosario terminológico del quechua sureño
 
 | Campo | Valor |
-|---|---|
+| --- | --- |
 | Documento | BRG-UX-003 |
-| Versión | 0.3.0 |
+| Versión | 0.3.1 |
 | Estado | Borrador |
-| Fecha | 2026-11-07 |
+| Fecha | 2026-11-18 |
 | Responsable | noggalito |
 
 ## 1. Propósito y alcance
@@ -25,7 +25,7 @@ La primera traducción (2026-10-29) es automática, hecha en línea a partir de 
 ## 3. Términos
 
 | Español | Quechua | Nota |
-|---|---|---|
+| --- | --- | --- |
 | documento | qillqa | "escrito" |
 | archivo | archivo | préstamo |
 | carpeta | carpeta | préstamo |

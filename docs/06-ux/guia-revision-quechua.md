@@ -1,11 +1,11 @@
 # Guía para revisar la traducción al quechua
 
 | Campo | Valor |
-|---|---|
+| --- | --- |
 | Documento | BRG-UX-004 |
-| Versión | 0.1.0 |
+| Versión | 0.1.1 |
 | Estado | Borrador |
-| Fecha | 2026-11-07 |
+| Fecha | 2026-11-18 |
 | Responsable | noggalito |
 
 ## 1. Propósito y alcance
@@ -24,7 +24,7 @@ Una corrección de un término cambia primero el glosario y después todas las e
 RNF-USA-09 pide revisión humana sobre todo de los textos que pueden cambiar una decisión del usuario o el sentido legal de un resultado. Si el tiempo es poco, conviene empezar por ellos:
 
 | Prioridad | Textos | Dónde aparecen en `po/quz.po` (líneas `#:`) |
-|---|---|---|
+| --- | --- | --- |
 | 1 | Diálogo del PIN y avisos de intentos y de bloqueo del DNIe | `src/berigna/ui/signing.py` |
 | 1 | Resultados de la verificación y sus explicaciones (válida, no válida, indeterminada) | `src/berigna/core/report/`, `src/berigna/ui/verification.py` |
 | 1 | Aviso de traducción sin revisar | `data/ui/window.blp`, `src/berigna/ui/window.py` |
@@ -55,7 +55,7 @@ Las herramientas de traducción como Poedit o Gtranslator (paquete `gtranslator`
 Las reglas de lengua son las del glosario (BRG-UX-003 §2); aquí se resumen y se añaden las del formato del catálogo.
 
 | Regla | Detalle | Ejemplo |
-|---|---|---|
+| --- | --- | --- |
 | Variedad | Quechua sureño de Cusco-Collao (`quz`), alfabeto oficial de tres vocales | |
 | Tratamiento | Segunda persona e imperativo simple, como el tuteo del español de la interfaz | *Qillqata kichay* ("Abre un documento") |
 | Plural | Una sola forma: el sustantivo no cambia tras un número (`nplurals=1`). Las entradas con `msgid_plural` llevan solo `msgstr[0]` | *kimsa qillqa* |

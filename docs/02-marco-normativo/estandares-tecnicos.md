@@ -1,17 +1,17 @@
 # Estándares técnicos
 
 | Campo | Valor |
-|---|---|
+| --- | --- |
 | Documento | BRG-NOR-002 |
-| Versión | 0.2.0 |
+| Versión | 0.2.1 |
 | Estado | Borrador |
-| Fecha | 2026-11-07 |
+| Fecha | 2026-11-18 |
 | Responsable | noggalito |
 
 ## 1. Estándares de firma
 
 | Estándar | Título | Uso en berigna |
-|---|---|---|
+| --- | --- | --- |
 | ETSI EN 319 142-1 | PAdES: bloques de construcción y perfiles de línea base | Firma de PDF (RF-010 a RF-019) |
 | ETSI EN 319 122-1 | CAdES: bloques de construcción y perfiles de línea base | Firma de cualquier archivo (RF-020 a RF-023) |
 | ETSI EN 319 132-1 | XAdES: bloques de construcción y perfiles de línea base | Firma de XML (RF-030 a RF-033) |
@@ -26,7 +26,7 @@
 ## 2. Estándares de PKI
 
 | Estándar | Título | Uso |
-|---|---|---|
+| --- | --- | --- |
 | RFC 5280 | Perfil X.509 de certificados y CRL | Validación de la cadena |
 | RFC 6960 | OCSP | Estado de revocación en línea |
 | RFC 3161 | Protocolo de sellado de tiempo (TSP) | Niveles T, LT y LTA |
@@ -38,7 +38,7 @@
 ## 3. Estándares de dispositivo
 
 | Estándar | Uso |
-|---|---|
+| --- | --- |
 | PKCS#11 v2.40 / v3.x (OASIS) | API de acceso al *token* |
 | PC/SC (pcsc-lite) | Acceso al lector |
 | USB CCID | Clase de lector soportada |
@@ -48,7 +48,7 @@
 ## 4. Algoritmos criptográficos
 
 | Elemento | Requisito | Observación |
-|---|---|---|
+| --- | --- | --- |
 | *Hash* del documento | SHA-256 como mínimo; SHA-384 y SHA-512 configurables | Prohibidos en firmas nuevas: MD5 y SHA-1 (guía de INDECOPI v4.0, req. 6 y anexo 1) |
 | Tamaño de clave | RSA de 2048 bits como mínimo | Se rechaza firmar con RSA 1024 o menor (guía de INDECOPI v4.0, req. 6) |
 | Firma | RSA PKCS#1 v1.5 con SHA-256 | Verificado en SPK-01: el DNIe v2 tiene claves RSA 2048 y aplica el relleno PKCS#1 v1.5 sobre un `DigestInfo` calculado fuera (driver APDU, ADR-0012). Con el *backend* PKCS#11 equivale a `CKM_RSA_PKCS` sobre el DigestInfo |
@@ -58,7 +58,7 @@
 ## 5. Estándares de escritorio y empaquetado
 
 | Estándar | Uso |
-|---|---|
+| --- | --- |
 | GNOME HIG | Diseño de la interfaz |
 | freedesktop Desktop Entry, Shared MIME-info, AppStream | Integración con el escritorio |
 | Debian Policy Manual, Debian Python Policy | Empaquetado `.deb` |
@@ -70,7 +70,7 @@
 ## 6. Interpretación del perfil de línea base para berigna
 
 | Nivel | Qué contiene | Qué necesita | Validez a largo plazo |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | B-B | Firma CMS/XML con atributos firmados obligatorios (certificado del firmante, *hash* y hora declarada) | Solo el DNIe | Hasta que caduque o se revoque el certificado |
 | B-T | B-B más un sello de tiempo sobre la firma | TSA | Prueba la fecha de existencia, pero no incluye los datos de validación |
 | B-LT | B-T más los certificados de la cadena y las respuestas OCSP o CRL embebidas (en PAdES, dentro del diccionario DSS) | TSA y OCSP o CRL según el estándar. En berigna, para el DNIe: OCSP obligatorio (la CRL de 109 MB no es viable; RF-063, SPK-02) | Verificable sin conexión mientras sigan siendo fuertes los algoritmos y el sello |
@@ -81,7 +81,7 @@
 berigna adopta estas normas de proceso y de calidad. Hasta tener las evidencias de cada una, ningún texto afirma que berigna las cumple (mismo criterio que RNF-LEG-03).
 
 | Norma | Título | Uso en berigna | Versión |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | ISO/IEC 5230:2020 | OpenChain: cumplimiento de licencias de código abierto | Política de licencias, responsables e inventario de componentes; se apoya en `debian/copyright` (DEP-5), el permiso adicional de la GPL (ADR-0021) y el SBOM CycloneDX de la CI. Autocertificación | 1.0 |
 | ISO/IEC 18974:2023 | OpenChain: aseguramiento de la seguridad del código abierto | Tratamiento de las vulnerabilidades conocidas de las dependencias; se apoya en el SBOM y en la vigilancia semanal con OSV y `debsecan`. Autocertificación | 1.0 |
 | ISO/IEC 29147:2018 | Divulgación de vulnerabilidades | Recepción de avisos, comunicación con quien informa y publicación de avisos de seguridad ([`SECURITY.md`](../../SECURITY.md)) | 1.0 |

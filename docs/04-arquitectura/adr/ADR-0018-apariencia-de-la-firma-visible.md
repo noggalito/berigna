@@ -1,7 +1,7 @@
 # ADR-0018: Apariencia de la firma visible
 
 - Estado: Aceptado
-- Fecha: 2026-10-30
+- Fecha: 2026-11-18
 - Origen: Fase 3, incremento 5 (CU-02; RF-012, RF-092); decisiones del titular del 2026-10-28. Carbón al valor `#2B1E20` del manual de marca del 2026-10-30
 
 ## Contexto
@@ -16,14 +16,14 @@ pyHanko dibuja apariencias, pero su motor de texto con tipografías propias nece
 2. Tipografías: Source Sans 3 (Regular y Semibold) para el texto y Arvo Bold para el nombre del firmante, en TrueType, incluidas en el paquete (`src/berigna/core/fonts/`) con sus licencias SIL OFL 1.1. Origen: Source Sans 3 3.052R del repositorio de Adobe (`adobe-fonts/source-sans`); Arvo del repositorio de Google Fonts (`google/fonts`, `ofl/arvo`). Se incrustan como subconjunto en cada PDF firmado.
 
    | Archivo | SHA-256 |
-   |---|---|
+   | --- | --- |
    | `SourceSans3-Regular.ttf` | `4644c81b86ec9caaa76b634889968ed3c4f4f52f054855933acc7c2b21e53b0f` |
    | `SourceSans3-Semibold.ttf` | `a3f4f8dcf343a8f24dc61951de93f3ba1558b15cd250ba24af8a40e957081b7d` |
    | `Arvo-Regular.ttf` | `f41bd41471ec2db7140351bdde614da5341524503598ff7fe79f3c89c13b605e` |
    | `Arvo-Bold.ttf` | `6239b2edee762db0ab99343137c9ba15ae81fc843da2e76a0a395781748cc21f` |
 
 3. Contenido del sello: "Firmado digitalmente por", el nombre del titular (sin el sufijo "FIR 12345678 hard" de los certificados del DNIe), el DNI como lo elija el usuario en Preferencias (`appearance-dni`: los últimos cuatro dígitos, `****1234`, por defecto; completo; o ninguno, decisión del 2026-10-28), la fecha y hora locales con su desfase horario, y el motivo y la ubicación si los hay. Los textos fijos y la fecha siguen el idioma del sello (`appearance-language`, RF-092), con independencia del de la interfaz. Disposición (2026-10-28): en un recuadro más ancho que alto, el QR o la imagen van a la izquierda del texto; en uno más alto que ancho, encima, separados por el filete. La orientación sale de la forma del recuadro que dibuja el usuario, sin otra opción. La lista de apariencias empieza por "No visible".
-4. Código QR: los mismos datos del firmante y la fecha, y "Cómo verificar: https://berigna.noggalito.com/verificar". El texto va en UTF-8 precedido del indicador ECI 26, que declara la codificación: sin él, un lector de teléfono leyó "Cómo" como "C髇o". No lleva el nivel de firma, porque el sello se dibuja antes de firmar y un B-LT puede quedar en B-T si los servicios de revocación no responden; tampoco identifica el documento.
+4. Código QR: los mismos datos del firmante y la fecha, y "Cómo verificar: <https://berigna.noggalito.com/verificar>". El texto va en UTF-8 precedido del indicador ECI 26, que declara la codificación: sin él, un lector de teléfono leyó "Cómo" como "C髇o". No lleva el nivel de firma, porque el sello se dibuja antes de firmar y un B-LT puede quedar en B-T si los servicios de revocación no responden; tampoco identifica el documento.
 5. Color: tinta carbón (`#2B1E20`) y un filete burdeos de la marca; fondo transparente.
 6. La rúbrica y el logotipo se cargan una vez en Preferencias y se guardan en `$XDG_DATA_HOME/berigna/apariencia/`, convertidos a PNG (sin metadatos EXIF) y reducidos a 1200 px.
 7. El sello se dibuja con los datos del certificado después de validarlo y antes de pedir el PIN: un recuadro demasiado pequeño, una página inexistente o girada, o una imagen ilegible se informan sin gastar un intento (ERR-308).

@@ -1,11 +1,11 @@
 # Recomendaciones a futuro sobre la práctica de desarrollo
 
 | Campo | Valor |
-|---|---|
+| --- | --- |
 | Documento | BRG-DES-002 |
-| Versión | 0.13.0 |
+| Versión | 0.13.1 |
 | Estado | Borrador |
-| Fecha | 2026-11-13 |
+| Fecha | 2026-11-18 |
 | Responsable | noggalito |
 
 ## 1. Propósito
@@ -17,7 +17,7 @@ Punto de partida: el proyecto ya tiene ADR, trazabilidad de requisitos a pruebas
 ## 2. Fase 4
 
 | N.º | Recomendación | Por qué | Coste |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | R-DES-01 | Activar ya la vigilancia de BRG-MAN-001 §5: CI semanal contra Debian *stable* y *testing*, comprobación de la TSL y de los servicios de RENIEC, Dependabot solo para las *actions* | Hoy existe solo la CI de cada PR; la vigilancia es evidencia para la acreditación y para R-15 y R-17. El *script* de medición de R-17 (CE-09) es el embrión de la comprobación de RENIEC. **Adoptado el 2026-11-02** (Fase 4, incremento 7): `.github/workflows/vigilancia.yml`, `scripts/vigilar-servicios.py` y `.github/dependabot.yml` (BRG-DES-001 §5) | Bajo |
 | R-DES-02 | Vigilancia de vulnerabilidades adaptada a Debian: `debsecan` en el contenedor y las alertas de GitHub (GHSA y OSV) para pyHanko 0.25.1 | `pip-audit` sobre paquetes de Debian da falsos positivos (Debian corrige sin cambiar la versión de origen); lo único que llega de PyPI en producción es pyHanko. **Adoptado el 2026-11-02**: `debsecan` sobre los paquetes de Debian del SBOM (`scripts/vulnerabilidades-debian.py`, informativo) y OSV para pyHanko (`scripts/vigilar-servicios.py`), en la vigilancia semanal | Bajo |
 | R-DES-03 | Lista de componentes (SBOM, CycloneDX) generada en la CI | El expediente pide declarar los componentes de terceros y sus licencias; generada es más fiable que escrita a mano. **Adoptado el 2026-11-02**: `scripts/sbom.py`, artefacto `sbom` de cada ejecución de la CI | Bajo |
@@ -29,7 +29,7 @@ Punto de partida: el proyecto ya tiene ADR, trazabilidad de requisitos a pruebas
 ## 3. Antes de la versión 1.0
 
 | N.º | Recomendación | Por qué | Coste |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | R-DES-07 | Pruebas por propiedades con Hypothesis (ya instalada en la CI) en las tres fronteras con datos de fuera: PDF y CMS mutados en `core.validation.pdf`, XML mutado en `core.trust.tsl`, respuestas OCSP y TSA truncadas | Los hallazgos A-3, M-2 y M-11 del informe 0018 eran de esta clase; la política de fronteras de BRG-DES-001 §3 queda así probada en general, no caso a caso. Adelanta parte del *fuzzing* previsto para la Fase 6 (AM-05, AM-06, AM-15). PDF, CMS y XML de XAdES, hechos en los incrementos 5 y 8 de la Fase 4. **Adoptado del todo el 2026-11-08**: la TSL de INDECOPI y la CRL de su firmante dañadas (se rechazan o se leen igual que intactas), las respuestas OCSP y las ARL de la red dañadas en la validación previa y en la verificación (`tests/support/net.py`) y las respuestas de la TSA dañadas, en su cliente y al firmar. Encontraron cuatro fallos, corregidos (AM-07): la validación previa terminaba en ERR-000; una firma intacta podía salir TOTAL-FAILED/FORMAT_FAILURE; un sello dañado se escribía en la firma, que se daba por hecha a B-T y verificaba TOTAL-FAILED; la CRL dañada del firmante de la TSL daba un `KeyError`. Un quinto, el 2026-11-08: con el byte de versión de esa CRL a 0, cryptography lanzaba `InvalidVersion`, que no es un `ValueError`, y la carga fallaba sin rechazar la lista (ERR-204); lo mismo pasaba con el certificado del firmante y con los de los servicios. `InvalidVersion` pasa a `UNREADABLE_DATA`; corregido y fijado como ejemplo. La comprobación del sello detecta daños, no un sello falsificado con un certificado ajeno (AM-07) | Medio |
 | R-DES-08 | CI semanal, sin bloquear, contra la última pyHanko de PyPI en una rama aparte | Mide cuánto cuesta salir de la 0.25.1 (R-15, ADR-0013) antes de Debian 14, en lugar de descubrirlo al migrar. **Adoptado el 2026-11-02** como trabajo `pyhanko-reciente` de la vigilancia semanal, sin rama aparte: el entorno virtual instala la última pyHanko con sus dependencias sobre las de Debian. Primer dato (2026-11-02): Debian *testing* ya trae pyhanko-certvalidator 0.30.2, con el que pyHanko 0.25.1 ni siquiera se importa | Bajo |
 | R-DES-09 | Proceso de versión escrito y en un *script*: etiqueta firmada (con la misma clave SSH de los commits), construcción del `.deb`, SHA-256, notas desde el CHANGELOG | La versión acreditada debe ser identificable (ACR-12); hoy no hay ninguna etiqueta. Se aplica ya a la versión candidata de la prueba de usabilidad (§6). **Adoptado el 2026-11-07**: `scripts/version.py` (BRG-DES-001 §6) escribe la versión en sus seis sitios (`preparar`, por PR), comprueba que coinciden (`comprobar`) y, en `main` igual a `origin/main`, pasa `verificar.sh`, construye el `.deb` con `lintian`, calcula su SHA-256, saca las notas del CHANGELOG y pone la etiqueta firmada (`etiquetar`); subir la etiqueta y publicar la versión en GitHub quedan a cargo de la persona. La `v0.3.0-rc.1` se etiquetó a mano y los archivos siguen en `0.1.0.dev0`: la siguiente versión los pone al día | Medio |
@@ -42,7 +42,7 @@ Punto de partida: el proyecto ya tiene ADR, trazabilidad de requisitos a pruebas
 ## 4. Fases 5 y 6
 
 | N.º | Recomendación | Por qué | Coste |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | R-DES-12 | Paquete `.deb` reproducible (`reprotest` en la CI) | Lo exige en la práctica Debian oficial (ADR-0020) y le sirve al auditor: el paquete publicado se corresponde con el código | Medio |
 | R-DES-13 | Revisión de accesibilidad con Orca en todas las vistas y comprobación del contraste en los temas claro y oscuro, con resultado registrado | RNF-USA-03 tiene la base (botones con nombre) pero no hay evidencia de uso real con lector de pantalla | Bajo |
 | R-DES-14 | Continuidad (BRG-MAN-001 §10): réplica del repositorio fuera de GitHub, custodia y copia de las claves (commits, futuro repositorio APT), segunda persona con acceso | Con una sola persona mantenedora es el riesgo más alto y el más barato de reducir | Trivial |

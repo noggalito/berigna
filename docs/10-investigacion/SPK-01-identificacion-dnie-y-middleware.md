@@ -1,11 +1,11 @@
 # SPK-01: Identificación del DNIe y del middleware PKCS#11
 
 | Campo | Valor |
-|---|---|
+| --- | --- |
 | Documento | BRG-INV-001 |
-| Versión | 0.4.1 |
+| Versión | 0.4.2 |
 | Estado | Cerrado (2026-10-27): firma con PIN verificada (§8.6); PAdES B-B del DNIe real válido en DSS y en el validador oficial Firma Perú (SPK-03 §7) |
-| Fecha | 2026-10-28 |
+| Fecha | 2026-11-18 |
 | Responsable | noggalito |
 
 ## 1. Pregunta
@@ -89,7 +89,7 @@ Se evalúan en este orden y se documenta el resultado de cada opción:
 Resultado de la evaluación (2026-10-27):
 
 | Opción | Resultado |
-|---|---|
+| --- | --- |
 | 1. OpenSC más reciente | La 0.26.1 (Debian 13) da "Unsupported card". Las notas de la 0.27.1 (2026-03-31) no mencionan el DNIe peruano. En el repositorio de OpenSC solo constan incidencias del DNIe v1 (Oberthur, controlador IAS-ECC), por ejemplo la #1147 de 2017 |
 | 2. Middleware de RENIEC para Linux | No se encontró ninguno publicado |
 | 3. Driver genérico de OpenSC | El *applet* PKI no responde a los AID de PKCS#15, IAS-ECC, PIV ni a los de otros *applets* PKI conocidos (§8.3) |
@@ -102,7 +102,7 @@ Se cruzan el ATR, la descripción de `pcsc_scan`, el aspecto físico y la inform
 ## 6. Plantilla de resultados (completada)
 
 | Campo | Valor |
-|---|---|
+| --- | --- |
 | Fecha de ejecución | 2026-10-27 |
 | Lectores (modelo, ID USB) | "Hyperion": Realtek "Generic USB2.0-CRW" combinado, `0bda:0169`. "innovatech": Alcor Micro AU9540, `058f:9540`. Ambos CCID con `libccid` 1.6.2 (comparación en §8.5) |
 | ATR | `3B DC 18 FF 81 91 FE 1F C3 80 73 C8 21 13 66 05 03 63 51 00 02 50` |
@@ -141,7 +141,7 @@ DP-01 queda cerrada con un módulo identificado y una firma PAdES B-B hecha con 
 
 ### 8.2 OpenSC
 
-```
+```text
 $ opensc-tool --list-readers
 0    Yes             Generic USB2.0-CRW [Smart Card Reader Interface] (20070818000000000) 00 00
 $ opensc-tool --atr
@@ -153,7 +153,7 @@ Unsupported card
 ### 8.3 Sondeo de *applets* (solo SELECT y GET DATA; no afectan al PIN)
 
 | Comando | Respuesta |
-|---|---|
+| --- | --- |
 | SELECT ICAO eMRTD `A0000002471001` | 9000 |
 | SELECT GP ISD `A000000151000000` / SELECT sin AID | 9000, FCI con AID `A000000151000000` |
 | GET DATA CPLC `80 CA 9F 7F` | 9000 (CPLC de NXP) |
@@ -166,7 +166,7 @@ Unsupported card
 Las operaciones sin PIN se verificaron el 2026-10-27. Las operaciones con PIN se tomaron de peru-dnie (MIT) y se verificaron el 2026-10-27 (§8.6).
 
 | Paso | APDU | Verificado |
-|---|---|---|
+| --- | --- | --- |
 | Seleccionar el *applet* PKI | `00 A4 04 00 0E E8 28 BD 08 0F D2 50 47 65 6E 65 72 69 63` | Sí |
 | Seleccionar un certificado | `00 A4 02 04 02 00 1D` (firma), `00 1C` (autenticación), `00 1B` (cifrado) | Sí |
 | Leer el certificado | READ BINARY con INS impar: `00 B1 00 00 04 54 02 <offset_hi> <offset_lo> FF`. La respuesta va envuelta en `53 81 xx`. Se lee en bloques de 0xE4 bytes hasta SW `6282` (fin de archivo). El archivo ocupa 4096 bytes con relleno; el certificado se recorta usando la longitud de su cabecera DER | Sí |
@@ -179,7 +179,7 @@ Las operaciones sin PIN se verificaron el 2026-10-27. Las operaciones con PIN se
 Los lectores se identifican con alias internos del proyecto. Mismo DNIe v2 en ambos y solo comandos de lectura.
 
 | Aspecto | "Hyperion" | "innovatech" |
-|---|---|---|
+| --- | --- | --- |
 | Modelo / USB | Realtek "Generic USB2.0-CRW", `0bda:0169` (combinado SD + tarjeta inteligente) | Alcor Micro AU9540 "EMV Smartcard Reader", `058f:9540` |
 | Nombre PC/SC | `Generic USB2.0-CRW [Smart Card Reader Interface] (20070818000000000) 00 00` | `Alcor Micro AU9540 00 00` |
 | Soporte en `libccid` 1.6.2 | Sí (está en `Info.plist`) | Sí |
@@ -207,7 +207,7 @@ Aprendizajes:
 La ejecutó el titular en su propia terminal: un único VERIFY, sin reintentos. Se firmaron textos de prueba, no documentos.
 
 | Paso | SW | Tiempo | Resultado |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | VERIFY PIN 0x81 | 9000 | 40 ms | — |
 | MSE:SET | 9000 | 26 ms | — |
 | Firma 1 | 9000 | 277 ms | Verificada |
@@ -238,5 +238,5 @@ Estas pruebas debe ejecutarlas el titular del DNIe, con su PIN, una sola vez y s
 
 Pendientes sin PIN:
 
-7. Probar los dos lectores conectados a la vez (selección del lector, RF-001). El perfil de "Hyperion" ya está completo (§8.5).
-8. Conseguir un lector con PIN pad (clase 2) para probar P-08.
+1. Probar los dos lectores conectados a la vez (selección del lector, RF-001). El perfil de "Hyperion" ya está completo (§8.5).
+2. Conseguir un lector con PIN pad (clase 2) para probar P-08.

@@ -1,11 +1,11 @@
 # Validación externa de la Fase 4: matriz CAdES y XAdES por niveles
 
 | Campo | Valor |
-|---|---|
+| --- | --- |
 | Documento | BRG-CAL-006 |
-| Versión | 0.8.1 |
+| Versión | 0.8.2 |
 | Estado | En curso |
-| Fecha | 2026-11-03 |
+| Fecha | 2026-11-18 |
 | Responsable | noggalito |
 
 ## 1. Objetivo
@@ -27,7 +27,7 @@ Para repetirlo: `.venv/bin/python tests/interop/matriz_cades.py DIR` y `.venv/bi
 ### 3.1 CAdES (incremento 2, 2026-10-30)
 
 | Archivo | Nivel pedido | Nivel alcanzado (berigna) | DSS 6.2 |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | `cades-B-B.p7s` | B-B | B-B | CAdES-BASELINE-B, INDETERMINATE / CERTIFICATE_CHAIN_GENERAL_FAILURE |
 | `cades-B-T.p7s` | B-T | B-T | CAdES-BASELINE-T, INDETERMINATE / CERTIFICATE_CHAIN_GENERAL_FAILURE |
 | `cades-B-LT.p7s` | B-LT | B-LT | CAdES-BASELINE-LT, TOTAL_PASSED |
@@ -49,7 +49,7 @@ Conclusiones:
 `verify_cades` (RF-051) sobre los mismos ocho archivos, sin red — DSS repite fila por fila lo de §3.1:
 
 | Archivo | berigna (`verify_cades`) | DSS 6.2 |
-|---|---|---|
+| --- | --- | --- |
 | `cades-B-B.p7s` | INDETERMINATE / TRY_LATER | INDETERMINATE / CERTIFICATE_CHAIN_GENERAL_FAILURE |
 | `cades-B-T.p7s` | INDETERMINATE / TRY_LATER | INDETERMINATE / CERTIFICATE_CHAIN_GENERAL_FAILURE |
 | `cades-B-LT.p7s` | TOTAL-PASSED | TOTAL_PASSED |
@@ -71,7 +71,7 @@ Conclusiones:
 Las doce combinaciones de variante y nivel, generadas con el DNIe simulado y una TSA de pruebas y validadas con DSS 6.2 (la separada, contra `datos.xml`):
 
 | Archivo | Nivel pedido | Nivel alcanzado (berigna) | DSS 6.2 |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | `xades-envuelta-B-B.xml` | B-B | B-B | XAdES-BASELINE-B, INDETERMINATE / NO_CERTIFICATE_CHAIN_FOUND |
 | `xades-envuelta-B-T.xml` | B-T | B-T | XAdES-BASELINE-T, INDETERMINATE / CERTIFICATE_CHAIN_GENERAL_FAILURE |
 | `xades-envuelta-B-LT.xml` | B-LT | B-LT | XAdES-BASELINE-LT, TOTAL_PASSED |
@@ -107,7 +107,7 @@ La revisión del 2026-11-01 halló que las pruebas usaban un único XML sin come
 `verify_xades` (RF-052) sobre las 36 firmas de la matriz, sin red. La indicación principal coincide con la de DSS 6.2 en las 36: TOTAL-PASSED en las 18 B-LT y B-LTA, también las de los documentos difíciles y la separada sobre una firma, e INDETERMINATE en las 18 B-B y B-T. Las doce de siempre:
 
 | Archivo | berigna (`verify_xades`) | DSS 6.2 |
-|---|---|---|
+| --- | --- | --- |
 | `xades-envuelta-B-B.xml` | INDETERMINATE / TRY_LATER | INDETERMINATE / NO_CERTIFICATE_CHAIN_FOUND |
 | `xades-envuelta-B-T.xml` | INDETERMINATE / TRY_LATER (sello: INDETERMINATE) | INDETERMINATE / CERTIFICATE_CHAIN_GENERAL_FAILURE |
 | `xades-envuelta-B-LT.xml` | TOTAL-PASSED (sello: PASSED) | TOTAL_PASSED |
@@ -132,7 +132,7 @@ Conclusiones:
 DSS 6.2 firma `datos.xml` en las tres variantes y los cuatro niveles (`tests/interop/firmas_dss.py`); berigna verifica sin red y DSS valida:
 
 | Archivo | berigna (`verify_xades`) | DSS 6.2 |
-|---|---|---|
+| --- | --- | --- |
 | `dss-xades-envuelta-B-B.xml` | INDETERMINATE / TRY_LATER | XAdES-BASELINE-B, INDETERMINATE / CERTIFICATE_CHAIN_GENERAL_FAILURE |
 | `dss-xades-envuelta-B-T.xml` | INDETERMINATE / TRY_LATER (sello: INDETERMINATE) | XAdES-BASELINE-T, INDETERMINATE / CERTIFICATE_CHAIN_GENERAL_FAILURE |
 | `dss-xades-envuelta-B-LT.xml` | TOTAL-PASSED (sello: PASSED) | XAdES-BASELINE-LT, TOTAL_PASSED |
@@ -157,7 +157,7 @@ Conclusiones:
 Un documento XML de prueba firmado con Firma Perú y un DNIe real: XAdES-BASELINE-B envuelta, con la referencia `URI=""` y la transformada XPath Filter 2.0 `subtract` de todos los `ds:Signature`, C14N exclusiva y `SigningCertificateV2`, emitida por ECEP-RENIEC CA Class 2 II. La firma y el documento, que llevan el nombre y el DNI del firmante, quedan en la documentación interna.
 
 | Verificación | Resultado |
-|---|---|
+| --- | --- |
 | berigna en línea (`verificar_firma_peru.py`: almacén propio, TSL de INDECOPI, OCSP y CRL de RENIEC) | TOTAL-PASSED; cubre el documento completo (`SignedScope.DOCUMENT`) |
 | berigna sin red | INDETERMINATE / TRY_LATER (sin la revocación, como cualquier B-B) |
 | berigna con un precio del documento cambiado | TOTAL-FAILED / HASH_FAILURE |
@@ -188,7 +188,7 @@ Las respuestas OCSP que trae una CAdES se leen con el CMS, de modo que una daña
 El titular ejecutó `tests/hil/firmar_matriz_con_pin.py` con su DNIe v2 real, con un lector Alcor Micro AU9540. Con un solo PIN, el script firmó en B-B, SHA-256, un lote de 7 archivos, tras la validación previa en línea contra RENIEC. Las firmas y los informes llevan sus datos personales, así que quedan en la documentación interna, con sus SHA-256 (PR-INT-05).
 
 | Variante | Firma Perú (validador web 1.1.0) | DSS 6.2 (ancla ROOT 3, revocación en línea) | berigna (en línea) |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | PAdES | Válido, PAdES_BASELINE_B | PAdES-BASELINE-B, TOTAL_PASSED | TOTAL-PASSED |
 | CAdES separada (`.p7s`) | Válido, CAdES_BASELINE_B | CAdES-BASELINE-B, TOTAL_PASSED | TOTAL-PASSED |
 | CAdES envuelta (`.p7m`) | Válido, CAdES_BASELINE_B, con la extensión cambiada a `.p7s` (con `.p7m` no la reconoce) | CAdES-BASELINE-B, TOTAL_PASSED | TOTAL-PASSED |

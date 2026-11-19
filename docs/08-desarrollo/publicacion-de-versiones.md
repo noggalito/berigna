@@ -1,11 +1,11 @@
 # Publicación de versiones
 
 | Campo | Valor |
-|---|---|
+| --- | --- |
 | Documento | BRG-DES-003 |
-| Versión | 0.1.0 |
+| Versión | 0.1.1 |
 | Estado | Borrador |
-| Fecha | 2026-11-09 |
+| Fecha | 2026-11-18 |
 | Responsable | noggalito |
 
 ## 1. Propósito

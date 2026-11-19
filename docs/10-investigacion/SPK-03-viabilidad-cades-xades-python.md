@@ -1,11 +1,11 @@
 # SPK-03: Viabilidad de CAdES y XAdES en Python con un *token*
 
 | Campo | Valor |
-|---|---|
+| --- | --- |
 | Documento | BRG-INV-003 |
-| Versión | 0.2.1 |
+| Versión | 0.2.2 |
 | Estado | Cerrado (2026-10-27): PKI de pruebas y DNIe real |
-| Fecha | 2026-10-28 |
+| Fecha | 2026-11-18 |
 | Responsable | noggalito |
 
 ## 1. Preguntas
@@ -18,7 +18,7 @@
 ## 2. Entorno (exactamente el de Debian 13, más pyHanko 0.25.1, según ADR-0013)
 
 | Componente | Versión | Origen |
-|---|---|---|
+| --- | --- | --- |
 | pyHanko | 0.25.1 | Wheel de PyPI (SHA-256 `045a0999…4c33c`) |
 | pyhanko-certvalidator | 0.26.3 | Debian 13 |
 | signxml | 4.0.5 | Debian 13 |
@@ -33,7 +33,7 @@
 Se considera que una firma pasa solo si la indicación global es TOTAL_PASSED **y** cada sello de tiempo, validado de forma individual, da PASSED (ver §5, aprendizaje 1).
 
 | Formato | B-B | B-T | B-LT | B-LTA |
-|---|---|---|---|---|
+| --- | --- | --- | --- | --- |
 | CAdES separada (`.p7s`) | ✔ | ✔ | ✔ | ✔ (sello de firma y de archivo PASSED) |
 | CAdES envuelta (`.p7m`) | ✔ | ✔ | ✔ | ✔ (sello de firma y de archivo PASSED) |
 | XAdES envuelta (*enveloped*) | ✔ | ✔ | ✔ | ✔ (sello de firma y de archivo PASSED) |
@@ -46,7 +46,7 @@ Se considera que una firma pasa solo si la indicación global es TOTAL_PASSED **
 ## 4. Qué aporta cada biblioteca y qué es código propio
 
 | Formato y nivel | Biblioteca | Código propio necesario | Tamaño aproximado del prototipo |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | CAdES B-B, B-T | pyHanko `sign_general_data(use_cades=True, timestamper=…)` | Ninguno, salvo el `Signer` que delega en el token | — |
 | CAdES B-LT | — | Añadir la cadena y la información de revocación a `SignedData.certificates` y `crls` | Unas 15 líneas |
 | CAdES B-LTA | — | `archive-time-stamp-v3` con `ats-hash-index-v3` (EN 319 122-1 §5.5.2 y §5.5.3) | Unas 45 líneas |
@@ -77,7 +77,7 @@ ADR-0008 pasa a Aceptado con la opción A (pyHanko para CMS y signxml para XAdES
 
 ## 7. Pendientes
 
-1. Hecho (2026-10-27, lector "innovatech"): `spk03_dnie.py` generó CAdES, XAdES y PAdES B-B con el DNIe real, 3 firmas con un único PIN (PSO:CDS de 275, 274 y 278 ms). DSS 6.2 contra ECERNEP PERU CA ROOT 3 con el OCSP de RENIEC: CAdES-BASELINE-B, XAdES-BASELINE-B y PAdES-BASELINE-B, las tres TOTAL_PASSED. El PDF se validó además en el validador oficial Firma Perú (PCM, https://apps.firmaperu.gob.pe/web/validador.xhtml, "Firma Perú 1.1.0 | DSS 5.11.1") el 2026-10-27: "Resultado válido", formato PAdES_BASELINE_B, ruta de certificación titular → ECEP-RENIEC CA Class 2 II → ECEP-RENIEC → ECERNEP PERU CA ROOT 3, "Certificado raíz del firmante en TSL: Sí". El informe (con datos personales) lo conserva el titular y no se incluye en el repositorio.
+1. Hecho (2026-10-27, lector "innovatech"): `spk03_dnie.py` generó CAdES, XAdES y PAdES B-B con el DNIe real, 3 firmas con un único PIN (PSO:CDS de 275, 274 y 278 ms). DSS 6.2 contra ECERNEP PERU CA ROOT 3 con el OCSP de RENIEC: CAdES-BASELINE-B, XAdES-BASELINE-B y PAdES-BASELINE-B, las tres TOTAL_PASSED. El PDF se validó además en el validador oficial Firma Perú (PCM, <https://apps.firmaperu.gob.pe/web/validador.xhtml>, "Firma Perú 1.1.0 | DSS 5.11.1") el 2026-10-27: "Resultado válido", formato PAdES_BASELINE_B, ruta de certificación titular → ECEP-RENIEC CA Class 2 II → ECEP-RENIEC → ECERNEP PERU CA ROOT 3, "Certificado raíz del firmante en TSL: Sí". El informe (con datos personales) lo conserva el titular y no se incluye en el repositorio.
 2. XAdES separada (RF-032, prioridad "Debería").
 3. B-LT con OCSP en CAdES y XAdES: el prototipo embebe CRL de la PKI de pruebas. Con el DNIe hay que embeber respuestas OCSP, porque la CRL pesa 109 MB (SPK-02).
 4. Revisar los tamaños y la estructura definitiva al llevar el prototipo a `core.formats` (con pruebas, tipado y revisión).

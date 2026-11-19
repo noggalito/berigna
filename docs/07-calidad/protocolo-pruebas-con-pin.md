@@ -1,11 +1,11 @@
 # Protocolo de pruebas con PIN real
 
 | Campo | Valor |
-|---|---|
+| --- | --- |
 | Documento | BRG-CAL-002 |
-| Versión | 0.1.1 |
+| Versión | 0.1.2 |
 | Estado | Vigente |
-| Fecha | 2026-10-29 |
+| Fecha | 2026-11-18 |
 | Responsable | noggalito |
 
 ## 1. Por qué existe
@@ -17,7 +17,7 @@ Por eso, toda prueba que envíe el PIN de un DNIe real (pruebas HIL, *spikes*, v
 ## 2. Reglas
 
 | Regla | Detalle |
-|---|---|
+| --- | --- |
 | PIN-01 | El PIN solo lo teclea su titular, en su propia terminal o en la interfaz de berigna. Nunca se escribe en un archivo, en una variable de entorno, en un argumento de la línea de comandos, en el historial de la shell ni en un chat |
 | PIN-02 | Cada ejecución envía el PIN como máximo una vez. Los *scripts* no tienen bucles de reintento |
 | PIN-03 | Antes de enviar el PIN se pide una confirmación explícita (`[s/N]`). La respuesta por defecto es no enviar nada |

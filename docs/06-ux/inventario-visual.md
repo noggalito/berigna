@@ -1,11 +1,11 @@
 # Inventario de recursos visuales
 
 | Campo | Valor |
-|---|---|
+| --- | --- |
 | Documento | BRG-UX-002 |
-| Versión | 0.4.0 |
+| Versión | 0.4.1 |
 | Estado | Borrador |
-| Fecha | 2026-11-10 |
+| Fecha | 2026-11-18 |
 | Responsable | noggalito |
 
 Iconos, ilustraciones y demás piezas gráficas que necesita berigna, para adelantar su diseño. Complementa el diseño de interfaz (BRG-UX-001) y la identidad visual (`data/brand/`).
@@ -23,7 +23,7 @@ Iconos, ilustraciones y demás piezas gráficas que necesita berigna, para adela
 Se hace desde el isotipo de la marca, sin el nombre: la variante `color` (con relieve) para el icono principal, la `plano` para los tamaños pequeños (el manual ordena usar la plana por debajo del tamaño mínimo del relieve) y la `negro` para el simbólico. Está en `data/icons/`; se instala en `hicolor` y va también en los recursos, de modo que funciona desde el árbol de trabajo.
 
 | Archivo | Tamaño | Origen | Uso |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | `com.noggalito.Berigna.svg` | Escalable (lienzo de 128×128 px) | Isotipo color (`berigna-isotipo-color.svg`) | Lanzador, "Acerca de", GNOME Software, Flathub, notificaciones |
 | `com.noggalito.Berigna-small.svg` | Se instala para 16, 24 y 32 px | Isotipo plano (`berigna-isotipo-plano.svg`) | Listas y tamaños pequeños |
 | `com.noggalito.Berigna-symbolic.svg` | 16×16 px | Isotipo negro (`berigna-isotipo-negro.svg`) | Barra superior de GNOME, menú contextual de Nautilus (RF-070) |
@@ -37,7 +37,7 @@ Opcional, más adelante: una variante `com.noggalito.Berigna.Devel` con la franj
 Solo los conceptos que Adwaita no cubre o cubre mal. Todos de 16×16 px y monocolor.
 
 | Nombre propuesto | Concepto | Dónde se usa | Qué se usa hoy |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | `berigna-sign-symbolic` | Firmar (pluma sobre una línea, o rúbrica) | Botón "Firmar" (opcional junto al texto), menú de Nautilus, lote, historial | Nada: botón solo con texto. Adwaita no tiene un icono de firma |
 | `berigna-verify-symbolic` | Verificar (documento con una marca de validez) | Acción "Verificar", menú de Nautilus | `security-high-symbolic` (un escudo), que sugiere antivirus |
 | `berigna-certificate-symbolic` | Certificado digital | Detalles técnicos, diagnóstico, almacén de confianza en Preferencias | Nada |
@@ -52,7 +52,7 @@ Decisión del 2026-10-28: estos iconos se preparan según se vayan necesitando. 
 ## 4. Iconos de Adwaita que ya sirven (no hay que diseñarlos)
 
 | Icono | Uso en berigna |
-|---|---|
+| --- | --- |
 | `object-select-symbolic` | Firma válida, DNIe listo, documento firmado |
 | `dialog-warning-symbolic` | Resultado indeterminado, tarjeta no compatible, avisos |
 | `dialog-error-symbolic` | Firma no válida, errores |
@@ -76,7 +76,7 @@ Decisión del 2026-10-28: estos iconos se preparan según se vayan necesitando. 
 Hoy las páginas de estado usan el icono simbólico a gran tamaño, como la mayoría de las aplicaciones de GNOME, y funcionan bien así. Unas pocas ilustraciones ayudarían a los usuarios con poca experiencia (RNF-USA-06), sobre todo con el lector:
 
 | Página | Hoy | Propuesta |
-|---|---|---|
+| --- | --- | --- |
 | Inicio: "Arrastra aquí un documento" | `document-open-symbolic` | Documento con el símbolo de berigna |
 | "Inserta tu DNIe en el lector" | Texto en la barra de estado | DNIe entrando en el lector, con el chip hacia el lado correcto. Es la duda más frecuente; sirve también para la ayuda (§9) |
 | "Conecta un lector de tarjetas" | Texto en la barra de estado | Lector USB y la flecha hacia el equipo |
@@ -88,7 +88,6 @@ Formato: SVG de 128 a 256 px que se vea bien en modo claro y oscuro. Si se hacen
 ## 6. Firma visible (incremento 5; RF-012, RF-081, RF-092)
 
 Hecho el 2026-10-28 (ADR-0018): solo texto, rúbrica, logotipo o código QR; Source Sans 3 para el texto y Arvo Bold para el nombre; tinta carbón con un filete burdeos. Lo que sigue queda como referencia para afinar el diseño.
-
 
 Es la pieza gráfica que más ven terceros, porque queda impresa en los documentos. Hace falta diseñar:
 
@@ -121,7 +120,7 @@ Decisión del 2026-10-28: la interfaz usa el color de acento que el usuario elig
 ## 10. Tiendas, repositorio y web (Fase 5 y versión 1.1)
 
 | Pieza | Formato | Para |
-|---|---|---|
+| --- | --- | --- |
 | Capturas para AppStream | PNG 16:9 (por ejemplo, 1280×800), estilo claro, datos ficticios | Hechas (Fase 5, incremento 1, 2026-11-04): `scripts/capturas-metainfo.sh` las regenera (firma y verificación); se sirven desde `https://berigna.noggalito.com/website_berigna/static/src/img/` (en el módulo `website_berigna`, junto a la imagen de la home), las URL que referencia la metainfo |
 | Colores de marca para AppStream | `<branding>` con un color para el modo claro y otro para el oscuro | Cabecera de berigna en GNOME Software y Flathub |
 | Imagen social del repositorio | PNG 1280×640 | Vista previa al compartir el enlace de GitHub |
@@ -132,7 +131,7 @@ Decisión del 2026-10-28: la interfaz usa el color de acento que el usuario elig
 Los iconos y las ilustraciones se preparan según se vayan necesitando (decisión del 2026-10-28). Orden orientativo:
 
 | Orden | Pieza | Lo necesita |
-|---|---|---|
+| --- | --- | --- |
 | 1 | Plantillas de la firma visible (§6) | Incremento 5 de la Fase 3 |
 | 2 | Ilustración "Inserta tu DNIe" (§5) | Revisión de usabilidad (criterio de salida de la Fase 3) y ayuda |
 | 3 | Iconos de §3, cuando una pantalla los pida | Incrementos 5 y 6; menú de Nautilus en la Fase 5 |

@@ -1,11 +1,11 @@
 # Arquitectura general
 
 | Campo | Valor |
-|---|---|
+| --- | --- |
 | Documento | BRG-ARQ-001 |
-| Versión | 0.6.2 |
+| Versión | 0.6.3 |
 | Estado | Borrador |
-| Fecha | 2026-11-07 |
+| Fecha | 2026-11-18 |
 | Responsable | noggalito |
 
 ## 1. Principios
@@ -93,7 +93,7 @@ flowchart TB
 ### 3.1 Responsabilidades
 
 | Módulo | Responsabilidad | Bibliotecas (estado al 2026-10-27) |
-|---|---|---|
+| --- | --- | --- |
 | `core.token` | Detección de lectores y tarjetas, y selección del *backend* según el ATR. Dos *backends* con la misma interfaz `TokenSigner`: `dnie_v2`, driver APDU para el DNIe v2 (*applet* PKI, lectura de certificados, VERIFY, MSE:SET y PSO:CDS, con lista blanca de instrucciones), y `pkcs11`, el genérico (*slots*, login y logout, `C_Sign`) | pyscard (ADR-0012), implementado para el DNIe v2, con monitor en caliente; python-pkcs11 (ADR-0003), aplazado a la versión 1.1 |
 | `core.formats.pades` | Firma y validación PAdES, DSS/VRI, sellos de documento, DocMDP. Firma mediante un `Signer` personalizado de pyHanko que delega en `TokenSigner` | pyHanko 0.25.1 (ADR-0004, ADR-0013); implementada la firma B-B, B-T, B-LT y B-LTA |
 | `core.formats.common` | Lo que comparten los formatos: niveles, `TokenCmsSigner` (firmante de pyHanko que delega en `TokenSigner`) y los fallos de servicio que bajan el nivel en lugar de perder la firma | pyHanko, pyhanko-certvalidator; implementado |
@@ -122,7 +122,7 @@ flowchart TB
 Decisiones de implementación de `core.token.dnie_v2` (ADR-0012), documentadas para la auditoría:
 
 | Decisión | Motivo |
-|---|---|
+| --- | --- |
 | La lista blanca valida la forma exacta de cada comando (AID, archivos, referencia de PIN, plantilla de MSE, `DigestInfo` SHA-2), no solo la instrucción | AM-19: ninguna ruta de código puede enviar otra cosa al chip |
 | `signing_certificate()` solo comprueba el uso de clave (no repudio); la vigencia, la cadena y la revocación las valida la capa de validación (RF-006) | Separación de responsabilidades |
 | PSO:CDS se envía sin `Le` | Comportamiento verificado en el DNIe real (SPK-01 §8.6 y HIL del 2026-10-27) |
@@ -215,7 +215,6 @@ def probe(timestamper, md_algorithm="sha256", deadline=30.0) -> None            
 ```
 
 Diseño previsto para las fases siguientes (no es código final):
-
 
 ```python
 # Pseudocódigo de diseño, no es código final.

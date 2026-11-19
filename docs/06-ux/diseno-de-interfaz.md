@@ -1,11 +1,11 @@
 # Diseño de interfaz
 
 | Campo | Valor |
-|---|---|
+| --- | --- |
 | Documento | BRG-UX-001 |
-| Versión | 0.8.0 |
+| Versión | 0.8.1 |
 | Estado | Borrador (bocetos de baja fidelidad) |
-| Fecha | 2026-11-06 |
+| Fecha | 2026-11-18 |
 | Responsable | noggalito |
 
 ## 1. Principios de UX
@@ -47,7 +47,7 @@ flowchart LR
 
 ### 3.1 Inicio
 
-```
+```text
 ┌──────────────────────────────────────────────────────────────┐
 │ ☰                         berigna                       ─ □ ✕ │
 ├──────────────────────────────────────────────────────────────┤
@@ -73,7 +73,7 @@ flowchart LR
 
 Implementado en la Fase 3, incremento 3; la firma visible, en el incremento 5 (ADR-0018): una lista de apariencia que empieza por "No visible" (después: solo texto, rúbrica, logotipo o código QR) en el panel, y el recuadro sobre la vista previa, que se mueve arrastrándolo y cambia de tamaño arrastrando su esquina inferior derecha (arrastrar el resto de la página la desplaza, como en un visor de documentos), con el sello dibujado en vivo con datos de muestra; en un recuadro más alto que ancho, la imagen va encima del texto. La vista previa abre en la primera página encajada en la ventana; tiene un campo para escribir el número de página y zoom del 50 % al 400 % (botones y Ctrl + rueda). El recuadro de la firma aparece en la página que se esté viendo y la sigue al cambiar de página (el usuario elige la página libremente; decisión del 2026-10-30). Motivo y ubicación en listas con "Otro". Diferencias con el boceto: los niveles que necesitan una TSA aparecen desactivados mientras no haya una configurada (DP-02); un documento certificado "sin cambios" muestra el motivo y no deja firmar (ERR-307).
 
-```
+```text
 ┌──────────────────────────────────────────────────────────────┐
 │ ←  contrato.pdf                                  [ Firmar ]  │
 ├────────────────────────────────────┬─────────────────────────┤
@@ -99,7 +99,7 @@ Implementado en la Fase 3, incremento 3; la firma visible, en el incremento 5 (A
 
 Otros archivos (CU-05; Fase 4, incremento 6). Lo que no es PDF no siempre se puede previsualizar, así que en el lugar de la vista previa se muestran el nombre, el tamaño (legible y exacto en bytes), el tipo (la descripción del escritorio, en el idioma de la interfaz) y el SHA-256 en grupos de cuatro, con la vista del texto debajo si el archivo es de texto (UTF-8, UTF-16 con BOM o la codificación que declare un XML; los primeros 64 kB de un archivo grande, con aviso). El panel propone el formato: XAdES envuelta para un XML y CAdES separada (`.p7s`) para el resto; el usuario puede elegir otra variante (XAdES envolvente o separada `.xsig`, o CAdES envolvente `.p7m`; un XML también se puede firmar en CAdES). En un XML que ya tiene firmas, la envuelta aparece desactivada con el motivo (ERR-312). Cuando una variante estándar choca con Firma Perú, el validador oficial, berigna mantiene el estándar y lo avisa en la descripción de la variante (decisión del titular, 2026-11-03; BRG-CAL-006 §3.10): la CAdES envolvente `.p7m` dice que Firma Perú no reconoce esa extensión y que, para validarla allí, hay que cambiarla a `.p7s` y subir antes el archivo original (que berigna puede guardar desde el `.p7m`); la XAdES separada `.xsig` dice que Firma Perú no la valida y que otros validadores, como DSS, sí. En un lote, el mismo aviso aparece bajo la variante elegida. Motivo, ubicación y firma visible son de PAdES y no aparecen. El diálogo del PIN añade el SHA-256 y el formato.
 
-```
+```text
 ┌──────────────────────────────────────────────────────────────┐
 │ ←  planilla.csv                                  [ Firmar ]  │
 ├────────────────────────────────────┬─────────────────────────┤
@@ -120,7 +120,7 @@ Otros archivos (CU-05; Fase 4, incremento 6). Lo que no es PDF no siempre se pue
 
 Implementado en la Fase 3, incremento 3, con `Gtk.PasswordEntry` (P-05). Tras un PIN incorrecto el diálogo vuelve a aparecer con los intentos restantes (P-07) y el usuario debe escribir y confirmar de nuevo (P-06); con 0 intentos se explica el bloqueo. El campo se vacía en cuanto se toma el PIN.
 
-```
+```text
 ┌───────────────────────────────────────────────┐
 │            Confirmar firma                    │
 │                                               │
@@ -143,7 +143,7 @@ Implementado en la Fase 3, incremento 2. Diferencias con el boceto: la explicaci
 
 En la Fase 4, incremento 6, la misma página verifica firmas CAdES (`.p7s`, `.p7m`) y documentos XML con firmas XAdES (`.xml`, `.xsig`); el formato se reconoce por el contenido, no por la extensión. Para una firma separada se busca el archivo firmado junto a ella: el que nombra una XAdES (solo el nombre, nunca otra carpeta), el mismo nombre sin la extensión (`acta.xml` para `acta.xml.p7s`) o sin el número que berigna añade cuando el nombre está ocupado (`acta.xml` para `acta-2.xml.p7s`); en CAdES se prefiere el que tiene el resumen firmado. Si no está, la página lo pide ("Elegir archivo…"). El resumen muestra el archivo firmado, que se puede cambiar, y en un `.p7m` la fila "Guardar el contenido firmado" (RF-051). Los detalles técnicos dicen el formato y, en XAdES, qué cubre la firma (todo el documento, una parte, el contenido dentro de la firma o un archivo aparte; AM-06), y cada sello de archivo. Los informes JSON y PDF llevan lo mismo y el nombre y SHA-256 del archivo firmado. "Firmar" sigue disponible en un XML firmado; no aparece en CAdES, porque la cofirma (RF-023) llega en la versión 1.1, ni en una firma separada, porque firmaría el archivo de la firma y no el documento.
 
-```
+```text
 ┌──────────────────────────────────────────────────────────────┐
 │ ←  informe-firmado.pdf                    [ Exportar ▾ ]     │
 ├──────────────────────────────────────────────────────────────┤
@@ -164,7 +164,7 @@ En la Fase 4, incremento 6, la misma página verifica firmas CAdES (`.p7s`, `.p7
 
 ### 3.5 Lote
 
-```
+```text
 ┌──────────────────────────────────────────────────────────────┐
 │ ←  Firmar 12 archivos                   [ Firmar 12 ]        │
 ├──────────────────────────────────────────────────────────────┤
@@ -184,7 +184,7 @@ Implementado en la Fase 3, incremento 6, con PDF; los demás formatos llegaron e
 ## 4. Textos de los niveles (borrador)
 
 | Nivel | Título (es_PE) | Descripción (es_PE) | Title (en_US) | Description (en_US) |
-|---|---|---|---|---|
+| --- | --- | --- | --- | --- |
 | B-B | Básica | Firma sin sello de tiempo. La fecha la declara tu equipo. | Basic | Signature without a timestamp. The date is declared by your computer. |
 | B-T | Con sello de tiempo | Una autoridad de sellado certifica la fecha y la hora de la firma. | With timestamp | A timestamping authority certifies the date and time of the signature. |
 | B-LT | Validación a largo plazo | Incluye además la información necesaria para verificar la firma años después. Recomendado. | Long-term validation | Also includes the information needed to verify the signature years from now. Recommended. |

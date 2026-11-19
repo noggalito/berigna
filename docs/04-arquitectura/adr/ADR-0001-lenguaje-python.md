@@ -1,7 +1,7 @@
 # ADR-0001: Python como lenguaje del proyecto
 
 - Estado: Aceptado
-- Fecha: 2026-10-27
+- Fecha: 2026-11-18
 
 ## Contexto
 
@@ -14,7 +14,7 @@ Python 3, en la versión que trae Debian 13.
 ## Alternativas consideradas
 
 | Opción | A favor | En contra |
-|---|---|---|
+| --- | --- | --- |
 | Rust | Seguridad de memoria, binario nativo | El ecosistema PAdES y LTV es inmaduro; habría que escribir mucha criptografía de formato propia |
 | Java (DSS de la UE) | El motor AdES más completo; mismo stack que ReFirma | JVM pesada; integración pobre con GNOME; empaquetado en Debian complejo |
 | C/C++ | Control total | Costo y riesgo muy altos en el análisis de formatos |

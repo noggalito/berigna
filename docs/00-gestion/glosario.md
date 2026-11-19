@@ -1,15 +1,15 @@
 # Glosario
 
 | Campo | Valor |
-|---|---|
+| --- | --- |
 | Documento | BRG-GES-002 |
-| Versión | 0.1.2 |
+| Versión | 0.1.3 |
 | Estado | Borrador |
-| Fecha | 2026-10-29 |
+| Fecha | 2026-11-18 |
 | Responsable | noggalito |
 
 | Término | Definición |
-|---|---|
+| --- | --- |
 | AAC | Autoridad Administrativa Competente de la IOFE. En el Perú, este rol lo cumple INDECOPI. |
 | AdES | *Advanced Electronic Signatures*: familia de formatos de firma avanzada de ETSI (CAdES, PAdES, XAdES, JAdES). |
 | AIA | *Authority Information Access*: extensión X.509 que indica dónde obtener el certificado emisor y el servicio OCSP. |
