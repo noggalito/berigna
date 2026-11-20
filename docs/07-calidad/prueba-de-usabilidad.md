@@ -1,11 +1,11 @@
 # Protocolo de la prueba de usabilidad
 
 | Campo | Valor |
-|---|---|
+| --- | --- |
 | Documento | BRG-CAL-005 |
-| Versión | 0.3.0 |
+| Versión | 0.3.1 |
 | Estado | Borrador |
-| Fecha | 2026-10-29 |
+| Fecha | 2026-11-18 |
 | Responsable | noggalito |
 
 ## 1. Objetivo
@@ -81,7 +81,7 @@ Se aplica el protocolo de pruebas con PIN (BRG-CAL-002):
 Se leen en voz alta, una a una, sin decir dónde está cada cosa. El participante piensa en voz alta. Solo se ayuda si lo pide dos veces o si pasan 5 minutos; esa ayuda se anota.
 
 | N.º | Tarea (lo que se dice) | Éxito | Tiempo orientativo |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | T1 | "Abra `contrato.pdf` y fírmelo con su DNIe." | `contrato-firmado.pdf` creado | 3 min |
 | T2 | "Firme `contrato.pdf` de nuevo, esta vez con la firma visible al pie de la última página, con el motivo 'En señal de conformidad'." | Firma visible en el lugar pedido y con ese motivo | 4 min |
 | T3 | "Firme a la vez los tres documentos `acta`." | Tres archivos firmados con un solo PIN | 4 min |
@@ -122,7 +122,7 @@ Antes de la primera sesión, el banco de datos de participantes debe estar inscr
 Al terminar, el participante responde las 10 frases de la escala de usabilidad SUS (*System Usability Scale*), de 1 (muy en desacuerdo) a 5 (muy de acuerdo):
 
 | N.º | Español | Quechua (sin revisar) |
-|---|---|---|
+| --- | --- | --- |
 | 1 | Creo que usaría berigna con frecuencia. | berignata sapa kuti llamk'achisaqmansi nispa yuyani. |
 | 2 | berigna me pareció innecesariamente complicado. | berignaqa mana necesitasqamanta sasa karqan. |
 | 3 | berigna me pareció fácil de usar. | berignaqa llamk'achinapaq facilmi karqan. |
@@ -143,13 +143,13 @@ Preguntas abiertas al final: ¿qué fue lo más difícil? ¿Hubo alguna palabra 
 Una fila por participante y tarea, sin datos personales:
 
 | Participante | Idioma | Tarea | Éxito (sí / con ayuda / no) | Tiempo | Errores | Comentarios y citas |
-|---|---|---|---|---|---|---|
+| --- | --- | --- | --- | --- | --- | --- |
 | P1 | es_PE | T1 | | | | |
 
 Cada problema encontrado se registra con su gravedad:
 
 | Gravedad | Significado |
-|---|---|
+| --- | --- |
 | 4, crítica | Impide terminar la tarea o lleva a firmar algo que no se quería |
 | 3, grave | Se termina con ayuda o con mucho esfuerzo |
 | 2, moderada | Retrasa o confunde, pero se supera |

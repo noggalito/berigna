@@ -1,5 +1,6 @@
 <!-- Qué cambia y por qué. Enlaza la incidencia si existe (Closes #…). -->
 
+<!-- markdownlint-disable-next-line MD041 -->
 ## Requisitos y decisiones
 
 <!-- RF-xxx, RNF-xxx, ADR-xxxx o CU-xx afectados, si aplica. -->

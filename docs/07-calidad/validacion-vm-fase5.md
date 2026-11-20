@@ -1,11 +1,11 @@
 # Validación en VMs del criterio de salida de la Fase 5
 
 | Campo | Valor |
-|---|---|
+| --- | --- |
 | Documento | BRG-CAL-007 |
-| Versión | 0.1.0 |
+| Versión | 0.1.1 |
 | Estado | Borrador |
-| Fecha | 2026-11-09 |
+| Fecha | 2026-11-18 |
 | Responsable | noggalito |
 
 ## 1. Propósito

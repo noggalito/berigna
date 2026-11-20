@@ -1,7 +1,7 @@
 # ADR-0008: Bibliotecas para CAdES y XAdES
 
 - Estado: Aceptado (2026-10-27): opción A, validada en SPK-03
-- Fecha: 2026-11-02
+- Fecha: 2026-11-18
 
 ## Contexto
 
@@ -16,7 +16,7 @@ Usar la API CMS de pyHanko (`pyhanko.sign.signers` con datos genéricos) para B-
 ### XAdES
 
 | Opción | Descripción | Riesgo |
-|---|---|---|
+| --- | --- | --- |
 | A | `signxml` (Apache-2.0), que incluye soporte XAdES, más extensiones propias para T, LT y LTA, con un firmante que delega en PKCS#11 | Medio: hay que verificar la cobertura de los niveles y si el firmante se puede delegar en PKCS#11 |
 | B | Implementación propia sobre `lxml` y `cryptography` (canonicalización C14N, referencias, `QualifyingProperties`) | Alto: mucho código criptográfico de formato propio |
 | C | DSS (Java) como validador auxiliar, solo para la verificación | Contradice ADR-0001; añade una JVM |

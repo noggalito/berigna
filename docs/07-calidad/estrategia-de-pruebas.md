@@ -1,11 +1,11 @@
 # Estrategia de pruebas
 
 | Campo | Valor |
-|---|---|
+| --- | --- |
 | Documento | BRG-CAL-001 |
-| Versión | 0.6.1 |
+| Versión | 0.6.2 |
 | Estado | Borrador |
-| Fecha | 2026-11-08 |
+| Fecha | 2026-11-18 |
 | Responsable | noggalito |
 
 ## 1. Objetivos
@@ -18,7 +18,7 @@
 ## 2. Niveles de prueba
 
 | Nivel | Alcance | Herramientas | ¿En CI? |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | Unitarias | Funciones y clases de `berigna.core` | pytest, hypothesis | Sí |
 | Integración con un *token* simulado | Firma y validación de punta a punta con SoftHSM2 y una PKI de pruebas | pytest, softhsm2, una TSA y un OCSP locales de prueba | Sí |
 | Interoperabilidad | Validar las salidas de berigna con validadores externos y validar con berigna las firmas producidas por otros. Una firma solo pasa si la indicación global es TOTAL_PASSED **y** cada sello de tiempo, en el informe detallado, da PASSED (SPK-03 §5) | DSS 6.2 (JAR oficiales de Maven Central con un arnés Java mínimo, sin Docker), Firma Perú (manual; validador de referencia desde la respuesta de RENIEC del 2026-10-28), validador web de ReFirma (manual, interoperabilidad), Adobe Reader (manual) | Parcial (DSS en CI) |
@@ -35,7 +35,7 @@
 
 Se genera al vuelo en las pruebas (`tests/support/pki.py`, con raíz, CA intermedia con ARL, firmantes con OCSP, CRL y respuestas OCSP buenas o revocadas) y nunca se distribuye en el paquete. La versión de SPK-03, con TSA y CRL servidas por HTTP, está en `spikes/spk03/spk03_pki.py`:
 
-```
+```text
 Raíz de pruebas "ECERNEP-TEST"
  └─ Intermedia "ECEP-RENIEC-TEST"
      ├─ Titular válido (autenticación + no repudio)
@@ -63,7 +63,7 @@ Los perfiles de los certificados (extensiones, políticas, uso de clave, algorit
 ## 4. Matriz de cobertura de formatos
 
 | Formato \ Nivel | B-B | B-T | B-LT | B-LTA |
-|---|---|---|---|---|
+| --- | --- | --- | --- | --- |
 | PAdES invisible | PR-PAD-01 | PR-PAD-02 | PR-PAD-03 | PR-PAD-04 |
 | PAdES visible | PR-PAD-05 | PR-PAD-06 | PR-PAD-07 | PR-PAD-08 |
 | PAdES firma sucesiva | PR-PAD-09 | — | PR-PAD-10 | PR-PAD-11 |
@@ -81,7 +81,7 @@ Cada celda se ejecuta en tres entornos: (a) SoftHSM en CI, (b) validación con D
 ### 5.1 Dispositivo y certificado (PR-TOK)
 
 | ID | Caso | Esperado |
-|---|---|---|
+| --- | --- | --- |
 | PR-TOK-01 | Inserción y retiro del lector y de la tarjeta en caliente | Estado actualizado en menos de 2 s (RF-001, RF-002) |
 | PR-TOK-02 | Lectura de los certificados del DNIe v2 (simulador y HIL) | Coinciden con la referencia de SPK-01 (RF-003) |
 | PR-TOK-03 | Token con certificado de autenticación y de no repudio | Se firma siempre con el de no repudio (RF-004, ACR-15) |
@@ -92,7 +92,7 @@ Cada celda se ejecuta en tres entornos: (a) SoftHSM en CI, (b) validación con D
 ### 5.2 Validación (PR-VAL)
 
 | ID | Caso | Esperado |
-|---|---|---|
+| --- | --- | --- |
 | PR-VAL-01 | Documento modificado después de firmar | TOTAL-FAILED (HASH_FAILURE) |
 | PR-VAL-02 | Certificado caducado en la fecha de la firma | Rechazo al firmar (RF-006, ACR-14); INDETERMINATE o FAILED al verificar |
 | PR-VAL-03 | Certificado revocado antes y después de la firma, con y sin sello de tiempo | Indicación ETSI correcta en cada caso (ACR-13) |
@@ -106,7 +106,7 @@ Cada celda se ejecuta en tres entornos: (a) SoftHSM en CI, (b) validación con D
 ### 5.3 Sello de tiempo (PR-TSA)
 
 | ID | Caso | Esperado |
-|---|---|---|
+| --- | --- | --- |
 | PR-TSA-01 | Sello válido de una TSA confiable | PASSED, identificando la TSA (ACR-23) |
 | PR-TSA-02 | TSA no confiable | El sello no se acepta |
 | PR-TSA-03 | Certificado de la TSA revocado o caducado | Detectado (ACR-23) |
@@ -116,14 +116,14 @@ Cada celda se ejecuta en tres entornos: (a) SoftHSM en CI, (b) validación con D
 ## 6. Batería de interoperabilidad (criterio de aceptación de la v1.0)
 
 | ID | Prueba | Resultado esperado |
-|---|---|---|
+| --- | --- | --- |
 | PR-INT-01 | Matriz completa de §4 firmada con el DNIe real y validada en Firma Perú y en el validador web de ReFirma | Todas válidas en los dos |
 | PR-INT-02 | La misma matriz validada en DSS | TOTAL-PASSED con el nivel correcto |
 | PR-INT-03 | PAdES abiertos en Adobe Acrobat Reader (con la raíz de la IOFE como confiable) | "Firma válida" |
 | PR-INT-04 | PAdES abiertos en Evince/Papers y Okular | Se muestra la firma; la apariencia es correcta |
 | PR-INT-05 | Firmas generadas por Firma Perú y por ReFirma, validadas en berigna (ReFirma PDF solo firma PDF: en CAdES y XAdES, solo Firma Perú) | Mismo resultado que en Firma Perú |
 | PR-INT-06 | Firmas generadas por DSS, validadas en berigna | Mismo resultado que en DSS |
-| PR-INT-07 | Matriz completa validada en el validador oficial Firma Perú (https://apps.firmaperu.gob.pe/web/validador.xhtml; usa DSS y la TSL peruana) | "Resultado válido" con el formato y nivel correctos. Primera evidencia: PAdES B-B del DNIe real, 2026-10-27 |
+| PR-INT-07 | Matriz completa validada en el validador oficial Firma Perú (<https://apps.firmaperu.gob.pe/web/validador.xhtml>; usa DSS y la TSL peruana) | "Resultado válido" con el formato y nivel correctos. Primera evidencia: PAdES B-B del DNIe real, 2026-10-27 |
 | PR-INT-08 | Firmas reales de terceros validadas en berigna y contrastadas con el validador oficial de Firma Perú. Primera evidencia: firma Adobe heredada de 2022 (`adbe.pkcs7.detached`), certificado del firmante vencido y sin sello de tiempo | Mismo veredicto que Firma Perú: INDETERMINADO (berigna: `OUT_OF_BOUNDS_NO_POE`) |
 
 ## 7. Pruebas de seguridad
@@ -137,7 +137,7 @@ Cada celda se ejecuta en tres entornos: (a) SoftHSM en CI, (b) validación con D
 ## 8. Pruebas de internacionalización (PR-I18N)
 
 | ID | Prueba | Resultado esperado | ¿En CI? |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | PR-I18N-01 | `msgfmt --check --statistics` sobre `po/es_PE.po` y sobre el manual | 100 % traducido, sin *fuzzy* ni errores de formato | Sí |
 | PR-I18N-02 | Detección de cadenas visibles sin marcar con `_()` (análisis estático y `xgettext` comparado con el código) | Ninguna | Sí |
 | PR-I18N-03 | Pseudolocalización (textos alargados un 40 % y con acentos) y recorrido de todas las vistas | Sin truncados ni solapamientos | Parcial |
@@ -161,7 +161,7 @@ Cada ejecución de las pruebas de interoperabilidad y de hardware genera un dire
 Parque de lectores para la HIL:
 
 | Alias | Modelo | PIN pad | Estado |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | Hyperion | Realtek Generic USB2.0-CRW (`0bda:0169`) | Probablemente no | Disponible |
 | innovatech | Alcor Micro AU9540 (`058f:9540`) | No | Disponible |
 | (por adquirir) | Lector CCID de clase 2 con teclado | Sí | Pendiente (para P-08) |

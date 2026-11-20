@@ -1,11 +1,11 @@
 # SPK-05: Dependencias en Debian 13
 
 | Campo | Valor |
-|---|---|
+| --- | --- |
 | Documento | BRG-INV-005 |
-| Versión | 0.2.1 |
+| Versión | 0.2.2 |
 | Estado | Cerrado (2026-10-27) |
-| Fecha | 2026-10-28 |
+| Fecha | 2026-11-18 |
 | Responsable | noggalito |
 
 ## 1. Método
@@ -21,7 +21,7 @@ Además se consultaron en PyPI las dependencias declaradas por cada versión de 
 ## 2. Resultados (Debian 13 trixie, 2026-10-27)
 
 | Dependencia | ¿En Debian 13? | Versión en Debian | Uso | Acción |
-|---|---|---|---|---|
+| --- | --- | --- | --- | --- |
 | pyHanko | No | — | PAdES y CMS | Empaquetar la 0.25.1 (ADR-0013) |
 | pyhanko-certvalidator | Sí | 0.26.3-2 | Validación de cadenas | Usar la de Debian |
 | python-pkcs11 | Sí | 0.7.0-1+b5 | *Backend* PKCS#11 | Usar la de Debian |
@@ -52,7 +52,7 @@ Además se consultaron en PyPI las dependencias declaradas por cada versión de 
 Fuente: `https://qa.debian.org/madison.php?package=<p>&s=trixie&a=arm64`.
 
 | Paquete | Versión en trixie |
-|---|---|
+| --- | --- |
 | python3-gi | 3.50.0-4+b1 (arm64) |
 | gir1.2-gtk-4.0 | 4.18.6+ds-2 (arm64) |
 | gir1.2-adw-1 | 1.7.6-1~deb13u1 (arm64) |
@@ -69,7 +69,7 @@ Fuente: `https://qa.debian.org/madison.php?package=<p>&s=trixie&a=arm64`.
 ## 3. Compatibilidad de las versiones de pyHanko con Debian 13
 
 | pyHanko | Publicada | certvalidator | cryptography | python-pkcs11 | ¿Encaja con Debian 13? |
-|---|---|---|---|---|---|
+| --- | --- | --- | --- | --- | --- |
 | 0.25.1 | 2024-07-18 | >=0.26.2,<0.27 | >=42.0.1 | ~=0.7.0 | Sí |
 | 0.25.3 | 2024-11-17 | >=0.26.5,<0.27 | >=43.0.3 | ~=0.7.0 | No (certvalidator 0.26.3 y cryptography 43.0.0 se quedan cortos) |
 | 0.28.0 / 0.29.0 | 2025-05 | >=0.27,<0.28 | >=43.0.3 | ~=0.7.0 | No |

@@ -1,17 +1,17 @@
 # Configuración y datos
 
 | Campo | Valor |
-|---|---|
+| --- | --- |
 | Documento | BRG-ARQ-003 |
-| Versión | 0.4.0 |
+| Versión | 0.4.1 |
 | Estado | Borrador |
-| Fecha | 2026-10-29 |
+| Fecha | 2026-11-18 |
 | Responsable | noggalito |
 
 ## 1. Ubicaciones (XDG)
 
 | Dato | Ruta | Formato | Sensible |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | Preferencias | GSettings, esquema `com.noggalito.Berigna` (en dconf) | GVariant | No |
 | Almacén de confianza (incluido en el paquete) | Recurso del paquete Python: `berigna/core/trust/anchors/` (en el código fuente, `src/berigna/core/trust/anchors/`) | PEM y `manifest.json` con huellas SHA-256; el paquete `.deb` firmado protege su integridad | No |
 | Anclas añadidas por el usuario | `$XDG_DATA_HOME/berigna/trust/` (prevista: `TrustStore.with_user_anchors` existe, la interfaz para añadirlas no) | PEM | No |
@@ -33,7 +33,7 @@ Implementado en `data/com.noggalito.Berigna.gschema.xml` (Fase 3, incremento 1).
 Proxy (RF-064): el valor se aplica a las variables de entorno estándar del proceso (`https_proxy`, `no_proxy`), que `requests` lee en cada petición, también dentro de pyhanko-certvalidator (`core.net.proxy`). Con `system`, la interfaz pregunta a GIO por el proxy del escritorio.
 
 | Clave | Tipo | Defecto | Descripción |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | `default-level` | enum | `'B-LT'` (DP-04) | Nivel preseleccionado |
 | `pdf-format` | enum | `'pades'` | Formato para PDF |
 | `xml-format` | enum | `'xades-enveloped'` | Formato para XML |
@@ -73,7 +73,7 @@ Despliegue en organizaciones: un administrador puede definir valores por defecto
 - Cadena del DNIe v2, identificada en SPK-01 y SPK-02. Huellas contrastadas el 2026-10-28 con los certificados del repositorio oficial de RENIEC (`https://pki.reniec.gob.pe/repositorio/`, indicado por RENIEC en su respuesta a CE-07); la página es HTTPS, pero los enlaces de descarga son HTTP, y RENIEC no publica las huellas aparte:
 
   | Certificado | SHA-256 |
-  |---|---|
+  | --- | --- |
   | ECERNEP PERU CA ROOT 3 (raíz) | `9650 8217 C36F 3BBC 556E 2E07 D7AB 50C4 0DA8 027C 3882 3581 3322 E41B 87A5 68BE` |
   | ECEP-RENIEC | `9152 0E1F 381A 4640 2B94 90C0 6749 B2D8 1DDA D4B5 3E7F 252A 1DD7 9B55 DFCB 340B` |
   | ECEP-RENIEC CA Class 2 II | `EC94 327A 45C4 5A92 8104 D389 B352 5769 18B8 C072 3272 04E1 5E1F 8854 7D86 0A42` |
@@ -82,7 +82,7 @@ Despliegue en organizaciones: un administrador puede definir valores por defecto
 - Cadena ROOT 5 (personas jurídicas), obtenida el 2026-10-27. La raíz se descargó por HTTPS desde `cdn.www.gob.pe`; las intermedias, por HTTP desde los dos espejos de RENIEC, que dieron archivos idénticos. La cadena se verificó con un certificado real de SUNARP:
 
   | Certificado | SHA-256 |
-  |---|---|
+  | --- | --- |
   | ECERNEP PERU CA ROOT 5 (raíz, vigente hasta 2047) | `E33D 6A09 352F 98BA 5CC9 E358 D44F 3ED7 37E8 C73F 29E5 6656 F96A A05A 9D34 DA60` |
   | ECEP-RENIEC CA ROOT 5 | `E827 B4CF 0DE3 24C8 E92A B20D B973 A070 4883 AE98 2DB1 A108 C834 48EA 463D C3AC` |
   | ECEP-RENIEC CA Class 3 | `483A 02FB A5A8 2D23 D8C3 AC32 4157 DF39 2229 C0DF 750B 77F2 5096 8807 875D DEC1` |

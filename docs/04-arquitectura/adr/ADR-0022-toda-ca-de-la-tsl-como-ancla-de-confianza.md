@@ -1,7 +1,7 @@
 # ADR-0022: Toda CA acreditada en la TSL como ancla de confianza
 
 - Estado: Aceptado
-- Fecha: 2026-10-30
+- Fecha: 2026-11-18
 - Origen: Corrección del fallo de construcción de ruta en sellos de tiempo de prestadores acreditados (2026-10-30); complementa [ADR-0009](ADR-0009-almacen-confianza-propio.md) y [ADR-0014](ADR-0014-tsl-indecopi-fuente-de-confianza.md)
 
 ## Contexto
@@ -9,6 +9,7 @@
 ADR-0014 integró la Lista de Servicios de Confianza (TSL) de INDECOPI como fuente dinámica del almacén de confianza, clasificando las CA autoemitidas (*self-issued*) como raíces y las subordinadas como intermedias en el `TrustStore`.
 
 El 2026-10-30, la verificación de un documento real con sellos de tiempo de la Entidad de Certificación de Sellado de Tiempo (TSA) de Soft & Net Solutions falló con `PathBuildingError`:
+
 - El certificado de la TSA de Soft & Net está emitido por `Camerfirma TSA II - 2014`.
 - `Camerfirma TSA II - 2014` está listada en la TSL en estado aceptado, pero no es autofirmada: su emisor es `Chambers of Commerce Root - 2008`.
 - Esa raíz superior (`Chambers of Commerce Root - 2008`) no figura en la TSL de INDECOPI ni en el almacén base de la IOFE de berigna.

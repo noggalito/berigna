@@ -1,11 +1,11 @@
 # Flujos de firma y verificación
 
 | Campo | Valor |
-|---|---|
+| --- | --- |
 | Documento | BRG-ARQ-002 |
-| Versión | 0.4.0 |
+| Versión | 0.4.1 |
 | Estado | Borrador |
-| Fecha | 2026-11-02 |
+| Fecha | 2026-11-18 |
 | Responsable | noggalito |
 
 ## 1. Firma PAdES (nivel seleccionable)
@@ -60,6 +60,7 @@ sequenceDiagram
 ```
 
 Notas:
+
 - Si la TSA falla en el paso del sello, no queda ningún archivo escrito (todo ocurre en memoria o en un temporal). Se ofrece reintentar o bajar a B-B (CU-01, 7a).
 - En B-LT, los datos de validación incluyen también los de la cadena del certificado de la TSA.
 - La operación en el chip es una sola por firma. El resto del trabajo ocurre fuera del chip.

@@ -1,11 +1,11 @@
 # Manejo del PIN y de las credenciales
 
 | Campo | Valor |
-|---|---|
+| --- | --- |
 | Documento | BRG-SEG-002 |
-| Versión | 0.1.1 |
+| Versión | 0.1.2 |
 | Estado | Borrador |
-| Fecha | 2026-10-29 |
+| Fecha | 2026-11-18 |
 | Responsable | noggalito |
 
 ## 1. Ciclo de vida del PIN
@@ -24,7 +24,7 @@ stateDiagram-v2
 ## 2. Reglas
 
 | Regla | Detalle |
-|---|---|
+| --- | --- |
 | P-01 | El PIN se pide solo después de que el usuario vea qué va a firmar (WYSIWYS) |
 | P-02 | No se guarda nunca: ni en disco, ni en GSettings, ni en el llavero, ni en el historial |
 | P-03 | No se registra nunca. El registro filtra cualquier objeto `Pin` y el tipo `Pin` tiene un `__repr__` que devuelve `"Pin(***)"` |
@@ -40,7 +40,7 @@ stateDiagram-v2
 ## 3. Otras credenciales
 
 | Credencial | Almacenamiento | Nota |
-|---|---|---|
+| --- | --- | --- |
 | Usuario y contraseña de la TSA | libsecret (Secret Service) | Nunca en GSettings |
 | Certificado de cliente para la TSA | Archivo PKCS#12 protegido con una contraseña guardada en libsecret, o un *token* PKCS#11 | Opcional, solo si la TSA lo exige (DP-02) |
 | Contraseña de un PDF cifrado | Solo en memoria durante la operación | No se recuerda |
@@ -48,7 +48,6 @@ stateDiagram-v2
 ## 4. Pruebas asociadas
 
 Las pruebas con un DNIe real siguen el [protocolo de pruebas con PIN](../07-calidad/protocolo-pruebas-con-pin.md).
-
 
 - PR-SEG-01: se busca el PIN de prueba en los registros en nivel DEBUG tras 100 firmas; el resultado esperado es cero coincidencias.
 - PR-SEG-02: el PIN no aparece en GSettings, en el historial ni en la caché.

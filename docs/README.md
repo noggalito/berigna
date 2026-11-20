@@ -1,11 +1,11 @@
 # Documentación técnica de berigna
 
 | Campo | Valor |
-|---|---|
+| --- | --- |
 | Documento | BRG-GEN-000 |
-| Versión | 0.23.0 |
+| Versión | 0.23.1 |
 | Estado | Borrador |
-| Fecha | 2026-11-09 |
+| Fecha | 2026-11-18 |
 | Responsable | noggalito |
 
 ## 1. Propósito
@@ -16,7 +16,7 @@ La gestión del proyecto (decisiones pendientes, relación con INDECOPI, RENIEC 
 
 ## 2. Estructura
 
-```
+```text
 docs/
 ├── README.md                          ← este índice
 ├── 00-gestion/
@@ -62,7 +62,7 @@ Los prototipos de investigación están en [`../spikes/`](../spikes/README.md).
 ## 3. Orden de lectura recomendado
 
 | Perfil | Documentos |
-|---|---|
+| --- | --- |
 | Visión general | README raíz → 03-requisitos → 04-arquitectura/arquitectura-general |
 | Desarrollador | 03-requisitos → 04-arquitectura → 05-seguridad → 08-desarrollo → 07-calidad |
 | Auditor | 02-marco-normativo → 03-requisitos → 04-arquitectura/adr → 05-seguridad → 07-calidad → 10-investigacion |
@@ -75,7 +75,7 @@ Algunos documentos públicos citan identificadores cuyo detalle está en la docu
 ## 5. Estado de los documentos
 
 | Carpeta | Estado | Observación |
-|---|---|---|
+| --- | --- | --- |
 | 00-gestion | Borrador | — |
 | 02-marco-normativo | Borrador | — |
 | 03-requisitos | Borrador | Línea base para la v1.0 |
@@ -91,7 +91,7 @@ Algunos documentos públicos citan identificadores cuyo detalle está en la docu
 ## 6. Decisiones técnicas principales
 
 | Tema | Decisión |
-|---|---|
+| --- | --- |
 | Interfaz | Solo GUI (GTK4 + libadwaita) en la v1; núcleo independiente de la interfaz (ADR-0002) |
 | Lenguaje | Python 3 (ADR-0001) |
 | Formatos y niveles | PAdES, CAdES y XAdES, de B-B a B-LTA, seleccionables por el usuario (ADR-0007, ADR-0008) |
@@ -133,7 +133,7 @@ Con el incremento 8, la Fase 4 queda cerrada el 2026-11-04.
 La cofirma CAdES (RF-023, "Podría") queda para la versión 1.1 (decisión del titular, 2026-11-06).
 
 | Módulo | Estado | Requisitos | Evidencia |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | `core.token.dnie_v2` y `core.token.transport` | Implementado | RF-002, RF-003, RF-004, RF-005 (sin PIN pad) | Simulador, 100 % de cobertura; HIL con los lectores "Hyperion" e "innovatech", con PIN real |
 | `core.token.monitor` | Implementado | RF-001, RF-002 | Sin conectarse a la tarjeta (`SCardGetStatusChange`); HIL: no interfiere con una sesión exclusiva |
 | `core.trust` (almacén) | Implementado | RF-060, RF-061 | ROOT 3 y ROOT 5 verificadas; manifiesto de huellas |
@@ -169,4 +169,3 @@ La cofirma CAdES (RF-023, "Podría") queda para la versión 1.1 (decisión del t
 | Windows, macOS, Android e iOS | Versión 1.1 (decisión del 2026-10-29); el núcleo es independiente de la interfaz (ADR-0002) | ADR-0021 | — |
 
 Verificación local: `scripts/verificar.sh` (ruff, mypy estricto, pytest con cobertura mínima del 80 %; al 2026-11-01, 100 % del núcleo y 95 % del total con 598 pruebas, incluidas las de la interfaz con Xvfb; las 5 con hardware se omiten sin `BERIGNA_HIL=1`). Pruebas con hardware: `BERIGNA_HIL=1 pytest -m hil` (sin PIN) y los *scripts* manuales de `tests/hil/` (con PIN, según el protocolo).
-

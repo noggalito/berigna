@@ -1,11 +1,11 @@
 # Requisitos no funcionales
 
 | Campo | Valor |
-|---|---|
+| --- | --- |
 | Documento | BRG-REQ-002 |
-| Versión | 0.4.0 |
+| Versión | 0.4.1 |
 | Estado | Borrador |
-| Fecha | 2026-11-10 |
+| Fecha | 2026-11-18 |
 | Responsable | noggalito |
 
 Identificadores: `RNF-<CATEGORÍA>-NN`.
@@ -13,7 +13,7 @@ Identificadores: `RNF-<CATEGORÍA>-NN`.
 ## 1. Seguridad (SEG)
 
 | ID | Requisito | Prioridad | Verificación |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | RNF-SEG-01 | La clave privada nunca sale del chip. Todas las operaciones con la clave privada se delegan al *token*: mediante PKCS#11 (*backend* genérico) o mediante el driver APDU del DNIe v2 (PSO:CDS, ADR-0012) | Debe | Revisión de diseño y de código |
 | RNF-SEG-02 | El PIN no se almacena, no se registra y no se transmite fuera del proceso salvo hacia el *token* (*backend* PKCS#11 o driver APDU). Se borra de la memoria al terminar la sesión, en la medida en que el entorno lo permita | Debe | Revisión de código; PR-SEG con inspección de registros |
 | RNF-SEG-03 | Los documentos no se envían a ningún servicio de red. Solo salen de la máquina los *hash* hacia la TSA, los identificadores de certificados hacia OCSP y las descargas de CRL y AIA | Debe | Prueba con captura de tráfico |
@@ -28,7 +28,7 @@ Identificadores: `RNF-<CATEGORÍA>-NN`.
 ## 2. Fiabilidad (FIA)
 
 | ID | Requisito | Prioridad |
-|---|---|---|
+| --- | --- | --- |
 | RNF-FIA-01 | Ninguna operación deja archivos de salida parciales o corruptos (escritura atómica) | Debe |
 | RNF-FIA-02 | El retiro del lector o de la tarjeta durante una operación se gestiona sin bloquear la interfaz | Debe |
 | RNF-FIA-03 | Los fallos de red (TSA u OCSP) se notifican con reintentos limitados y tiempos de espera configurables (10 s por defecto) | Debe |
@@ -39,7 +39,7 @@ Identificadores: `RNF-<CATEGORÍA>-NN`.
 Valores objetivo en un equipo de referencia (4 núcleos, 8 GB de RAM, SSD), sin contar la latencia de red ni la del chip:
 
 | ID | Requisito | Objetivo |
-|---|---|---|
+| --- | --- | --- |
 | RNF-REN-01 | Arranque de la aplicación hasta la ventana usable | ≤ 1,5 s |
 | RNF-REN-02 | Preparación y escritura de una firma PAdES B-B de un PDF de 10 MB | ≤ 2 s |
 | RNF-REN-03 | Verificación de un PDF de 10 MB con 3 firmas usando los datos embebidos | ≤ 3 s |
@@ -51,7 +51,7 @@ Nota: el tiempo de la operación criptográfica dentro del chip (medido: unos 0,
 ## 4. Usabilidad y accesibilidad (USA)
 
 | ID | Requisito | Prioridad |
-|---|---|---|
+| --- | --- | --- |
 | RNF-USA-01 | La interfaz cumple la guía de interfaz de GNOME (HIG) y usa los componentes de libadwaita | Debe |
 | RNF-USA-02 | La interfaz es totalmente operable con el teclado | Debe |
 | RNF-USA-03 | Es compatible con el lector de pantalla Orca: todos los controles tienen nombres accesibles | Debe |
@@ -65,7 +65,7 @@ Nota: el tiempo de la operación criptográfica dentro del chip (medido: unos 0,
 ## 5. Compatibilidad (COM)
 
 | ID | Requisito | Prioridad |
-|---|---|---|
+| --- | --- | --- |
 | RNF-COM-01 | Debian 13 (trixie) en amd64 | Debe |
 | RNF-COM-02 | Sesiones Wayland y X11 | Debe |
 | RNF-COM-03 | GNOME como escritorio principal; en otros escritorios funciona sin la integración específica con Nautilus | Debe |
@@ -77,7 +77,7 @@ Nota: el tiempo de la operación criptográfica dentro del chip (medido: unos 0,
 ## 6. Interoperabilidad (INT)
 
 | ID | Requisito | Prioridad |
-|---|---|---|
+| --- | --- | --- |
 | RNF-INT-01 | Las firmas que genera berigna se validan correctamente en el validador web de la Plataforma Nacional de Firma Digital – Firma Perú (PCM-SGTD), referencia oficial desde que RENIEC dejó de distribuir ReFirma a terceros (respuesta del 2026-10-28; la PCM confirmó el 2026-11-09 que el validador no tiene versión descargable ni automatizada y remite a la Guía para el uso e integración de la Plataforma Nacional de Firma Digital, R.S. 002-2022-PCM/SGTD), y en ReFirma cuando se disponga de él. Evidencia actual: PAdES B-B válido en Firma Perú (SPK-03 §7) y en ReFirma (2026-10-28) | Debe |
 | RNF-INT-02 | Las firmas que genera berigna se validan correctamente en un validador conforme a ETSI EN 319 102-1 (por ejemplo, DSS) | Debe |
 | RNF-INT-03 | Las firmas PAdES se muestran como válidas en Adobe Acrobat Reader cuando la raíz de la IOFE está en su almacén de confianza | Debe |
@@ -86,7 +86,7 @@ Nota: el tiempo de la operación criptográfica dentro del chip (medido: unos 0,
 ## 7. Mantenibilidad (MAN)
 
 | ID | Requisito | Prioridad |
-|---|---|---|
+| --- | --- | --- |
 | RNF-MAN-01 | El núcleo (`berigna.core`) no depende de GTK y se puede ejecutar y probar sin interfaz | Debe |
 | RNF-MAN-02 | Cobertura de pruebas del núcleo de al menos el 80 % de líneas y del 100 % de las rutas críticas de firma y validación | Debe |
 | RNF-MAN-03 | Anotaciones de tipos completas, verificadas con `mypy --strict` en el núcleo | Debe |
@@ -96,7 +96,7 @@ Nota: el tiempo de la operación criptográfica dentro del chip (medido: unos 0,
 ## 8. Legal y licencias (LEG)
 
 | ID | Requisito | Prioridad |
-|---|---|---|
+| --- | --- | --- |
 | RNF-LEG-01 | Todo el código es GPL-3.0-or-later, con cabeceras SPDX en cada archivo. El repositorio incluye el texto íntegro en `LICENSE`, y la ventana "Acerca de" (`Adw.AboutDialog`, `license_type = GPL_3_0`) y la metainfo de AppStream (`project_license`) la declaran | Debe |
 | RNF-LEG-02 | Todas las dependencias tienen licencias compatibles con GPL-3.0 y están inventariadas | Debe |
 | RNF-LEG-03 | Hasta obtener la acreditación, ningún texto afirma que el software está acreditado | Debe |

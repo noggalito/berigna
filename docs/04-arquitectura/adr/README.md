@@ -1,11 +1,11 @@
 # Registro de decisiones de arquitectura (ADR)
 
 | Campo | Valor |
-|---|---|
+| --- | --- |
 | Documento | BRG-ARQ-ADR |
-| Versión | 0.3.0 |
+| Versión | 0.3.1 |
 | Estado | Vivo |
-| Fecha | 2026-11-08 |
+| Fecha | 2026-11-18 |
 | Responsable | noggalito |
 
 Formato: Contexto → Decisión → Alternativas consideradas → Consecuencias. Estados posibles: Propuesto, Aceptado, Reemplazado por ADR-XXXX, Rechazado.
@@ -13,7 +13,7 @@ Formato: Contexto → Decisión → Alternativas consideradas → Consecuencias.
 Un ADR aceptado no se edita. Si la decisión cambia, se escribe un ADR nuevo que lo reemplaza.
 
 | ADR | Título | Estado |
-|---|---|---|
+| --- | --- | --- |
 | [ADR-0001](ADR-0001-lenguaje-python.md) | Python como lenguaje del proyecto | Aceptado |
 | [ADR-0002](ADR-0002-gui-gtk4-libadwaita.md) | Solo GUI con GTK4 + libadwaita, y un núcleo separado | Aceptado |
 | [ADR-0003](ADR-0003-acceso-dnie-pkcs11.md) | Acceso al DNIe con un lector USB de contacto mediante PKCS#11 | Aceptado; modificado por ADR-0012 |
@@ -43,7 +43,7 @@ Un ADR aceptado no se edita. Si la decisión cambia, se escribe un ADR nuevo que
 Los ADR aceptados no se editan. Las erratas detectadas después de aceptarlos se registran aquí y en una sección final del propio ADR.
 
 | ADR | Errata | Fecha |
-|---|---|---|
+| --- | --- | --- |
 | ADR-0008 | Texto de la opción A ("delega en PKCS#11") y criterio de aceptación 1 ("token PKCS#11 (SoftHSM)"): la decisión vigente delega en el driver APDU del DNIe v2 (ADR-0012), y SPK-03 lo validó con un *token* simulado del *applet* del DNIe v2 | 2026-10-27 |
 | ADR-0003 | Consecuencias: "Los lectores con PIN pad se soportan mediante `CKF_PROTECTED_AUTHENTICATION_PATH`" vale solo para el *backend* PKCS#11. Con el driver del DNIe v2, el PIN pad se usa mediante PC/SC parte 10 (`FEATURE_VERIFY_PIN_DIRECT`; P-08, ADR-0012) | 2026-10-27 |
 | ADR-0015 | §1, punto 2: la primera traducción al quechua de la v1.0 se describe como "hecha con traductores en línea"; es traducción automática, apoyada en el glosario terminológico propio, y así dice ahora ese punto | 2026-10-30 |

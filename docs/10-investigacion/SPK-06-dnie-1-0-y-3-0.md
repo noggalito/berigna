@@ -1,11 +1,11 @@
 # SPK-06: Identificación del DNIe 1.0 y del DNIe 3.0
 
 | Campo | Valor |
-|---|---|
+| --- | --- |
 | Documento | BRG-INV-006 |
-| Versión | 0.1.1 |
+| Versión | 0.1.2 |
 | Estado | Pendiente (se necesita acceso a un DNIe 1.0 y a un DNIe 3.0) |
-| Fecha | 2026-10-28 |
+| Fecha | 2026-11-18 |
 | Responsable | noggalito |
 
 ## 1. Contexto

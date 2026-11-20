@@ -1,18 +1,18 @@
 # Entorno de desarrollo y convenciones
 
 | Campo | Valor |
-|---|---|
+| --- | --- |
 | Documento | BRG-DES-001 |
-| Versión | 0.11.7 |
+| Versión | 0.11.8 |
 | Estado | Borrador |
-| Fecha | 2026-11-09 |
+| Fecha | 2026-11-18 |
 | Responsable | noggalito |
 
 ## 1. Estructura del repositorio
 
 Estado al 2026-10-28. Lo marcado con *(previsto)* todavía no existe.
 
-```
+```text
 berigna/
 ├── pyproject.toml                # metadatos del núcleo; ruff, mypy, pytest, coverage
 ├── meson.build                   # aplicación GTK (ADR-0010): vistas, esquema, catálogos, lanzador
@@ -129,7 +129,7 @@ El script `scripts/verificar.sh` ejecuta exactamente esas comprobaciones (nunca 
 ## 3. Estilo de código
 
 | Aspecto | Norma |
-|---|---|
+| --- | --- |
 | Formato y *lint* | `ruff format` y `ruff check` (incluidas las reglas de seguridad `S`) |
 | Tipos | `mypy --strict` en `berigna.core`; en `ui`, modo normal |
 | Nombres | Código e identificadores en inglés |
@@ -169,6 +169,7 @@ La vigilancia semanal (`.github/workflows/vigilancia.yml`, BRG-MAN-001 §5, R-DE
 Si falla Debian o un servicio, la vigilancia abre una incidencia o comenta en la que siga abierta.
 
 Pasos mínimos del *pipeline*:
+
 1. `ruff` (incluidas las reglas `S` de flake8-bandit, que sustituyen a ejecutar bandit por separado) y `mypy --strict`.
 2. Pruebas unitarias y de integración con SoftHSM. La cobertura mínima es del 80 % (`fail_under` en `pyproject.toml`); las rutas críticas de firma, validación y *token* deben quedar cubiertas por completo (RNF-MAN-02).
 3. Validación de la matriz de formatos con DSS 6.2: JAR oficiales de Maven Central y un arnés Java mínimo, sin Docker ni imágenes de terceros (SPK-03 §2). Se exige TOTAL_PASSED y PASSED en cada sello.

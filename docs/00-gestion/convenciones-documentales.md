@@ -1,11 +1,11 @@
 # Convenciones documentales
 
 | Campo | Valor |
-|---|---|
+| --- | --- |
 | Documento | BRG-GES-001 |
-| Versión | 0.3.1 |
+| Versión | 0.3.2 |
 | Estado | Borrador |
-| Fecha | 2026-11-08 |
+| Fecha | 2026-11-18 |
 | Responsable | noggalito |
 
 ## 1. Idioma y formato
@@ -25,7 +25,7 @@ Fecha es la del último cambio de contenido, y cambia con él en el mismo PR. Ve
 Códigos de documento: `BRG-<ÁREA>-<NNN>`.
 
 | Área | Prefijo |
-|---|---|
+| --- | --- |
 | General | GEN |
 | Gestión | GES |
 | Visión | VIS |
@@ -44,7 +44,7 @@ Códigos de documento: `BRG-<ÁREA>-<NNN>`.
 ## 3. Estados de un documento
 
 | Estado | Significado |
-|---|---|
+| --- | --- |
 | Borrador | En elaboración; puede cambiar sin aviso |
 | En revisión | Congelado y en revisión por un tercero |
 | Aprobado | Línea base; los cambios requieren una nueva versión y una entrada en el historial |
@@ -53,7 +53,7 @@ Códigos de documento: `BRG-<ÁREA>-<NNN>`.
 Estados para tipos de documento específicos:
 
 | Tipo | Estados | Uso |
-|---|---|---|
+| --- | --- | --- |
 | Registros (decisiones, riesgos, consultas, índice de ADR) | Vivo | Se actualizan de forma continua; los cambios quedan versionados en git |
 | Investigaciones (SPK) | Pendiente, En curso, Cerrado | Cerrado: el criterio de cierre se cumplió o su desviación está justificada dentro del propio SPK |
 | Procedimientos operativos (por ejemplo, el protocolo de PIN) | Vigente | Procedimiento aprobado y de cumplimiento obligatorio |
@@ -75,7 +75,7 @@ Cuando un documento pasa a Aprobado, se le añade una sección final "Historial 
 Los identificadores son estables: nunca se reutilizan ni se renumeran. Un elemento eliminado se marca como `[RETIRADO]`.
 
 | Prefijo | Elemento | Ubicación |
-|---|---|---|
+| --- | --- | --- |
 | RF-NNN | Requisito funcional | 03-requisitos/requisitos-funcionales.md |
 | RNF-CAT-NN | Requisito no funcional (CAT: SEG, FIA, REN, USA, COM, INT, MAN, LEG) | 03-requisitos/requisitos-no-funcionales.md |
 | CU-NN | Caso de uso | 03-requisitos/casos-de-uso.md |
@@ -95,7 +95,7 @@ Los identificadores marcados como "documentación interna" se gestionan en un re
 ## 6. Prioridad de requisitos (MoSCoW)
 
 | Valor | Significado |
-|---|---|
+| --- | --- |
 | Debe | Imprescindible para la v1.0 |
 | Debería | Importante; solo se pospone con justificación escrita |
 | Podría | Deseable si hay capacidad |
@@ -104,4 +104,5 @@ Los identificadores marcados como "documentación interna" se gestionan en un re
 ## 7. Marcadores en el texto
 
 Resueltos el 2026-10-28 (DP-05): el titular del proyecto es la persona jurídica noggalito, que figura como responsable de los documentos y en las cabeceras de licencia (`SPDX-FileCopyrightText: 2026 noggalito`). Todo contacto (consultas, incidencias, seguridad, validación) va a `berigna@noggalito.com`, y el sitio del proyecto es `https://berigna.noggalito.com`. El repositorio APT (antes `{{URL_REPOSITORIO}}`) quedó resuelto el 2026-11-08 (DP-24): `https://noggalito.com/apps/deb/`.
+
 - `[VERIFICAR]`: afirmación que debe contrastarse con una fuente oficial o con una prueba antes de pasar el documento a Aprobado.

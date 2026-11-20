@@ -1,11 +1,11 @@
 # SPK-07: Lectura sin contacto (NFC) del DNIe y firma desde el teléfono
 
 | Campo | Valor |
-|---|---|
+| --- | --- |
 | Documento | BRG-INV-007 |
-| Versión | 0.2.0 |
+| Versión | 0.2.1 |
 | Estado | Pendiente |
-| Fecha | 2026-11-02 |
+| Fecha | 2026-11-18 |
 | Responsable | noggalito |
 
 ## 1. Contexto
@@ -17,7 +17,7 @@ Las fuentes públicas no coinciden sobre qué versión del DNIe admite NFC: unas
 ## 2. Opciones que se evalúan
 
 | Opción | Descripción | Qué se reutiliza |
-|---|---|---|
+| --- | --- | --- |
 | A. Lector NFC en el escritorio | Un lector de escritorio sin contacto o dual que se presenta como lector PC/SC | Todo: berigna no cambia, salvo los ATR y, si hiciera falta, PACE |
 | B. berigna en Android | Aplicación que firma y verifica en el propio teléfono, leyendo el DNIe por NFC (`IsoDep`) | El núcleo, si se ejecuta en Android (por ejemplo, con Chaquopy) con un transporte `IsoDep` en lugar de PC/SC (`core.token.transport`); si no, el protocolo, el simulador y los vectores de prueba como especificación |
 | C. El teléfono como puente | El teléfono solo hace de lector: recibe por un canal emparejado los APDU de berigna en el escritorio, los pasa al DNIe por NFC y devuelve las respuestas | Todo el escritorio; en el teléfono, una aplicación pequeña sin lógica de firma |

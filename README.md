@@ -7,7 +7,7 @@ Aplicación de escritorio para GNU/Linux (Debian) que permite firmar digitalment
 ## Resumen del producto
 
 | Aspecto | Decisión |
-|---|---|
+| --- | --- |
 | Plataforma objetivo v1 | Debian 13 (trixie), amd64 |
 | Interfaz | Solo GUI (GTK4 + libadwaita) |
 | Lenguaje | Python 3 |

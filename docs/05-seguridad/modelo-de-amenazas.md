@@ -1,11 +1,11 @@
 # Modelo de amenazas
 
 | Campo | Valor |
-|---|---|
+| --- | --- |
 | Documento | BRG-SEG-001 |
-| Versión | 0.3.0 |
+| Versión | 0.3.1 |
 | Estado | Borrador |
-| Fecha | 2026-11-08 |
+| Fecha | 2026-11-18 |
 | Responsable | noggalito |
 
 Metodología: STRIDE aplicado a los flujos de 04-arquitectura. Se revisa en cada fase y antes de cada versión.
@@ -13,7 +13,7 @@ Metodología: STRIDE aplicado a los flujos de 04-arquitectura. Se revisa en cada
 ## 1. Activos
 
 | Activo | Por qué importa |
-|---|---|
+| --- | --- |
 | Clave privada de firma (en el chip) | Permite suplantar legalmente al titular |
 | PIN del DNIe | Da acceso a la clave; tras varios intentos fallidos se bloquea el DNIe |
 | Intención del firmante | El usuario debe firmar exactamente lo que cree que firma |
@@ -49,7 +49,7 @@ Fuera del alcance: un sistema operativo comprometido con privilegios de root o c
 ## 3. Amenazas y controles
 
 | ID | STRIDE | Amenaza | Impacto | Prob. | Controles | Riesgo residual |
-|---|---|---|---|---|---|---|
+| --- | --- | --- | --- | --- | --- | --- |
 | AM-01 | Spoofing | Un proceso malicioso usa la sesión autenticada de berigna (PKCS#11, o el DNIe v2 tras un VERIFY) para firmar otros datos. En el DNIe v2 la autenticación persiste hasta reiniciar la tarjeta (SPK-01 §8.6) | Alto | Media | CS-01: la sesión dura solo lo que dura la operación o el lote; conexión PC/SC exclusiva durante la sesión; cierre obligatorio con `SCARD_UNPOWER_CARD`/`SCARD_RESET_CARD` en `finally`; PR-SEG-05 y PR-SEG-06 | Bajo |
 | AM-02 | Tampering | El archivo cambia entre la previsualización y la firma (TOCTOU) | Alto | Media | CS-02: se firman los bytes previsualizados y se compara el SHA-256 antes de firmar (RF-018) | Bajo |
 | AM-03 | Tampering | El PDF muestra un contenido distinto según el visor (contenido oculto, capas opcionales, JavaScript) | Alto | Media | CS-03: avisar si el PDF tiene JavaScript, acciones automáticas, capas opcionales, archivos adjuntos o formularios XFA; la previsualización se hace con un motor estándar | Medio |

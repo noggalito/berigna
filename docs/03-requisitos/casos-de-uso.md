@@ -1,11 +1,11 @@
 # Casos de uso
 
 | Campo | Valor |
-|---|---|
+| --- | --- |
 | Documento | BRG-REQ-003 |
-| Versión | 0.3.0 |
+| Versión | 0.3.1 |
 | Estado | Borrador |
-| Fecha | 2026-10-30 |
+| Fecha | 2026-11-18 |
 | Responsable | noggalito |
 
 ## 1. Diagrama general
@@ -37,13 +37,14 @@ flowchart LR
 ### CU-01: Firmar un PDF
 
 | Elemento | Contenido |
-|---|---|
+| --- | --- |
 | Actor principal | Titular del DNIe |
 | Precondiciones | Lector conectado; DNIe con certificados vigentes; berigna instalada |
 | Disparador | El usuario abre un PDF en berigna (desde Nautilus, "Abrir con", arrastrándolo o con el botón "Abrir") |
 | Requisitos | RF-001 a RF-006, RF-010, RF-011, RF-013, RF-018, RF-045 |
 
 Flujo principal:
+
 1. El sistema muestra la previsualización del PDF y el estado del DNIe ("DNIe de NOMBRE APELLIDO listo").
 2. El usuario elige el nivel de firma (preseleccionado según las preferencias) y, opcionalmente, el motivo y la ubicación.
 3. El usuario pulsa "Firmar".
@@ -54,6 +55,7 @@ Flujo principal:
 8. El sistema guarda `contrato-firmado.pdf` y muestra el resultado con las acciones "Abrir", "Mostrar en carpeta" y "Verificar".
 
 Flujos alternativos:
+
 - 4a. Certificado caducado o revocado: se bloquea la firma y se explica la causa (fin del caso).
 - 4b. No hay conexión: se advierte y se ofrece continuar solo en B-B.
 - 6a. PIN incorrecto: se muestran los intentos restantes, si el chip los informa, y se vuelve al paso 5.

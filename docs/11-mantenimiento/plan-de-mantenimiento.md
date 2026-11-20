@@ -1,11 +1,11 @@
 # Plan de mantenimiento
 
 | Campo | Valor |
-|---|---|
+| --- | --- |
 | Documento | BRG-MAN-001 |
-| Versión | 0.4.1 |
+| Versión | 0.4.2 |
 | Estado | Borrador |
-| Fecha | 2026-11-08 |
+| Fecha | 2026-11-18 |
 | Responsable | noggalito |
 
 ## 1. Propósito y alcance
@@ -27,7 +27,7 @@ Se aplica al programa, a sus paquetes y a la ayuda en línea. La relación con I
 Versionado semántico (`MAYOR.MENOR.PARCHE`):
 
 | Tipo | Contenido | Ejemplos |
-|---|---|---|
+| --- | --- | --- |
 | Parche (1.0.x) | Fallos, seguridad, cambios de confianza, cumplimiento normativo, traducciones corregidas | Nueva raíz de ECERNEP; una CRL que deja de descargarse; un mensaje mal traducido |
 | Menor (1.x) | Funciones nuevas compatibles con la configuración y los formatos existentes | Inglés, PIN pad, Flatpak, DNIe 1.0 y 3.0 (versión 1.1) |
 | Mayor (x.0) | Cambios incompatibles en la configuración, los perfiles o los formatos de informe, o el fin del soporte de una versión de Debian | Paso a Debian 14 si obliga a abandonar Debian 13 |
@@ -47,7 +47,7 @@ Soporte:
 ## 4. Hechos externos que obligan a publicar
 
 | Origen | Señal | Acción | Plazo |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | RENIEC / ECERNEP | Raíz o CA nueva, cambio de las direcciones OCSP o CRL, certificados de otro perfil | Actualizar el almacén de confianza o `core.net`; prueba HIL | Versión de parche antes de que se emitan certificados con la cadena nueva |
 | RENIEC | DNIe nuevo o *applet* distinto | Investigación (como SPK-06) y driver | Versión menor |
 | INDECOPI | Rotación del certificado que firma la TSL (su raíz está fijada en el paquete, ADR-0014) o cambio de formato de la TSL | Nueva raíz fijada; prueba con la TSL real | Versión de parche **antes** de la rotación |
@@ -63,7 +63,7 @@ Quién vigila cada origen se asigna en la documentación interna.
 ## 5. Vigilancia automática
 
 | Comprobación | Frecuencia | Qué detecta |
-|---|---|---|
+| --- | --- | --- |
 | CI de cada PR (`scripts/verificar.sh` en Debian 13, con Xvfb), lista de componentes (SBOM) y medidas de rendimiento | Cada cambio | Formato, tipos, pruebas y cobertura; los componentes y sus licencias; un empeoramiento de más del 50 % (aviso) |
 | CI programada contra Debian *stable* y *testing* | Semanal | Roturas por actualizaciones de Debian antes de que lleguen a los usuarios |
 | El mismo `.deb` de Debian 13 instalado en Ubuntu 26.04 LTS con sus actualizaciones (*resolute-updates* y *resolute-security*), con la suite contra el paquete instalado (ADR-0023) | Semanal y en cada PR | Roturas y avisos de obsolescencia por actualizaciones de Ubuntu; la CI de cada PR comprueba además que `apt` rechaza el paquete en Ubuntu 24.04 |
@@ -105,7 +105,7 @@ Al publicar: etiqueta firmada, paquetes firmados en el repositorio APT, anuncio 
 - Plazos de corrección:
 
   | Gravedad | Ejemplos | Plazo |
-  |---|---|---|
+  | --- | --- | --- |
   | Crítica | Firma inválida dada por válida; PIN expuesto o enviado sin confirmación; ejecución de código al abrir un archivo | 7 días |
   | Alta | Denegación de servicio con un archivo; datos personales en registros | 30 días |
   | Media y baja | Endurecimiento, mensajes engañosos | Siguiente versión menor |
